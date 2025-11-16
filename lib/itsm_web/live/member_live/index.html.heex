@@ -1,0 +1,45 @@
+<.header>
+  Listing Members
+  <:actions>
+    <.link patch={~p"/admin/members/new"}>
+      <.button>New Member</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="members"
+  rows={@streams.members}
+  row_click={fn {_id, member} -> JS.navigate(~p"/admin/members/#{member}") end}
+>
+  <:action :let={{_id, member}}>
+    <div class="sr-only">
+      <.link navigate={~p"/admin/members/#{member}"}>Show</.link>
+    </div>
+    <.link patch={~p"/admin/members/#{member}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, member}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: member.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="member-modal"
+  show
+  on_cancel={JS.patch(~p"/admin/members")}
+>
+  <.live_component
+    module={ItsmWeb.MemberLive.FormComponent}
+    id={@member.id || :new}
+    title={@page_title}
+    action={@live_action}
+    member={@member}
+    patch={~p"/admin/members"}
+  />
+</.modal>

@@ -1,0 +1,50 @@
+<.header>
+  Listing Delegations
+  <:actions>
+    <.link patch={~p"/delegations/new"}>
+      <.button>New Delegation</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="delegations"
+  rows={@streams.delegations}
+  row_click={fn {_id, delegation} -> JS.navigate(~p"/delegations/#{delegation}") end}
+>
+  <:col :let={{_id, delegation}} label="Delegator name">{delegation.delegator_name}</:col>
+  <:col :let={{_id, delegation}} label="Delegatee name">{delegation.delegatee_name}</:col>
+  <:col :let={{_id, delegation}} label="Start date">{delegation.start_date}</:col>
+  <:col :let={{_id, delegation}} label="End date">{delegation.end_date}</:col>
+  <:col :let={{_id, delegation}} label="Reason">{delegation.reason}</:col>
+  <%!-- <:action :let={{_id, delegation}}>
+    <div class="sr-only">
+      <.link navigate={~p"/delegations/#{delegation}"}>Show</.link>
+    </div>
+    <.link patch={~p"/delegations/#{delegation}/edit"}>Edit</.link>
+  </:action> --%>
+  <:action :let={{id, delegation}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: delegation.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="delegation-modal"
+  show
+  on_cancel={JS.patch(~p"/delegations")}
+>
+  <.live_component
+    module={ItsmWeb.DelegationLive.FormComponent}
+    id={@delegation.id || :new}
+    title={@page_title}
+    action={@live_action}
+    delegation={@delegation}
+    patch={~p"/delegations"}
+  />
+</.modal>
