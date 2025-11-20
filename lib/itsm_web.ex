@@ -90,6 +90,9 @@ defmodule ItsmWeb do
       # Core UI components
       import ItsmWeb.CoreComponents
 
+      # Itsm Components
+      import ItsmWeb.ItsmComponents
+
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS
 

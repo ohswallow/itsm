@@ -41,7 +41,7 @@ defmodule ItsmWeb.RequestLive.Index do
       
       <:col :let={{_id, request}} label="Env">{request.env}</:col>
       
-      <:col :let={{_id, request}} label="Due date">{request.due_date}</:col>
+      <:col :let={{id, request}} label="Due date"><.local_time id={id} at={request.due_date} /></:col>
       
       <:col :let={{_id, request}} label="Request Type">{request.category.request_name}</:col>
       
