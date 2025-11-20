@@ -70,7 +70,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
           
           <:item title="Status">{@request.status}</:item>
           
-          <:item title="Due Date">{@request.due_date}</:item>
+          <:item title="Due Date"><.local_time id="due_date" at={@request.due_date} /></:item>
           
           <:item title="Requestor">{@request.requestor_name} ({@request.requestor_id})</:item>
           
