@@ -7,16 +7,47 @@
     <.live_title default="Itsm" suffix=" · Phoenix Framework">
       {assigns[:page_title]}
     </.live_title>
-    <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
+     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
     </script>
   </head>
+  
   <body class="bg-white">
     <ul class="relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
       <%= if @current_user do %>
-        <li class="text-[0.8125rem] leading-6 text-zinc-900">
-          {@current_user.email}
+        <li>
+          <% is_ko = Gettext.get_locale(ItsmWeb.Gettext) == "ko" %>
+          <div class="mt-1 flex items-center gap-3 ml-4">
+            <span class={"text-xs font-bold transition-colors #{if is_ko, do: "text-zinc-900", else: "text-zinc-400"}"}>
+              KO
+            </span>
+            <.link
+              href={"?locale=#{if is_ko, do: "en", else: "ko"}"}
+              class="relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-zinc-200 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              role="button"
+            >
+              <span class="sr-only">Change Language</span>
+              <span class={"pointer-events-none relative inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out overflow-hidden #{if is_ko, do: "translate-x-0", else: "translate-x-5"}"}>
+                <img
+                  src={~p"/images/kr.png"}
+                  alt="한국어"
+                  class={"absolute inset-0 h-full w-full object-cover transition-opacity duration-200 #{if is_ko, do: "opacity-100", else: "opacity-0"}"}
+                />
+                <img
+                  src={~p"/images/us.png"}
+                  alt="English"
+                  class={"absolute inset-0 h-full w-full object-cover transition-opacity duration-200 #{if is_ko, do: "opacity-0", else: "opacity-100"}"}
+                />
+              </span>
+            </.link>
+            <span class={"text-xs font-bold transition-colors #{if is_ko, do: "text-zinc-400", else: "text-zinc-900"}"}>
+              EN
+            </span>
+          </div>
         </li>
+        
+        <li class="text-[0.8125rem] leading-6 text-zinc-900">{@current_user.email}</li>
+        
         <li>
           <.link
             href={~p"/users/settings"}
@@ -25,6 +56,7 @@
             Settings
           </.link>
         </li>
+        
         <li>
           <.link
             href={~p"/users/log_out"}
@@ -43,6 +75,7 @@
             Register
           </.link>
         </li>
+        
         <li>
           <.link
             href={~p"/users/log_in"}
@@ -53,6 +86,6 @@
         </li>
       <% end %>
     </ul>
-    {@inner_content}
+     {@inner_content}
   </body>
 </html>

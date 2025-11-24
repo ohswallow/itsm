@@ -66,14 +66,23 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     socket
     |> assign(:page_title, "New Request")
     |> assign(:request, request)
-    # 이 줄 추가!
     |> assign(:referenced_crews_id, [])
     |> assign(:form, to_form(Service.change_request(request)))
   end
 
-  # 이 clause 추가 - modal 닫고 돌아올 때
+  #  modal 닫고 돌아올 때
   defp apply_action(socket, :new, _params) do
+    # 기본 request 생성
+    request = %Request{
+      category_id: nil,
+      assignee_crew_id: nil
+    }
+
     socket
+    |> assign(:page_title, "New Request")
+    |> assign(:request, request)
+    |> assign(:referenced_crews_id, [])
+    |> assign(:form, to_form(Service.change_request(request)))
   end
 
   @impl true
@@ -108,24 +117,24 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
       <.input
         field={@form[:requestor_crew_id]}
         type="select"
-        label="My Crew"
+        label={gettext("My Crew")}
         prompt="Choose a crew"
         options={@my_crews}
         required
-      /> <.input field={@form[:title]} type="text" label="Title" phx-debounce />
+      /> <.input field={@form[:title]} type="text" label={gettext("Title")} phx-debounce />
       <.input
         field={@form[:description]}
         type="textarea"
-        label="Description"
+        label={gettext("Description")}
         phx-hook="MaintainHeight"
       />
       <.input
         field={@form[:env]}
         type="select"
-        label="Environment"
+        label={gettext("Environment")}
         prompt="Choose an environment"
         options={[운영: :prod, 스테이징: :stg, 개발: :dev, DR: :dr]}
-      /> <.input field={@form[:due_date]} type="datetime-local" label="Due Date" />
+      /> <.input field={@form[:due_date]} type="datetime-local" label={gettext("Due Date")} />
       <div class="mb-6">
         <h2 class="text-lg font-semibold text-zinc-700">VM 생성 요청</h2>
         
@@ -150,13 +159,13 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
               />
               <.input
                 field={common_k_create_vm_f[:hostname]}
-                label="호스트명"
+                label={gettext("Hostname")}
                 type="text"
                 phx-debounce
               />
               <.input
                 field={common_k_create_vm_f[:description]}
-                label="서버 설명"
+                label={gettext("Description")}
                 type="text"
                 phx-debounce
               />
@@ -199,7 +208,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
       <.input
         field={@form[:assignee_name]}
         type="text"
-        label="승인자"
+        label={gettext("Approver")}
         readonly
         placeholder="이곳을 클릭하세요"
         phx-click={JS.patch(modal_path(@live_action, @request, "search_user"))}
@@ -220,7 +229,9 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
         phx-click={JS.patch(modal_path(@live_action, @request, "search_crews"))}
       /> --%>
       <div class="mb-6">
-        <label class="block text-sm font-semibold text-zinc-700 mb-2">참조 Crew</label>
+        <label class="block text-sm font-semibold text-zinc-700 mb-2">
+          {gettext("Crews to reference")}
+        </label>
         <input
           type="text"
           readonly
