@@ -164,6 +164,22 @@ defmodule ItsmWeb.UserAuth do
     end
   end
 
+  # on_mount 콜백 추가
+  def on_mount(:set_locale, params, session, socket) do
+    locale = params["locale"] || session["locale"] || "ko"
+
+    # 디버깅용
+    IO.puts("on_mount :set_locale called with locale: #{locale}")
+
+    if locale in Gettext.known_locales(ItsmWeb.Gettext) do
+      Gettext.put_locale(ItsmWeb.Gettext, locale)
+      # 디버깅용
+      IO.puts("Locale set to: #{locale} in on_mount")
+    end
+
+    {:cont, socket}
+  end
+
   def on_mount(:redirect_if_user_is_authenticated, _params, session, socket) do
     socket = mount_current_user(socket, session)
 

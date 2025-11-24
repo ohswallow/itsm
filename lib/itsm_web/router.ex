@@ -12,6 +12,8 @@ defmodule ItsmWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :fetch_current_user
+    plug :fetch_cookies
+    plug ItsmWeb.Plugs.SetLocale
   end
 
   pipeline :api do
@@ -52,7 +54,11 @@ defmodule ItsmWeb.Router do
     pipe_through [:browser, :redirect_if_user_is_authenticated]
 
     live_session :redirect_if_user_is_authenticated,
-      on_mount: [{ItsmWeb.UserAuth, :redirect_if_user_is_authenticated}] do
+      on_mount: [
+        {ItsmWeb.UserAuth, :redirect_if_user_is_authenticated},
+        # 추가된 부분
+        {ItsmWeb.UserAuth, :set_locale}
+      ] do
       live "/users/register", UserRegistrationLive, :new
       live "/users/log_in", UserLoginLive, :new
       live "/users/reset_password", UserForgotPasswordLive, :new
@@ -66,7 +72,11 @@ defmodule ItsmWeb.Router do
     pipe_through [:browser, :require_authenticated_user]
 
     live_session :require_authenticated_user,
-      on_mount: [{ItsmWeb.UserAuth, :ensure_authenticated}] do
+      on_mount: [
+        {ItsmWeb.UserAuth, :ensure_authenticated},
+        # 추가된 부분
+        {ItsmWeb.UserAuth, :set_locale}
+      ] do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
 
@@ -164,7 +174,11 @@ defmodule ItsmWeb.Router do
     delete "/users/log_out", UserSessionController, :delete
 
     live_session :current_user,
-      on_mount: [{ItsmWeb.UserAuth, :mount_current_user}] do
+      on_mount: [
+        {ItsmWeb.UserAuth, :mount_current_user},
+        # 추가된 부분
+        {ItsmWeb.UserAuth, :set_locale}
+      ] do
       live "/users/confirm/:token", UserConfirmationLive, :edit
       live "/users/confirm", UserConfirmationInstructionsLive, :new
     end

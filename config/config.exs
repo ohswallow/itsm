@@ -7,6 +7,8 @@
 # General application configuration
 import Config
 
+config :itsm, ItsmWeb.Gettext, locales: ~w(en ko), default_locale: "ko"
+
 config :itsm,
   ecto_repos: [Itsm.Repo],
   generators: [timestamp_type: :utc_datetime, binary_id: true]
