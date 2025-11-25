@@ -1,6 +1,7 @@
 defmodule ItsmWeb.CommonKCreateVmLive.Form do
   use ItsmWeb, :live_view
 
+  alias Itsm.Accounts
   alias Itsm.Service
   alias Itsm.Service.Request
   alias Itsm.Team
@@ -9,8 +10,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
 
   @impl true
   def mount(params, _session, socket) do
-    crews = Team.list_my_crews(socket.assigns.current_user)
-    crew_options = Enum.map(crews, &{&1.name, &1.id})
+    crew_options = Accounts.crew_ids_names(socket.assigns.current_user)
 
     {:ok,
      socket
@@ -19,7 +19,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
        max_entries: 1,
        max_file_size: 2 * 1024 * 1024
      )
-     |> assign(:my_crews, crew_options)
+     |> assign(:crew_options, crew_options)
      |> apply_action(socket.assigns.live_action, params)}
   end
 
@@ -66,6 +66,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     socket
     |> assign(:page_title, "New Request")
     |> assign(:request, request)
+    # 이 줄 추가!
     |> assign(:referenced_crews_id, [])
     |> assign(:form, to_form(Service.change_request(request)))
   end
@@ -98,187 +99,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
      socket
      |> assign(:show_user_modal, show_user_modal?)
      |> assign(:show_crew_modal, show_crew_modal?)}
-  end
-
-  @impl true
-  def render(assigns) do
-    ~H"""
-    <.header>{@page_title}</.header>
-
-    <.form for={@form} id="request-form" phx-change="validate" phx-submit="save">
-      <%!-- <input type="hidden" name="request[category_id]" value={@request.category_id} /> --%>
-      <input type="hidden" name={@form[:category_id].name} value={@request.category_id} />
-      <%!-- <input type="hidden" name="request[assignee_crew_id]" value={@request.assignee_crew_id} /> --%>
-      <input type="hidden" name={@form[:assignee_crew_id].name} value={@request.assignee_crew_id} />
-      <%!-- <input type="hidden" name="request[requestor_id]" value={@current_user.id} /> --%>
-      <input type="hidden" name={@form[:requestor_id].name} value={@current_user.id} />
-      <%!-- <input type="hidden" name="request[requestor_name]" value={@current_user.display_name} /> --%>
-      <input type="hidden" name={@form[:requestor_name].name} value={@current_user.display_name} />
-      <.input
-        field={@form[:requestor_crew_id]}
-        type="select"
-        label={gettext("My Crew")}
-        prompt="Choose a crew"
-        options={@my_crews}
-        required
-      /> <.input field={@form[:title]} type="text" label={gettext("Title")} phx-debounce />
-      <.input
-        field={@form[:description]}
-        type="textarea"
-        label={gettext("Description")}
-        phx-hook="MaintainHeight"
-      />
-      <.input
-        field={@form[:env]}
-        type="select"
-        label={gettext("Environment")}
-        prompt="Choose an environment"
-        options={[운영: :prod, 스테이징: :stg, 개발: :dev, DR: :dr]}
-      /> <.input field={@form[:due_date]} type="datetime-local" label={gettext("Due Date")} />
-      <div class="mb-6">
-        <h2 class="text-lg font-semibold text-zinc-700">VM 생성 요청</h2>
-        
-        <button
-          class="mt-4 text-zinc-700"
-          name="request[common_k_create_vms_sort][]"
-          phx-click={JS.dispatch("change")}
-          type="button"
-          value="new"
-        >
-          <.icon name="hero-plus-circle" class="h-5 w-5 relative top-[-1px]" /> add more
-        </button>
-        <div id="request-inputs" class="p-4 space-y-6">
-          <.inputs_for :let={common_k_create_vm_f} field={@form[:common_k_create_vms]}>
-            <%!-- <div class="flex items-center mt-4 mb-2 space-x-2">
-              <.icon name="hero-bars-3" class="cursor-pointer relative w-5 h-5 mr-2 -top-1" /> --%>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                type="hidden"
-                name="request[common_k_create_vms_sort][]"
-                value={common_k_create_vm_f.index}
-              />
-              <.input
-                field={common_k_create_vm_f[:hostname]}
-                label={gettext("Hostname")}
-                type="text"
-                phx-debounce
-              />
-              <.input
-                field={common_k_create_vm_f[:description]}
-                label={gettext("Description")}
-                type="text"
-                phx-debounce
-              />
-              <.input
-                field={common_k_create_vm_f[:os_image]}
-                label="OS 종류"
-                type="select"
-                prompt="Choose a value"
-                options={Ecto.Enum.values(Itsm.Service.CommonKCreateVm, :os_image)}
-              />
-              <.input
-                field={common_k_create_vm_f[:os_version]}
-                type="select"
-                label="OS 버전"
-                prompt="Choose a value"
-                options={os_version_options_for(common_k_create_vm_f)}
-              />
-              <.input
-                field={common_k_create_vm_f[:cpu_memory]}
-                label="CPU/메모리"
-                type="text"
-                phx-debounce
-              />
-            </div>
-            
-            <button
-              type="button"
-              name="request[common_k_create_vms_drop][]"
-              value={common_k_create_vm_f.index}
-              phx-click={JS.dispatch("change")}
-              class="relative -top-1"
-            >
-              <.icon name="hero-x-mark" class="w-5 h-5" />
-            </button>
-          </.inputs_for>
-        </div>
-         <input type="hidden" name="request[common_k_create_vms_drop][]" />
-      </div>
-       <%!-- 승인자 섹션 --%>
-      <.input
-        field={@form[:assignee_name]}
-        type="text"
-        label={gettext("Approver")}
-        readonly
-        placeholder="이곳을 클릭하세요"
-        phx-click={JS.patch(modal_path(@live_action, @request, "search_user"))}
-      /> <input type="hidden" name={@form[:assignee_id].name} value={@form[:assignee_id].value} />
-      <%= for {msg, _} <- @form[:assignee_id].errors do %>
-        <p class="text-red-500 text-sm">{msg}</p>
-      <% end %>
-       <%!-- 참조 Crew 섹션 --%>
-      <%!-- <.input
-        type="text"
-        label="참조 Crew"
-        readonly
-        value={
-          Enum.map(@referenced_crews_id, fn crew_id -> Team.get_crew!(crew_id).name end)
-          |> Enum.join(", ")
-        }
-        placeholder="선택된 crew가 없습니다"
-        phx-click={JS.patch(modal_path(@live_action, @request, "search_crews"))}
-      /> --%>
-      <div class="mb-6">
-        <label class="block text-sm font-semibold text-zinc-700 mb-2">
-          {gettext("Crews to reference")}
-        </label>
-        <input
-          type="text"
-          readonly
-          value={
-            Enum.map(@referenced_crews_id, fn crew_id -> Team.get_crew!(crew_id).name end)
-            |> Enum.join(", ")
-          }
-          placeholder="선택된 crew가 없습니다"
-          phx-click={JS.patch(modal_path(@live_action, @request, "search_crews"))}
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-pointer"
-        />
-      </div>
-      
-      <div class="flex">
-        <.button phx-disable-with="Saving...">Save Recipe</.button>
-        <.loading_spinner class="hidden phx-submit-loading:inline-block ml-4 mb-5" />
-      </div>
-      
-      <.error :if={@form.source.action}>
-        Oops, something went wrong! Please check the errors below.
-      </.error>
-    </.form>
-
-    <.modal
-      :if={@show_user_modal}
-      id="user-search"
-      on_cancel={JS.patch(base_path(@live_action, @request))}
-      show
-    >
-      <.live_component module={ItsmWeb.SearchUserDialog} id="search-user" parent_pid={self()} />
-    </.modal>
-
-    <.modal
-      :if={@show_crew_modal}
-      id="crews-search"
-      on_cancel={JS.patch(base_path(@live_action, @request))}
-      show
-    >
-      <.live_component
-        module={ItsmWeb.Components.SearchCrewsDialog}
-        id="search-crews"
-        parent_pid={self()}
-      />
-    </.modal>
-
-    <.back navigate={~p"/categories"}>Back</.back>
-    """
   end
 
   @impl true
