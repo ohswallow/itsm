@@ -362,4 +362,15 @@ defmodule Itsm.Accounts do
   defp search_by(query, q) do
     where(query, [c], ilike(c.display_name, ^"%#{q}%"))
   end
+
+  @doc """
+  Lists crews that the user belongs to.
+  """
+  def crew_ids_names(user) do
+    user
+    |> Ecto.assoc(:crews)
+    |> order_by(:name)
+    |> select([c], {c.name, c.id})
+    |> Repo.all()
+  end
 end

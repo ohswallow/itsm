@@ -14,6 +14,8 @@ defmodule Itsm.Accounts.User do
     field :organization, :string
     field :organization_code, :string
 
+    has_many :members, Itsm.Team.Member
+    has_many :crews, through: [:members, :crew]
     has_many :comments, Itsm.Comments.Comment
 
     timestamps(type: :utc_datetime)
