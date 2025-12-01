@@ -176,275 +176,20 @@ defmodule Itsm.Service do
     |> Repo.preload(:category)
   end
 
-  # def list_assignee_requests(current_user) do
-  #   Request
-  #   |> where([r], r.assignee_id == ^current_user.employee_number)
-  #   |> Repo.all()
-  #   |> Repo.preload(:category)
-  # end
-
-  # def list_assignee_requests(current_user) do
-  #   # current_user가 속한 crew들의 name을 먼저 조회
-  #   crew_names =
-  #     from(m in Member,
-  #       join: c in Crew,
-  #       on: m.crew_id == c.id,
-  #       where: m.user_id == ^current_user.id,
-  #       select: c.name
-  #     )
-  #     |> Repo.all()
-
-  #   Request
-  #   |> where(
-  #     [r],
-  #     r.assignee_id == ^current_user.employee_number or
-  #       r.assignee_crew in ^crew_names
-  #   )
-  #   |> Repo.all()
-  #   |> Repo.preload(:category)
-  # end
-
-  # def list_assignee_requests(current_user) do
-  #   # 현재 사용자가 속한 crew들의 ID를 조회
-  #   crew_id =
-  #     from(m in Member,
-  #       where: m.user_id == ^current_user.id,
-  #       select: m.crew_id
-  #     )
-  #     |> Repo.all()
-
-  #   today = Date.utc_today()
-
-  #   # 현재 활성화된 대결: 수임자 입장 (대결받은 사람)
-  #   active_delegations_as_delegatee =
-  #     from(d in Delegation,
-  #       where: d.delegatee_id == ^current_user.id,
-  #       where: d.start_date <= ^today,
-  #       where: d.end_date >= ^today,
-  #       select: d.delegator_id
-  #     )
-  #     |> Repo.all()
-
-  #   # 현재 활성화된 대결: 위임자 입장 (대결한 사람)
-  #   active_delegations_as_delegator =
-  #     from(d in Delegation,
-  #       where: d.delegator_id == ^current_user.id,
-  #       where: d.start_date <= ^today,
-  #       where: d.end_date >= ^today,
-  #       select: d.delegatee_id
-  #     )
-  #     |> Repo.all()
-
-  #   # review 단계에서 plan을 승인한 사람 제외
-  #   plan_approver_id =
-  #     from(a in Approval,
-  #       where: a.status == :plan,
-  #       where: a.action == :approve,
-  #       select: a.approver_id
-  #     )
-  #     |> Repo.all()
-
-  #   Request
-  #   |> where(
-  #     [r],
-  #     # ✅ review 단계가 아니거나, review 단계이지만 현재 사용자가 plan 승인자가 아닌 경우만
-  #     (r.status != :review or ^current_user.id not in ^plan_approver_id) and
-  #       (r.assignee_id == ^current_user.id or
-  #          r.assignee_crew_id in ^crew_id or
-  #          r.assignee_id in ^active_delegations_as_delegatee or
-  #          r.assignee_id in ^active_delegations_as_delegator)
-  #   )
-  #   |> order_by(desc: :inserted_at)
-  #   |> Repo.all()
-  #   |> Repo.preload(:category)
-  #   |> Repo.preload(:assignee_crew)
-  # end
-
-  # def list_assignee_requests(current_user) do
-  #   crew_id =
-  #     from(m in Member,
-  #       where: m.user_id == ^current_user.id,
-  #       select: m.crew_id
-  #     )
-  #     |> Repo.all()
-
-  #   today = Date.utc_today()
-
-  #   active_delegations_as_delegatee =
-  #     from(d in Delegation,
-  #       where: d.delegatee_id == ^current_user.id,
-  #       where: d.start_date <= ^today,
-  #       where: d.end_date >= ^today,
-  #       select: d.delegator_id
-  #     )
-  #     |> Repo.all()
-
-  #   active_delegations_as_delegator =
-  #     from(d in Delegation,
-  #       where: d.delegator_id == ^current_user.id,
-  #       where: d.start_date <= ^today,
-  #       where: d.end_date >= ^today,
-  #       select: d.delegatee_id
-  #     )
-  #     |> Repo.all()
-
-  #   plan_approver_id =
-  #     from(a in Approval,
-  #       where: a.status == :plan,
-  #       where: a.action == :approve,
-  #       select: a.approver_id
-  #     )
-  #     |> Repo.all()
-
-  #   # Request
-  #   # |> where(
-  #   #   [r],
-  #   #   # ✅ closed 제외
-  #   #   r.status != :closed and
-  #   #     (r.status != :review or ^current_user.id not in ^plan_approver_id) and
-  #   #     (r.assignee_id == ^current_user.id or
-  #   #        (is_nil(r.assignee_id) and
-  #   #           (r.assignee_crew_id in ^crew_id or
-  #   #              r.assignee_id in ^active_delegations_as_delegatee or
-  #   #              r.assignee_id in ^active_delegations_as_delegator)))
-  #   # )
-
-  #   Request
-  #   |> where(
-  #     [r],
-  #     r.status != :closed and
-  #       (r.status != :review or ^current_user.id not in ^plan_approver_id) and
-  #       (r.assignee_id == ^current_user.id or
-  #          r.assignee_id in ^active_delegations_as_delegatee or
-  #          r.assignee_id in ^active_delegations_as_delegator or
-  #          (is_nil(r.assignee_id) and r.assignee_crew_id in ^crew_id))
-  #   )
-  #   |> order_by(desc: :inserted_at)
-  #   |> Repo.all()
-  #   |> Repo.preload([:category, :assignee_crew])
-  # end
-
-  # def list_assignee_requests(current_user) do
-  #   crew_id =
-  #     from(m in Member,
-  #       where: m.user_id == ^current_user.id,
-  #       select: m.crew_id
-  #     )
-  #     |> Repo.all()
-
-  #   today = Date.utc_today()
-
-  #   active_delegations_as_delegatee =
-  #     from(d in Delegation,
-  #       where: d.delegatee_id == ^current_user.id,
-  #       where: d.start_date <= ^today,
-  #       where: d.end_date >= ^today,
-  #       select: d.delegator_id
-  #     )
-  #     |> Repo.all()
-
-  #   active_delegations_as_delegator =
-  #     from(d in Delegation,
-  #       where: d.delegator_id == ^current_user.id,
-  #       where: d.start_date <= ^today,
-  #       where: d.end_date >= ^today,
-  #       select: d.delegatee_id
-  #     )
-  #     |> Repo.all()
-
-  #   # ✅ 현재 사용자가 이미 참여한 request 제외
-  #   participated_requests =
-  #     from(r in Request,
-  #       where:
-  #         r.requestor_id == ^current_user.id or
-  #           r.checker_id == ^current_user.id or
-  #           r.planer_id == ^current_user.id,
-  #       select: r.id
-  #     )
-  #     |> Repo.all()
-
-  #   Request
-  #   |> where(
-  #     [r],
-  #     # ✅ 이미 참여한 건 제외
-  #     r.status != :closed and
-  #       r.id not in ^participated_requests and
-  #       (r.assignee_id == ^current_user.id or
-  #          r.assignee_id in ^active_delegations_as_delegatee or
-  #          r.assignee_id in ^active_delegations_as_delegator or
-  #          (is_nil(r.assignee_id) and r.assignee_crew_id in ^crew_id))
-  #   )
-  #   |> order_by(desc: :inserted_at)
-  #   |> Repo.all()
-  #   |> Repo.preload([:category, :assignee_crew])
-  # end
-
-  # def list_assignee_requests(current_user) do
-  #   crew_id =
-  #     from(m in Member,
-  #       where: m.user_id == ^current_user.id,
-  #       select: m.crew_id
-  #     )
-  #     |> Repo.all()
-
-  #   today = Date.utc_today()
-
-  #   active_delegations_as_delegatee =
-  #     from(d in Delegation,
-  #       where: d.delegatee_id == ^current_user.id,
-  #       where: d.start_date <= ^today,
-  #       where: d.end_date >= ^today,
-  #       select: d.delegator_id
-  #     )
-  #     |> Repo.all()
-
-  #   active_delegations_as_delegator =
-  #     from(d in Delegation,
-  #       where: d.delegator_id == ^current_user.id,
-  #       where: d.start_date <= ^today,
-  #       where: d.end_date >= ^today,
-  #       select: d.delegatee_id
-  #     )
-  #     |> Repo.all()
-
-  #   # ✅ 현재 사용자가 이미 승인한 request 제외
-  #   participated_requests =
-  #     from(a in Approval,
-  #       where: a.approver_id == ^current_user.id,
-  #       select: a.request_id
-  #     )
-  #     |> Repo.all()
-
-  #   Request
-  #   |> where(
-  #     [r],
-  #     # ✅ 이미 승인한 건 제외
-  #     r.status != :closed and
-  #       r.id not in ^participated_requests and
-  #       (r.assignee_id == ^current_user.id or
-  #          r.assignee_id in ^active_delegations_as_delegatee or
-  #          r.assignee_id in ^active_delegations_as_delegator or
-  #          (is_nil(r.assignee_id) and r.assignee_crew_id in ^crew_id))
-  #   )
-  #   |> order_by(desc: :inserted_at)
-  #   |> Repo.all()
-  #   |> Repo.preload([:category, :assignee_crew])
-  # end
-
   def list_assignee_requests(current_user) do
-    # ✅ 현재 사용자가 속한 crew 조회
-    crew_id =
+    today = Date.utc_today()
+
+    # 1. [내 정보] 내가 속한 Crew ID 목록
+    my_crew_ids =
       from(m in Member,
         where: m.user_id == ^current_user.id,
         select: m.crew_id
       )
       |> Repo.all()
 
-    today = Date.utc_today()
-
-    # ✅ 현재 사용자가 대결받은 사람들 (위임자들)
-    # 예: mary가 mike로부터 대결받으면 mike의 id 반환
-    active_delegations_as_delegatee =
+    # 2. [위임 정보] 내가 대결자(Delegatee)로서 처리해야 할 위임자들(Delegators)
+    # (휴가간 팀장님 업무를 내가 대신 처리)
+    delegator_ids =
       from(d in Delegation,
         where: d.delegatee_id == ^current_user.id,
         where: d.start_date <= ^today,
@@ -453,20 +198,9 @@ defmodule Itsm.Service do
       )
       |> Repo.all()
 
-    # ✅ 현재 사용자가 위임한 사람들 (피위임자들)
-    # 예: mike가 mary에게 위임하면 mary의 id 반환
-    active_delegations_as_delegator =
-      from(d in Delegation,
-        where: d.delegator_id == ^current_user.id,
-        where: d.start_date <= ^today,
-        where: d.end_date >= ^today,
-        select: d.delegatee_id
-      )
-      |> Repo.all()
-
-    # ✅ 현재 사용자가 plan 단계를 처리한 request들
-    # start, finish 단계에서 plan한 사람만 처리 가능
-    planned_requests =
+    # 3. [제약 조건 데이터] 내가 'Plan' 단계를 승인했던 Request ID 목록
+    # (Review 단계에서 나를 제외하기 위함)
+    requests_i_planned =
       from(a in Approval,
         where: a.approver_id == ^current_user.id,
         where: a.status == :plan,
@@ -474,40 +208,44 @@ defmodule Itsm.Service do
       )
       |> Repo.all()
 
-    # ✅ request ~ review 단계에서 이미 처리한 request들
-    # 제3자 검증을 위해 같은 사람이 중복되면 안 됨
-    participated_requests =
-      from(a in Approval,
-        where: a.approver_id == ^current_user.id,
-        where: a.status in [:request, :check, :plan, :review],
-        select: a.request_id
-      )
-      |> Repo.all()
-
+    # 4. [메인 쿼리]
     Request
+    |> where([r], r.status != :closed)
     |> where(
       [r],
-      # ✅ closed 상태 제외
-      # ✅ request ~ review: 이미 처리하지 않은 것만 표시
-      # ✅ start, finish: plan한 사람만 처리 가능
-      # ✅ verify: requestor만 처리 가능 (또는 requestor의 대결자)
-      # ✅ assignee 권한 확인
-      # ✅ 대결받은 업무 (위임자의 업무를 피위임자가 처리)
-      # ✅ 위임한 업무 (피위임자의 업무를 위임자가 처리)
-      # ✅ crew 기반 업무 (assignee가 없고 crew가 할당된 경우)
-      r.status != :closed and
-        ((r.status in [:request, :check, :plan, :review] and
-            r.id not in ^participated_requests) or
-           (r.status in [:start, :finish] and r.id in ^planned_requests) or
-           (r.status == :verify and r.requestor_id == ^current_user.id) or
-           (r.status == :verify and
-              r.requestor_id in ^active_delegations_as_delegatee) or
-           (r.status == :verify and
-              r.requestor_id in ^active_delegations_as_delegator)) and
-        (r.assignee_id == ^current_user.id or
-           r.assignee_id in ^active_delegations_as_delegatee or
-           r.assignee_id in ^active_delegations_as_delegator or
-           (is_nil(r.assignee_id) and r.assignee_crew_id in ^crew_id))
+      # -----------------------------------------------------------
+      # 1. Verify 단계: 요청자(Requestor) 영역
+      # -----------------------------------------------------------
+      # -----------------------------------------------------------
+      # 2. Check 단계: 담당자(Assignee) 개인 영역
+      # -> Crew 전체가 아니라, 지정된 Assignee만 볼 수 있음
+      # -----------------------------------------------------------
+      # -----------------------------------------------------------
+      # 3. Plan, Start, Finish 단계: Crew 공용 영역
+      # -> Assignee Crew에 속한 사람 누구나 가능
+      # -----------------------------------------------------------
+      # -----------------------------------------------------------
+      # 4. Review 단계: Crew 공용 영역 (단, Plan 수행자 제외)
+      # -> Crew 멤버여야 하며, 동시에 Plan을 수행한 기록이 없어야 함
+      # -----------------------------------------------------------
+      # -----------------------------------------------------------
+      # 5. Request (초기) 단계
+      # -> 담당자가 지정되었다면 담당자, 아니면 Crew 전체에게 노출
+      # -----------------------------------------------------------
+      (r.status == :verify and
+         (r.requestor_id == ^current_user.id or
+            r.requestor_id in ^delegator_ids)) or
+        (r.status == :check and
+           (r.assignee_id == ^current_user.id or
+              r.assignee_id in ^delegator_ids)) or
+        (r.status in [:plan, :start, :finish] and
+           r.assignee_crew_id in ^my_crew_ids) or
+        (r.status == :review and
+           r.assignee_crew_id in ^my_crew_ids and
+           r.id not in ^requests_i_planned) or
+        (r.status == :request and
+           (r.assignee_id == ^current_user.id or
+              r.assignee_crew_id in ^my_crew_ids))
     )
     |> order_by(desc: :inserted_at)
     |> Repo.all()

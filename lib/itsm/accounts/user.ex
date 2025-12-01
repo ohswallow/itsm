@@ -13,6 +13,9 @@ defmodule Itsm.Accounts.User do
     field :display_name, :string
     field :organization, :string
     field :organization_code, :string
+    field :department, :string
+    field :department_code, :string
+    field :role, Ecto.Enum, values: [:admin, :general, :auditor], default: :general
 
     has_many :members, Itsm.Team.Member
     has_many :crews, through: [:members, :crew]
@@ -52,11 +55,22 @@ defmodule Itsm.Accounts.User do
       :employee_number,
       :display_name,
       :organization,
-      :organization_code
+      :organization_code,
+      :department,
+      :department_code,
+      :role
     ])
     |> validate_email(opts)
     |> validate_password(opts)
-    |> validate_required([:employee_number, :display_name, :organization, :organization_code])
+    |> validate_required([
+      :employee_number,
+      :display_name,
+      :organization,
+      :organization_code,
+      :department,
+      :department_code,
+      :role
+    ])
   end
 
   defp validate_email(changeset, opts) do

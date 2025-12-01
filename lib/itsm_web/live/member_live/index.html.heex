@@ -1,13 +1,9 @@
 <.header>
   Listing Members
-  <:actions>
-    <.link patch={~p"/admin/members/new"}>
-      <.button>New Member</.button>
-    </.link>
-  </:actions>
+  <:actions><.link patch={~p"/admin/members/new"}><.button>New Member</.button></.link></:actions>
 </.header>
 
-<.table
+<%!-- <.table
   id="members"
   rows={@streams.members}
   row_click={fn {_id, member} -> JS.navigate(~p"/admin/members/#{member}") end}
@@ -26,8 +22,7 @@
       Delete
     </.link>
   </:action>
-</.table>
-
+</.table> --%>
 <.modal
   :if={@live_action in [:new, :edit]}
   id="member-modal"

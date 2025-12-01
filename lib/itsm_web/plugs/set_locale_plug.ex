@@ -6,22 +6,35 @@ defmodule ItsmWeb.Plugs.SetLocale do
   def init(default), do: default
 
   def call(conn, _default) do
-    case fetch_locale_from(conn) do
-      nil ->
-        # 디버깅용
-        IO.puts("No locale found")
-        conn
+    # fetch_locale_from은 항상 유효한 로케일(또는 기본값 "ko")을 반환함
+    locale = fetch_locale_from(conn)
 
-      locale ->
-        # 디버깅용
-        IO.puts("Setting locale to: #{locale}")
-        ItsmWeb.Gettext |> Gettext.put_locale(locale)
+    # 디버깅용
+    IO.puts("Setting locale to: #{locale}")
 
-        conn
-        |> put_resp_cookie("locale", locale, max_age: 365 * 24 * 60 * 60)
-        # LiveView를 위해 세션에도 저장
-        |> put_session(:locale, locale)
-    end
+    # 로케일 설정 로직 수행
+    ItsmWeb.Gettext |> Gettext.put_locale(locale)
+
+    conn
+    |> put_resp_cookie("locale", locale, max_age: 365 * 24 * 60 * 60)
+    |> put_session(:locale, locale)
+
+    # case fetch_locale_from(conn) do
+    #   nil ->
+    #     # 디버깅용
+    #     IO.puts("No locale found")
+    #     conn
+
+    #   locale ->
+    #     # 디버깅용
+    #     IO.puts("Setting locale to: #{locale}")
+    #     ItsmWeb.Gettext |> Gettext.put_locale(locale)
+
+    #     conn
+    #     |> put_resp_cookie("locale", locale, max_age: 365 * 24 * 60 * 60)
+    #     # LiveView를 위해 세션에도 저장
+    #     |> put_session(:locale, locale)
+    # end
   end
 
   defp fetch_locale_from(conn) do

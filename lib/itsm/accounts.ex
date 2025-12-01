@@ -351,26 +351,35 @@ defmodule Itsm.Accounts do
     end
   end
 
-  def search_users(keyword) do
+  def search_users(params) do
     User
-    |> search_by(keyword["q"])
+    |> search_by(params["q"])
+    |> filter_by_organization(params["organization_code"])
+    |> filter_by_department(params["department_code"])
     |> Repo.all()
   end
 
+  # 1. 이름 검색
+  # 검색어가 없으면("") -> 전체 검색
   defp search_by(query, q) when q in ["", nil], do: query
 
   defp search_by(query, q) do
     where(query, [c], ilike(c.display_name, ^"%#{q}%"))
   end
 
-  @doc """
-  Lists crews that the user belongs to.
-  """
-  def crew_ids_names(user) do
-    user
-    |> Ecto.assoc(:crews)
-    |> order_by(:name)
-    |> select([c], {c.name, c.id})
-    |> Repo.all()
+  # 2. 조직 코드 필터링
+  # 파라미터가 없으면(nil) -> 전체 검색 (Admin용)
+  defp filter_by_organization(query, nil), do: query
+  # 파라미터가 있으면 -> 해당 조직만 검색 (일반 유저용)
+  defp filter_by_organization(query, code) do
+    where(query, [u], u.organization_code == ^code)
+  end
+
+  # 3. 부서 코드 필터링
+  # 파라미터가 없으면(nil) -> 전체 검색 (Admin용)
+  defp filter_by_department(query, nil), do: query
+  # 파라미터가 있으면 -> 해당 부서만 검색 (일반 유저용)
+  defp filter_by_department(query, code) do
+    where(query, [u], u.department_code == ^code)
   end
 end

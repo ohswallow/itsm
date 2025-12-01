@@ -69,7 +69,20 @@ defmodule ItsmWeb.SearchUserDialog do
   # 추가 정보를 포함한 옵션 생성
   def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
     IO.inspect(text, label: "Searching for")
-    users = Accounts.search_users(%{"q" => text})
+    # users = Accounts.search_users(%{"q" => text})
+
+    # ✅ 현재 로그인한 사용자 정보 가져오기
+    current_user = socket.assigns.current_user
+
+    # ✅ 검색 조건에 조직/부서 코드 추가
+    search_params = %{
+      "q" => text,
+      "organization_code" => current_user.organization_code,
+      "department_code" => current_user.department_code
+    }
+
+    # 변경된 파라미터로 검색 요청
+    users = Accounts.search_users(search_params)
 
     options =
       Enum.map(users, fn user ->
@@ -78,11 +91,9 @@ defmodule ItsmWeb.SearchUserDialog do
           label: user.display_name,
           # 선택 시 사용되는 값
           value: user.id,
-          # 추가 정보
           email: user.email,
-          # 추가 정보
           organization: user.organization,
-          # 필요 시 더 추가
+          department: user.department,
           employee_number: user.employee_number
         }
       end)
