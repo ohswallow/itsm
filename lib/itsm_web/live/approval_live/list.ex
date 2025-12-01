@@ -17,10 +17,25 @@ defmodule ItsmWeb.ApprovalLive.List do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
+  # defp apply_action(socket, :approve, %{"request_id" => id}) do
+  #   socket
+  #   |> assign(:page_title, "승인")
+  #   |> assign(:request, Service.get_request!(id))
+  # end
   defp apply_action(socket, :approve, %{"request_id" => id}) do
+    request = Service.get_request!(id)
+
+    # 상태에 따라 모달 제목 변경
+    page_title =
+      case request.status do
+        :start -> "작업 시작"
+        :finish -> "작업 종료"
+        _ -> "승인"
+      end
+
     socket
-    |> assign(:page_title, "승인")
-    |> assign(:request, Service.get_request!(id))
+    |> assign(:page_title, page_title)
+    |> assign(:request, request)
   end
 
   defp apply_action(socket, :reject, %{"request_id" => id}) do
@@ -93,9 +108,9 @@ defmodule ItsmWeb.ApprovalLive.List do
         <div class="w-[90px] truncate">{request.description}</div>
       </:col>
       
-      <:col :let={{_id, request}} label="Env">{request.env}</:col>
+      <:col :let={{_id, request}} label={gettext("Environment")}>{request.env}</:col>
       
-      <:col :let={{_id, request}} label="Due date">{request.due_date}</:col>
+      <:col :let={{_id, request}} label={gettext("Due Date")}>{request.due_date}</:col>
       
       <:col :let={{_id, request}} label="Request Name">{request.category.name}</:col>
       
@@ -114,7 +129,7 @@ defmodule ItsmWeb.ApprovalLive.List do
       <:action :let={{_id, request}}>
         <.link navigate={~p"/approvals/#{request.id}/reject"}>반려</.link>
       </:action> --%>
-      <:action :let={{_id, request}}>
+      <%!-- <:action :let={{_id, request}}>
         <%= cond do %>
           <% request.status == :verify -> %>
             <.link navigate={~p"/approvals/#{request.id}/feedback"} class="text-green-600 font-medium">
@@ -125,6 +140,49 @@ defmodule ItsmWeb.ApprovalLive.List do
             <.link navigate={~p"/approvals/#{request.id}/reject"} class="text-red-600 ml-2">반려</.link>
           <% true -> %>
             <span class="text-gray-400">closed</span>
+        <% end %>
+      </:action> --%>
+      <:action :let={{_id, request}}>
+        <%= cond do %>
+          <%!-- 1. Request ~ Review 단계: 승인/반려 버튼 노출 --%>
+          <% request.status in [:request, :check, :plan, :review] -> %>
+            <.link
+              navigate={~p"/approvals/#{request.id}/approve"}
+              class="text-blue-600 hover:underline"
+            >
+              승인
+            </.link>
+            <.link
+              navigate={~p"/approvals/#{request.id}/reject"}
+              class="text-red-600 ml-2 hover:underline"
+            >
+              반려
+            </.link> <% # 2. Start 단계: 작업시작 버튼 (내부적으로는 승인 프로세스 태움) %>
+          <% request.status == :start -> %>
+            <.link
+              navigate={~p"/approvals/#{request.id}/approve"}
+              class="text-indigo-600 font-bold hover:underline"
+            >
+              작업시작
+            </.link> <% # 3. Finish 단계: 작업종료 버튼 (내부적으로는 승인 프로세스 태움) %>
+          <% request.status == :finish -> %>
+            <.link
+              navigate={~p"/approvals/#{request.id}/approve"}
+              class="text-indigo-600 font-bold hover:underline"
+            >
+              작업종료
+            </.link> <% # 4. Verify 단계: 평가 버튼 %>
+          <% request.status == :verify -> %>
+            <.link
+              navigate={~p"/approvals/#{request.id}/feedback"}
+              class="text-green-600 font-bold hover:underline"
+            >
+              평가
+            </.link> <% # 5. Closed 단계: 텍스트만 표시 (또는 빈칸) %>
+          <% request.status == :closed -> %>
+            <span class="text-gray-400">closed</span> <% # 그 외 안전장치 %>
+          <% true -> %>
+            <span class="text-gray-300">-</span>
         <% end %>
       </:action>
       

@@ -23,7 +23,10 @@ mike =
     employee_number: "2853861",
     organization_code: "B0",
     organization: "KB국민은행",
-    password: "123412341234"
+    password: "123412341234",
+    department: "인프라지원부(P)",
+    department_code: "883310",
+    role: :admin
   })
   |> Repo.insert!()
 
@@ -33,9 +36,12 @@ nicole =
     email: "nicole@sample.com",
     display_name: "nicole",
     employee_number: "2853862",
-    organization_code: "I0",
-    organization: "KB신용정보",
-    password: "123412341234"
+    organization_code: "B0",
+    organization: "KB국민은행",
+    password: "123412341234",
+    department: "정보보호부",
+    department_code: "813211",
+    role: :auditor
   })
   |> Repo.insert!()
 
@@ -45,9 +51,12 @@ alex =
     email: "alex@sample.com",
     display_name: "alex",
     employee_number: "2853863",
-    organization_code: "C0",
-    organization: "KB국민카드",
-    password: "123412341234"
+    organization_code: "B0",
+    organization: "KB국민은행",
+    password: "123412341234",
+    department: "클라우드플랫폼부(P)",
+    department_code: "883300",
+    role: :general
   })
   |> Repo.insert!()
 
@@ -57,9 +66,12 @@ jase =
     email: "jase@sample.com",
     display_name: "jase",
     employee_number: "2853864",
-    organization_code: "FG",
-    organization: "KB금융지주",
-    password: "123412341234"
+    organization_code: "B0",
+    organization: "KB국민은행",
+    password: "123412341234",
+    department: "정보보호부",
+    department_code: "813211",
+    role: :general
   })
   |> Repo.insert!()
 
@@ -68,10 +80,13 @@ mary =
   |> User.registration_changeset(%{
     email: "mary@sample.com",
     display_name: "mary",
-    organization_code: "C0",
+    organization_code: "B0",
     employee_number: "2853865",
-    organization: "KB국민카드",
-    password: "123412341234"
+    organization: "KB국민은행",
+    password: "123412341234",
+    department: "정보보호부",
+    department_code: "813211",
+    role: :general
   })
   |> Repo.insert!()
 
@@ -80,10 +95,13 @@ ca =
   |> User.registration_changeset(%{
     email: "ca@sample.com",
     display_name: "ca",
-    organization_code: "C0",
+    organization_code: "B0",
     employee_number: "2853866",
     organization: "KB국민카드",
-    password: "123412341234"
+    password: "123412341234",
+    department: "정보보호부",
+    department_code: "813211",
+    role: :general
   })
   |> Repo.insert!()
 
@@ -95,7 +113,10 @@ cq =
     organization_code: "B0",
     organization: "KB국민은행",
     employee_number: "2853867",
-    password: "123412341234"
+    password: "123412341234",
+    department: "정보보호부",
+    department_code: "813211",
+    role: :general
   })
   |> Repo.insert!()
 

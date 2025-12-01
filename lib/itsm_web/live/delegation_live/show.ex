@@ -12,10 +12,6 @@ defmodule ItsmWeb.DelegationLive.Show do
   def handle_params(%{"id" => id}, _, socket) do
     {:noreply,
      socket
-     |> assign(:page_title, page_title(socket.assigns.live_action))
      |> assign(:delegation, Delegations.get_delegation!(id))}
   end
-
-  defp page_title(:show), do: "Show Delegation"
-  defp page_title(:edit), do: "Edit Delegation"
 end

@@ -91,3 +91,6 @@ msgstr ""
 
 msgid "must be equal to %{number}"
 msgstr ""
+
+msgid "This user is already assigned as a delegate during this period."
+msgstr "해당 사용자는 이 기간에 이미 대결등록 되어있습니다."
