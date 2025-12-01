@@ -382,4 +382,15 @@ defmodule Itsm.Accounts do
   defp filter_by_department(query, code) do
     where(query, [u], u.department_code == ^code)
   end
+
+  @doc """
+  Lists crews that the user belongs to.
+  """
+  def crew_ids_names(user) do
+    user
+    |> Ecto.assoc(:crews)
+    |> order_by(:name)
+    |> select([c], {c.name, c.id})
+    |> Repo.all()
+  end
 end
