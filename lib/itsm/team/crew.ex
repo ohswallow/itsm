@@ -7,6 +7,8 @@ defmodule Itsm.Team.Crew do
   schema "crews" do
     field :name, :string
     field :description, :string
+    # field :organization, :string
+    # field :department, :string
 
     belongs_to :leader, Itsm.Accounts.User, type: :binary_id
     has_many :members, Itsm.Team.Member
@@ -18,12 +20,22 @@ defmodule Itsm.Team.Crew do
   def changeset(crew, attrs) do
     crew
     |> cast(attrs, [:name, :description, :leader_id])
+    |> normalize_name()
     |> validate_required([:name, :description, :leader_id])
     |> unsafe_validate_unique(:name, Itsm.Repo)
     |> unique_constraint(:name)
     |> validate_format(:name, ~r/^[A-Za-z]{5}$/, message: "must be exactly 5 alphabetic letters")
-    |> validate_length(:description, min: 5, max: 20)
+    |> validate_length(:description, min: 5, max: 30)
+  end
 
-    # |> unique_constraint(:name)
+  # Crew 이름을 대문자로 변환
+  defp normalize_name(changeset) do
+    # get_change는 cast가 끝난 후 "진짜 변경될 값"만 가져옴
+    case get_change(changeset, :name) do
+      # 이름 변경 없으면 패스
+      nil -> changeset
+      # 있으면 대문자로 덮어쓰기
+      name -> put_change(changeset, :name, String.upcase(name))
+    end
   end
 end

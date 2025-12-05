@@ -2,6 +2,7 @@ defmodule Itsm.Team do
   @moduledoc """
   The Team context.
   """
+  require Logger
 
   import Ecto.Query, warn: false
   alias Itsm.Repo
@@ -10,6 +11,7 @@ defmodule Itsm.Team do
   alias Itsm.Accounts.User
   alias Itsm.Team.Member
   alias Itsm.Team.Reference
+  alias Ecto.Multi
 
   # 특정 crew의 변경사항
   def subscribe_crew(crew_id) do
@@ -40,6 +42,28 @@ defmodule Itsm.Team do
   """
   def list_crews do
     Repo.all(Crew)
+    |> Repo.preload(:leader)
+  end
+
+  def filter_crews(filter) do
+    Crew
+    |> with_type(filter["organization"])
+    |> search_by(filter["q"])
+    |> Repo.all()
+    |> Repo.preload(:leader)
+  end
+
+  defp with_type(query, organization)
+       when organization in ~w(KB국민은행 KB국민카드 KB캐피탈 KB증권) do
+    where(query, organization: ^organization)
+  end
+
+  defp with_type(query, _), do: query
+
+  defp search_by(query, q) when q in ["", nil], do: query
+
+  defp search_by(query, q) do
+    where(query, [c], ilike(c.name, ^"%#{q}%"))
   end
 
   # def list_my_crews(%User{id: user_id}) do
@@ -67,6 +91,7 @@ defmodule Itsm.Team do
     |> order_by([c, _m], asc: c.name)
     |> distinct([c], c.id)
     |> Repo.all()
+    |> Repo.preload(:leader)
   end
 
   @doc """
@@ -103,19 +128,48 @@ defmodule Itsm.Team do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_crew(%User{} = user, attrs \\ %{}) do
-    %Crew{leader_id: user.id}
-    |> Crew.changeset(attrs)
-    |> Repo.insert()
+  def create_crew(attrs, %User{} = user) do
+    Multi.new()
+    # 1. Crew 생성 (leader_id 명시적 주입)
+    |> Multi.insert(:crew, fn _ ->
+      %Crew{}
+      |> Crew.changeset(attrs)
+      |> Ecto.Changeset.put_change(:leader_id, user.id)
+    end)
+    # 2. 리더를 멤버로 추가 (앞 단계의 crew 결과 사용)
+    |> Multi.insert(:leader_as_member, fn %{crew: crew} ->
+      %Member{}
+      |> Member.changeset(%{crew_id: crew.id, user_id: user.id})
+    end)
+    # 3. 트랜잭션 실행
+    |> Repo.transaction()
+    # 4. Pub/sub 브로드캐스트 및 결과 반환
     |> case do
-      {:ok, crew} ->
+      # 중요: %{crew: crew}로 패턴 매칭해서 꺼내야 함
+      {:ok, %{crew: crew}} ->
+        # 멤버가 추가된 직후라 아직 crew.members에 없을 수 있으므로 preload 필수
         crew = Repo.preload(crew, [:leader, members: [:user]])
         broadcast_crews_list({:crew_created, crew})
         {:ok, crew}
 
-      {:error, _} = error ->
-        error
+      # Multi 에러 패턴: {:error, 실패한_단계명, changeset, 성공한_데이터들}
+      {:error, op, changeset, _} ->
+        Logger.warning("create_crew failed at #{op}: #{inspect(changeset.errors)}")
+        {:error, changeset}
     end
+
+    # %Crew{leader_id: user.id}
+    # |> Crew.changeset(attrs)
+    # |> Repo.insert()
+    # |> case do
+    #   {:ok, crew} ->
+    #     crew = Repo.preload(crew, [:leader, members: [:user]])
+    #     broadcast_crews_list({:crew_created, crew})
+    #     {:ok, crew}
+
+    #   {:error, _} = error ->
+    #     error
+    # end
   end
 
   @doc """
@@ -130,19 +184,25 @@ defmodule Itsm.Team do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_crew(%Crew{} = crew, attrs) do
-    crew
-    |> Crew.changeset(attrs)
-    |> Repo.update()
-    |> case do
-      {:ok, updated_crew} ->
-        crew = Repo.preload(updated_crew, [:leader, members: [:user]])
-        broadcast_crew(crew.id, {:crew_updated, crew})
-        broadcast_crews_list({:crew_updated, crew})
-        {:ok, crew}
+  def update_crew(%Crew{} = crew, attrs, %User{} = user) do
+    # 등록자 본인이거나, 관리자(admin)라면 삭제 허용
+    if crew.leader_id == user.id or user.role == :admin do
+      crew
+      |> Crew.changeset(attrs)
+      |> Repo.update()
+      |> case do
+        {:ok, updated_crew} ->
+          # Preload 및 Broadcast
+          crew = Repo.preload(updated_crew, [:leader, members: [:user]])
+          broadcast_crew(crew.id, {:crew_updated, crew})
+          broadcast_crews_list({:crew_updated, crew})
+          {:ok, crew}
 
-      {:error, _} = error ->
-        error
+        {:error, _} = error ->
+          error
+      end
+    else
+      {:error, :unauthorized}
     end
   end
 
@@ -158,8 +218,33 @@ defmodule Itsm.Team do
       {:error, %Ecto.Changeset{}}
 
   """
+
+  # 1. [System/Core] 실제 삭제 로직 (인자 1개)
+  # Show LiveView 처럼 시스템이 자동으로 지울 때 사용합니다.
+  # 권한 체크를 하지 않고 바로 지웁니다 (Sudo 권한과 비슷)
   def delete_crew(%Crew{} = crew) do
     Repo.delete(crew)
+    |> case do
+      {:ok, deleted_crew} ->
+        # 삭제 성공 시 브로드캐스트는 여기서 한 번만 관리하면 됨
+        broadcast_crews_list({:crew_deleted, deleted_crew})
+        {:ok, deleted_crew}
+
+      {:error, _} = error ->
+        error
+    end
+  end
+
+  # 2. [User Action] 사용자 요청 래퍼 (인자 2개)
+  # Index LiveView 처럼 사용자가 버튼을 눌렀을 때 사용합니다.
+  # 권한을 체크한 뒤, 권한이 있으면 위의 1번 함수를 호출합니다.
+  def delete_crew(%Crew{} = crew, %User{} = user) do
+    if crew.leader_id == user.id or user.role == :admin do
+      # 권한 통과! -> 1번 함수(실제 삭제) 호출
+      delete_crew(crew)
+    else
+      {:error, :unauthorized}
+    end
   end
 
   @doc """

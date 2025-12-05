@@ -21,7 +21,7 @@ defmodule ItsmWeb.CrewLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage crew records in your database.</:subtitle>
       </.header>
-
+      
       <.simple_form
         for={@form}
         id="crew-form"
@@ -31,9 +31,7 @@ defmodule ItsmWeb.CrewLive.FormComponent do
       >
         <.input field={@form[:name]} type="text" label="Name" />
         <.input field={@form[:description]} type="text" label="Description" />
-        <:actions>
-          <.button phx-disable-with="Saving...">Save Crew</.button>
-        </:actions>
+        <:actions><.button phx-disable-with="Saving...">Save Crew</.button></:actions>
       </.simple_form>
     </div>
     """
@@ -50,7 +48,9 @@ defmodule ItsmWeb.CrewLive.FormComponent do
   end
 
   defp save_crew(socket, :edit, crew_params) do
-    case Team.update_crew(socket.assigns.crew, crew_params) do
+    current_user = socket.assigns.current_user
+
+    case Team.update_crew(socket.assigns.crew, crew_params, current_user) do
       {:ok, crew} ->
         notify_parent({:saved, crew})
 
@@ -65,7 +65,9 @@ defmodule ItsmWeb.CrewLive.FormComponent do
   end
 
   defp save_crew(socket, :new, crew_params) do
-    case Team.create_crew(crew_params) do
+    current_user = socket.assigns.current_user
+
+    case Team.create_crew(crew_params, current_user) do
       {:ok, crew} ->
         notify_parent({:saved, crew})
 
