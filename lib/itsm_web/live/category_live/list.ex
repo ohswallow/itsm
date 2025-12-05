@@ -95,20 +95,11 @@ defmodule ItsmWeb.CategoryLive.List do
   end
 
   def handle_event("filter", params, socket) do
-    # socket =
-    #   socket
-    #   |> assign(:form, to_form(params))
-    #   |> stream(:categories, Service.filter_categories(params), reset: true)
-
     # URL 파라미터를 깔끔하게 정리
     params =
       params
       |> Map.take(~w(q group sort_by))
       |> Map.reject(fn {_, v} -> v == "" end)
-
-    # p sigil takes care of generating the URL-encoded string from params
-    # url 변경될때마다 PID가 변경됨
-    # socket = push_navigate(socket, to: ~p"/categories?#{params}")
 
     # push_patch는 현재 URL을 변경하고, 페이지를 새로고침하지 않음
     # 이 경우, 현재 LiveView의 상태를 유지하면서 URL만 업데이트

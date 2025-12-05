@@ -27,7 +27,6 @@ defmodule ItsmWeb.TeamLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <input type="hidden" name="crew[leader_id]" value={@current_user.id} />
         <.input field={@form[:name]} type="text" label="Name" />
         <.input field={@form[:description]} type="text" label="Description" />
         <:actions><.button phx-disable-with="Saving...">Save Crew</.button></:actions>
@@ -37,8 +36,8 @@ defmodule ItsmWeb.TeamLive.FormComponent do
   end
 
   def handle_event("validate", %{"crew" => crew_params}, socket) do
-    # Crew명 대문자로 변환
-    crew_params = Map.update(crew_params, "name", "", &String.upcase/1)
+    # Crew명 대문자로 변환 => Live view에서 변경하는 방법 대신 Crew.changeset 내부에서 처리하도록 변경
+    # crew_params = Map.update(crew_params, "name", "", &String.upcase/1)
 
     changeset = Team.change_crew(socket.assigns.crew, crew_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
@@ -50,13 +49,20 @@ defmodule ItsmWeb.TeamLive.FormComponent do
   end
 
   defp save_crew(socket, :edit, crew_params) do
-    case Team.update_crew(socket.assigns.crew, crew_params) do
+    case Team.update_crew(socket.assigns.crew, crew_params, socket.assigns.current_user) do
       {:ok, crew} ->
         notify_parent({:saved, crew})
 
         {:noreply,
          socket
-         |> put_flash(:info, "Crew updated successfully")
+         |> put_flash(:info, gettext("Crew updated successfully"))
+         |> push_patch(to: socket.assigns.patch)}
+
+      # 권한 없는 사용자가 update 시도할 때
+      {:error, :unauthorized} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, gettext("Only the leader can edit this crew."))
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -65,30 +71,14 @@ defmodule ItsmWeb.TeamLive.FormComponent do
   end
 
   defp save_crew(socket, :new, crew_params) do
-    case Team.create_crew(socket.assigns.current_user, crew_params) do
+    case Team.create_crew(crew_params, socket.assigns.current_user) do
       {:ok, crew} ->
-        case Team.create_member(%{
-               "crew_id" => crew.id,
-               "user_id" => socket.assigns.current_user.id
-             }) do
-          {:ok, _member} ->
-            notify_parent({:saved, crew})
+        notify_parent({:saved, crew})
 
-            {:noreply,
-             socket
-             |> put_flash(:info, "Crew created successfully")
-             |> push_patch(to: socket.assigns.patch)}
-
-          {:error, _member_changeset} ->
-            # 멤버 추가 실패해도 크루는 만들어졌으니 경고만 띄우고 진행하거나,
-            # 원하면 여기서 롤백/삭제를 직접 해도 됨(트랜잭션 안 씀).
-            notify_parent({:saved, crew})
-
-            {:noreply,
-             socket
-             |> put_flash(:warning, "Crew created, but failed to add leader as member")
-             |> push_patch(to: socket.assigns.patch)}
-        end
+        {:noreply,
+         socket
+         |> put_flash(:info, "Crew '#{crew.name}' created successfully")
+         |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}

@@ -191,19 +191,6 @@ defmodule Itsm.Delegations do
   #   |> Repo.update()
   # end
 
-  @doc """
-  Deletes a delegation.
-
-  ## Examples
-
-      iex> delete_delegation(delegation)
-      {:ok, %Delegation{}}
-
-      iex> delete_delegation(delegation)
-      {:error, %Ecto.Changeset{}}
-
-  """
-
   # def delete_delegation(%Delegation{} = delegation) do
   #   Repo.delete(delegation)
   # end

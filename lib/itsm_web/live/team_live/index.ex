@@ -17,14 +17,18 @@ defmodule ItsmWeb.TeamLive.Index do
     socket
     |> assign(:page_title, "My Crews")
     |> assign(:referrer, ~p"/crews")
+    |> assign(:current_tab, :my)
     |> stream(:crews, Team.list_my_crews(socket.assigns.current_user), reset: true)
   end
 
-  defp apply_action(socket, :all, _params) do
+  defp apply_action(socket, :all, params) do
     socket
     |> assign(:page_title, "All Crews")
     |> assign(:referrer, ~p"/crews/all")
-    |> stream(:crews, Team.list_crews(), reset: true)
+    |> assign(:current_tab, :all)
+    # |> stream(:crews, Team.list_crews(), reset: true)
+    |> stream(:crews, Team.filter_crews(params), reset: true)
+    |> assign(:form, to_form(params))
   end
 
   defp apply_action(socket, :edit, %{"id" => crew_id}) do
@@ -42,20 +46,14 @@ defmodule ItsmWeb.TeamLive.Index do
   def render(assigns) do
     ~H"""
     <.header>
-      Listing Crews
-      <:actions>
+      {@page_title}
+      <:actions :if={@current_tab == :my}>
         <.button phx-click={JS.dispatch("click", to: {:inner, "a"})}>
-          <%!-- <.link navigate={~p"/crews/new"}>New Crew</.link> --%>
           <.link patch={~p"/crews/new"}>New Crew</.link>
         </.button>
       </:actions>
     </.header>
-
-    <%!-- <.table
-      id="crews"
-      rows={@streams.crews}
-      row_click={fn {_id, crew} -> JS.navigate(~p"/crews/#{crew}") end}
-    > --%>
+     <.filter_form :if={@current_tab == :all} form={@form} />
     <.table
       id="crews"
       rows={@streams.crews}
@@ -69,9 +67,19 @@ defmodule ItsmWeb.TeamLive.Index do
       
       <:col :let={{_id, crew}} label="Description">{crew.description}</:col>
       
-      <:col :let={{id, crew}} label="Actions">
-        <%!-- <%= if crew.leader_id == @current_user.id do %> --%>
-        <%!-- leader일때만 드롭박스 보임 --%>
+      <:col :let={{_id, crew}} :if={@current_tab == :all} label="Organization">
+        {crew.leader.organization}
+      </:col>
+      
+      <:col :let={{_id, crew}} :if={@current_tab == :all} label="Department">
+        {crew.leader.department}
+      </:col>
+      
+      <:col :let={{_id, crew}} label="Leader">
+        {crew.leader.display_name} <span class="text-xs text-gray-400">({crew.leader_id})</span>
+      </:col>
+       <%!-- :my 일때만 보이게, :all 일때는 안보임 --%>
+      <:col :let={{_id, crew}} :if={@current_tab == :my} label="Actions">
         <.dropdown_menu id={"#{crew.id}-menu"}>
           <.link
             patch={~p"/crews/#{crew}/edit"}
@@ -79,39 +87,15 @@ defmodule ItsmWeb.TeamLive.Index do
           >
             <.icon name="hero-pencil" class="w-4 h-4" /> Edit Crew
           </.link>
-          <%!-- <button
-            type="button"
-            phx-click={JS.push("delete", value: %{id: crew.id}) |> hide("##{id}")}
-            phx-value-id={crew.id}
-            data-confirm="Are you sure you want to delete the crew?"
-            class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-          >
-            <.icon name="hero-trash" class="w-4 h-4" /> Delete Crew
-          </button> --%>
           <.link
-            phx-click={JS.push("delete", value: %{id: crew.id}) |> hide("##{id}")}
+            phx-click={JS.push("delete", value: %{id: crew.id})}
             data-confirm="Are you sure?"
             class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
           >
             <.icon name="hero-trash" class="w-4 h-4" /> Delete Crew
           </.link>
         </.dropdown_menu>
-         <%!-- <% end %> --%>
       </:col>
-      
-      <%!-- <:action :let={{_id, crew}}>
-        <div class="sr-only"><.link navigate={~p"/crews/#{crew}"}>Show</.link></div>
-         <.link patch={~p"/crews/#{crew}/edit"}>Edit</.link>
-      </:action>
-
-      <:action :let={{id, crew}}>
-        <.link
-          phx-click={JS.push("delete", value: %{id: crew.id}) |> hide("##{id}")}
-          data-confirm="Are you sure?"
-        >
-          Delete
-        </.link>
-      </:action> --%>
     </.table>
 
     <.modal
@@ -133,14 +117,68 @@ defmodule ItsmWeb.TeamLive.Index do
     """
   end
 
+  def filter_form(assigns) do
+    ~H"""
+    <.form
+      for={@form}
+      class="sm:flex justify-center gap-4 items-cente mt-2"
+      id="filter-form"
+      phx-change="filter"
+    >
+      <.input field={@form[:q]} placeholder="Search..." autocomplete="off" phx-debounce="500" />
+      <.input
+        type="select"
+        field={@form[:organization]}
+        prompt="Organization"
+        options={["KB국민은행", "KB국민카드", "KB캐피탈", "KB증권"]}
+      /> <%!-- navigate 대신 patch를 사용하여 URL을 변경 --%>
+      <.link patch={~p"/crews/all"} class="flex items-center hover:underline">Reset</.link>
+    </.form>
+    """
+  end
+
   def handle_info({ItsmWeb.TeamLive.FormComponent, {:saved, crew}}, socket) do
     {:noreply, stream_insert(socket, :crews, crew)}
   end
 
   def handle_event("delete", %{"id" => id}, socket) do
     crew = Team.get_crew!(id)
-    {:ok, _} = Team.delete_crew(crew)
+    current_user = socket.assigns.current_user
 
-    {:noreply, stream_delete(socket, :crews, crew)}
+    case Team.delete_crew(crew, current_user) do
+      {:ok, _} ->
+        # {:noreply, stream_delete(socket, :crews, crew)}
+        {:noreply,
+         socket
+         |> stream_delete(:crews, crew)
+         |> put_flash(:info, gettext("Crew deleted successfully."))}
+
+      # 권한 없는 사용자가 삭제 시도할 때
+      {:error, :unauthorized} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, gettext("Only the leader can delete this crew."))
+         |> push_navigate(to: ~p"/crews", replace: true)}
+
+      # 기타 오류 처리
+      {:error, _} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, gettext("An unknown error occurred."))}
+    end
+  end
+
+  def handle_event("filter", params, socket) do
+    # URL 파라미터를 깔끔하게 정리
+    params =
+      params
+      |> Map.take(~w(q organization))
+      |> Map.reject(fn {_, v} -> v == "" end)
+
+    # push_patch는 현재 URL을 변경하고, 페이지를 새로고침하지 않음
+    # 이 경우, 현재 LiveView의 상태를 유지하면서 URL만 업데이트
+    socket = push_patch(socket, to: ~p"/crews/all?#{params}")
+
+    {:noreply, socket}
   end
 end
