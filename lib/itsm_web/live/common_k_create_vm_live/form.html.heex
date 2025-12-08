@@ -32,7 +32,7 @@
   /> <.input field={@form[:due_date]} type="datetime-local" label={gettext("Due Date")} />
   <div class="mb-6">
     <h2 class="text-lg font-semibold text-zinc-700">VM 생성 요청</h2>
-
+    
     <button
       class="mt-4 text-zinc-700"
       name="request[common_k_create_vms_sort][]"
@@ -85,7 +85,7 @@
             phx-debounce
           />
         </div>
-
+        
         <button
           type="button"
           name="request[common_k_create_vms_drop][]"
@@ -97,9 +97,9 @@
         </button>
       </.inputs_for>
     </div>
-    <input type="hidden" name="request[common_k_create_vms_drop][]" />
+     <input type="hidden" name="request[common_k_create_vms_drop][]" />
   </div>
-  <%!-- 승인자 섹션 --%>
+   <%!-- 승인자 섹션 --%>
   <.input
     field={@form[:assignee_name]}
     type="text"
@@ -111,7 +111,7 @@
   <%= for {msg, _} <- @form[:assignee_id].errors do %>
     <p class="text-red-500 text-sm">{msg}</p>
   <% end %>
-  <%!-- 참조 Crew 섹션 --%>
+   <%!-- 참조 Crew 섹션 --%>
   <%!-- <.input
     type="text"
     label="참조 Crew"
@@ -139,12 +139,12 @@
       class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-pointer"
     />
   </div>
-
+  
   <div class="flex">
     <.button phx-disable-with="Saving...">Save Recipe</.button>
     <.loading_spinner class="hidden phx-submit-loading:inline-block ml-4 mb-5" />
   </div>
-
+  
   <.error :if={@form.source.action}>
     Oops, something went wrong! Please check the errors below.
   </.error>
@@ -156,7 +156,12 @@
   on_cancel={JS.patch(base_path(@live_action, @request))}
   show
 >
-  <.live_component module={ItsmWeb.SearchUserDialog} id="search-user" parent_pid={self()} />
+  <.live_component
+    module={ItsmWeb.SearchUserDialog}
+    id="search-user"
+    current_user={@current_user}
+    parent_pid={self()}
+  />
 </.modal>
 
 <.modal
