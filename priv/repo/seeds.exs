@@ -39,8 +39,8 @@ nicole =
     organization_code: "B0",
     organization: "KB국민은행",
     password: "123412341234",
-    department: "정보보호부",
-    department_code: "813211",
+    department: "인프라지원부(P)",
+    department_code: "883310",
     role: :auditor
   })
   |> Repo.insert!()

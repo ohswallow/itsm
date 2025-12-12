@@ -1,4 +1,4 @@
-defmodule ItsmWeb.Components.SearchCrewsDialog do
+defmodule ItsmWeb.SearchCrewsDialog do
   use ItsmWeb, :live_component
 
   import LiveSelect
@@ -107,10 +107,7 @@ defmodule ItsmWeb.Components.SearchCrewsDialog do
     end)
 
     # 부모에게 선택된 모든 사용자 전송
-    send(
-      socket.assigns.parent_pid,
-      {:crews_selected, crews_id}
-    )
+    send(self(), {__MODULE__, :crews_selected, crews_id})
 
     {:noreply, socket}
   end
