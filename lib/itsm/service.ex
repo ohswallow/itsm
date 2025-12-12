@@ -293,12 +293,11 @@ defmodule Itsm.Service do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_request(current_user, attrs \\ %{}) do
-    %Request{
-      requestor_id: current_user.id,
-      requestor_name: current_user.display_name
-    }
+  def create_request(user, attrs \\ %{}) do
+    user
+    |> Ecto.build_assoc(:requests)
     |> Request.changeset(attrs)
+    |> Ecto.Changeset.put_change(:requestor_name, user.display_name)
     |> Repo.insert()
     |> case do
       {:ok, request} ->

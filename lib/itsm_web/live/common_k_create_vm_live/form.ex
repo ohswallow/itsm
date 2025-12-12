@@ -5,6 +5,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   alias Itsm.Service
   alias Itsm.Service.Request
   alias Itsm.Team
+  alias Itsm.Approvals
 
   on_mount {ItsmWeb.UserAuth, :mount_current_user}
 
@@ -87,57 +88,37 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   end
 
   @impl true
-  def handle_params(params, _url, socket) do
-    IO.inspect(params, label: "HANDLE_PARAMS Params")
+  def handle_params(_params, _url, socket) do
+    socket =
+      socket
+      |> assign(show_user_modal: false)
+      |> assign(show_crew_modal: false)
 
-    # show? = params["modal"] == "search_user"
-    # {:noreply, assign(socket, :show_user_modal, show?)}
-    show_user_modal? = params["modal"] == "search_user"
-    show_crew_modal? = params["modal"] == "search_crews"
-
-    {:noreply,
-     socket
-     |> assign(:show_user_modal, show_user_modal?)
-     |> assign(:show_crew_modal, show_crew_modal?)}
+    {:noreply, socket}
   end
 
   @impl true
-  def handle_info({:user_selected, user_id, user_name, user_number}, socket) do
-    IO.inspect({user_id, user_name, user_number}, label: "User selected")
+  def handle_info({ItsmWeb.SearchUserDialog, :user_selected, user}, socket) do
+    # 현재 form의 source(changeset) 가져오기
+    changeset = Approvals.change_view_approval(socket.assigns.form.source, user)
 
-    # 현재 form의 params 가져오기
-    current_params = socket.assigns.form.params
+    socket =
+      socket
+      |> assign(:form, to_form(changeset))
+      |> assign(:show_user_modal, false)
 
-    # 승인자 정보를 params에 추가
-    updated_params =
-      current_params
-      # |> Map.put("assignee_id", user_number)
-      |> Map.put("assignee_id", user_id)
-      |> Map.put("assignee_name", user_name)
-
-    IO.inspect(updated_params, label: "Updated params")
-
-    # params와 함께 changeset 생성
-    changeset = Service.change_request(socket.assigns.request, updated_params)
-
-    IO.inspect(changeset, label: "Changeset")
-
-    {:noreply,
-     socket
-     |> assign(:form, to_form(changeset))
-     |> assign(:show_user_modal, false)}
+    {:noreply, socket}
   end
 
-  def handle_info({:crews_selected, crews_id}, socket) do
-    IO.inspect(crews_id, label: "Crews selected")
-
+  def handle_info({ItsmWeb.SearchCrewsDialog, :crews_selected, crews_id}, socket) do
     # 여기서 crews_id를 어디에 저장할지 결정
     # 일단 나중에 따로 Reference 생성하거나, form param에 담을 수 있음
+    socket =
+      socket
+      |> assign(:referenced_crews_id, crews_id)
+      |> assign(:show_crew_modal, false)
 
-    {:noreply,
-     socket
-     |> assign(:referenced_crews_id, crews_id)
-     |> assign(:show_crew_modal, false)}
+    {:noreply, socket}
   end
 
   @impl true
@@ -146,6 +127,14 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
 
     changeset = Service.change_request(socket.assigns.request, request_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
+  end
+
+  def handle_event("open_user_modal", _, socket) do
+    {:noreply, assign(socket, :show_user_modal, true)}
+  end
+
+  def handle_event("open_crew_modal", _, socket) do
+    {:noreply, assign(socket, :show_crew_modal, true)}
   end
 
   def handle_event("save", %{"request" => request_params}, socket) do
@@ -225,30 +214,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     do: [{"Windows Server 2022", "win22"}, {"Windows Server 2025", "win25"}]
 
   defp get_os_version_options(_), do: []
-
-  # defp modal_path(:new, _request) do
-  #   ~p"/common_k_create_vm/new?modal=search_user"
-  # end
-
-  # defp modal_path(:edit, request) do
-  #   ~p"/common_k_create_vm/#{request.id}/edit?modal=search_user"
-  # end
-
-  # defp modal_path(:copy, request) do
-  #   ~p"/common_k_create_vm/#{request.id}/copy?modal=search_user"
-  # end
-
-  defp modal_path(:new, _request, modal_type) do
-    ~p"/common_k_create_vm/new?modal=#{modal_type}"
-  end
-
-  defp modal_path(:edit, request, modal_type) do
-    ~p"/common_k_create_vm/#{request.id}/edit?modal=#{modal_type}"
-  end
-
-  defp modal_path(:copy, request, modal_type) do
-    ~p"/common_k_create_vm/#{request.id}/copy?modal=#{modal_type}"
-  end
 
   defp base_path(:new, _request) do
     ~p"/common_k_create_vm/new"

@@ -120,11 +120,7 @@ defmodule ItsmWeb.SearchUserDialog do
     IO.puts("You selected #{user.display_name}, #{user.id}, #{user.employee_number}")
 
     # 부모에게 메시지 전송
-    # send(socket.assigns.parent_pid, {:user_selected, user_id, user_name})
-    send(
-      socket.assigns.parent_pid,
-      {:user_selected, user.id, user.display_name, user.employee_number}
-    )
+    send(self(), {__MODULE__, :user_selected, user})
 
     {:noreply, socket}
   end

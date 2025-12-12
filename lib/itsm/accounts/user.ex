@@ -20,6 +20,7 @@ defmodule Itsm.Accounts.User do
     has_many :members, Itsm.Team.Member
     has_many :crews, through: [:members, :crew]
     has_many :comments, Itsm.Comments.Comment
+    has_many :requests, Itsm.Service.Request, foreign_key: :requestor_id
 
     timestamps(type: :utc_datetime)
   end
