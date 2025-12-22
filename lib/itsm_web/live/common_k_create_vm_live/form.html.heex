@@ -15,13 +15,13 @@
     label={gettext("My Crew")}
     prompt="Choose a crew"
     options={@crew_options}
-    required
-  /> <.input field={@form[:title]} type="text" label={gettext("Title")} phx-debounce />
+  /> <.input field={@form[:title]} type="text" label={gettext("Title")} phx-debounce="blur" />
   <.input
     field={@form[:description]}
     type="textarea"
     label={gettext("Description")}
     phx-hook="MaintainHeight"
+    phx-debounce="blur"
   />
   <.input
     field={@form[:env]}
@@ -29,6 +29,7 @@
     label={gettext("Environment")}
     prompt="Choose an environment"
     options={[운영: :prod, 스테이징: :stg, 개발: :dev, DR: :dr]}
+    phx-debounce="blur"
   /> <.input field={@form[:due_date]} type="datetime-local" label={gettext("Due Date")} />
   <div class="mb-6">
     <h2 class="text-lg font-semibold text-zinc-700">VM 생성 요청</h2>
@@ -56,13 +57,13 @@
             field={common_k_create_vm_f[:hostname]}
             label={gettext("Hostname")}
             type="text"
-            phx-debounce
+            phx-debounce="blur"
           />
           <.input
             field={common_k_create_vm_f[:description]}
             label={gettext("Description")}
             type="text"
-            phx-debounce
+            phx-debounce="blur"
           />
           <.input
             field={common_k_create_vm_f[:os_image]}
@@ -70,6 +71,7 @@
             type="select"
             prompt="Choose a value"
             options={Ecto.Enum.values(Itsm.Service.CommonKCreateVm, :os_image)}
+            phx-debounce="blur"
           />
           <.input
             field={common_k_create_vm_f[:os_version]}
@@ -77,12 +79,13 @@
             label="OS 버전"
             prompt="Choose a value"
             options={os_version_options_for(common_k_create_vm_f)}
+            phx-debounce="blur"
           />
           <.input
             field={common_k_create_vm_f[:cpu_memory]}
             label="CPU/메모리"
             type="text"
-            phx-debounce
+            phx-debounce="blur"
           />
         </div>
         
@@ -154,7 +157,7 @@
   :if={@show_user_modal}
   id="user-search"
   show
-  on_cancel={JS.patch(base_path(@live_action, @request))}
+  on_cancel={JS.patch(@current_path)}
 >
   <.live_component
     id="search-user"
@@ -166,7 +169,7 @@
 <.modal
   :if={@show_crew_modal}
   id="crews-search"
-  on_cancel={JS.patch(base_path(@live_action, @request))}
+  on_cancel={JS.patch(@current_path)}
   show
 >
   <.live_component

@@ -103,7 +103,7 @@ defmodule ItsmWeb.Router do
       live "/approvals/:request_id/feedback", ApprovalLive.List, :feedback
 
       # VM 생성
-      live "/common_k_create_vm/new", CommonKCreateVmLive.Form, :new
+      live "/categories/:id/common_k_create_vm/new", CommonKCreateVmLive.Form, :new
       live "/common_k_create_vm/:id", CommonKCreateVmLive.Show, :show
       live "/common_k_create_vm/:id/edit", CommonKCreateVmLive.Form, :edit
       live "/common_k_create_vm/:id/copy", CommonKCreateVmLive.Form, :copy
