@@ -78,7 +78,7 @@ defmodule ItsmWeb.CategoryLive.List do
   def category_card(assigns) do
     ~H"""
     <%!-- <.link navigate={~p"/categories/#{@category}"} id={@id}> --%>
-    <.link navigate={~p"/#{@category.request_name}/new?category_id=#{@category.id}"} id={@id}>
+    <.link navigate={"/categories/#{@category.id}/#{@category.request_name}/new"} id={@id}>
       <div class="w-full h-60 bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow p-6 flex flex-col justify-between relative lg:w-60">
         <div class="flex items-center justify-between"></div>
         <!-- 제목 및 설명 -->

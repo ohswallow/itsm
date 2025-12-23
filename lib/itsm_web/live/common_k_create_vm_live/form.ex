@@ -7,9 +7,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   alias Itsm.Team
   alias Itsm.Approvals
 
-  on_mount {ItsmWeb.UserAuth, :mount_current_user}
-
-  @impl true
   def mount(params, _session, socket) do
     crew_options = Accounts.crew_ids_names(socket.assigns.current_user)
 
@@ -54,8 +51,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     |> assign(:form, to_form(Service.change_request(request)))
   end
 
-  # defp apply_action(socket, :new, params) do
-  defp apply_action(socket, :new, %{"category_id" => category_id}) do
+  defp apply_action(socket, :new, %{"id" => category_id}) do
     category_id = String.to_integer(category_id)
     category = Service.get_category!(category_id)
 
@@ -67,39 +63,23 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     socket
     |> assign(:page_title, "New Request")
     |> assign(:request, request)
-    # 이 줄 추가!
-    |> assign(:referenced_crews_id, [])
-    |> assign(:form, to_form(Service.change_request(request)))
-  end
-
-  #  modal 닫고 돌아올 때
-  defp apply_action(socket, :new, _params) do
-    # 기본 request 생성
-    request = %Request{
-      category_id: nil,
-      assignee_crew_id: nil
-    }
-
-    socket
-    |> assign(:page_title, "New Request")
-    |> assign(:request, request)
     |> assign(:referenced_crews_id, [])
     |> assign(:form, to_form(Service.change_request(request)))
   end
 
   @impl true
-  def handle_params(_params, _url, socket) do
+  def handle_params(_params, uri, socket) do
     socket =
       socket
-      |> assign(show_user_modal: false)
-      |> assign(show_crew_modal: false)
+      |> assign(:show_user_modal, false)
+      |> assign(:show_crew_modal, false)
+      |> assign(:current_path, URI.parse(uri).path)
 
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({ItsmWeb.SearchUserDialog, :user_selected, user}, socket) do
-    # 현재 form의 source(changeset) 가져오기
     changeset = Approvals.change_view_approval(socket.assigns.form.source, user)
 
     socket =
@@ -214,16 +194,4 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     do: [{"Windows Server 2022", "win22"}, {"Windows Server 2025", "win25"}]
 
   defp get_os_version_options(_), do: []
-
-  defp base_path(:new, _request) do
-    ~p"/common_k_create_vm/new"
-  end
-
-  defp base_path(:edit, request) do
-    ~p"/common_k_create_vm/#{request.id}/edit"
-  end
-
-  defp base_path(:copy, request) do
-    ~p"/common_k_create_vm/#{request.id}/copy"
-  end
 end
