@@ -24,7 +24,7 @@ mike =
     organization_code: "B0",
     organization: "KB국민은행",
     password: "123412341234",
-    department: "인프라지원부(P)",
+    department: "인프라시스템부",
     department_code: "883310",
     role: :admin
   })
@@ -39,7 +39,7 @@ nicole =
     organization_code: "B0",
     organization: "KB국민은행",
     password: "123412341234",
-    department: "인프라지원부(P)",
+    department: "인프라시스템부",
     department_code: "883310",
     role: :auditor
   })
@@ -54,8 +54,8 @@ alex =
     organization_code: "B0",
     organization: "KB국민은행",
     password: "123412341234",
-    department: "클라우드플랫폼부(P)",
-    department_code: "883300",
+    department: "인프라시스템부",
+    department_code: "883310",
     role: :general
   })
   |> Repo.insert!()
@@ -69,8 +69,8 @@ jase =
     organization_code: "B0",
     organization: "KB국민은행",
     password: "123412341234",
-    department: "정보보호부",
-    department_code: "813211",
+    department: "인프라시스템부",
+    department_code: "883310",
     role: :general
   })
   |> Repo.insert!()
@@ -84,8 +84,8 @@ mary =
     employee_number: "2853865",
     organization: "KB국민은행",
     password: "123412341234",
-    department: "정보보호부",
-    department_code: "813211",
+    department: "인프라시스템부",
+    department_code: "883310",
     role: :general
   })
   |> Repo.insert!()
@@ -116,6 +116,21 @@ cq =
     password: "123412341234",
     department: "정보보호부",
     department_code: "813211",
+    role: :general
+  })
+  |> Repo.insert!()
+
+cr =
+  %User{}
+  |> User.registration_changeset(%{
+    email: "cr@sample.com",
+    display_name: "ca",
+    organization_code: "C0",
+    organization: "KB국민카드",
+    employee_number: "2853867",
+    password: "123412341234",
+    department: "정보보호부",
+    department_code: "813219",
     role: :general
   })
   |> Repo.insert!()

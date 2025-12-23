@@ -359,6 +359,23 @@ defmodule Itsm.Accounts do
     |> Repo.all()
   end
 
+  # Admin용 전체 사용자 검색
+  def search_user_options(%User{role: :admin}, params) do
+    User
+    |> search_by(params["keyword"])
+    |> order_by(:display_name)
+    |> select([u], %{
+      value: u.id,
+      label: u.display_name,
+      tag_label: fragment("? || '(' || ? || ')'", u.display_name, u.employee_number),
+      email: u.email,
+      organization: u.organization,
+      employee_number: u.employee_number,
+      department: u.department
+    })
+    |> Repo.all()
+  end
+
   # 일반 유저용 조직/부서 필터링 포함 사용자 검색
   def search_user_options(%User{} = user, params) do
     User
@@ -373,23 +390,8 @@ defmodule Itsm.Accounts do
       tag_label: fragment("? || '(' || ? || ')'", u.display_name, u.employee_number),
       email: u.email,
       organization: u.organization,
-      employee_number: u.employee_number
-    })
-    |> Repo.all()
-  end
-
-  # Admin용 전체 사용자 검색
-  def search_user_options(%User{role: :admin}, params) do
-    User
-    |> search_by(params["keyword"])
-    |> order_by(:display_name)
-    |> select([u], %{
-      value: u.id,
-      label: u.display_name,
-      tag_label: fragment("? || '(' || ? || ')'", u.display_name, u.employee_number),
-      email: u.email,
-      organization: u.organization,
-      employee_number: u.employee_number
+      employee_number: u.employee_number,
+      department: u.department
     })
     |> Repo.all()
   end

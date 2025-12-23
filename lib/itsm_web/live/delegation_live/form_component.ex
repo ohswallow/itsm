@@ -154,7 +154,9 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
     options =
       Enum.map(users, fn user ->
         %{
+          # 기본 표시 텍스트
           label: user.display_name,
+          # 선택 시 사용되는 값
           value: user.id,
           email: user.email,
           organization: user.organization,
