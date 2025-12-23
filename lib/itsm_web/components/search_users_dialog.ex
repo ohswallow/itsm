@@ -124,10 +124,11 @@ defmodule ItsmWeb.SearchUsersDialog do
     end)
 
     # 부모에게 선택된 모든 사용자 전송
-    send(
-      socket.assigns.parent_pid,
-      {:users_selected, users_id}
-    )
+    # send(
+    #   socket.assigns.parent_pid,
+    #   {:users_selected, users_id}
+    # )
+    send(self(), {__MODULE__, :users_selected, users})
 
     {:noreply, socket}
   end

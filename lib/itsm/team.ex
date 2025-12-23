@@ -178,9 +178,9 @@ defmodule Itsm.Team do
       |> Crew.changeset(attrs)
       |> Repo.update()
       |> case do
-        {:ok, updated_crew} ->
+        {:ok, crew} ->
           # Preload 및 Broadcast
-          crew = Repo.preload(updated_crew, [:leader, members: [:user]])
+          crew = Repo.preload(crew, [:leader, members: [:user]])
           broadcast_crew(crew.id, {:crew_updated, crew})
           broadcast_crews_list({:crew_updated, crew})
           {:ok, crew}
@@ -292,6 +292,17 @@ defmodule Itsm.Team do
     %Member{}
     |> Member.changeset(attrs)
     |> Repo.insert()
+    |> case do
+      {:ok, member} ->
+        # 멤버 추가 성공 시, 해당 Crew의 모든 구독자에게 알림
+        crew = get_crew_for_show!(member.crew_id)
+
+        broadcast_crew(crew.id, {:member_added, crew})
+        {:ok, member}
+
+      error ->
+        error
+    end
   end
 
   @doc """
@@ -343,76 +354,76 @@ defmodule Itsm.Team do
     Member.changeset(member, attrs)
   end
 
-  def switch_leader(%Crew{} = crew, user_id) do
-    crew
-    |> Crew.changeset(%{leader_id: user_id})
-    |> Repo.update()
-    |> case do
-      {:ok, _} ->
-        crew = get_crew_for_show!(crew.id)
-        broadcast_crew(crew.id, {:leader_changed, crew})
-        {:ok, crew}
+  # def switch_leader(%Crew{} = crew, user_id) do
+  #   crew
+  #   |> Crew.changeset(%{leader_id: user_id})
+  #   |> Repo.update()
+  #   |> case do
+  #     {:ok, _} ->
+  #       crew = get_crew_for_show!(crew.id)
+  #       broadcast_crew(crew.id, {:leader_changed, crew})
+  #       {:ok, crew}
 
-      {:error, _} = error ->
-        error
-    end
-  end
+  #     {:error, _} = error ->
+  #       error
+  #   end
+  # end
 
-  def remove_member_from_crew(%Crew{} = crew, user_id, current_user_id) do
-    # leader 혹은 본인일 경우에만 삭제 가능
-    if crew.leader_id == current_user_id or user_id == current_user_id do
-      %Member{crew_id: crew.id, user_id: user_id}
-      |> Repo.delete()
-      |> case do
-        {:ok, _} ->
-          crew = get_crew_for_show!(crew.id)
-          # broadcast_crew_updated({:member_removed, updated_crew})
-          broadcast_crew(crew.id, {:member_removed, user_id, crew})
-          {:ok, crew}
+  # def remove_member_from_crew(%Crew{} = crew, user_id, current_user_id) do
+  #   # leader 혹은 본인일 경우에만 삭제 가능
+  #   if crew.leader_id == current_user_id or user_id == current_user_id do
+  #     %Member{crew_id: crew.id, user_id: user_id}
+  #     |> Repo.delete()
+  #     |> case do
+  #       {:ok, _} ->
+  #         crew = get_crew_for_show!(crew.id)
+  #         # broadcast_crew_updated({:member_removed, updated_crew})
+  #         broadcast_crew(crew.id, {:member_removed, user_id, crew})
+  #         {:ok, crew}
 
-        {:error, _} = error ->
-          error
-      end
-    else
-      {:error, "You don't have permission to remove this member."}
-    end
-  end
+  #       {:error, _} = error ->
+  #         error
+  #     end
+  #   else
+  #     {:error, "You don't have permission to remove this member."}
+  #   end
+  # end
 
-  def reassign_leader(%Crew{} = crew) do
-    if crew.leader_id && Repo.get(User, crew.leader_id) do
-      {:ok, crew}
-    else
-      assign_new_leader(crew)
-    end
-  end
+  # def reassign_leader(%Crew{} = crew) do
+  #   if crew.leader_id && Repo.get(User, crew.leader_id) do
+  #     {:ok, crew}
+  #   else
+  #     assign_new_leader(crew)
+  #   end
+  # end
 
-  defp assign_new_leader(%Crew{} = crew) do
-    new_leader = get_next_leader(crew)
+  # defp assign_new_leader(%Crew{} = crew) do
+  #   new_leader = get_next_leader(crew)
 
-    case new_leader do
-      nil ->
-        {:error, "No members available to be leader"}
+  #   case new_leader do
+  #     nil ->
+  #       {:error, "No members available to be leader"}
 
-      %Member{user_id: user_id} ->
-        crew =
-          crew
-          |> Crew.changeset(%{leader_id: user_id})
-          |> Repo.update!()
-          |> Repo.preload([:leader, members: [:user]])
+  #     %Member{user_id: user_id} ->
+  #       crew =
+  #         crew
+  #         |> Crew.changeset(%{leader_id: user_id})
+  #         |> Repo.update!()
+  #         |> Repo.preload([:leader, members: [:user]])
 
-        # broadcast_crew(crew.id, {:leader_assigned, user_id, crew})
-        broadcast_crew(crew.id, {:leader_assigned, crew})
-        {:ok, crew}
-    end
-  end
+  #       # broadcast_crew(crew.id, {:leader_assigned, user_id, crew})
+  #       broadcast_crew(crew.id, {:leader_assigned, crew})
+  #       {:ok, crew}
+  #   end
+  # end
 
-  defp get_next_leader(%Crew{id: crew_id}) do
-    Member
-    |> where(crew_id: ^crew_id)
-    |> order_by(asc: :inserted_at)
-    |> limit(1)
-    |> Repo.one()
-  end
+  # defp get_next_leader(%Crew{id: crew_id}) do
+  #   Member
+  #   |> where(crew_id: ^crew_id)
+  #   |> order_by(asc: :inserted_at)
+  #   |> limit(1)
+  #   |> Repo.one()
+  # end
 
   def search_crews_by_member([]), do: []
 
@@ -449,5 +460,139 @@ defmodule Itsm.Team do
     %Reference{}
     |> Reference.changeset(attrs)
     |> Repo.insert()
+  end
+
+  # -------------------------------------------------------------------
+  # 1. 리더 변경 (Switch Leader)
+  # -------------------------------------------------------------------
+  def switch_leader(%Crew{} = crew, new_leader_id, %User{} = actor) do
+    with :ok <- authorize_leader_change(crew, actor),
+         :ok <- ensure_new_leader_is_member(crew, new_leader_id),
+         {:ok, crew} <- perform_update_leader(crew, new_leader_id) do
+      # 업데이트 후 Show용 데이터 재조회 (Preload 등)
+      crew = get_crew_for_show!(crew.id)
+      broadcast_crew(crew.id, {:leader_changed, crew})
+
+      {:ok, crew}
+    else
+      {:error, _} = error -> error
+    end
+  end
+
+  # -------------------------------------------------------------------
+  # 2. 멤버 삭제/탈퇴 (Remove Member)
+  # -------------------------------------------------------------------
+  def remove_member_from_crew(%Crew{} = crew, target_user_id, %User{} = actor) do
+    with :ok <- authorize_member_removal(crew, target_user_id, actor),
+         %Member{} = member <- Repo.get_by(Member, crew_id: crew.id, user_id: target_user_id) do
+      Repo.delete(member)
+      |> case do
+        {:ok, _deleted_member} ->
+          # 1. 최신 상태 조회
+          crew = get_crew_for_show!(crew.id)
+
+          # 2. 브로드캐스트 (누가 삭제되었는지 target_user_id 포함)
+          # broadcast_crew(crew.id, {:member_removed, target_user_id, crew})
+          broadcast_crew(crew.id, {:member_removed, crew})
+
+          # 3. 결과 리턴
+          {:ok, crew}
+
+        {:error, _} = error ->
+          error
+      end
+    else
+      nil -> {:error, "Member not found"}
+      {:error, _} = error -> error
+    end
+  end
+
+  # -------------------------------------------------------------------
+  # 3. 리더 재할당 (Reassign Leader - 배치/퇴사자 대응)
+  # -------------------------------------------------------------------
+  def reassign_leader(%Crew{} = crew) do
+    # 1. 현재 리더가 DB(User 테이블)에 실제로 존재하는지 확인
+    # (배치로 User가 삭제되었을 경우를 대비)
+    if crew.leader_id && user_exists?(crew.leader_id) do
+      {:ok, crew}
+    else
+      # 리더가 없거나, 리더 ID는 있는데 User 테이블에 없으면 재할당
+      assign_new_leader(crew)
+    end
+  end
+
+  defp user_exists?(user_id) do
+    Repo.exists?(from u in User, where: u.id == ^user_id)
+  end
+
+  defp assign_new_leader(%Crew{} = crew) do
+    # 다음 리더 후보 찾기
+    case get_next_available_member(crew.id) do
+      nil ->
+        {:error, "No members available to be leader"}
+
+      %Member{user_id: new_leader_id} ->
+        {:ok, crew} = perform_update_leader(crew, new_leader_id)
+
+        # 재할당 후 브로드캐스트
+        crew = get_crew_for_show!(crew.id)
+        broadcast_crew(crew.id, {:leader_assigned, crew})
+
+        {:ok, crew}
+    end
+  end
+
+  # 다음 리더 찾기 (User 테이블과 조인하여 '실존하는' 멤버만 선택)
+  # Member 테이블엔 있는데 User 테이블엔 없는 유령 회원이 리더가 되는 것을 방지
+  defp get_next_available_member(crew_id) do
+    Member
+    # User가 존재하는 멤버만
+    |> join(:inner, [m], u in assoc(m, :user))
+    |> where([m, u], m.crew_id == ^crew_id)
+    # 가장 오래된 멤버 순
+    |> order_by([m, u], asc: m.inserted_at)
+    |> limit(1)
+    |> Repo.one()
+  end
+
+  # -------------------------------------------------------------------
+  # Helper Functions (Private)
+  # -------------------------------------------------------------------
+
+  # 실제 DB 업데이트
+  defp perform_update_leader(crew, new_leader_id) do
+    crew
+    |> Crew.changeset(%{leader_id: new_leader_id})
+    |> Repo.update()
+  end
+
+  # 권한 확인: 리더 변경 (Admin or Leader)
+  defp authorize_leader_change(crew, actor) do
+    cond do
+      # 관리자 또는 리더 본인일때 허용
+      actor.role == :admin -> :ok
+      crew.leader_id == actor.id -> :ok
+      true -> {:error, "You don't have permission to change the leader."}
+    end
+  end
+
+  # 권한 확인: 멤버 삭제 (Admin or Leader or Self)
+  defp authorize_member_removal(crew, target_user_id, actor) do
+    cond do
+      # 관리자
+      actor.role == :admin -> :ok
+      # 리더가 멤버 강퇴
+      crew.leader_id == actor.id -> :ok
+      # 본인이 탈퇴
+      target_user_id == actor.id -> :ok
+      true -> {:error, "You don't have permission to remove this member."}
+    end
+  end
+
+  # 유효성 검사: 새 리더가 멤버인지 확인
+  defp ensure_new_leader_is_member(crew, new_leader_id) do
+    is_member? = Enum.any?(crew.members, fn m -> m.user_id == new_leader_id end)
+
+    if is_member?, do: :ok, else: {:error, "The selected user is not a member of this crew."}
   end
 end

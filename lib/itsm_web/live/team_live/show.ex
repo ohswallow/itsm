@@ -32,7 +32,7 @@ defmodule ItsmWeb.TeamLive.Show do
 
       {:error, _message} ->
         # 멤버 아무도 없으면 crew 삭제
-        Team.delete_crew(crew)
+        # Team.delete_crew(crew)
 
         {:noreply,
          socket
@@ -47,7 +47,7 @@ defmodule ItsmWeb.TeamLive.Show do
       {@crew.name}
       <:subtitle>{@crew.description}</:subtitle>
        <%!-- 리더만 멤버추가 가능 --%>
-      <:actions :if={@current_user.id == @crew.leader_id}>
+      <:actions :if={@current_user.id == @crew.leader_id or @current_user.role == :admin}>
         <.link patch={~p"/crews/#{@crew}/member"} phx-click={JS.push_focus()}>
           <.button>Add Member</.button>
         </.link>
@@ -133,7 +133,7 @@ defmodule ItsmWeb.TeamLive.Show do
       </div>
     </div>
      <%!-- /crews 또는 /crews/all 진입에 따라 다름 --%>
-    <.back navigate={@back_path}>Back to crews</.back>
+    <.back navigate={@back_path}>Back</.back>
 
     <.modal
       :if={@live_action == :member}
@@ -154,26 +154,36 @@ defmodule ItsmWeb.TeamLive.Show do
     """
   end
 
+  def handle_event("switch_leader", %{"user-id" => user_id}, socket) do
+    %{crew: crew, current_user: current_user} = socket.assigns
+
+    case Team.switch_leader(crew, user_id, current_user) do
+      {:ok, _crew} ->
+        {:noreply, put_flash(socket, :info, "Leader changed successfully")}
+
+      # socket =
+      #   socket
+      #   |> put_flash(:info, "Leader changed successfully")
+
+      # {:noreply, socket}
+
+      {:error, message} ->
+        {:noreply, put_flash(socket, :error, message)}
+    end
+  end
+
   def handle_event("remove_member", %{"user-id" => user_id}, socket) do
     %{crew: crew, current_user: current_user} = socket.assigns
 
-    case Team.remove_member_from_crew(crew, user_id, current_user.id) do
+    # (화면 갱신은 handle_info가 함)
+    case Team.remove_member_from_crew(crew, user_id, current_user) do
       {:ok, _crew} ->
-        # 본인 탈퇴
+        # 본인 탈퇴 처리
         if user_id == current_user.id do
-          {:noreply,
-           socket
-           |> put_flash(:info, "You have left the crew")
-           |> push_navigate(to: ~p"/crews", replace: true)}
-
-          # 리더가 추방
+          {:noreply, put_flash(socket, :info, "You have left the crew")}
         else
-          {
-            :noreply,
-            socket
-            |> put_flash(:info, "Member removed successfully")
-            #  |> assign(:crew, crew)
-          }
+          # 타인 강퇴 처리
+          {:noreply, put_flash(socket, :info, "Member removed successfully")}
         end
 
       {:error, message} ->
@@ -181,48 +191,33 @@ defmodule ItsmWeb.TeamLive.Show do
     end
   end
 
-  def handle_event("switch_leader", %{"user-id" => user_id}, socket) do
-    %{crew: crew, current_user: current_user} = socket.assigns
-
-    if crew.leader_id == current_user.id do
-      case Team.switch_leader(crew, user_id) do
-        {:ok, _crew} ->
-          socket =
-            socket
-            |> put_flash(:info, "Leader changed successfully")
-
-          {:noreply, socket}
-
-        {:error, message} ->
-          {:noreply, put_flash(socket, :error, message)}
-      end
-    else
-      {:noreply, put_flash(socket, :error, "You don't have permission to change the leader.")}
-    end
-  end
-
-  def handle_info({:member_removed, user_id, crew}, socket) do
-    %{current_user: current_user} = socket.assigns
-
-    # 본인이 삭제됨 → 페이지에서 튕겨냄
-    if current_user.id == user_id do
-      {:noreply,
-       socket
-       |> push_navigate(to: ~p"/crews", replace: true)}
-    else
-      # 다른 멤버가 삭제됨 → 목록만 갱신
-      {:noreply, assign(socket, :crew, crew)}
-    end
-  end
-
-  def handle_info({:leader_changed, crew}, socket) do
+  # 리더 변경, 리더 할당, 멤버 추가, 멤버 삭제 시
+  def handle_info({event, crew}, socket)
+      # when event in [:leader_changed, :leader_assigned, :member_added] do
+      when event in [:leader_changed, :leader_assigned, :member_added, :member_removed] do
     {:noreply, assign(socket, :crew, crew)}
   end
 
-  def handle_info({:leader_assigned, crew}, socket) do
-    {:noreply, assign(socket, :crew, crew)}
-  end
+  # def handle_info({:member_removed, _removed_user_id, crew}, socket) do
+  #   # %{current_user: current_user} = socket.assigns
 
+  #   {:noreply, assign(socket, :crew, crew)}
+
+  #   # # 본인이 탈퇴한 경우
+  #   # if current_user.id == removed_user_id do
+  #   #   {
+  #   #     :noreply,
+  #   #     socket
+  #   #     |> put_flash(:info, "You have been removed from the crew")
+  #   #     |> assign(:crew, crew)
+  #   #   }
+  #   # else
+  #   #   # 다른 멤버가 삭제된 경우
+  #   #   {:noreply, assign(socket, :crew, crew)}
+  #   # end
+  # end
+
+  # 멤버 추가 다이얼로그에서 선택된 유저들 처리
   def handle_info({:users_selected, users_id}, socket) do
     %{crew: crew} = socket.assigns
 
@@ -241,12 +236,14 @@ defmodule ItsmWeb.TeamLive.Show do
       end
     end)
 
-    crew = Team.get_crew_for_show!(crew.id)
+    # crew = Team.get_crew_for_show!(crew.id)
 
-    {:noreply,
-     socket
-     |> put_flash(:info, "Members added successfully")
-     |> push_patch(to: ~p"/crews/#{crew}")
-     |> assign(:crew, crew)}
+    {
+      :noreply,
+      socket
+      |> put_flash(:info, "Members added successfully")
+      |> push_patch(to: ~p"/crews/#{crew}")
+      #  |> assign(:crew, crew)
+    }
   end
 end
