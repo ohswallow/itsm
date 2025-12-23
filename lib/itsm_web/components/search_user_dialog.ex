@@ -35,6 +35,7 @@ defmodule ItsmWeb.SearchUserDialog do
           dropdown_extra_class="bg-white shadow-lg w-full max-h-60 overflow-y-auto"
           option_extra_class="text-gray-800 border-b border-gray-200 hover:bg-blue-100 py-2 px-4"
           active_option_class="bg-blue-500 text-white"
+          debounce={300}
         >
           <:clear_button>&times;</:clear_button>
           <:option :let={option}>
@@ -53,90 +54,18 @@ defmodule ItsmWeb.SearchUserDialog do
     """
   end
 
-  # 이름만 나오는 기존 코드
-  # def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
-  #   IO.inspect(text, label: "Searching for")
-  #   users = Accounts.search_users(%{"q" => text})
-
-  #   send_update(LiveSelect.Component,
-  #     id: live_select_id,
-  #     options: Enum.map(users, &{&1.display_name, &1.id})
-  #   )
-
-  #   {:noreply, socket}
-  # end
-
-  # 추가 정보를 포함한 옵션 생성
-  def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
-    IO.inspect(text, label: "Searching for")
-    # users = Accounts.search_users(%{"q" => text})
-
-    # ✅ 1. 현재 로그인한 사용자 정보 가져오기
-    current_user = socket.assigns.current_user
-
-    # # ✅ 검색 조건에 조직/부서 코드 추가
-    # search_params = %{
-    #   "q" => text,
-    #   "organization_code" => current_user.organization_code,
-    #   "department_code" => current_user.department_code
-    # }
-
-    # ✅ 2. 검색 조건(Map) 만들기
-    # Admin 여부에 따라 검색 조건 다르게 설정
-    search_params =
-      if current_user.role == :admin do
-        # 관리자(Admin)인 경우:
-        # 이름 검색어("q")만 보내고, 조직/부서 코드는 보내지 않음 (전체 User 검색)
-        %{"q" => text}
-      else
-        # 일반 사용자(General 등)인 경우:
-        # 내 계열사/부서 코드를 함께 보냄 (같은 계열사/부서 내 User 검색)
-        %{
-          "q" => text,
-          "organization_code" => current_user.organization_code,
-          "department_code" => current_user.department_code
-        }
-      end
-
-    # ✅ 3. 수정된 파라미터로 검색 요청
-    users = Accounts.search_users(search_params)
-
-    options =
-      Enum.map(users, fn user ->
-        %{
-          # 기본 표시 텍스트
-          label: user.display_name,
-          # 선택 시 사용되는 값
-          value: user.id,
-          email: user.email,
-          organization: user.organization,
-          department: user.department,
-          employee_number: user.employee_number
-        }
-      end)
-
-    send_update(LiveSelect.Component,
-      id: live_select_id,
-      options: options
-    )
+  # 유저 검색 시 text박스 입력시 호출
+  def handle_event("live_select_change", %{"text" => keyword, "id" => live_select_id}, socket) do
+    %{current_user: user} = socket.assigns
+    options = Accounts.search_user_options(user, %{"keyword" => keyword})
+    send_update(LiveSelect.Component, id: live_select_id, options: options)
 
     {:noreply, socket}
   end
 
   # 유저를 선택했을 때 호출
-  def handle_event(
-        "submit",
-        %{"user_search_text_input" => _user_name, "user_search" => user_id} = params,
-        socket
-      ) do
-    IO.inspect(params, label: "Selected params")
-
-    # user_id로 다시 조회해서 모든 정보 가져오기
+  def handle_event("submit", %{"user_search" => user_id}, socket) do
     user = Accounts.get_user!(user_id)
-
-    IO.puts("You selected #{user.display_name}, #{user.id}, #{user.employee_number}")
-
-    # 부모에게 메시지 전송
     send(self(), {__MODULE__, :user_selected, user})
 
     {:noreply, socket}

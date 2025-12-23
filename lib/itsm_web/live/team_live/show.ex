@@ -218,7 +218,7 @@ defmodule ItsmWeb.TeamLive.Show do
   # end
 
   # 멤버 추가 다이얼로그에서 선택된 유저들 처리
-  def handle_info({:users_selected, users_id}, socket) do
+  def handle_info({ItsmWeb.SearchUsersDialog, :users_selected, users_id}, socket) do
     %{crew: crew} = socket.assigns
 
     # 이미 존재하는 user인지 확인하고, 없으면 추가

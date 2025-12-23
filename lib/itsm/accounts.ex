@@ -359,6 +359,43 @@ defmodule Itsm.Accounts do
     |> Repo.all()
   end
 
+  # Admin용 전체 사용자 검색
+  def search_user_options(%User{role: :admin}, params) do
+    User
+    |> search_by(params["keyword"])
+    |> order_by(:display_name)
+    |> select([u], %{
+      value: u.id,
+      label: u.display_name,
+      tag_label: fragment("? || '(' || ? || ')'", u.display_name, u.employee_number),
+      email: u.email,
+      organization: u.organization,
+      employee_number: u.employee_number,
+      department: u.department
+    })
+    |> Repo.all()
+  end
+
+  # 일반 유저용 조직/부서 필터링 포함 사용자 검색
+  def search_user_options(%User{} = user, params) do
+    User
+    |> search_by(params["keyword"])
+    |> where([u], u.id != ^user.id)
+    |> where([u], u.organization_code == ^user.organization_code)
+    |> where([u], u.department_code == ^user.department_code)
+    |> order_by(:display_name)
+    |> select([u], %{
+      value: u.id,
+      label: u.display_name,
+      tag_label: fragment("? || '(' || ? || ')'", u.display_name, u.employee_number),
+      email: u.email,
+      organization: u.organization,
+      employee_number: u.employee_number,
+      department: u.department
+    })
+    |> Repo.all()
+  end
+
   # 1. 이름 검색
   # 검색어가 없으면("") -> 전체 검색
   defp search_by(query, q) when q in ["", nil], do: query
