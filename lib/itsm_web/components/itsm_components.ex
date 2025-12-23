@@ -59,14 +59,21 @@ defmodule ItsmWeb.ItsmComponents do
       >
         <.icon name="hero-ellipsis-vertical" class="h-6 w-6" />
       </button>
-
+      <%!--
+         [수정된 부분]
+         1. left-0 -> right-0 (오른쪽 정렬)
+         2. top-12 -> mt-2 w-32 (버튼 바로 아래 위치, 너비 조정)
+         3. z-index 확실하게 (z-50)
+      --%>
       <div
         id={"dropdown-#{@id}-body"}
         class="hidden absolute left-0 top-12 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10"
       >
-        <div class="py-1">
-          {render_slot(@inner_block)}
-        </div>
+        <%!-- <div
+        id={"dropdown-#{@id}-body"}
+        class="hidden absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+      > --%>
+        <div class="py-1">{render_slot(@inner_block)}</div>
       </div>
     </div>
     """
@@ -78,27 +85,27 @@ defmodule ItsmWeb.ItsmComponents do
     ~H"""
     <div class={["lds-spinner", @class]}>
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
     </div>
     """

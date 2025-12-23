@@ -85,12 +85,16 @@ defmodule ItsmWeb.Router do
 
       # live "/crews/all/:id", TeamLive.Show, :all
 
-      # My Crew
-      live "/crews", TeamLive.Index, :my
-      live "/crews/all", TeamLive.Index, :all
-      live "/crews/new", TeamLive.Index, :new
-      live "/crews/:id/edit", TeamLive.Index, :edit
-      live "/crews/:id", TeamLive.Show, :my
+      # 내 크루 관리
+      live "/crews", TeamLive.MyIndex, :index
+      live "/crews/new", TeamLive.MyIndex, :new
+      live "/crews/:id/edit", TeamLive.MyIndex, :edit
+
+      # 전체 크루 검색
+      live "/crews/all", TeamLive.AllIndex, :index
+
+      # 상세 페이지 (공통)
+      live "/crews/:id", TeamLive.Show, :show
       live "/crews/:id/member", TeamLive.Show, :member
 
       # 카테고리(SR 유형) 목록

@@ -160,3 +160,12 @@ msgstr "리더만 이 crew를 삭제할 수 있습니다."
 
 msgid "Only the leader can edit this crew."
 msgstr "리더만 이 crew를 변경할 수 있습니다."
+
+msgid "Organization"
+msgstr "계열사"
+
+msgid "Department"
+msgstr "부서"
+
+msgid "Leader"
+msgstr "리더"

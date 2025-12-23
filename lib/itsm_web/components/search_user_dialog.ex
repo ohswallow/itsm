@@ -71,23 +71,40 @@ defmodule ItsmWeb.SearchUserDialog do
     IO.inspect(text, label: "Searching for")
     # users = Accounts.search_users(%{"q" => text})
 
-    # ✅ 현재 로그인한 사용자 정보 가져오기
+    # ✅ 1. 현재 로그인한 사용자 정보 가져오기
     current_user = socket.assigns.current_user
 
-    # ✅ 검색 조건에 조직/부서 코드 추가
-    search_params = %{
-      "q" => text,
-      "organization_code" => current_user.organization_code,
-      "department_code" => current_user.department_code
-    }
+    # # ✅ 검색 조건에 조직/부서 코드 추가
+    # search_params = %{
+    #   "q" => text,
+    #   "organization_code" => current_user.organization_code,
+    #   "department_code" => current_user.department_code
+    # }
 
-    # 변경된 파라미터로 검색 요청
+    # ✅ 2. 검색 조건(Map) 만들기
+    # Admin 여부에 따라 검색 조건 다르게 설정
+    search_params =
+      if current_user.role == :admin do
+        # 관리자(Admin)인 경우:
+        # 이름 검색어("q")만 보내고, 조직/부서 코드는 보내지 않음 (전체 User 검색)
+        %{"q" => text}
+      else
+        # 일반 사용자(General 등)인 경우:
+        # 내 계열사/부서 코드를 함께 보냄 (같은 계열사/부서 내 User 검색)
+        %{
+          "q" => text,
+          "organization_code" => current_user.organization_code,
+          "department_code" => current_user.department_code
+        }
+      end
+
+    # ✅ 3. 수정된 파라미터로 검색 요청
     users = Accounts.search_users(search_params)
 
     options =
       Enum.map(users, fn user ->
         %{
-          # 기본 표시 텍스트 (필요 시 커스텀 가능)
+          # 기본 표시 텍스트
           label: user.display_name,
           # 선택 시 사용되는 값
           value: user.id,

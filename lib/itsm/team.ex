@@ -132,9 +132,9 @@ defmodule Itsm.Team do
     Multi.new()
     # 1. Crew 생성 (leader_id 명시적 주입)
     |> Multi.insert(:crew, fn _ ->
-      %Crew{}
-      |> Crew.changeset(attrs)
-      |> Ecto.Changeset.put_change(:leader_id, user.id)
+      params = Map.put(attrs, "leader_id", user.id)
+
+      Crew.changeset(%Crew{}, params)
     end)
     # 2. 리더를 멤버로 추가 (앞 단계의 crew 결과 사용)
     |> Multi.insert(:leader_as_member, fn %{crew: crew} ->
@@ -157,19 +157,6 @@ defmodule Itsm.Team do
         Logger.warning("create_crew failed at #{op}: #{inspect(changeset.errors)}")
         {:error, changeset}
     end
-
-    # %Crew{leader_id: user.id}
-    # |> Crew.changeset(attrs)
-    # |> Repo.insert()
-    # |> case do
-    #   {:ok, crew} ->
-    #     crew = Repo.preload(crew, [:leader, members: [:user]])
-    #     broadcast_crews_list({:crew_created, crew})
-    #     {:ok, crew}
-
-    #   {:error, _} = error ->
-    #     error
-    # end
   end
 
   @doc """

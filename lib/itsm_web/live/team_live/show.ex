@@ -5,8 +5,15 @@ defmodule ItsmWeb.TeamLive.Show do
 
   def mount(params, _session, socket) do
     # back 시, /crews 또는 /crews/all 로 가기 위함
-    referrer = params["referrer"] || ~p"/crews"
-    {:ok, assign(socket, :referrer, referrer)}
+    # referrer = params["referrer"] || ~p"/crews"
+    back_path =
+      case params["return_to"] do
+        "all" -> ~p"/crews/all"
+        # default to my
+        _ -> ~p"/crews"
+      end
+
+    {:ok, assign(socket, :back_path, back_path)}
   end
 
   def handle_params(%{"id" => id}, _, socket) do
@@ -126,7 +133,7 @@ defmodule ItsmWeb.TeamLive.Show do
       </div>
     </div>
      <%!-- /crews 또는 /crews/all 진입에 따라 다름 --%>
-    <.back navigate={@referrer}>Back to crews</.back>
+    <.back navigate={@back_path}>Back to crews</.back>
 
     <.modal
       :if={@live_action == :member}
@@ -140,8 +147,8 @@ defmodule ItsmWeb.TeamLive.Show do
         title={@page_title}
         action={@live_action}
         crew={@crew}
+        current_user={@current_user}
         parent_pid={self()}
-        patch={~p"/admin/crews/#{@crew}"}
       />
     </.modal>
     """
