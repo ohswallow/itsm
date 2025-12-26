@@ -56,38 +56,26 @@ defmodule Itsm.Service.Request do
       :description,
       :env,
       :due_date,
-      :requestor_id,
-      :requestor_name,
       :requestor_crew_id,
-      :category_id,
-      :assignee_id,
       :assignee_name,
-      :assignee_crew_id,
-      # :assignee_crew_name,
-      :status
+      :requestor_name
     ])
     |> validate_required([
       :title,
       :description,
       :env,
       :due_date,
-      :requestor_id,
-      :requestor_name,
-      :requestor_crew_id,
-      :category_id,
-      :assignee_crew_id,
-      # :assignee_crew_name,
-      # 선택사항
-      # :assignee_id,
-      # :assignee_name,
-      :status
+      :requestor_crew_id
     ])
     |> cast_embed(:common_k_create_vms,
       with: &CommonKCreateVm.changeset/2,
       drop_param: :common_k_create_vms_drop,
       sort_param: :common_k_create_vms_sort
     )
-    |> validate_assignee_not_requestor()
+    |> assoc_constraint(:assignee)
+    |> assoc_constraint(:category)
+
+    # |> validate_assignee_not_requestor()
   end
 
   # 👇 가장 단순한 검증기 (옵션 없이, if만 사용)

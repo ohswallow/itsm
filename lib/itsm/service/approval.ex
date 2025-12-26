@@ -40,20 +40,17 @@ defmodule Itsm.Service.Approval do
     approval
     |> cast(attrs, [
       :status,
-      :approver_id,
       :approver_name,
-      :comment,
       # :approved_at,
-      :request_id,
       :action
     ])
     |> validate_required([
       :status,
-      :approver_id,
       :approver_name,
       # :approved_at, # 승인 시각은 나중에 설정
-      :request_id,
       :action
     ])
+    |> assoc_constraint(:approver)
+    |> assoc_constraint(:request)
   end
 end

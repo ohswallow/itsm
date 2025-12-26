@@ -4,12 +4,14 @@ defmodule Itsm.Service do
   """
 
   import Ecto.Query, warn: false
+  alias Ecto.Multi
   alias Itsm.Repo
-
   alias Itsm.Service.Category
   alias Itsm.Service.Approval
   alias Itsm.Service.Request
   alias Itsm.Delegations.Delegation
+  alias Itsm.Accounts.User
+  alias Itsm.Requests
 
   # alias Itsm.Team.Crew
   alias Itsm.Team.Member
@@ -306,6 +308,29 @@ defmodule Itsm.Service do
         {:ok, request}
 
       {:error, _} = error ->
+        error
+    end
+  end
+
+  def create_full_request(
+        %User{} = user,
+        %Category{} = category,
+        %User{} = assignee,
+        attrs \\ %{}
+      ) do
+    Multi.new()
+    |> Multi.insert(:request, Requests.change_request(user, category, assignee, attrs))
+    |> Multi.run(:approval, fn repo, %{request: request} ->
+      Itsm.Approvals.create_approval(repo, request, user)
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{request: request, approval: _approval}} ->
+        request = Repo.preload(request, :category)
+        broadcast_approvals_list({:request_created, request})
+        {:ok, request}
+
+      {:error, _failed_operation, _failed_value, _changes_so_far} = error ->
         error
     end
   end
