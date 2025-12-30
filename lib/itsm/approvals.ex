@@ -2,7 +2,9 @@ defmodule Itsm.Approvals do
   import Ecto.Query, warn: false
 
   alias Itsm.Repo
+  alias Itsm.Accounts.User
   alias Itsm.Service.Approval
+  alias Itsm.Service.Request
 
   @doc """
   Returns the list of approvals.
@@ -98,9 +100,13 @@ defmodule Itsm.Approvals do
     Approval.changeset(approval, attrs)
   end
 
-  def change_view_approval(%Ecto.Changeset{} = changeset, %Itsm.Accounts.User{} = approver) do
-    changeset
-    |> Ecto.Changeset.put_change(:assignee_id, approver.id)
-    |> Ecto.Changeset.put_change(:assignee_name, approver.display_name)
+  def create_approval(repo, %Request{} = request, %User{} = user) do
+    %Approval{
+      approver: user,
+      approver_name: user.display_name,
+      request: request
+    }
+    |> Approval.changeset(%{})
+    |> repo.insert()
   end
 end

@@ -5,7 +5,8 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   alias Itsm.Service
   alias Itsm.Service.Request
   alias Itsm.Team
-  alias Itsm.Approvals
+  alias Itsm.Accounts.User
+  alias ItsmWeb.LiveUtils
 
   def mount(params, _session, socket) do
     crew_options = Accounts.crew_ids_names(socket.assigns.current_user)
@@ -17,8 +18,20 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
        max_entries: 1,
        max_file_size: 2 * 1024 * 1024
      )
+     |> assign(:assignee, %User{})
      |> assign(:crew_options, crew_options)
      |> apply_action(socket.assigns.live_action, params)}
+  end
+
+  defp apply_action(socket, :new, %{"id" => category_id}) do
+    category = Service.get_category!(String.to_integer(category_id))
+
+    socket
+    |> assign(:page_title, "New Request")
+    |> assign(:category, category)
+    |> assign(:request, %Request{})
+    |> assign(:referenced_crews_id, [])
+    |> assign(:form, to_form(Service.change_request(%Request{})))
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
@@ -26,7 +39,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
 
     # 기존 referenced crews 로드
     referenced_crews_id =
-      Team.list_reference("Request", id)
+      Team.list_reference(:service_request, id)
       |> Enum.map(& &1.crew_id)
 
     socket
@@ -51,24 +64,9 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     |> assign(:form, to_form(Service.change_request(request)))
   end
 
-  defp apply_action(socket, :new, %{"id" => category_id}) do
-    category_id = String.to_integer(category_id)
-    category = Service.get_category!(category_id)
-
-    request = %Request{
-      category_id: category.id,
-      assignee_crew_id: category.assignee_crew_id
-    }
-
-    socket
-    |> assign(:page_title, "New Request")
-    |> assign(:request, request)
-    |> assign(:referenced_crews_id, [])
-    |> assign(:form, to_form(Service.change_request(request)))
-  end
-
-  @impl true
   def handle_params(_params, uri, socket) do
+    IO.inspect(URI.parse(uri), label: "HANDLE_PARAMS URI")
+
     socket =
       socket
       |> assign(:show_user_modal, false)
@@ -78,21 +76,20 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     {:noreply, socket}
   end
 
-  @impl true
-  def handle_info({ItsmWeb.SearchUserDialog, :user_selected, user}, socket) do
-    changeset = Approvals.change_view_approval(socket.assigns.form.source, user)
+  def handle_info({ItsmWeb.SearchUserDialog, :user_selected, assignee}, socket) do
+    params = LiveUtils.change_assignee_name(socket, assignee)
+    changeset = Service.change_request(socket.assigns.request, params)
 
     socket =
       socket
-      |> assign(:form, to_form(changeset))
+      |> assign(:assignee, assignee)
+      |> assign(:form, to_form(changeset, action: :validate))
       |> assign(:show_user_modal, false)
 
     {:noreply, socket}
   end
 
   def handle_info({ItsmWeb.SearchCrewsDialog, :crews_selected, crews_id}, socket) do
-    # 여기서 crews_id를 어디에 저장할지 결정
-    # 일단 나중에 따로 Reference 생성하거나, form param에 담을 수 있음
     socket =
       socket
       |> assign(:referenced_crews_id, crews_id)
@@ -101,10 +98,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     {:noreply, socket}
   end
 
-  @impl true
   def handle_event("validate", %{"request" => request_params}, socket) do
-    IO.inspect(request_params, label: "Request Params")
-
     changeset = Service.change_request(socket.assigns.request, request_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
@@ -118,65 +112,56 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   end
 
   def handle_event("save", %{"request" => request_params}, socket) do
-    # category_id가 비어있으면 socket.assigns.request에서 가져옴
-    request_params =
-      if request_params["category_id"] in [nil, ""] do
-        Map.put(request_params, "category_id", socket.assigns.request.category_id)
-      else
-        request_params
-      end
-
-    # status가 비어있으면 :check로 설정
-    request_params =
-      if request_params["status"] in [nil, ""] do
-        Map.put(request_params, "status", :check)
-      else
-        request_params
-      end
-
-    case save_request(socket, socket.assigns.live_action, request_params) do
-      {:ok, _request} ->
-        flash_msg =
-          case socket.assigns.live_action do
-            :new -> "Request created successfully"
-            :edit -> "Request updated successfully"
-            :copy -> "Request created successfully"
-          end
-
-        {:noreply,
-         socket
-         |> put_flash(:info, flash_msg)
-         |> push_navigate(to: ~p"/requests")}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        IO.inspect(changeset.errors, label: "Changeset Errors")
-        # {:noreply, assign(socket, form: to_form(changeset))}
-        {:noreply, assign(socket, form: to_form(changeset, action: :insert))}
-    end
+    save_request(socket, socket.assigns.live_action, request_params)
   end
 
   defp save_request(socket, :edit, request_params) do
-    Service.update_request(socket.assigns.current_user, socket.assigns.request, request_params)
+    %{current_user: user, request: request} = socket.assigns
+
+    case Service.update_request(user, request, request_params) do
+      {:ok, _request} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Request updated successfully")
+         |> push_navigate(to: ~p"/requests")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
+    end
   end
 
   defp save_request(socket, :new, request_params) do
-    with {:ok, request} <- Service.create_request(socket.assigns.current_user, request_params),
-         {:ok, _approval} <-
-           Service.create_approval(%{
-             # 여기가 핵심!
-             "status" => "request",
-             "approver_id" => socket.assigns.current_user.id,
-             "approver_name" => socket.assigns.current_user.display_name,
-             "request_id" => request.id
-           }) do
-      {:ok, request}
-    else
-      {:error, changeset} -> {:error, changeset}
+    %{current_user: user, category: category, assignee: assignee} = socket.assigns
+
+    case Service.create_full_request(user, category, assignee, request_params) do
+      {:ok, request} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Request created successfully")
+         |> push_navigate(to: ~p"/common_k_create_vm/#{request.id}")}
+
+      {:error, :request, %Ecto.Changeset{} = changeset, _so_far_changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
+
+      {:error, :approval, _changeset, _so_far_changeset} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "An error occurred while creating approval}")
+         |> push_navigate(to: ~p"/requests")}
     end
   end
 
   defp save_request(socket, :copy, request_params) do
-    Service.create_request(socket.assigns.current_user, request_params)
+    case Service.create_request(socket.assigns.current_user, request_params) do
+      {:ok, _request} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Request copied successfully")
+         |> push_navigate(to: ~p"/requests")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
+    end
   end
 
   # os_image에 따라 os_version 옵션 동적 변경
