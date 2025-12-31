@@ -10,7 +10,8 @@ defmodule ItsmWeb.DelegationLive.Index do
       Delegations.subscribe_delegation_list()
     end
 
-    {:ok, stream(socket, :delegations, Delegations.list_delegations())}
+    # 접속 user 부서에 해당하는 대결등록만 로드
+    {:ok, stream(socket, :delegations, Delegations.list_delegations(socket.assigns.current_user))}
   end
 
   @impl true
@@ -41,14 +42,18 @@ defmodule ItsmWeb.DelegationLive.Index do
   def handle_info({:delegation_created, _}, socket) do
     {:noreply,
      socket
-     |> stream(:delegations, Delegations.list_delegations(), reset: true)}
+     |> stream(:delegations, Delegations.list_delegations(socket.assigns.current_user),
+       reset: true
+     )}
   end
 
   # 대결등록 삭제되었을 때 리스트를 새로고침
   def handle_info({:delegation_deleted, _}, socket) do
     {:noreply,
      socket
-     |> stream(:delegations, Delegations.list_delegations(), reset: true)}
+     |> stream(:delegations, Delegations.list_delegations(socket.assigns.current_user),
+       reset: true
+     )}
   end
 
   @impl true

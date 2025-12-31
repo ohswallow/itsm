@@ -56,7 +56,7 @@ defmodule ItsmWeb.TeamLive.MyIndex do
       crews={@streams.crews}
       row_click={
         fn {_id, crew} ->
-          JS.navigate(~p"/crews/#{crew}?return_to=my")
+          JS.navigate(~p"/crews/#{crew}")
         end
       }
     >

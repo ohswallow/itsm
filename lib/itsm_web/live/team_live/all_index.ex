@@ -15,11 +15,16 @@ defmodule ItsmWeb.TeamLive.AllIndex do
   def handle_params(params, _uri, socket) do
     # IO.inspect(self(), label: "HANDLE_PARAMS")
 
+    # 1. URL에 지저분한 파라미터가 섞이지 않도록 필요한 필터만
+    filter_params = Map.take(params, ["q", "organization"])
+
     socket =
       socket
       |> assign(:page_title, "All Crew")
       |> stream(:crews, Team.filter_crews(params), reset: true)
       |> assign(:form, to_form(params))
+      # 2 현재 필터 조건을 뷰에서 쓸 수 있게 assign
+      |> assign(:filter_params, filter_params)
 
     {:noreply, socket}
   end
@@ -32,7 +37,12 @@ defmodule ItsmWeb.TeamLive.AllIndex do
       crews={@streams.crews}
       row_click={
         fn {_id, crew} ->
-          JS.navigate(~p"/crews/#{crew}?return_to=all")
+          # 3. 돌아올 URL을 미리 만듦 (필터가 포함된 URL)
+          # 예: "/crews/all?q=AAA&organization=KB국민은행"
+          return_url = ~p"/crews/all?#{@filter_params}"
+
+          # 4. return_to 파라미터에 위에서 만든 URL을 통째로 넘김
+          JS.navigate(~p"/crews/#{crew}?return_to=#{return_url}")
         end
       }
     >
@@ -48,7 +58,7 @@ defmodule ItsmWeb.TeamLive.AllIndex do
       id="filter-form"
       phx-change="filter"
     >
-      <.input field={@form[:q]} placeholder="Search..." autocomplete="off" phx-debounce="500" />
+      <.input field={@form[:q]} placeholder="Search..." autocomplete="off" phx-debounce="300" />
       <.input
         type="select"
         field={@form[:organization]}

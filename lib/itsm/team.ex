@@ -47,23 +47,37 @@ defmodule Itsm.Team do
 
   def filter_crews(filter) do
     Crew
+    # Leader(User) 테이블과 Inner Join 하고, 'leader'라는 별칭(as)을 붙임
+    |> join(:inner, [c], u in assoc(c, :leader), as: :leader)
+    # Join된 데이터를 이용해 Preload (쿼리 한 번으로 가져오기 위함)
+    |> preload([leader: u], leader: u)
     |> with_type(filter["organization"])
     |> search_by(filter["q"])
     |> Repo.all()
-    |> Repo.preload(:leader)
   end
 
+  # organization이 있을 때: 'leader' 별칭을 사용하여 User 테이블의 organization 컬럼 조회
   defp with_type(query, organization)
        when organization in ~w(KB국민은행 KB국민카드 KB캐피탈 KB증권) do
-    where(query, organization: ^organization)
+    where(query, [leader: u], u.organization == ^organization)
   end
 
   defp with_type(query, _), do: query
 
   defp search_by(query, q) when q in ["", nil], do: query
 
+  # Crew(c) 이름, Crew(c) 설명, Leader(u) 이름(display_name)으로 검색
   defp search_by(query, q) do
-    where(query, [c], ilike(c.name, ^"%#{q}%"))
+    search_term = "%#{q}%"
+
+    # filter_crews에서 'as: :leader'로 조인했으므로, 여기서 [leader: u]로 접근 가능
+    where(
+      query,
+      [c, leader: u],
+      ilike(c.name, ^search_term) or
+        ilike(c.description, ^search_term) or ilike(u.display_name, ^search_term) or
+        ilike(u.department, ^search_term)
+    )
   end
 
   # def list_my_crews(%User{id: user_id}) do

@@ -4,14 +4,7 @@ defmodule ItsmWeb.TeamLive.Show do
   alias Itsm.Team
 
   def mount(params, _session, socket) do
-    # back 시, /crews 또는 /crews/all 로 가기 위함
-    # referrer = params["referrer"] || ~p"/crews"
-    back_path =
-      case params["return_to"] do
-        "all" -> ~p"/crews/all"
-        # default to my
-        _ -> ~p"/crews"
-      end
+    back_path = params["return_to"] || ~p"/crews"
 
     {:ok, assign(socket, :back_path, back_path)}
   end

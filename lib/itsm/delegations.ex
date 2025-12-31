@@ -33,8 +33,13 @@ defmodule Itsm.Delegations do
   #   Repo.all(Delegation)
   # end
 
-  def list_delegations(date \\ Date.utc_today()) do
+  def list_delegations(%User{} = current_user, date \\ Date.utc_today()) do
     Delegation
+    # 1. 'created_by' 관계를 통해 User 테이블과 Join
+    # [d]는 Delegation, [u]는 User(작성자)를 의미
+    |> join(:inner, [d], u in assoc(d, :created_by))
+    # 2. 작성자의 부서와 현재 사용자의 부서가 같은지 확인
+    |> where([d, u], u.department_code == ^current_user.department_code)
     # "종료일이 오늘이랑 같거나 미래인 것" = (과거에 끝난건 제외)
     |> where([d], d.end_date >= ^date)
     # 시작일 순서로 정렬
@@ -79,9 +84,9 @@ defmodule Itsm.Delegations do
     # 1. 3명의 이름을 모두 ID 기반으로 조회해서 채워넣음
     attrs =
       attrs
-      |> put_name_from_id("delegator_id", "delegator_name")
-      |> put_name_from_id("delegatee_id", "delegatee_name")
-      |> put_name_from_id("created_by_id", "created_by_name")
+      |> fill_name_from_id("delegator_id", "delegator_name")
+      |> fill_name_from_id("delegatee_id", "delegatee_name")
+      |> fill_name_from_id("created_by_id", "created_by_name")
 
     # 디버깅용 로그: 여기서 이름이 들어갔는지 확인
     IO.inspect(attrs, label: "CHECK ATTRS IN create_delegation CONTEXT")
@@ -154,7 +159,7 @@ defmodule Itsm.Delegations do
     Repo.exists?(query)
   end
 
-  defp put_name_from_id(attrs, id_key, name_key) do
+  defp fill_name_from_id(attrs, id_key, name_key) do
     id = attrs[id_key]
     name = attrs[name_key]
 
