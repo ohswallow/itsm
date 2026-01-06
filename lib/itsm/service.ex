@@ -50,7 +50,7 @@ defmodule Itsm.Service do
   def filter_categories(filter) do
     Category
     |> with_type(filter["group"])
-    |> search_by(filter["q"])
+    |> search_by(filter["keyword"])
     |> sort(filter["sort_by"])
     |> Repo.all()
   end
@@ -61,10 +61,10 @@ defmodule Itsm.Service do
 
   defp with_type(query, _), do: query
 
-  defp search_by(query, q) when q in ["", nil], do: query
+  defp search_by(query, keyword) when keyword in ["", nil], do: query
 
-  defp search_by(query, q) do
-    where(query, [c], ilike(c.name, ^"%#{q}%"))
+  defp search_by(query, keyword) do
+    where(query, [c], ilike(c.name, ^"%#{keyword}%"))
   end
 
   defp sort(query, "name") do

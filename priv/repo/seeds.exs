@@ -95,12 +95,12 @@ ca =
   |> User.registration_changeset(%{
     email: "ca@sample.com",
     display_name: "ca",
-    organization_code: "B0",
+    organization_code: "C0",
     employee_number: "2853866",
     organization: "KB국민카드",
     password: "123412341234",
     department: "정보보호부",
-    department_code: "813211",
+    department_code: "813219",
     role: :general
   })
   |> Repo.insert!()

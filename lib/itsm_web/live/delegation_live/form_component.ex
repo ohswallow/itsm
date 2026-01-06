@@ -55,6 +55,7 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
             dropdown_extra_class="bg-white shadow-lg w-full max-h-60 overflow-y-auto"
             option_extra_class="text-gray-800 border-b border-gray-200 hover:bg-blue-100 py-2 px-4"
             active_option_class="bg-blue-500 text-white"
+            debounce={300}
           >
             <:clear_button>&times;</:clear_button>
             <:option :let={option}>
@@ -90,6 +91,7 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
             dropdown_extra_class="bg-white shadow-lg w-full max-h-60 overflow-y-auto"
             option_extra_class="text-gray-800 border-b border-gray-200 hover:bg-blue-100 py-2 px-4"
             active_option_class="bg-blue-500 text-white"
+            debounce={300}
           >
             <:clear_button>&times;</:clear_button>
             <:option :let={option}>
@@ -125,50 +127,13 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
     """
   end
 
-  def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
-    IO.inspect(text, label: "Searching for")
+  def handle_event("live_select_change", %{"text" => keyword, "id" => live_select_id}, socket) do
+    IO.inspect(keyword, label: "Searching for")
 
-    # ✅ 1. 현재 로그인한 사용자 정보 가져오기
-    current_user = socket.assigns.current_user
+    %{current_user: current_user} = socket.assigns
 
-    # ✅ 2. 검색 조건(Map) 만들기
-    # Admin 여부에 따라 검색 조건 다르게 설정
-    search_params =
-      if current_user.role == :admin do
-        # 관리자(Admin)인 경우:
-        # 이름 검색어("q")만 보내고, 조직/부서 코드는 보내지 않음 (전체 User 검색)
-        %{"q" => text}
-      else
-        # 일반 사용자(General 등)인 경우:
-        # 내 계열사/부서 코드를 함께 보냄 (같은 계열사/부서 내 User 검색)
-        %{
-          "q" => text,
-          "organization_code" => current_user.organization_code,
-          "department_code" => current_user.department_code
-        }
-      end
-
-    # ✅ 3. 수정된 파라미터로 검색 요청
-    users = Accounts.search_users(search_params)
-
-    options =
-      Enum.map(users, fn user ->
-        %{
-          # 기본 표시 텍스트
-          label: user.display_name,
-          # 선택 시 사용되는 값
-          value: user.id,
-          email: user.email,
-          organization: user.organization,
-          department: user.department,
-          employee_number: user.employee_number
-        }
-      end)
-
-    send_update(LiveSelect.Component,
-      id: live_select_id,
-      options: options
-    )
+    options = Accounts.search_user_options(current_user, %{"keyword" => keyword})
+    send_update(LiveSelect.Component, id: live_select_id, options: options)
 
     {:noreply, socket}
   end
@@ -191,14 +156,17 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
   end
 
   defp save_delegation(socket, :new, delegation_params) do
-    current_user = socket.assigns.current_user
+    %{current_user: current_user} = socket.assigns
+    %{"delegator_id" => delegator_id, "delegatee_id" => delegatee_id} = delegation_params
 
+    delegator = Accounts.get_user!(delegator_id)
+    delegatee = Accounts.get_user!(delegatee_id)
     # 등록자 id 정보 추가
-    delegation_params =
-      delegation_params
-      |> Map.put("created_by_id", current_user.id)
+    # delegation_params =
+    #   delegation_params
+    #   |> Map.put("created_by_id", current_user.id)
 
-    case Delegations.create_delegation(delegation_params) do
+    case Delegations.create_delegation(current_user, delegator, delegatee, delegation_params) do
       {:ok, delegation} ->
         notify_parent({:saved, delegation})
 
