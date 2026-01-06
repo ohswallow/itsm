@@ -398,10 +398,10 @@ defmodule Itsm.Accounts do
 
   # 1. 이름 검색
   # 검색어가 없으면("") -> 전체 검색
-  defp search_by(query, q) when q in ["", nil], do: query
+  defp search_by(query, keyword) when keyword in ["", nil], do: query
 
-  defp search_by(query, q) do
-    where(query, [c], ilike(c.display_name, ^"%#{q}%"))
+  defp search_by(query, keyword) do
+    where(query, [c], ilike(c.display_name, ^"%#{keyword}%"))
   end
 
   # 2. 조직 코드 필터링
@@ -428,6 +428,19 @@ defmodule Itsm.Accounts do
     |> Ecto.assoc(:crews)
     |> order_by(:name)
     |> select([c], {c.name, c.id})
+    |> Repo.all()
+  end
+
+  # 계열사 리스트를 가져오는 쿼리
+  def list_organization_options do
+    from(u in User,
+      # select: {보여줄값(Label), 실제값(Value)}
+      select: {u.organization, u.organization_code},
+      distinct: true,
+      # 혹시 모를 null 데이터나 빈 값 제외
+      where: not is_nil(u.organization) and u.organization != "",
+      order_by: [asc: u.organization]
+    )
     |> Repo.all()
   end
 end
