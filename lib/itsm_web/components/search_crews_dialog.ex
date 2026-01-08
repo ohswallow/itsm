@@ -1,7 +1,6 @@
 defmodule ItsmWeb.SearchCrewsDialog do
   use ItsmWeb, :live_component
 
-  import LiveSelect
   alias Itsm.Accounts
   # alias Itsm.Team.Crew
   # alias Itsm.Team.Member

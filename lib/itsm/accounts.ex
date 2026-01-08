@@ -44,6 +44,10 @@ defmodule Itsm.Accounts do
     if User.valid_password?(user, password), do: user
   end
 
+  def get_user(id) when id in ["", nil], do: %User{}
+
+  def get_user(id), do: Repo.get(User, id)
+
   @doc """
   Gets a single user.
 

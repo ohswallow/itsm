@@ -93,14 +93,22 @@
     </div>
   </div>
    <%!-- 승인자 섹션 --%>
-  <.input
-    field={@form[:assignee_name]}
-    type="text"
+  <.live_select
+    field={@form[:assignee_id]}
     label={gettext("Approver")}
-    readonly
-    placeholder="이곳을 클릭하세요"
-    phx-click="open_user_modal"
-  />
+    placeholder={gettext("Search by name")}
+  >
+    <:option :let={option}>
+      <%!-- 이름 외 옵션 표출 --%>
+      <div class="flex flex-col">
+        <span class="font-bold">{option.label}</span>
+        <span class="text-sm text-gray-600">
+          ID: {option.value} | Email: {option.email} | Organization: {option.organization} | Department: {option.department}
+        </span>
+      </div>
+    </:option>
+  </.live_select>
+  
   <div class="mb-6">
     <label class="block text-sm font-semibold text-zinc-700 mb-2">
       {gettext("Crews to reference")}
@@ -123,19 +131,6 @@
     <.loading_spinner class="hidden phx-submit-loading:inline-block ml-4 mb-5" />
   </div>
 </.form>
-
-<.modal
-  :if={@show_user_modal}
-  id="user-search"
-  show
-  on_cancel={JS.patch(@current_path)}
->
-  <.live_component
-    id="search-user"
-    module={ItsmWeb.SearchUserDialog}
-    current_user={@current_user}
-  />
-</.modal>
 
 <.modal
   :if={@show_crew_modal}

@@ -1,7 +1,6 @@
 defmodule ItsmWeb.SearchUserDialog do
   use ItsmWeb, :live_component
 
-  import LiveSelect
   alias Itsm.Accounts
 
   def update(assigns, socket) do
@@ -28,16 +27,8 @@ defmodule ItsmWeb.SearchUserDialog do
         <.live_select
           field={@form[:user_search]}
           phx-target={@myself}
-          allow_clear={true}
-          mode={:single}
           placeholder="사용자 이름을 입력하세요"
-          container_extra_class="flex-grow"
-          dropdown_extra_class="bg-white shadow-lg w-full max-h-60 overflow-y-auto"
-          option_extra_class="text-gray-800 border-b border-gray-200 hover:bg-blue-100 py-2 px-4"
-          active_option_class="bg-blue-500 text-white"
-          debounce={300}
         >
-          <:clear_button>&times;</:clear_button>
           <:option :let={option}>
             <%!-- 이름 외 옵션 표출 --%>
             <div class="flex flex-col">

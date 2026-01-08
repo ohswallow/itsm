@@ -1,12 +1,11 @@
 defmodule ItsmWeb.CommonKCreateVmLive.Form do
+  alias Itsm.Requests
   use ItsmWeb, :live_view
 
   alias Itsm.Accounts
   alias Itsm.Service
   alias Itsm.Service.Request
   alias Itsm.Team
-  alias Itsm.Accounts.User
-  alias ItsmWeb.LiveUtils
 
   def mount(params, _session, socket) do
     crew_options = Accounts.crew_ids_names(socket.assigns.current_user)
@@ -18,7 +17,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
        max_entries: 1,
        max_file_size: 2 * 1024 * 1024
      )
-     |> assign(:assignee, %User{})
      |> assign(:crew_options, crew_options)
      |> apply_action(socket.assigns.live_action, params)}
   end
@@ -64,27 +62,10 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     |> assign(:form, to_form(Service.change_request(request)))
   end
 
-  def handle_params(_params, uri, socket) do
-    IO.inspect(URI.parse(uri), label: "HANDLE_PARAMS URI")
-
+  def handle_params(_params, _uri, socket) do
     socket =
       socket
-      |> assign(:show_user_modal, false)
       |> assign(:show_crew_modal, false)
-      |> assign(:current_path, URI.parse(uri).path)
-
-    {:noreply, socket}
-  end
-
-  def handle_info({ItsmWeb.SearchUserDialog, :user_selected, assignee}, socket) do
-    params = LiveUtils.change_assignee_name(socket, assignee)
-    changeset = Service.change_request(socket.assigns.request, params)
-
-    socket =
-      socket
-      |> assign(:assignee, assignee)
-      |> assign(:form, to_form(changeset, action: :validate))
-      |> assign(:show_user_modal, false)
 
     {:noreply, socket}
   end
@@ -98,13 +79,25 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     {:noreply, socket}
   end
 
-  def handle_event("validate", %{"request" => request_params}, socket) do
-    changeset = Service.change_request(socket.assigns.request, request_params)
+  def handle_event(
+        "validate",
+        %{"request" => %{"assignee_id" => assignee_id} = request_params},
+        socket
+      ) do
+    %{current_user: user, category: category} = socket.assigns
+    assignee = Accounts.get_user(assignee_id)
+
+    changeset = Requests.change_request(user, category, assignee, request_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
-  def handle_event("open_user_modal", _, socket) do
-    {:noreply, assign(socket, :show_user_modal, true)}
+  def handle_event("live_select_change", %{"text" => keyword, "id" => live_select_id}, socket) do
+    %{current_user: user} = socket.assigns
+
+    options = Accounts.search_user_options(user, %{"keyword" => keyword})
+    send_update(LiveSelect.Component, id: live_select_id, options: options)
+
+    {:noreply, socket}
   end
 
   def handle_event("open_crew_modal", _, socket) do
@@ -130,8 +123,9 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     end
   end
 
-  defp save_request(socket, :new, request_params) do
-    %{current_user: user, category: category, assignee: assignee} = socket.assigns
+  defp save_request(socket, :new, %{"assignee_id" => assignee_id} = request_params) do
+    %{current_user: user, category: category} = socket.assigns
+    assignee = Accounts.get_user(assignee_id)
 
     case Service.create_full_request(user, category, assignee, request_params) do
       {:ok, request} ->

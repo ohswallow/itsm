@@ -1,7 +1,6 @@
 defmodule ItsmWeb.SearchUsersDialog do
   use ItsmWeb, :live_component
 
-  import LiveSelect
   alias Itsm.Accounts
 
   def update(assigns, socket) do
