@@ -99,7 +99,7 @@ defmodule ItsmWeb.ApprovalLive.List do
       id="requests"
       rows={@streams.requests}
       row_click={
-        fn {_id, request} -> JS.navigate(~p"/#{request.category.request_name}/#{request.id}") end
+        fn {_id, request} -> JS.navigate("/#{request.category.request_name}/#{request.id}") end
       }
     >
       <:col :let={{_id, request}} label="Title">{request.title}</:col>
