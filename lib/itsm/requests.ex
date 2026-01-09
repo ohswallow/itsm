@@ -8,6 +8,7 @@ defmodule Itsm.Requests do
       requestor: user,
       requestor_name: user.display_name,
       assignee: assignee,
+      assignee_id: assignee.id,
       assignee_name: assignee.display_name,
       category: category
     }

@@ -3,7 +3,7 @@ defmodule ItsmWeb.ItsmComponents do
   use Gettext, backend: ItsmWeb.Gettext
 
   alias Phoenix.LiveView.JS
-  import ItsmWeb.CoreComponents, only: [icon: 1, hide: 1]
+  import ItsmWeb.CoreComponents, only: [icon: 1, hide: 1, label: 1, error: 1, translate_error: 1]
 
   @doc """
   Renders a time element that displays a localized time using a LiveView hook.
@@ -109,5 +109,58 @@ defmodule ItsmWeb.ItsmComponents do
       <div></div>
     </div>
     """
+  end
+
+  def live_select(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
+    errors = if used_select?(field), do: field.errors, else: []
+
+    assigns =
+      assigns
+      |> assign(:errors, Enum.map(errors, &translate_error(&1)))
+      |> assign(:live_select_opts, assigns_to_attributes(assigns, [:errors, :label]))
+
+    ~H"""
+    <div phx-feedback-for={@field.name}>
+      <.label for={@field.id}>{@label}</.label>
+      
+      <LiveSelect.live_select
+        field={@field}
+        allow_clear={true}
+        debounce={300}
+        container_extra_class="flex-grow"
+        dropdown_extra_class="bg-white shadow-lg w-full max-h-60 overflow-y-auto"
+        option_extra_class="text-gray-800 border-b border-gray-200 hover:bg-blue-100 py-2 px-4"
+        active_option_class="bg-blue-500 text-white"
+        {@live_select_opts}
+      />
+      <.error :for={msg <- @errors}>{msg}</.error>
+    </div>
+    """
+  end
+
+  # Checks whether the live select input has been used (i.e., changed from its initial state).
+  defp used_select?(%Phoenix.HTML.FormField{field: field, form: form}) do
+    used_param?(form.params, "#{field}_text_input")
+  end
+
+  defp used_param?(_params, "_unused_" <> _), do: false
+
+  defp used_param?(params, field) do
+    field_str = "#{field}"
+    unused_field_str = "_unused_#{field}"
+
+    case params do
+      %{^field_str => _, ^unused_field_str => _} ->
+        false
+
+      %{^field_str => %{} = nested} when not is_struct(nested) ->
+        Enum.any?(Map.keys(nested), &used_param?(nested, &1))
+
+      %{^field_str => _val} ->
+        true
+
+      %{} ->
+        false
+    end
   end
 end

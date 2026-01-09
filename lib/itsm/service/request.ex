@@ -56,15 +56,14 @@ defmodule Itsm.Service.Request do
       :description,
       :env,
       :due_date,
-      :requestor_crew_id,
-      :assignee_name,
-      :requestor_name
+      :requestor_crew_id
     ])
     |> validate_required([
       :title,
       :description,
       :env,
       :due_date,
+      :assignee_id,
       :requestor_crew_id
     ])
     |> cast_embed(:common_k_create_vms,

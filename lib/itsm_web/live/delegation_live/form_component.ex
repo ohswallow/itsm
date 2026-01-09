@@ -1,7 +1,6 @@
 defmodule ItsmWeb.DelegationLive.FormComponent do
   use ItsmWeb, :live_component
 
-  import LiveSelect
   alias Itsm.Delegations
   alias Itsm.Accounts
 
@@ -41,77 +40,39 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <div class="mb-4">
-          <label class="mb-2 block text-sm font-semibold leading-6 text-zinc-800">
-            {gettext("Delegator name")}
-          </label>
-          <.live_select
-            field={@form[:delegator_id]}
-            phx-target={@myself}
-            allow_clear={true}
-            mode={:single}
-            placeholder={gettext("Search by name")}
-            container_extra_class="flex-grow"
-            dropdown_extra_class="bg-white shadow-lg w-full max-h-60 overflow-y-auto"
-            option_extra_class="text-gray-800 border-b border-gray-200 hover:bg-blue-100 py-2 px-4"
-            active_option_class="bg-blue-500 text-white"
-            debounce={300}
-          >
-            <:clear_button>&times;</:clear_button>
-            <:option :let={option}>
-              <%!-- 이름 외 옵션 표출 --%>
-              <div class="flex flex-col">
-                <span class="font-bold">{option.label}</span>
-                <span class="text-sm text-gray-600">
-                  ID: {option.value} | Email: {option.email} | Organization: {option.organization} | Department: {option.department}
-                </span>
-              </div>
-            </:option>
-          </.live_select>
-          
-          <.error
-            :for={{msg, opts} <- @form[:delegator_id].errors}
-            :if={@form.source.action == :insert or Keyword.get(opts, :validation) != :required}
-          >
-            {translate_error({msg, opts})}
-          </.error>
-        </div>
+        <.live_select
+          field={@form[:delegator_id]}
+          phx-target={@myself}
+          label={gettext("Delegator name")}
+          placeholder={gettext("Search by name")}
+        >
+          <:option :let={option}>
+            <%!-- 이름 외 옵션 표출 --%>
+            <div class="flex flex-col">
+              <span class="font-bold">{option.label}</span>
+              <span class="text-sm text-gray-600">
+                ID: {option.value} | Email: {option.email} | Organization: {option.organization} | Department: {option.department}
+              </span>
+            </div>
+          </:option>
+        </.live_select>
         
-        <div class="mb-4">
-          <label class="mb-2 block text-sm font-semibold leading-6 text-zinc-800">
-            {gettext("Delegatee name")}
-          </label>
-          <.live_select
-            field={@form[:delegatee_id]}
-            phx-target={@myself}
-            allow_clear={true}
-            mode={:single}
-            placeholder={gettext("Search by name")}
-            container_extra_class="flex-grow"
-            dropdown_extra_class="bg-white shadow-lg w-full max-h-60 overflow-y-auto"
-            option_extra_class="text-gray-800 border-b border-gray-200 hover:bg-blue-100 py-2 px-4"
-            active_option_class="bg-blue-500 text-white"
-            debounce={300}
-          >
-            <:clear_button>&times;</:clear_button>
-            <:option :let={option}>
-              <%!-- 이름 외 옵션 표출 --%>
-              <div class="flex flex-col">
-                <span class="font-bold">{option.label}</span>
-                <span class="text-sm text-gray-600">
-                  ID: {option.value} | Email: {option.email} | Organization: {option.organization} | Department: {option.department}
-                </span>
-              </div>
-            </:option>
-          </.live_select>
-          
-          <.error
-            :for={{msg, opts} <- @form[:delegatee_id].errors}
-            :if={@form.source.action == :insert or Keyword.get(opts, :validation) != :required}
-          >
-            {translate_error({msg, opts})}
-          </.error>
-        </div>
+        <.live_select
+          field={@form[:delegatee_id]}
+          label={gettext("Delegatee name")}
+          phx-target={@myself}
+          placeholder={gettext("Search by name")}
+        >
+          <:option :let={option}>
+            <%!-- 이름 외 옵션 표출 --%>
+            <div class="flex flex-col">
+              <span class="font-bold">{option.label}</span>
+              <span class="text-sm text-gray-600">
+                ID: {option.value} | Email: {option.email} | Organization: {option.organization} | Department: {option.department}
+              </span>
+            </div>
+          </:option>
+        </.live_select>
          <.input field={@form[:start_date]} type="date" label={gettext("Start date")} />
         <.input field={@form[:end_date]} type="date" label={gettext("End date")} />
         <.input
