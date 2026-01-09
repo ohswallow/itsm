@@ -73,21 +73,5 @@ defmodule Itsm.Service.Request do
     )
     |> assoc_constraint(:assignee)
     |> assoc_constraint(:category)
-
-    # |> validate_assignee_not_requestor()
-  end
-
-  # 👇 가장 단순한 검증기 (옵션 없이, if만 사용)
-  defp validate_assignee_not_requestor(changeset) do
-    validate_change(changeset, :assignee_id, fn :assignee_id, assignee_id ->
-      requestor_id = get_field(changeset, :requestor_id)
-      status = get_field(changeset, :status)
-
-      if (status != :verify and requestor_id) && assignee_id && requestor_id == assignee_id do
-        [assignee_id: "요청자와 승인자는 같을 수 없습니다"]
-      else
-        []
-      end
-    end)
   end
 end
