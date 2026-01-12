@@ -27,24 +27,26 @@ defmodule Itsm.Delegations.Delegation do
   def changeset(delegation, attrs) do
     delegation
     |> cast(attrs, [
-      :delegator_name,
-      :delegatee_name,
-      :created_by_name,
+      # :delegator_name,
+      # :delegatee_name,
+      # :created_by_name,
       :start_date,
       :end_date,
-      :reason,
-      :delegator_id,
-      :delegatee_id,
-      :created_by_id
+      :reason
+      # ,
+      # :delegator_id,
+      # :delegatee_id,
+      # :created_by_id
     ])
     |> validate_required([
       # :delegator_name,
       # :delegatee_name,
       :start_date,
       :end_date,
-      :reason,
-      :delegator_id,
-      :delegatee_id
+      :reason
+      # ,
+      # :delegator_id,
+      # :delegatee_id
     ])
     |> validate_delegatee_is_not_delegator()
     |> validate_start_date_not_past()
@@ -57,11 +59,15 @@ defmodule Itsm.Delegations.Delegation do
     delegator_id = get_field(changeset, :delegator_id)
     delegatee_id = get_field(changeset, :delegatee_id)
 
-    # 두 ID가 모두 존재하고, 서로 같으면 에러 추가
-    if delegator_id && delegatee_id && delegator_id == delegatee_id do
-      add_error(changeset, :delegatee_id, "본인에게는 위임할 수 없습니다.")
-    else
-      changeset
+    # 두 ID를 튜플로 묶어서 패턴 매칭
+    case {delegator_id, delegatee_id} do
+      # 1. 둘 다 존재하고, 값이 같을 때 (when 가드 절 사용) -> 에러
+      {id, id} when not is_nil(id) ->
+        add_error(changeset, :delegatee_id, "본인에게는 위임할 수 없습니다.")
+
+      # 2. 그 외 모든 경우 (다르거나, 하나가 없거나) -> 통과
+      _ ->
+        changeset
     end
   end
 

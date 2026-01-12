@@ -2,12 +2,11 @@ defmodule Itsm.Delegations do
   @moduledoc """
   The Delegations context.
   """
-
+  import Ecto.Changeset
   import Ecto.Query, warn: false
   alias Itsm.Repo
 
   alias Itsm.Delegations.Delegation
-  # alias Itsm.Accounts
   alias Itsm.Accounts.User
 
   # ✅ 모든 delegation 리스트 변경사항 구독 (생성, 업데이트 등)
@@ -86,88 +85,86 @@ defmodule Itsm.Delegations do
       {:error, %Ecto.Changeset{}}
 
   """
-  # def create_delegation(attrs \\ %{}) do
-  #   %Delegation{}
-  #   |> Delegation.changeset(attrs)
-  #   |> Repo.insert()
-  # end
-  # def create_delegation(attrs) do
+
   def create_delegation(%User{} = current_user, %User{} = delegator, %User{} = delegatee, attrs) do
-    # 1. 넘겨받은 User 구조체들의 정보를 attrs에 강제로 주입
-    #    (화면에서 넘어온 ID보다 구조체의 정보가 우선이므로 덮어씌움)
-    attrs =
-      attrs
-      |> Map.put("created_by_id", current_user.id)
-      |> Map.put("created_by_name", current_user.display_name)
-      |> Map.put("delegator_id", delegator.id)
-      |> Map.put("delegator_name", delegator.display_name)
-      |> Map.put("delegatee_id", delegatee.id)
-      |> Map.put("delegatee_name", delegatee.display_name)
-
-    # 디버깅용 로그: 여기서 이름이 들어갔는지 확인
-    IO.inspect(attrs, label: "CHECK ATTRS IN create_delegation CONTEXT")
-
-    # 2. Changeset 생성
-    changeset = Delegation.changeset(%Delegation{}, attrs)
-
-    # 3. [추가] 중복 기간 검증 (Context 레벨의 유효성 검사)
-    #    Changeset이 유효할 때만 DB 검사를 수행합니다.
-    changeset =
-      if changeset.valid? do
-        validate_overlap(changeset)
-      else
-        changeset
-      end
-
-    # 4. 저장 및 PubSub 브로드캐스트 로직 추가
-    # Repo.insert(changeset)
-    changeset
+    # 구조체 기반으로 필드 채우기
+    %Delegation{
+      created_by: current_user,
+      created_by_id: current_user.id,
+      created_by_name: current_user.display_name,
+      delegator: delegator,
+      delegator_id: delegator.id,
+      delegator_name: delegator.display_name,
+      delegatee: delegatee,
+      delegatee_id: delegatee.id,
+      delegatee_name: delegatee.display_name
+    }
+    |> Delegation.changeset(attrs)
+    # 의미 단위로 함수 분리 및 파이프라인 연결
+    |> validate_delegator_overlap()
+    |> validate_delegatee_overlap()
     |> Repo.insert()
-    |> case do
-      {:ok, delegation} ->
-        # 성공 시 브로드캐스트 실행
-        broadcast_delegation_list({:delegation_created, delegation})
-        {:ok, delegation}
-
-      # 실패 시 에러 그대로 반환 (브로드캐스트 안 함)
-      {:error, _} = error ->
-        error
-    end
+    |> broadcast_result()
   end
 
-  # 중복기간 검증 로직
-  defp validate_overlap(changeset) do
-    start_date = Ecto.Changeset.get_field(changeset, :start_date)
-    end_date = Ecto.Changeset.get_field(changeset, :end_date)
-    delegator_id = Ecto.Changeset.get_field(changeset, :delegator_id)
-    delegatee_id = Ecto.Changeset.get_field(changeset, :delegatee_id)
+  # --------------------------------------------------------
+  # 검증 로직 분리
+  # --------------------------------------------------------
 
-    cond do
-      # 1. "위임자에게 겹치는 위임이 있는가?"
-      has_overlapping_delegation?(delegator_id, start_date, end_date) ->
-        Ecto.Changeset.add_error(
+  # 1. 위임자(Delegator) 중복 체크
+  defp validate_delegator_overlap(%Ecto.Changeset{valid?: true} = changeset) do
+    params = get_overlap_params(changeset)
+
+    case exists_active_delegation?(params.delegator.id, params.start_date, params.end_date) do
+      true ->
+        add_error(
           changeset,
           :delegator_id,
           "This user is already assigned as a delegate during this period."
         )
 
-      # 2. "수임자에게 겹치는 위임이 있는가?"
-      has_overlapping_delegation?(delegatee_id, start_date, end_date) ->
-        Ecto.Changeset.add_error(
+      false ->
+        changeset
+    end
+  end
+
+  # 앞 단계에서 이미 valid: false면 패스
+  defp validate_delegator_overlap(changeset), do: changeset
+
+  # 2. 수임자(Delegatee) 중복 체크
+  defp validate_delegatee_overlap(%Ecto.Changeset{valid?: true} = changeset) do
+    params = get_overlap_params(changeset)
+
+    case exists_active_delegation?(params.delegatee.id, params.start_date, params.end_date) do
+      true ->
+        add_error(
           changeset,
           :delegatee_id,
           "This user is already assigned as a delegate during this period."
         )
 
-      true ->
+      false ->
         changeset
     end
   end
 
-  # "이 사용자(user_id)가 이 기간(start~end)에 포함된 위임이 존재하는가?"
-  defp has_overlapping_delegation?(nil, _, _), do: false
+  # 앞 단계에서 이미 valid: false면 패스
+  defp validate_delegatee_overlap(changeset), do: changeset
 
-  defp has_overlapping_delegation?(user_id, start_date, end_date) do
+  # 구조체에서 중복 검사에 필요한 필드 추출
+  defp get_overlap_params(changeset) do
+    %{
+      start_date: get_field(changeset, :start_date),
+      end_date: get_field(changeset, :end_date),
+      delegator: get_field(changeset, :delegator),
+      delegatee: get_field(changeset, :delegatee)
+    }
+  end
+
+  # 위/수임자가 해당 기간(start~end)에 포함된 위임이 존재하는가? (위임 중복 검사)
+  defp exists_active_delegation?(nil, _, _), do: false
+
+  defp exists_active_delegation?(user_id, start_date, end_date) do
     query =
       from d in Delegation,
         where: d.delegator_id == ^user_id or d.delegatee_id == ^user_id,
@@ -176,22 +173,13 @@ defmodule Itsm.Delegations do
     Repo.exists?(query)
   end
 
-  # defp fill_name_from_id(attrs, id_key, name_key) do
-  #   id = attrs[id_key]
-  #   name = attrs[name_key]
+  # 결과 처리 및 브로드캐스트 헬퍼 함수
+  defp broadcast_result({:ok, delegation}) do
+    broadcast_delegation_list({:delegation_created, delegation})
+    {:ok, delegation}
+  end
 
-  #   # ID는 있는데 이름이 없거나 빈 문자열("")일 때만 -> DB 조회
-  #   if id && id != "" && (is_nil(name) || name == "") do
-  #     case Accounts.get_user!(id) do
-  #       # 유저 없으면 무시
-  #       nil -> attrs
-  #       user -> Map.put(attrs, name_key, user.display_name)
-  #     end
-  #   else
-  #     # 이미 이름이 있거나 ID가 없으면 패스
-  #     attrs
-  #   end
-  # end
+  defp broadcast_result({:error, _} = error), do: error
 
   @doc """
   Updates a delegation.
@@ -211,10 +199,6 @@ defmodule Itsm.Delegations do
   #   delegation
   #   |> Delegation.changeset(attrs)
   #   |> Repo.update()
-  # end
-
-  # def delete_delegation(%Delegation{} = delegation) do
-  #   Repo.delete(delegation)
   # end
 
   def delete_delegation(%Delegation{} = delegation, %User{} = current_user) do

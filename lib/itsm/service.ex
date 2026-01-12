@@ -269,10 +269,10 @@ defmodule Itsm.Service do
 
   """
 
-  # def get_request!(id), do: Repo.get!(Request, id)
-
   def get_request!(id) do
-    Repo.one!(from(Request, where: [id: ^id], preload: :category))
+    Request
+    |> Repo.get!(id)
+    |> Repo.preload([:category, :attachments])
   end
 
   def list_comments(request) do

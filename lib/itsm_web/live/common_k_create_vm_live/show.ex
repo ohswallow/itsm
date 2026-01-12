@@ -21,7 +21,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
     end
 
     request = Service.get_request!(id)
-
     comments = Service.list_comments(request)
 
     {
@@ -30,6 +29,8 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
       |> assign(:page_title, "Show Request")
       |> assign(:request, request)
       |> stream(:comments, comments)
+      # 모달용
+      |> assign(:selected_attachment, nil)
       #  |> assign(:workflow_steps, Approval.status_values())
     }
   end
@@ -178,6 +179,65 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
         </div>
       </div> --%>
     </div>
+     <%!-- 첨부파일 섹션 --%>
+    <div :if={Enum.any?(@request.attachments)} class="mt-8">
+      <h2 class="text-lg font-semibold text-zinc-700 mb-4">첨부파일 ({length(@request.attachments)})</h2>
+      
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div
+          :for={attachment <- @request.attachments}
+          class="group relative border border-zinc-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+          phx-click="view_attachment"
+          phx-value-id={attachment.id}
+        >
+          <%!-- 썸네일 --%>
+          <div class="aspect-square bg-zinc-100 flex items-center justify-center">
+            <img
+              src={attachment.local_path}
+              alt={attachment.filename}
+              class="w-full h-full object-cover"
+            />
+          </div>
+           <%!-- 파일 정보 --%>
+          <div class="p-2 bg-white">
+            <p class="text-xs text-zinc-700 truncate" title={attachment.filename}>
+              {attachment.filename}
+            </p>
+            
+            <p class="text-xs text-zinc-400">{format_file_size(attachment.byte_size)}</p>
+          </div>
+           <%!-- 호버 시 오버레이 --%>
+          <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            <.icon name="hero-magnifying-glass-plus" class="w-8 h-8 text-white" />
+          </div>
+        </div>
+      </div>
+    </div>
+     <%!-- 첨부파일 확대 모달 --%>
+    <.modal
+      :if={@selected_attachment}
+      id="attachment-modal"
+      show
+      on_cancel={JS.push("close_attachment")}
+    >
+      <div class="text-center">
+        <img
+          src={@selected_attachment.local_path}
+          alt={@selected_attachment.filename}
+          class="max-h-[70vh] mx-auto rounded-lg"
+        />
+        <div class="mt-4 flex items-center justify-center gap-4">
+          <span class="text-sm text-zinc-600">{@selected_attachment.filename}</span>
+          <a
+            href={@selected_attachment.local_path}
+            download={@selected_attachment.filename}
+            class="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
+          >
+            <.icon name="hero-arrow-down-tray" class="w-4 h-4" /> 다운로드
+          </a>
+        </div>
+      </div>
+    </.modal>
 
     <div class="mt-4 bg-white rounded-lg shadow-sm border border-slate-200 p-6">
       <div class="text-lg font-semibold text-slate-900 mb-4">Activity & Comments</div>
@@ -214,6 +274,16 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
       </div>
     </div>
     """
+  end
+
+  # 모달 열기/닫기 이벤트
+  def handle_event("view_attachment", %{"id" => id}, socket) do
+    attachment = Enum.find(socket.assigns.request.attachments, &(&1.id == id))
+    {:noreply, assign(socket, :selected_attachment, attachment)}
+  end
+
+  def handle_event("close_attachment", _, socket) do
+    {:noreply, assign(socket, :selected_attachment, nil)}
   end
 
   def handle_event("validate", %{"comment" => comment_params}, socket) do
@@ -256,4 +326,8 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   def handle_info({:request_updated, request}, socket) do
     {:noreply, assign(socket, :request, request)}
   end
+
+  defp format_file_size(bytes) when bytes < 1024, do: "#{bytes} B"
+  defp format_file_size(bytes) when bytes < 1024 * 1024, do: "#{Float.round(bytes / 1024, 1)} KB"
+  defp format_file_size(bytes), do: "#{Float.round(bytes / (1024 * 1024), 1)} MB"
 end
