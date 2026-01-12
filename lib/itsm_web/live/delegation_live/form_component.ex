@@ -93,7 +93,10 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
 
     %{current_user: current_user} = socket.assigns
 
-    options = Accounts.search_user_options(current_user, %{"keyword" => keyword})
+    # 본인 선택이 가능한 화면에서 호출 시
+    options =
+      Accounts.search_user_options(current_user, %{"keyword" => keyword, "include_self" => true})
+
     send_update(LiveSelect.Component, id: live_select_id, options: options)
 
     {:noreply, socket}
@@ -122,10 +125,6 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
 
     delegator = Accounts.get_user!(delegator_id)
     delegatee = Accounts.get_user!(delegatee_id)
-    # 등록자 id 정보 추가
-    # delegation_params =
-    #   delegation_params
-    #   |> Map.put("created_by_id", current_user.id)
 
     case Delegations.create_delegation(current_user, delegator, delegatee, delegation_params) do
       {:ok, delegation} ->

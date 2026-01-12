@@ -368,27 +368,33 @@ defmodule Itsm.Accounts do
     User
     |> search_by(params["keyword"])
     |> order_by(:display_name)
-    |> select([u], %{
-      value: u.id,
-      label: u.display_name,
-      tag_label: fragment("? || '(' || ? || ')'", u.display_name, u.employee_number),
-      email: u.email,
-      organization: u.organization,
-      employee_number: u.employee_number,
-      department: u.department
-    })
+    |> select_user_options()
     |> Repo.all()
   end
 
-  # 일반 유저용 조직/부서 필터링 포함 사용자 검색
+  # 일반 유저용: 조직/부서 필터링 + 본인 제외 여부 제어
   def search_user_options(%User{} = user, params) do
     User
     |> search_by(params["keyword"])
-    |> where([u], u.id != ^user.id)
     |> where([u], u.organization_code == ^user.organization_code)
     |> where([u], u.department_code == ^user.department_code)
+    |> maybe_exclude_self(user, params)
     |> order_by(:display_name)
-    |> select([u], %{
+    |> select_user_options()
+    |> Repo.all()
+  end
+
+  # Case 1: params에 "include_self"가 true면 -> 본인 포함 검색
+  defp maybe_exclude_self(query, _user, %{"include_self" => true}), do: query
+
+  # Case 2: 그 외의 경우(기본값) -> 본인 제외 검색
+  defp maybe_exclude_self(query, user, _params) do
+    where(query, [u], u.id != ^user.id)
+  end
+
+  # Admin용과 일반용 함수에서 중복되는 select 구문 분리
+  defp select_user_options(query) do
+    select(query, [u], %{
       value: u.id,
       label: u.display_name,
       tag_label: fragment("? || '(' || ? || ')'", u.display_name, u.employee_number),
@@ -397,7 +403,6 @@ defmodule Itsm.Accounts do
       employee_number: u.employee_number,
       department: u.department
     })
-    |> Repo.all()
   end
 
   # 1. 이름 검색

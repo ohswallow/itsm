@@ -5,6 +5,7 @@ defmodule Itsm.Service.Request do
   alias Itsm.Service.CommonKCreateVm
   alias Itsm.Service.Category
   alias Itsm.Service.Approval
+  alias Itsm.Attachments.Attachment
 
   @status_values [:request, :check, :plan, :review, :start, :finish, :verify, :closed]
 
@@ -37,6 +38,7 @@ defmodule Itsm.Service.Request do
 
     has_many :approvals, Approval
     has_many :comments, Itsm.Comments.Comment
+    has_many :attachments, Attachment, on_replace: :delete
 
     # has_many :referenced_crews, Itsm.Team.Reference, foreign_key: :reference_id, where: [reference_type: "Request"]
     has_many :references, Itsm.Team.Reference,
@@ -73,5 +75,9 @@ defmodule Itsm.Service.Request do
     )
     |> assoc_constraint(:assignee)
     |> assoc_constraint(:category)
+    # attachments 데이터를 같이 받아서 한 번에 저장
+    |> cast_assoc(:attachments, with: &Attachment.changeset/2)
+
+    # |> validate_assignee_not_requestor()
   end
 end

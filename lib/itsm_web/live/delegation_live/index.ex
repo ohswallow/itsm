@@ -3,6 +3,7 @@ defmodule ItsmWeb.DelegationLive.Index do
 
   alias Itsm.Delegations
   alias Itsm.Delegations.Delegation
+  alias Itsm.Accounts.User
 
   @impl true
   def mount(_params, _session, socket) do
@@ -22,7 +23,6 @@ defmodule ItsmWeb.DelegationLive.Index do
   defp apply_action(socket, :new, _params) do
     socket
     |> assign(:page_title, gettext("New Delegation"))
-    # |> assign(:page_title, "New Delegation")
     |> assign(:delegation, %Delegation{})
   end
 
@@ -81,4 +81,16 @@ defmodule ItsmWeb.DelegationLive.Index do
          |> put_flash(:error, gettext("An unknown error occurred."))}
     end
   end
+
+  # 삭제 권한이 있는지 확인하는 헬퍼 함수
+  # 1. 관리자(admin)라면 무조건 true
+  defp can_delete?(%User{role: :admin}, _delegation), do: true
+
+  # 2. 일반 유저라도 본인이 만든(created_by_id 일치) 위임이라면 true
+  defp can_delete?(%User{id: user_id}, %Delegation{created_by_id: created_by_id})
+       when user_id == created_by_id,
+       do: true
+
+  # 3. 그 외에는 모두 false (버튼 숨김)
+  defp can_delete?(_user, _delegation), do: false
 end
