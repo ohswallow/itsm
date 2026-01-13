@@ -179,23 +179,29 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
 
   # ✅ 파일을 디스크에 저장하고, DB용 맵 리스트를 반환하는 함수
   defp consume_attachments(socket) do
-    consume_uploaded_entries(socket, :attachment, fn %{path: path}, entry ->
-      # 1. 저장 경로 (priv/static/uploads)
-      dest_dir = Path.join([:code.priv_dir(:itsm), "static", "uploads"])
-      File.mkdir_p!(dest_dir)
+    consume_uploaded_entries(socket, :attachment, fn meta, entry ->
+      # 저장 경로 (priv/static/uploads)
+      dest =
+        Path.join([
+          "priv",
+          "static",
+          "uploads",
+          "#{entry.uuid}-#{entry.client_name}"
+        ])
 
-      # 2. 파일명 중복 방지 (UUID 사용)
-      unique_filename = "#{entry.uuid}-#{entry.client_name}"
-      dest_path = Path.join(dest_dir, unique_filename)
+      # directory가 없으면 생성
+      File.mkdir_p!(Path.dirname(dest))
+      # 파일 복사
+      File.cp!(meta.path, dest)
 
-      # 3. 파일 복사
-      File.cp!(path, dest_path)
+      # "/uploads/uuid-filename.jpg" 형태의 문자열을 반환
+      url_path = static_path(socket, "/uploads/#{Path.basename(dest)}")
 
-      # 4. Attachment 스키마에 들어갈 Map 반환
+      # Attachment 스키마에 들어갈 Map 반환
       {:ok,
        %{
          "filename" => entry.client_name,
-         "local_path" => "/uploads/#{unique_filename}",
+         "local_path" => url_path,
          "content_type" => entry.client_type,
          "byte_size" => entry.client_size
        }}
