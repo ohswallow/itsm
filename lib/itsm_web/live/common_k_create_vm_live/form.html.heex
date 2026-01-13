@@ -175,9 +175,24 @@
     </a>
   </figure> --%>
   <%!-- 승인자 섹션 --%>
-  <.input
+  <%!-- <.input
     field={@form[:assignee_name]}
     type="text"
+    label={gettext("Approver")}
+    placeholder={gettext("Search by name")}
+  >
+    <:option :let={option}> --%>
+  <%!-- 이름 외 옵션 표출 --%>
+  <%!-- <div class="flex flex-col">
+        <span class="font-bold">{option.label}</span>
+        <span class="text-sm text-gray-600">
+          ID: {option.value} | Email: {option.email} | Organization: {option.organization} | Department: {option.department}
+        </span>
+      </div>
+    </:option>
+  </.input> --%>
+  <.live_select
+    field={@form[:assignee_id]}
     label={gettext("Approver")}
     placeholder={gettext("Search by name")}
   >
@@ -190,7 +205,7 @@
         </span>
       </div>
     </:option>
-  </.input>
+  </.live_select>
   
   <div class="mb-6">
     <label class="block text-sm font-semibold text-zinc-700 mb-2">
@@ -215,7 +230,7 @@
   </div>
 </.form>
 
-<.modal
+<%!-- <.modal
   :if={@show_crew_modal}
   id="crews-search"
   on_cancel={JS.patch(@current_path)}
@@ -226,6 +241,5 @@
     id="search-crews"
     parent_pid={self()}
   />
-</.modal>
-
+</.modal> --%>
 <.back navigate={~p"/categories"}>Back</.back>

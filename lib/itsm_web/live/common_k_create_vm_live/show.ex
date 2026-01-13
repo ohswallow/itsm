@@ -75,6 +75,8 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
           
           <:item title="Requestor">{@request.requestor_name} ({@request.requestor_id})</:item>
           
+          <:item title="Assignee">{@request.assignee_name} ({@request.assignee_id})</:item>
+          
           <:item title="Category">{@request.category.name}</:item>
         </.list>
         

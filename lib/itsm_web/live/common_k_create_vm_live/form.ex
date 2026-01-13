@@ -12,10 +12,10 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
 
     {:ok,
      socket
-     |> allow_upload(:image,
-       accept: ~w(.png .jpg),
-       max_entries: 1,
-       max_file_size: 2 * 1024 * 1024
+     |> allow_upload(:attachment,
+       accept: ~w(.png .jpg .jpeg .bmp .gif),
+       max_entries: 3,
+       max_file_size: 1 * 1024 * 1024
      )
      |> assign(:crew_options, crew_options)
      |> apply_action(socket.assigns.live_action, params)}
@@ -79,15 +79,25 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     {:noreply, socket}
   end
 
-  def handle_event(
-        "validate",
-        %{"request" => %{"assignee_id" => assignee_id} = request_params},
-        socket
-      ) do
-    %{current_user: user, category: category} = socket.assigns
-    assignee = Accounts.get_user(assignee_id)
+  # ✅ 파일 업로드 취소 이벤트 (HTML의 phx-click="cancel" 처리)
+  def handle_event("cancel", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :attachment, ref)}
+  end
 
-    changeset = Requests.change_request(user, category, assignee, request_params)
+  # def handle_event(
+  #       "validate",
+  #       %{"request" => %{"assignee_id" => assignee_id} = request_params},
+  #       socket
+  #     ) do
+  #   %{current_user: user, category: category} = socket.assigns
+  #   assignee = Accounts.get_user(assignee_id)
+
+  #   changeset = Requests.change_request(user, category, assignee, request_params)
+  #   {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
+  # end
+
+  def handle_event("validate", %{"request" => request_params}, socket) do
+    changeset = Service.change_request(socket.assigns.request, request_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
@@ -127,7 +137,13 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     %{current_user: user, category: category} = socket.assigns
     assignee = Accounts.get_user(assignee_id)
 
-    case Service.create_full_request(user, category, assignee, request_params) do
+    case Service.create_request(
+           user,
+           category,
+           assignee,
+           request_params,
+           consume_attachments(socket)
+         ) do
       {:ok, request} ->
         {:noreply,
          socket
@@ -140,22 +156,50 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
       {:error, :approval, _changeset, _so_far_changeset} ->
         {:noreply,
          socket
-         |> put_flash(:error, "An error occurred while creating approval}")
+         |> put_flash(:error, "Approval creation failed")
          |> push_navigate(to: ~p"/requests")}
+
+      {:error, :attachments, _, _} ->
+        {:noreply, put_flash(socket, :error, "Attachment upload failed")}
     end
   end
 
-  defp save_request(socket, :copy, request_params) do
-    case Service.create_request(socket.assigns.current_user, request_params) do
-      {:ok, _request} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Request copied successfully")
-         |> push_navigate(to: ~p"/requests")}
+  # defp save_request(socket, :copy, request_params) do
+  #   case Service.create_request(socket.assigns.current_user, request_params) do
+  #     {:ok, _request} ->
+  #       {:noreply,
+  #        socket
+  #        |> put_flash(:info, "Request copied successfully")
+  #        |> push_navigate(to: ~p"/requests")}
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, form: to_form(changeset))}
-    end
+  #     {:error, %Ecto.Changeset{} = changeset} ->
+  #       {:noreply, assign(socket, form: to_form(changeset))}
+  #   end
+  # end
+
+  # ✅ 파일을 디스크에 저장하고, DB용 맵 리스트를 반환하는 함수
+  defp consume_attachments(socket) do
+    consume_uploaded_entries(socket, :attachment, fn %{path: path}, entry ->
+      # 1. 저장 경로 (priv/static/uploads)
+      dest_dir = Path.join([:code.priv_dir(:itsm), "static", "uploads"])
+      File.mkdir_p!(dest_dir)
+
+      # 2. 파일명 중복 방지 (UUID 사용)
+      unique_filename = "#{entry.uuid}-#{entry.client_name}"
+      dest_path = Path.join(dest_dir, unique_filename)
+
+      # 3. 파일 복사
+      File.cp!(path, dest_path)
+
+      # 4. Attachment 스키마에 들어갈 Map 반환
+      {:ok,
+       %{
+         "filename" => entry.client_name,
+         "local_path" => "/uploads/#{unique_filename}",
+         "content_type" => entry.client_type,
+         "byte_size" => entry.client_size
+       }}
+    end)
   end
 
   # os_image에 따라 os_version 옵션 동적 변경
