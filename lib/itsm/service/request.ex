@@ -58,6 +58,7 @@ defmodule Itsm.Service.Request do
       :description,
       :env,
       :due_date,
+      :assignee_id,
       :requestor_crew_id
     ])
     |> validate_required([

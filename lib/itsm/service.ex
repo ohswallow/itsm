@@ -12,8 +12,7 @@ defmodule Itsm.Service do
   alias Itsm.Delegations.Delegation
   alias Itsm.Accounts.User
   alias Itsm.Requests
-
-  # alias Itsm.Team.Crew
+  alias Itsm.Attachments.Attachment
   alias Itsm.Team.Member
 
   # ✅ 특정 request의 변경사항 구독
@@ -295,45 +294,101 @@ defmodule Itsm.Service do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_request(user, attrs \\ %{}) do
-    user
-    |> Ecto.build_assoc(:requests)
-    |> Request.changeset(attrs)
-    |> Ecto.Changeset.put_change(:requestor_name, user.display_name)
-    |> Repo.insert()
-    |> case do
-      {:ok, request} ->
-        request = Repo.preload(request, :category)
-        broadcast_approvals_list({:request_created, request})
-        {:ok, request}
 
-      {:error, _} = error ->
-        error
-    end
-  end
+  # 어디에 쓰는지 모르겠음
 
-  def create_full_request(
+  # def create_request(user, attrs \\ %{}) do
+  #   user
+  #   |> Ecto.build_assoc(:requests)
+  #   |> Request.changeset(attrs)
+  #   |> Ecto.Changeset.put_change(:requestor_name, user.display_name)
+  #   |> Repo.insert()
+  #   |> case do
+  #     {:ok, request} ->
+  #       request = Repo.preload(request, :category)
+  #       broadcast_approvals_list({:request_created, request})
+  #       {:ok, request}
+
+  #     {:error, _} = error ->
+  #       error
+  #   end
+  # end
+
+  # ============================================================================
+  # Request 생성 및 수정
+  # ============================================================================
+
+  def create_request(
         %User{} = user,
         %Category{} = category,
         %User{} = assignee,
-        attrs \\ %{}
+        attrs \\ %{},
+        attachments \\ []
       ) do
+    # 1. 구조체 명시적 초기화
+    new_request = %Request{
+      requestor: user,
+      requestor_name: user.display_name,
+      category: category,
+      assignee: assignee,
+      assignee_id: assignee.id,
+      assignee_name: assignee.display_name
+      # requestor_crew_id는 폼(attrs)에서 넘어옴
+    }
+
     Multi.new()
-    |> Multi.insert(:request, Requests.change_request(user, category, assignee, attrs))
+    # 2. Request 생성 (Requests.change_request 대신 직접 changeset 호출)
+    |> Multi.insert(:request, Request.changeset(new_request, attrs))
+    # 3. 첨부파일 처리 (패턴 매칭 사용)
+    |> maybe_insert_attachments(attachments)
+    # 4. 결재선 생성
     |> Multi.run(:approval, fn repo, %{request: request} ->
       Itsm.Approvals.create_approval(repo, request, user)
     end)
     |> Repo.transaction()
-    |> case do
-      {:ok, %{request: request, approval: _approval}} ->
-        request = Repo.preload(request, :category)
-        broadcast_approvals_list({:request_created, request})
-        {:ok, request}
+    |> broadcast_result(:request_created)
+  end
 
-      {:error, _failed_operation, _failed_value, _changes_so_far} = error ->
-        error
+  # ✅ 첨부파일 처리: 빈 리스트일 경우 (Multi 그대로 반환)
+  defp maybe_insert_attachments(multi, []), do: multi
+
+  # ✅ 첨부파일 처리: 파일이 있을 경우
+  defp maybe_insert_attachments(multi, attachments) do
+    Multi.run(multi, :attachments, fn repo, %{request: request} ->
+      insert_attachments(repo, request, attachments)
+    end)
+  end
+
+  # ✅ 실제 DB Insert 로직
+  defp insert_attachments(repo, request, attachments) do
+    results =
+      Enum.map(attachments, fn attachment_attrs ->
+        %Attachment{request: request}
+        |> Attachment.changeset(attachment_attrs)
+        |> repo.insert()
+      end)
+
+    # 전체 성공 여부 확인
+    if Enum.all?(results, &match?({:ok, _}, &1)) do
+      {:ok, results}
+    else
+      {:error, :attachment_save_failed}
     end
   end
+
+  # ✅ 결과 브로드캐스트 헬퍼
+  defp broadcast_result({:ok, %{request: request}} = _result, event) do
+    request = Repo.preload(request, [:category, :attachments])
+
+    case event do
+      :request_created -> broadcast_approvals_list({event, request})
+      :request_updated -> broadcast_request(request.id, {event, request})
+    end
+
+    {:ok, request}
+  end
+
+  defp broadcast_result(error, _), do: error
 
   @doc """
   Updates a request.
@@ -347,6 +402,7 @@ defmodule Itsm.Service do
       {:error, %Ecto.Changeset{}}
 
   """
+  # 수정 필요
   def update_request(current_user, %Request{requestor_id: requestor_id} = request, attrs)
       when current_user.id == requestor_id do
     request
