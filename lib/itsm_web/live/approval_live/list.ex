@@ -2,6 +2,7 @@ defmodule ItsmWeb.ApprovalLive.List do
   use ItsmWeb, :live_view
   alias Itsm.Service
   alias Phoenix.LiveView.JS
+  alias Itsm.Requests
 
   @impl true
   def mount(_params, _session, socket) do
@@ -17,13 +18,8 @@ defmodule ItsmWeb.ApprovalLive.List do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  # defp apply_action(socket, :approve, %{"request_id" => id}) do
-  #   socket
-  #   |> assign(:page_title, "승인")
-  #   |> assign(:request, Service.get_request!(id))
-  # end
   defp apply_action(socket, :approve, %{"request_id" => id}) do
-    request = Service.get_request!(id)
+    request = Requests.get_request!(id)
 
     # 상태에 따라 모달 제목 변경
     page_title =
@@ -41,13 +37,13 @@ defmodule ItsmWeb.ApprovalLive.List do
   defp apply_action(socket, :reject, %{"request_id" => id}) do
     socket
     |> assign(:page_title, "반려")
-    |> assign(:request, Service.get_request!(id))
+    |> assign(:request, Requests.get_request!(id))
   end
 
   defp apply_action(socket, :feedback, %{"request_id" => id}) do
     socket
     |> assign(:page_title, "평가")
-    |> assign(:request, Service.get_request!(id))
+    |> assign(:request, Requests.get_request!(id))
   end
 
   defp apply_action(socket, :index, _params) do

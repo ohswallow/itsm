@@ -41,7 +41,7 @@ defmodule Itsm.ServiceFixtures do
         env: :prod,
         title: "some title"
       })
-      |> Itsm.Service.create_request()
+      |> Itsm.Requests.create_request()
 
     request
   end

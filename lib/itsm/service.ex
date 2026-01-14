@@ -2,7 +2,6 @@ defmodule Itsm.Service do
   @moduledoc """
   The Service context.
   """
-
   import Ecto.Query, warn: false
   alias Ecto.Multi
   alias Itsm.Repo
@@ -11,18 +10,8 @@ defmodule Itsm.Service do
   alias Itsm.Service.Request
   alias Itsm.Delegations.Delegation
   alias Itsm.Accounts.User
-  alias Itsm.Requests
   alias Itsm.Attachments.Attachment
   alias Itsm.Team.Member
-
-  # ✅ 특정 request의 변경사항 구독
-  def subscribe_request(request_id) do
-    Phoenix.PubSub.subscribe(Itsm.PubSub, "request:#{request_id}")
-  end
-
-  def broadcast_request(request_id, message) do
-    Phoenix.PubSub.broadcast(Itsm.PubSub, "request:#{request_id}", message)
-  end
 
   # ✅ 모든 request 리스트 변경사항 구독 (생성, 업데이트 등)
   def subscribe_approvals_list do
@@ -163,20 +152,6 @@ defmodule Itsm.Service do
     Category.changeset(category, attrs)
   end
 
-  @doc """
-  Returns the list of requests.
-
-  ## Examples
-
-      iex> list_requests()
-      [%Request{}, ...]
-
-  """
-  def list_requests do
-    Repo.all(Request)
-    |> Repo.preload(:category)
-  end
-
   def list_assignee_requests(current_user) do
     today = Date.utc_today()
 
@@ -253,27 +228,6 @@ defmodule Itsm.Service do
     |> Repo.preload([:category, :assignee_crew])
   end
 
-  @doc """
-  Gets a single request.
-
-  Raises `Ecto.NoResultsError` if the Request does not exist.
-
-  ## Examples
-
-      iex> get_request!(123)
-      %Request{}
-
-      iex> get_request!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-
-  def get_request!(id) do
-    Request
-    |> Repo.get!(id)
-    |> Repo.preload([:category, :attachments])
-  end
-
   def list_comments(request) do
     request
     |> Ecto.assoc(:comments)
@@ -294,30 +248,6 @@ defmodule Itsm.Service do
       {:error, %Ecto.Changeset{}}
 
   """
-
-  # 어디에 쓰는지 모르겠음
-
-  # def create_request(user, attrs \\ %{}) do
-  #   user
-  #   |> Ecto.build_assoc(:requests)
-  #   |> Request.changeset(attrs)
-  #   |> Ecto.Changeset.put_change(:requestor_name, user.display_name)
-  #   |> Repo.insert()
-  #   |> case do
-  #     {:ok, request} ->
-  #       request = Repo.preload(request, :category)
-  #       broadcast_approvals_list({:request_created, request})
-  #       {:ok, request}
-
-  #     {:error, _} = error ->
-  #       error
-  #   end
-  # end
-
-  # ============================================================================
-  # Request 생성 및 수정
-  # ============================================================================
-
   def create_request(
         %User{} = user,
         %Category{} = category,
@@ -382,71 +312,12 @@ defmodule Itsm.Service do
 
     case event do
       :request_created -> broadcast_approvals_list({event, request})
-      :request_updated -> broadcast_request(request.id, {event, request})
     end
 
     {:ok, request}
   end
 
   defp broadcast_result(error, _), do: error
-
-  @doc """
-  Updates a request.
-
-  ## Examples
-
-      iex> update_request(request, %{field: new_value})
-      {:ok, %Request{}}
-
-      iex> update_request(request, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  # 수정 필요
-  def update_request(current_user, %Request{requestor_id: requestor_id} = request, attrs)
-      when current_user.id == requestor_id do
-    request
-    |> Request.changeset(attrs)
-    |> Repo.update()
-    |> case do
-      {:ok, request} ->
-        request = Repo.preload(request, :category)
-        broadcast_request(request.id, {:request_updated, request})
-        {:ok, request}
-
-      {:error, _} = error ->
-        error
-    end
-  end
-
-  @doc """
-  Deletes a request.
-
-  ## Examples
-
-      iex> delete_request(request)
-      {:ok, %Request{}}
-
-      iex> delete_request(request)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_request(%Request{} = request) do
-    Repo.delete(request)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking request changes.
-
-  ## Examples
-
-      iex> change_request(request)
-      %Ecto.Changeset{data: %Request{}}
-
-  """
-  def change_request(%Request{} = request, attrs \\ %{}) do
-    Request.changeset(request, attrs)
-  end
 
   @doc """
   Returns the list of approvals.
@@ -550,340 +421,6 @@ defmodule Itsm.Service do
     Approval.changeset(approval, attrs)
   end
 
-  # 승인 처리
-  # def approve_request(request, approver) do
-  #   # next_status = get_next_status(request.status)
-
-  #   Repo.transaction(fn ->
-  #     # 1. 현재 상태를 히스토리에 기록
-  #     approval_attrs = %{
-  #       request_id: request.id,
-  #       # 현재 상태 저장
-  #       status: request.status,
-  #       action: :approve,
-  #       approver_id: approver.employee_number,
-  #       approver_name: approver.display_name,
-  #       comment: "",
-  #       approved_at: DateTime.utc_now()
-  #     }
-
-  #     case create_approval(approval_attrs) do
-  #       {:ok, approval} ->
-  #         # 2. Request 상태를 다음 단계로 업데이트
-  #         # case update_request_status(request, next_status) do
-  #         case transition_to_next_status(request) do
-  #           {:ok, updated_request} ->
-  #             {updated_request, approval}
-
-  #           {:error, changeset} ->
-  #             IO.inspect(changeset, label: "❌ Changeset Error")
-  #             Repo.rollback(changeset)
-  #         end
-
-  #       {:error, changeset} ->
-  #         IO.inspect(changeset, label: "❌ Approval Creation Error")
-  #         Repo.rollback(changeset)
-  #     end
-  #   end)
-  # end
-
-  # # Private 헬퍼 함수들
-
-  # defp update_request_status(request, new_status) do
-  #   request
-  #   |> Request.changeset(%{status: new_status})
-  #   |> Repo.update()
-  # end
-
-  # # 상태별 전환 로직 (각 단계마다 다른 처리)
-  # defp transition_to_next_status(%Request{status: :request} = request) do
-  #   # request → check: 단순 상태 변경
-  #   update_request_status(request, :check)
-  # end
-
-  # defp transition_to_next_status(%Request{status: :check, category_id: category_id} = request) do
-  #   # check → assign: assignee_crew 설정, assignee_id/name 초기화
-  #   category = Repo.get!(Category, category_id)
-
-  #   request
-  #   |> Request.changeset(%{
-  #     status: :plan,
-  #     assignee_crew: category.assignee_crew,
-  #     assignee_id: nil,
-  #     assignee_name: nil
-  #   })
-  #   |> Repo.update()
-  # end
-
-  # defp transition_to_next_status(%Request{status: :plan, category_id: category_id} = request) do
-  #   # check → assign: assignee_crew 설정, assignee_id/name 초기화
-  #   category = Repo.get!(Category, category_id)
-
-  #   request
-  #   |> Request.changeset(%{
-  #     status: :review,
-  #     assignee_crew: category.assignee_crew,
-  #     assignee_id: nil,
-  #     assignee_name: nil
-  #   })
-  #   |> Repo.update()
-  # end
-
-  # ============================================================================
-  # 승인 처리
-  # ============================================================================
-
-  @doc """
-  결재 요청을 승인 처리합니다.
-  각 단계별로 다른 로직을 실행하며, 승인 내역을 기록합니다.
-
-  승인 규칙:
-  - plan: Crew member 아무나 가능
-  - review: Crew member 중 plan 승인자 제외 (제3자만)
-  - start: Crew member 아무나 가능
-  - finish: Crew member 아무나 가능
-  - verify: Requestor만 가능
-  """
-
-  # def approve_request(request, approver) do
-  #   # 권한 확인
-  #   with {:ok, :authorized} <- can_approve?(request, approver) do
-  #     Repo.transaction(fn ->
-  #       # 1. 결재 기록 생성
-  #       approval_attrs = %{
-  #         request_id: request.id,
-  #         status: request.status,
-  #         action: :approve,
-  #         approver_id: approver.id,
-  #         approver_name: approver.display_name
-  #         # approved_at: DateTime.utc_now()
-  #       }
-
-  #       case create_approval(approval_attrs) do
-  #         {:ok, approval} ->
-  #           # 2. Request 상태를 다음 단계로 업데이트
-  #           case transition_to_next_status(request) do
-  #             {:ok, updated_request} ->
-  #               broadcast_approvals_list({:request_updated, updated_request})
-  #               {updated_request, approval}
-
-  #             {:error, changeset} ->
-  #               IO.inspect(changeset, label: "❌ Changeset Error")
-  #               Repo.rollback(changeset)
-  #           end
-
-  #         {:error, changeset} ->
-  #           IO.inspect(changeset, label: "❌ Approval Creation Error")
-  #           Repo.rollback(changeset)
-  #       end
-  #     end)
-  #   else
-  #     {:error, reason} -> {:error, reason}
-  #   end
-  # end
-
-  # def approve_or_reject_request(request, approver, action) when action in [:approve, :reject] do
-  #   with {:ok, :authorized} <- can_approve?(request, approver) do
-  #     Repo.transaction(fn ->
-  #       approval_attrs = %{
-  #         request_id: request.id,
-  #         status: request.status,
-  #         action: action,
-  #         approver_id: approver.id,
-  #         approver_name: approver.display_name
-  #       }
-
-  #       with {:ok, approval} <- create_approval(approval_attrs),
-  #            {:ok, updated_request} <- transition_to_next_status(request) do
-  #         broadcast_approvals_list({:request_updated, updated_request})
-  #         {updated_request, approval}
-  #       else
-  #         {:error, _} = error -> Repo.rollback(error)
-  #       end
-  #     end)
-  #   else
-  #     {:error, _} = error -> error
-  #   end
-  # end
-
-  # # ============================================================================
-  # # 권한 검증
-  # # ============================================================================
-
-  # @doc """
-  # 사용자가 해당 단계에서 승인할 권한이 있는지 확인합니다.
-  # """
-  # defp can_approve?(request, approver) do
-  #   case request.status do
-  #     :request -> {:ok, :authorized}
-  #     # ✅ 개인 단위
-  #     :check -> can_approve_check_stage?(request, approver)
-  #     # ✅ 팀 단위
-  #     :plan -> can_approve_plan_stage?(request, approver)
-  #     # ✅ 팀 단위 (plan 승인자 제외)
-  #     :review -> can_approve_review_stage?(request, approver)
-  #     # ✅ 팀 단위
-  #     :start -> can_approve_start_stage?(request, approver)
-  #     # ✅ 팀 단위
-  #     :finish -> can_approve_finish_stage?(request, approver)
-  #     # ✅ Requestor만
-  #     :verify -> can_approve_verify_stage?(request, approver)
-  #   end
-  # end
-
-  # # check 단계: 할당된 개인만 가능
-  # defp can_approve_check_stage?(request, approver) do
-  #   if request.assignee_id == approver.id do
-  #     {:ok, :authorized}
-  #   else
-  #     {:error, "Only #{request.assignee_name} can approve at check stage"}
-  #   end
-  # end
-
-  # # plan 단계: Crew member 아무나 가능
-  # defp can_approve_plan_stage?(request, approver) do
-  #   is_crew_member?(request, approver)
-  # end
-
-  # # review 단계: Crew member 중 plan 승인자 제외
-  # defp can_approve_review_stage?(request, approver) do
-  #   with {:ok, :authorized} <- is_crew_member?(request, approver),
-  #        {:ok, :authorized} <- is_not_plan_approver?(request, approver) do
-  #     {:ok, :authorized}
-  #   else
-  #     error -> error
-  #   end
-  # end
-
-  # # start 단계: Crew member 아무나 가능
-  # defp can_approve_start_stage?(request, approver) do
-  #   is_crew_member?(request, approver)
-  # end
-
-  # # finish 단계: Crew member 아무나 가능
-  # defp can_approve_finish_stage?(request, approver) do
-  #   is_crew_member?(request, approver)
-  # end
-
-  # # verify 단계: Requestor만 가능
-  # defp can_approve_verify_stage?(request, approver) do
-  #   if request.requestor_id == approver.id do
-  #     {:ok, :authorized}
-  #   else
-  #     {:error, "Only requestor can verify"}
-  #   end
-  # end
-
-  # # ============================================================================
-  # # 권한 검증 헬퍼
-  # # ============================================================================
-
-  # @doc """
-  # 사용자가 특정 crew의 member인지 확인합니다.
-  # """
-  # defp is_crew_member?(request, approver) do
-  #   is_member =
-  #     from(m in Member,
-  #       join: c in Crew,
-  #       on: m.crew_id == c.id,
-  #       where: m.user_id == ^approver.id,
-  #       where: c.name == ^request.assignee_crew,
-  #       select: 1,
-  #       limit: 1
-  #     )
-  #     |> Repo.one()
-
-  #   if is_member do
-  #     {:ok, :authorized}
-  #   else
-  #     {:error, "User is not a member of #{request.assignee_crew}"}
-  #   end
-  # end
-
-  # @doc """
-  # 사용자가 해당 request의 plan 단계를 승인한 사람이 아닌지 확인합니다.
-  # review 단계에서 plan 승인자는 제외됩니다.
-  # """
-  # defp is_not_plan_approver?(request, approver) do
-  #   plan_approver =
-  #     from(a in Approval,
-  #       where: a.request_id == ^request.id,
-  #       where: a.status == :plan,
-  #       where: a.action == :approve,
-  #       select: a.approver_id,
-  #       order_by: [desc: a.inserted_at],
-  #       limit: 1
-  #     )
-  #     |> Repo.one()
-
-  #   if plan_approver == nil or plan_approver != approver.id do
-  #     {:ok, :authorized}
-  #   else
-  #     {:error,
-  #      "You (#{approver.display_name}) already approved at plan stage. Third-party review is required."}
-  #   end
-  # end
-
-  # # ============================================================================
-  # # 상태별 전환 로직
-  # # ============================================================================
-
-  # # request → check: 단순 상태 변경, 하지만 필요없음. Request 등록시 자동으로 check 상태가 됨
-  # # defp transition_to_next_status(%Request{status: :request} = request) do
-  # #   update_request_status(request, :check)
-  # # end
-
-  # defp transition_to_next_status(%Request{status: :check} = request) do
-  #   # check → plan: assignee_id/name 초기화 (팀 단위로 변경)
-  #   request
-  #   |> Request.changeset(%{
-  #     status: :plan,
-  #     assignee_id: nil,
-  #     assignee_name: nil
-  #     # assignee_crew_id는 유지!
-  #   })
-  #   |> Repo.update()
-  # end
-
-  # defp transition_to_next_status(%Request{status: :plan} = request) do
-  #   # plan → review: 상태만 변경
-  #   request
-  #   |> Request.changeset(%{status: :review})
-  #   |> Repo.update()
-  # end
-
-  # defp transition_to_next_status(%Request{status: :review} = request) do
-  #   # review → start: 상태만 변경
-  #   request
-  #   |> Request.changeset(%{status: :start})
-  #   |> Repo.update()
-  # end
-
-  # defp transition_to_next_status(%Request{status: :start} = request) do
-  #   # start → finish: 상태만 변경
-  #   request
-  #   |> Request.changeset(%{status: :finish})
-  #   |> Repo.update()
-  # end
-
-  # defp transition_to_next_status(%Request{status: :finish} = request) do
-  #   # finish → verify: requestor 할당
-  #   request
-  #   |> Request.changeset(%{
-  #     status: :verify,
-  #     assignee_id: request.requestor_id,
-  #     assignee_name: request.requestor_name
-  #   })
-  #   |> Repo.update()
-  # end
-
-  # defp transition_to_next_status(%Request{status: :verify} = request) do
-  #   # verify → closed: 최종 완료
-  #   request
-  #   |> Request.changeset(%{status: :closed})
-  #   |> Repo.update()
-  # end
-
   def approve_request(request, approver) do
     process_request(request, approver, :approve)
   end
@@ -911,106 +448,6 @@ defmodule Itsm.Service do
       end
     end)
   end
-
-  # ============================================================================
-  # 권한 검증
-  # ============================================================================
-
-  # defp can_approve?(request, approver) do
-  #   case request.status do
-  #     :request -> {:ok, :authorized}
-  #     :check -> can_approve_check_stage?(request, approver)
-  #     :plan -> can_approve_plan_stage?(request, approver)
-  #     :review -> can_approve_review_stage?(request, approver)
-  #     :start -> can_approve_start_stage?(request, approver)
-  #     :finish -> can_approve_finish_stage?(request, approver)
-  #     :verify -> can_approve_verify_stage?(request, approver)
-  #   end
-  # end
-
-  # # reject는 모든 단계에서 가능 (권한 검증 동일)
-  # defp can_reject?(request, approver) do
-  #   can_approve?(request, approver)
-  # end
-
-  # defp can_approve_check_stage?(request, approver) do
-  #   if request.assignee_id == approver.id do
-  #     {:ok, :authorized}
-  #   else
-  #     {:error, "Only #{request.assignee_name} can approve at check stage"}
-  #   end
-  # end
-
-  # defp can_approve_plan_stage?(request, approver) do
-  #   is_crew_member?(request, approver)
-  # end
-
-  # defp can_approve_review_stage?(request, approver) do
-  #   with {:ok, :authorized} <- is_crew_member?(request, approver),
-  #        {:ok, :authorized} <- is_not_plan_approver?(request, approver) do
-  #     {:ok, :authorized}
-  #   else
-  #     error -> error
-  #   end
-  # end
-
-  # defp can_approve_start_stage?(request, approver) do
-  #   is_crew_member?(request, approver)
-  # end
-
-  # defp can_approve_finish_stage?(request, approver) do
-  #   is_crew_member?(request, approver)
-  # end
-
-  # defp can_approve_verify_stage?(request, approver) do
-  #   if request.requestor_id == approver.id do
-  #     {:ok, :authorized}
-  #   else
-  #     {:error, "Only requestor can verify"}
-  #   end
-  # end
-
-  # ============================================================================
-  # 권한 검증 헬퍼
-  # ============================================================================
-
-  # defp is_crew_member?(request, approver) do
-  #   is_member =
-  #     from(m in Member,
-  #       where: m.user_id == ^approver.id,
-  #       # ✅ assignee_crew_id 사용
-  #       where: m.crew_id == ^request.assignee_crew_id,
-  #       select: 1,
-  #       limit: 1
-  #     )
-  #     |> Repo.one()
-
-  #   if is_member do
-  #     {:ok, :authorized}
-  #   else
-  #     {:error, "User is not a member of the assigned crew"}
-  #   end
-  # end
-
-  # defp is_not_plan_approver?(request, approver) do
-  #   plan_approver =
-  #     from(a in Approval,
-  #       where: a.request_id == ^request.id,
-  #       where: a.status == :plan,
-  #       where: a.action == :approve,
-  #       select: a.approver_id,
-  #       order_by: [desc: a.inserted_at],
-  #       limit: 1
-  #     )
-  #     |> Repo.one()
-
-  #   if plan_approver == nil or plan_approver != approver.id do
-  #     {:ok, :authorized}
-  #   else
-  #     {:error,
-  #      "You (#{approver.display_name}) already approved at plan stage. Third-party review is required."}
-  #   end
-  # end
 
   # ============================================================================
   # 상태별 전환 로직

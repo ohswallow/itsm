@@ -5,6 +5,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   alias Itsm.Accounts
   alias Itsm.Service
   alias Itsm.Service.Request
+  alias Itsm.Requests
   alias Itsm.Team
 
   def mount(params, _session, socket) do
@@ -29,11 +30,11 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     |> assign(:category, category)
     |> assign(:request, %Request{})
     |> assign(:referenced_crews_id, [])
-    |> assign(:form, to_form(Service.change_request(%Request{})))
+    |> assign(:form, to_form(Requests.change_request(%Request{})))
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
-    request = Service.get_request!(id)
+    request = Requests.get_request!(id)
 
     # 기존 referenced crews 로드
     referenced_crews_id =
@@ -44,11 +45,11 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     |> assign(:page_title, "Edit Request")
     |> assign(:request, request)
     |> assign(:referenced_crews_id, referenced_crews_id)
-    |> assign(:form, to_form(Service.change_request(request)))
+    |> assign(:form, to_form(Requests.change_request(request)))
   end
 
   defp apply_action(socket, :copy, %{"id" => id}) do
-    request = Service.get_request!(id)
+    request = Requests.get_request!(id)
 
     # copy할 때도 기존 crews 로드
     referenced_crews_id =
@@ -59,7 +60,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     |> assign(:page_title, "Edit Request")
     |> assign(:request, request)
     |> assign(:referenced_crews_id, referenced_crews_id)
-    |> assign(:form, to_form(Service.change_request(request)))
+    |> assign(:form, to_form(Requests.change_request(request)))
   end
 
   def handle_params(_params, _uri, socket) do
@@ -84,20 +85,15 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     {:noreply, cancel_upload(socket, :attachment, ref)}
   end
 
-  # def handle_event(
-  #       "validate",
-  #       %{"request" => %{"assignee_id" => assignee_id} = request_params},
-  #       socket
-  #     ) do
-  #   %{current_user: user, category: category} = socket.assigns
-  #   assignee = Accounts.get_user(assignee_id)
+  def handle_event(
+        "validate",
+        %{"request" => %{"assignee_id" => assignee_id} = request_params},
+        socket
+      ) do
+    %{current_user: user, category: category} = socket.assigns
+    assignee = Accounts.get_user(assignee_id)
 
-  #   changeset = Requests.change_request(user, category, assignee, request_params)
-  #   {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
-  # end
-
-  def handle_event("validate", %{"request" => request_params}, socket) do
-    changeset = Service.change_request(socket.assigns.request, request_params)
+    changeset = Requests.change_request(user, category, assignee, request_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
@@ -121,7 +117,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   defp save_request(socket, :edit, request_params) do
     %{current_user: user, request: request} = socket.assigns
 
-    case Service.update_request(user, request, request_params) do
+    case Requests.update_request(user, request, request_params) do
       {:ok, _request} ->
         {:noreply,
          socket
