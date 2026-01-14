@@ -4,8 +4,9 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
 
   alias Itsm.Accounts
   alias Itsm.Service
-  alias Itsm.Service.Request
+  alias Itsm.Categories
   alias Itsm.Requests
+  alias Itsm.Service.Request
   alias Itsm.Team
 
   def mount(params, _session, socket) do
@@ -23,7 +24,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   end
 
   defp apply_action(socket, :new, %{"id" => category_id}) do
-    category = Service.get_category!(String.to_integer(category_id))
+    category = Categories.get_category!(String.to_integer(category_id))
 
     socket
     |> assign(:page_title, "New Request")

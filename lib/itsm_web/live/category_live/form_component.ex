@@ -1,7 +1,7 @@
 defmodule ItsmWeb.CategoryLive.FormComponent do
   use ItsmWeb, :live_component
 
-  alias Itsm.Service
+  alias Itsm.Categories
 
   @impl true
   def render(assigns) do
@@ -11,7 +11,7 @@ defmodule ItsmWeb.CategoryLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage category records in your database.</:subtitle>
       </.header>
-
+      
       <.simple_form
         for={@form}
         id="category-form"
@@ -27,13 +27,10 @@ defmodule ItsmWeb.CategoryLive.FormComponent do
           label="Affiliate"
           prompt="Choose a value"
           options={Ecto.Enum.values(Itsm.Service.Category, :affiliate)}
-        />
-        <.input field={@form[:request_name]} type="text" label="Request name" />
+        /> <.input field={@form[:request_name]} type="text" label="Request name" />
         <.input field={@form[:group]} type="text" label="Group" />
         <.input field={@form[:active]} type="checkbox" label="Active" />
-        <:actions>
-          <.button phx-disable-with="Saving...">Save Category</.button>
-        </:actions>
+        <:actions><.button phx-disable-with="Saving...">Save Category</.button></:actions>
       </.simple_form>
     </div>
     """
@@ -45,13 +42,13 @@ defmodule ItsmWeb.CategoryLive.FormComponent do
      socket
      |> assign(assigns)
      |> assign_new(:form, fn ->
-       to_form(Service.change_category(category))
+       to_form(Categories.change_category(category))
      end)}
   end
 
   @impl true
   def handle_event("validate", %{"category" => category_params}, socket) do
-    changeset = Service.change_category(socket.assigns.category, category_params)
+    changeset = Categories.change_category(socket.assigns.category, category_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
@@ -60,7 +57,7 @@ defmodule ItsmWeb.CategoryLive.FormComponent do
   end
 
   defp save_category(socket, :edit, category_params) do
-    case Service.update_category(socket.assigns.category, category_params) do
+    case Categories.update_category(socket.assigns.category, category_params) do
       {:ok, category} ->
         notify_parent({:saved, category})
 
@@ -75,7 +72,7 @@ defmodule ItsmWeb.CategoryLive.FormComponent do
   end
 
   defp save_category(socket, :new, category_params) do
-    case Service.create_category(category_params) do
+    case Categories.create_category(category_params) do
       {:ok, category} ->
         notify_parent({:saved, category})
 

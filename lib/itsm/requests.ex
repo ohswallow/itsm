@@ -14,15 +14,15 @@ defmodule Itsm.Requests do
     Phoenix.PubSub.broadcast(Itsm.PubSub, "request:#{request_id}", message)
   end
 
-  def list_requests do
-    Repo.all(Request)
-    |> Repo.preload(:category)
-  end
-
   def get_request!(id) do
     Request
     |> Repo.get!(id)
     |> Repo.preload([:category, :attachments])
+  end
+
+  def list_requests do
+    Repo.all(Request)
+    |> Repo.preload(:category)
   end
 
   def create_request(user, attrs \\ %{}) do

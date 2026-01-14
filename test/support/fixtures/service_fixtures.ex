@@ -23,7 +23,7 @@ defmodule Itsm.ServiceFixtures do
         name: unique_category_name(),
         request_name: "some request_name"
       })
-      |> Itsm.Service.create_category()
+      |> Itsm.Categories.create_category()
 
     category
   end
