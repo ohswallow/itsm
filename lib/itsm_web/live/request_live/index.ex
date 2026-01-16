@@ -1,14 +1,14 @@
 defmodule ItsmWeb.RequestLive.Index do
   use ItsmWeb, :live_view
 
-  alias Itsm.Service
+  alias Itsm.Requests
 
   @impl true
   def mount(_params, _session, socket) do
     {:ok,
      socket
      |> assign(:page_title, "Listing Requests")
-     |> stream(:requests, Service.list_requests())}
+     |> stream(:requests, Requests.list_requests())}
   end
 
   @impl true
@@ -67,8 +67,8 @@ defmodule ItsmWeb.RequestLive.Index do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    request = Service.get_request!(id)
-    {:ok, _} = Service.delete_request(request)
+    request = Requests.get_request!(id)
+    {:ok, _} = Requests.delete_request(request)
 
     {:noreply, stream_delete(socket, :requests, request)}
   end

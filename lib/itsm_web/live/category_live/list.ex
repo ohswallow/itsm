@@ -1,7 +1,7 @@
 defmodule ItsmWeb.CategoryLive.List do
   use ItsmWeb, :live_view
 
-  alias Itsm.Service
+  alias Itsm.Categories
 
   def mount(_params, _session, socket) do
     # socket = assign(socket, :categories, Service.list_categories())
@@ -14,7 +14,7 @@ defmodule ItsmWeb.CategoryLive.List do
 
     socket =
       socket
-      |> stream(:categories, Service.filter_categories(params), reset: true)
+      |> stream(:categories, Categories.filter_categories(params), reset: true)
       # |> assign(:form, to_form(%{}))
       |> assign(:form, to_form(params))
 

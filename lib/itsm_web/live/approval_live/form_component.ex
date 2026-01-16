@@ -1,7 +1,7 @@
 defmodule ItsmWeb.ApprovalLive.FormComponent do
   use ItsmWeb, :live_component
 
-  alias Itsm.Service
+  alias Itsm.Approvals
 
   @impl true
   def update(%{approval: approval} = assigns, socket) do
@@ -9,7 +9,7 @@ defmodule ItsmWeb.ApprovalLive.FormComponent do
      socket
      |> assign(assigns)
      |> assign_new(:form, fn ->
-       to_form(Service.change_approval(approval))
+       to_form(Approvals.change_approval(approval))
      end)}
   end
 
@@ -21,7 +21,7 @@ defmodule ItsmWeb.ApprovalLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage approval records in your database.</:subtitle>
       </.header>
-
+      
       <.simple_form
         for={@form}
         id="approval-form"
@@ -35,14 +35,11 @@ defmodule ItsmWeb.ApprovalLive.FormComponent do
           label="Status"
           prompt="Choose a value"
           options={Ecto.Enum.values(Itsm.Service.Approval, :status)}
-        />
-        <.input field={@form[:approver_id]} type="text" label="Approver" />
+        /> <.input field={@form[:approver_id]} type="text" label="Approver" />
         <.input field={@form[:approver_name]} type="text" label="Approver name" />
         <.input field={@form[:comment]} type="text" label="Comment" />
         <.input field={@form[:approved_at]} type="datetime-local" label="Approved at" />
-        <:actions>
-          <.button phx-disable-with="Saving...">Save Approval</.button>
-        </:actions>
+        <:actions><.button phx-disable-with="Saving...">Save Approval</.button></:actions>
       </.simple_form>
     </div>
     """
@@ -50,7 +47,7 @@ defmodule ItsmWeb.ApprovalLive.FormComponent do
 
   @impl true
   def handle_event("validate", %{"approval" => approval_params}, socket) do
-    changeset = Service.change_approval(socket.assigns.approval, approval_params)
+    changeset = Approvals.change_approval(socket.assigns.approval, approval_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
@@ -59,7 +56,7 @@ defmodule ItsmWeb.ApprovalLive.FormComponent do
   end
 
   defp save_approval(socket, :edit, approval_params) do
-    case Service.update_approval(socket.assigns.approval, approval_params) do
+    case Approvals.update_approval(socket.assigns.approval, approval_params) do
       {:ok, approval} ->
         notify_parent({:saved, approval})
 
@@ -74,7 +71,7 @@ defmodule ItsmWeb.ApprovalLive.FormComponent do
   end
 
   defp save_approval(socket, :new, approval_params) do
-    case Service.create_approval(approval_params) do
+    case Approvals.create_approval(approval_params) do
       {:ok, approval} ->
         notify_parent({:saved, approval})
 

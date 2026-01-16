@@ -9,7 +9,7 @@ defmodule Itsm.Comments do
   alias Itsm.Comments.Comment
   alias Itsm.Service.Request
   alias Itsm.Accounts.User
-  alias Itsm.Service
+  alias Itsm.Requests
 
   @doc """
   Returns the list of comments.
@@ -58,7 +58,7 @@ defmodule Itsm.Comments do
     |> Repo.insert()
     |> case do
       {:ok, comment} ->
-        Service.broadcast_request(request.id, {:comment_created, comment})
+        Requests.broadcast_request(request.id, {:comment_created, comment})
         {:ok, comment}
 
       {:error, _} = error ->
