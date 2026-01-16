@@ -12,15 +12,7 @@ defmodule Itsm.Service do
   alias Itsm.Accounts.User
   alias Itsm.Attachments.Attachment
   alias Itsm.Team.Member
-
-  # ✅ 모든 request 리스트 변경사항 구독 (생성, 업데이트 등)
-  def subscribe_approvals_list do
-    Phoenix.PubSub.subscribe(Itsm.PubSub, "approvals_list")
-  end
-
-  def broadcast_approvals_list(message) do
-    Phoenix.PubSub.broadcast(Itsm.PubSub, "approvals_list", message)
-  end
+  alias Itsm.Approvals
 
   def list_assignee_requests(current_user) do
     today = Date.utc_today()
@@ -181,115 +173,13 @@ defmodule Itsm.Service do
     request = Repo.preload(request, [:category, :attachments])
 
     case event do
-      :request_created -> broadcast_approvals_list({event, request})
+      :request_created -> Approvals.broadcast_approvals_list({event, request})
     end
 
     {:ok, request}
   end
 
   defp broadcast_result(error, _), do: error
-
-  @doc """
-  Returns the list of approvals.
-
-  ## Examples
-
-      iex> list_approvals()
-      [%Approval{}, ...]
-
-  """
-  def list_approvals do
-    Repo.all(Approval)
-  end
-
-  @doc """
-  Gets a single approval.
-
-  Raises `Ecto.NoResultsError` if the Approval does not exist.
-
-  ## Examples
-
-      iex> get_approval!(123)
-      %Approval{}
-
-      iex> get_approval!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_approval!(id), do: Repo.get!(Approval, id)
-
-  @doc """
-  Creates a approval.
-
-  ## Examples
-
-      iex> create_approval(%{field: value})
-      {:ok, %Approval{}}
-
-      iex> create_approval(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_approval(attrs \\ %{}) do
-    %Approval{}
-    |> Approval.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  # def create_approval(request, attrs \\ %{}) do
-  #   attrs = Map.put(attrs, :request_id, request.id)
-
-  #   %Approval{}
-  #   |> Approval.changeset(attrs)
-  #   |> Repo.insert()
-  # end
-
-  @doc """
-  Updates a approval.
-
-  ## Examples
-
-      iex> update_approval(approval, %{field: new_value})
-      {:ok, %Approval{}}
-
-      iex> update_approval(approval, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_approval(%Approval{} = approval, attrs) do
-    approval
-    |> Approval.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Deletes a approval.
-
-  ## Examples
-
-      iex> delete_approval(approval)
-      {:ok, %Approval{}}
-
-      iex> delete_approval(approval)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_approval(%Approval{} = approval) do
-    Repo.delete(approval)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking approval changes.
-
-  ## Examples
-
-      iex> change_approval(approval)
-      %Ecto.Changeset{data: %Approval{}}
-
-  """
-  def change_approval(%Approval{} = approval, attrs \\ %{}) do
-    Approval.changeset(approval, attrs)
-  end
 
   def approve_request(request, approver) do
     process_request(request, approver, :approve)
@@ -309,9 +199,9 @@ defmodule Itsm.Service do
         approver_name: approver.display_name
       }
 
-      with {:ok, approval} <- create_approval(approval_attrs),
+      with {:ok, approval} <- Approvals.create_approval(approval_attrs),
            {:ok, request} <- transition_to_next_status(request, action) do
-        broadcast_approvals_list({:request_updated, request})
+        Approvals.broadcast_approvals_list({:request_updated, request})
         {request, approval}
       else
         {:error, _} = error -> Repo.rollback(error)

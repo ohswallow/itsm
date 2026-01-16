@@ -59,7 +59,7 @@ defmodule Itsm.ServiceFixtures do
         opnion: "some opnion",
         status: :request
       })
-      |> Itsm.Service.create_approval()
+      |> Itsm.Approvals.create_approval()
 
     approval
   end

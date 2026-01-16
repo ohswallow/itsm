@@ -3,6 +3,7 @@ defmodule ItsmWeb.ApprovalLive.List do
   alias Itsm.Service
   alias Phoenix.LiveView.JS
   alias Itsm.Requests
+  alias Itsm.Approvals
 
   @impl true
   def mount(_params, _session, socket) do
@@ -13,7 +14,7 @@ defmodule ItsmWeb.ApprovalLive.List do
 
   @impl true
   def handle_params(params, _url, socket) do
-    Service.subscribe_approvals_list()
+    Approvals.subscribe_approvals_list()
 
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
