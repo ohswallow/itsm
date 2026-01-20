@@ -1,5 +1,4 @@
 defmodule ItsmWeb.CommonKCreateVmLive.Form do
-  alias Itsm.Requests
   use ItsmWeb, :live_view
 
   alias Itsm.Accounts
@@ -14,7 +13,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
      socket
      |> allow_upload(:attachment,
        accept: ~w(.png .jpg .jpeg .bmp .gif),
-       max_entries: 3,
+       max_entries: 4,
        max_file_size: 1 * 1024 * 1024
      )
      |> assign(:crew_options, crew_options)
@@ -80,7 +79,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   end
 
   # ✅ 파일 업로드 취소 이벤트 (HTML의 phx-click="cancel" 처리)
-  def handle_event("cancel", %{"ref" => ref}, socket) do
+  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
     {:noreply, cancel_upload(socket, :attachment, ref)}
   end
 
@@ -164,19 +163,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     end
   end
 
-  # defp save_request(socket, :copy, request_params) do
-  #   case Service.create_request(socket.assigns.current_user, request_params) do
-  #     {:ok, _request} ->
-  #       {:noreply,
-  #        socket
-  #        |> put_flash(:info, "Request copied successfully")
-  #        |> push_navigate(to: ~p"/requests")}
-
-  #     {:error, %Ecto.Changeset{} = changeset} ->
-  #       {:noreply, assign(socket, form: to_form(changeset))}
-  #   end
-  # end
-
   # ✅ 파일을 디스크에 저장하고, DB용 맵 리스트를 반환하는 함수
   defp consume_attachments(socket) do
     consume_uploaded_entries(socket, :attachment, fn meta, entry ->
@@ -202,7 +188,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
        %{
          "filename" => entry.client_name,
          "local_path" => url_path,
-         "content_type" => entry.client_type,
+         "file_type" => entry.client_type,
          "byte_size" => entry.client_size
        }}
     end)
@@ -223,4 +209,8 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     do: [{"Windows Server 2022", "win22"}, {"Windows Server 2025", "win25"}]
 
   defp get_os_version_options(_), do: []
+
+  defp format_file_size(bytes) when bytes < 1024, do: "#{bytes} B"
+  defp format_file_size(bytes) when bytes < 1024 * 1024, do: "#{round(bytes / 1024)} KB"
+  defp format_file_size(bytes), do: "#{round(bytes / (1024 * 1024))} MB"
 end

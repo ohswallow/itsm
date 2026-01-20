@@ -2,17 +2,22 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   use ItsmWeb, :live_view
 
   alias Itsm.Service
-  # alias Itsm.Service.Approval
   alias Itsm.Comments
   alias Itsm.Comments.Comment
 
   on_mount {ItsmWeb.UserAuth, :mount_current_user}
 
   def mount(_params, _session, socket) do
-    IO.puts("LiveView mounted")
     changeset = Comments.change_comment(%Comment{})
-    socket = assign(socket, :form, to_form(changeset))
-    {:ok, socket}
+    # socket = assign(socket, :form, to_form(changeset))
+    {:ok,
+     socket
+     |> assign(:form, to_form(changeset))
+     |> allow_upload(:attachment,
+       accept: ~w(.png .jpg .jpeg .bmp .gif),
+       max_entries: 4,
+       max_file_size: 1 * 1024 * 1024
+     )}
   end
 
   def handle_params(%{"id" => id}, _uri, socket) do
@@ -190,6 +195,8 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
           :for={attachment <- @request.attachments}
           class="group relative border border-zinc-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
           phx-click="view_attachment"
+          phx-value-url={attachment.local_path}
+          phx-value-filename={attachment.filename}
           phx-value-id={attachment.id}
         >
           <%!-- 썸네일 --%>
@@ -245,15 +252,15 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
       <div class="text-lg font-semibold text-slate-900 mb-4">Activity & Comments</div>
       
       <div id="comments" phx-update="stream">
-        <.comment :for={{dom_id, comment} <- @streams.comments} comment={comment} id={dom_id} />
+        <.comment_list :for={{dom_id, comment} <- @streams.comments} comment={comment} id={dom_id} />
       </div>
     </div>
 
     <div :if={@request.status != :closed}>
-      <.form for={@form} id="comment-form" phx-change="validate" phx-submit="save">
-        <.input field={@form[:comment]} type="textarea" placeholder="Comment..." />
-        <.button>Add Comment</.button>
-      </.form>
+      <.comment_form
+        form={@form}
+        uploads={@uploads}
+      />
     </div>
 
     <.back navigate={~p"/requests"}>Back</.back>
@@ -263,7 +270,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   attr :id, :string, required: true
   attr :comment, Comment, required: true
 
-  def comment(assigns) do
+  def comment_list(assigns) do
     ~H"""
     <div class="space-y-4 mb-6" id={@id}>
       <div class="flex-1">
@@ -272,17 +279,120 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
           <span class="text-xs text-slate-500">{@comment.inserted_at}</span>
         </div>
         
-        <p class="text-sm text-slate-700 bg-slate-50 rounded-lg p-3">{@comment.comment}</p>
+        <div class="bg-slate-50 rounded-lg p-3">
+          <p class="text-sm text-slate-700 whitespace-pre-wrap">{@comment.comment}</p>
+          
+          <div :if={Enum.any?(@comment.attachments)} class="mt-3 pt-2 border-t border-slate-200">
+            <p class="text-xs text-slate-400 mb-2 font-medium">Attachments</p>
+            
+            <div class="flex flex-wrap gap-2">
+              <div
+                :for={attachment <- @comment.attachments}
+                phx-click="view_attachment"
+                phx-value-url={attachment.local_path}
+                phx-value-filename={attachment.filename}
+                class="group flex items-center gap-2 bg-white border border-slate-200 rounded px-2 py-1.5 hover:border-blue-400 hover:shadow-sm transition-all cursor-pointer"
+              >
+                <div class="bg-blue-50 text-blue-600 rounded p-0.5">
+                  <.icon name="hero-paper-clip" class="w-3 h-3" />
+                </div>
+                
+                <span class="text-xs text-slate-600 group-hover:text-blue-600 max-w-[200px] truncate">
+                  {attachment.filename}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     """
   end
 
-  # 모달 열기/닫기 이벤트
-  def handle_event("view_attachment", %{"id" => id}, socket) do
-    attachment = Enum.find(socket.assigns.request.attachments, &(&1.id == id))
+  def comment_form(assigns) do
+    ~H"""
+    <.form for={@form} id="comment-form" phx-change="validate" phx-submit="save" class="relative">
+      <div class="bg-white border border-zinc-300 rounded-lg shadow-sm focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500">
+        <.input
+          field={@form[:comment]}
+          type="textarea"
+          placeholder="Comment..."
+          class="block w-full border-0 pt-2.5 resize-none focus:ring-0 sm:text-sm"
+          rows="3"
+        />
+        <div class="flex items-center justify-between py-2 px-3 border-t border-zinc-100 bg-zinc-50 rounded-b-lg">
+          <div class="flex items-center gap-2">
+            <label class="cursor-pointer inline-flex items-center gap-1 text-zinc-500 hover:text-blue-600 transition-colors p-1.5 rounded-md hover:bg-zinc-200">
+              <.live_file_input upload={@uploads.attachment} class="hidden" />
+              <.icon name="hero-arrow-up-on-square" class="w-5 h-5" />
+              <span class="text-xs font-medium">파일 업로드</span>
+            </label>
+            <span
+              :if={length(@uploads.attachment.entries) > 0}
+              class="text-xs text-blue-600 font-semibold"
+            >
+              {length(@uploads.attachment.entries)}개 선택됨
+            </span>
+          </div>
+           <.button phx-disable-with="Saving..." class="text-xs px-3 py-1.5">Add Comment</.button>
+        </div>
+      </div>
+       <%!-- 업로드 파일이  max_entries 이상일때 에러 표시  --%>
+      <.error :for={err <- upload_errors(@uploads.attachment)}>{Phoenix.Naming.humanize(err)}</.error>
+      
+      <div
+        :if={length(@uploads.attachment.entries) > 0}
+        class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-4"
+      >
+        <div
+          :for={entry <- @uploads.attachment.entries}
+          class="relative group border border-zinc-200 rounded-lg p-2 bg-white shadow-sm"
+        >
+          <div class="aspect-square bg-zinc-100 rounded-md overflow-hidden mb-2">
+            <.live_img_preview entry={entry} class="w-full h-full object-cover" />
+          </div>
+          
+          <p class="text-xs text-zinc-600 truncate px-1">{entry.client_name}</p>
+          
+          <p class="text-xs text-zinc-400">{format_file_size(entry.client_size)}</p>
+          
+          <%!-- 파일업로드 진행률을 위한 bar인데, 대용량일 경우 필요함. 지금 현재 기준(1MB)는 너무 빨라서 보이지 않음. --%>
+          <%!-- <div class="w-full bg-gray-200 rounded-full h-1 mt-2">
+              <div
+                class="bg-blue-600 h-1 rounded-full transition-all duration-300"
+                style={"width: #{entry.progress}%"}
+              >
+              </div>
+            </div> --%>
+          <button
+            type="button"
+            phx-click="cancel-upload"
+            phx-value-ref={entry.ref}
+            class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-md hover:bg-red-600 transition-colors"
+          >
+            <.icon name="hero-x-mark" class="w-3 h-3" />
+          </button>
+          <.error :for={err <- upload_errors(@uploads.attachment, entry)}>
+            {Phoenix.Naming.humanize(err)}
+          </.error>
+        </div>
+      </div>
+    </.form>
+    """
+  end
+
+  # 댓글 첨부파일 클릭 시 모달 띄우기 (DB 조회 없이 URL 사용)
+  def handle_event("view_attachment", %{"url" => url, "filename" => filename}, socket) do
+    attachment = %{local_path: url, filename: filename}
+
     {:noreply, assign(socket, :selected_attachment, attachment)}
   end
+
+  # # 모달 열기/닫기 이벤트
+  # def handle_event("view_attachment", %{"id" => id}, socket) do
+  #   attachment = Enum.find(socket.assigns.request.attachments, &(&1.id == id))
+  #   {:noreply, assign(socket, :selected_attachment, attachment)}
+  # end
 
   def handle_event("close_attachment", _, socket) do
     {:noreply, assign(socket, :selected_attachment, nil)}
@@ -298,23 +408,56 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   end
 
   def handle_event("save", %{"comment" => comment_params}, socket) do
-    %{request: request, current_user: user} = socket.assigns
+    %{request: request, current_user: current_user} = socket.assigns
 
-    case Comments.create_comment(request, user, comment_params) do
+    # 1. 업로드된 파일 처리 (서버 디스크로 복사)
+    uploaded_files =
+      consume_uploaded_entries(socket, :attachment, fn meta, entry ->
+        # 파일을 저장할 실제 경로 생성 (예: priv/static/uploads 혹은 별도 스토리지)
+        dest =
+          Path.join([
+            "priv",
+            "static",
+            "uploads",
+            "#{entry.uuid}-#{entry.client_name}"
+          ])
+
+        # directory가 없으면 생성
+        File.mkdir_p!(Path.dirname(dest))
+        # 파일 복사
+        File.cp!(meta.path, dest)
+
+        # "/uploads/uuid-filename.jpg" 형태의 문자열을 반환
+        url_path = static_path(socket, "/uploads/#{Path.basename(dest)}")
+
+        # Attachment 스키마에 들어갈 맵 데이터 반환
+        {:ok,
+         %{
+           "filename" => entry.client_name,
+           "local_path" => url_path,
+           "file_type" => entry.client_type,
+           "byte_size" => entry.client_size
+         }}
+      end)
+
+    # 2. comment_params에 attachments 리스트 병합
+    # 키가 문자열("attachments")이어야 cast_assoc에서 인식됨
+    params_with_files = Map.put(comment_params, "attachments", uploaded_files)
+
+    # Comment Resource Type과 ID 전달 (Resource Type은 "Request"로 고정)
+    case Comments.create_comment("Request", request.id, current_user, params_with_files) do
       {:ok, _comment} ->
         changeset = Comments.change_comment(%Comment{})
-
-        IO.inspect(socket.assigns.streams.comments, label: "Comments Stream Before Insert")
-
-        socket = assign(socket, :form, to_form(changeset))
-
-        IO.inspect(socket.assigns.streams.comments, label: "Comments Stream After Insert")
-        {:noreply, socket}
+        {:noreply, assign(socket, :form, to_form(changeset))}
 
       {:error, changeset} ->
-        socket = assign(socket, :form, to_form(changeset))
-        {:noreply, socket}
+        {:noreply, assign(socket, :form, to_form(changeset))}
     end
+  end
+
+  # 첨부파일 업로드 취소 이벤트 처리
+  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :attachment, ref)}
   end
 
   def handle_info({:comment_created, comment}, socket) do
@@ -330,6 +473,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   end
 
   defp format_file_size(bytes) when bytes < 1024, do: "#{bytes} B"
-  defp format_file_size(bytes) when bytes < 1024 * 1024, do: "#{Float.round(bytes / 1024, 1)} KB"
-  defp format_file_size(bytes), do: "#{Float.round(bytes / (1024 * 1024), 1)} MB"
+  defp format_file_size(bytes) when bytes < 1024 * 1024, do: "#{round(bytes / 1024)} KB"
+  defp format_file_size(bytes), do: "#{round(bytes / (1024 * 1024))} MB"
 end

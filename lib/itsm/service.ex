@@ -11,7 +11,7 @@ defmodule Itsm.Service do
   alias Itsm.Service.Request
   alias Itsm.Delegations.Delegation
   alias Itsm.Accounts.User
-  alias Itsm.Requests
+  alias Itsm.Comments.Comment
   alias Itsm.Attachments.Attachment
   alias Itsm.Team.Member
 
@@ -274,13 +274,36 @@ defmodule Itsm.Service do
     |> Repo.preload([:category, :attachments])
   end
 
-  def list_comments(request) do
-    request
-    |> Ecto.assoc(:comments)
-    |> preload(:user)
-    |> order_by(asc: :inserted_at)
+  # def list_comments(request) do
+  #   request
+  #   |> Ecto.assoc(:comments)
+  #   |> preload(:user)
+  #   |> order_by(asc: :inserted_at)
+  #   |> Repo.all()
+  # end
+  # ✅ 어떤 구조체(resource)가 들어오든 다 처리하는 범용 함수
+  def list_comments(resource) do
+    # 1. 리소스 타입 판별 ("Request", "Server" 등 문자열 추출)
+    resource_type = get_resource_type(resource)
+
+    Comment
+    # "Request"
+    |> where([c], c.resource_type == ^resource_type)
+    # ID 매칭
+    |> where([c], c.resource_id == ^resource.id)
+    |> order_by([c], asc: c.inserted_at)
+    # 첨부파일/작성자 로딩
+    |> preload([:user, :attachments])
     |> Repo.all()
   end
+
+  # ✅ 리소스 타입 매핑 헬퍼 (Private)
+  # 여기에 한 줄씩만 추가하면 모든 업무에서 사용 가능
+  defp get_resource_type(%Itsm.Service.Request{}), do: "Request"
+  # defp get_resource_type(%Itsm.Infra.Server{}), do: "Server"
+  # defp get_resource_type(%Itsm.Ops.Incident{}), do: "Incident"
+  # 예외 처리 (혹시 모를 실수 방지)
+  defp get_resource_type(struct), do: raise("List comments not supported for #{inspect(struct)}")
 
   @doc """
   Creates a request.
@@ -361,10 +384,37 @@ defmodule Itsm.Service do
 
   # ✅ 실제 DB Insert 로직
   defp insert_attachments(repo, request, attachments) do
+    # results =
+    #   Enum.map(attachments, fn attachment_attrs ->
+    #     %Attachment{request: request}
+    #     |> Attachment.changeset(attachment_attrs)
+    #     |> repo.insert()
+    #   end)
+
+    # # 전체 성공 여부 확인
+    # if Enum.all?(results, &match?({:ok, _}, &1)) do
+    #   {:ok, results}
+    # else
+    #   {:error, :attachment_save_failed}
+    # end
     results =
       Enum.map(attachments, fn attachment_attrs ->
-        %Attachment{request: request}
-        |> Attachment.changeset(attachment_attrs)
+        # [변경 핵심]
+        # %Attachment{request: request} 방식을 제거하고,
+        # 파라미터 맵(attrs)에 직접 type과 id를 병합(merge)합니다.
+
+        attrs =
+          Map.merge(attachment_attrs, %{
+            # "Request"라고 명시
+            "resource_type" => "Request",
+            # 생성된 Request의 ID
+            "resource_id" => request.id
+          })
+
+        # 빈 구조체로 시작
+        %Attachment{}
+        # changeset 안에서 resource_type/id를 cast 함
+        |> Attachment.changeset(attrs)
         |> repo.insert()
       end)
 
