@@ -114,9 +114,10 @@ defmodule ItsmWeb.Router do
 
       # 요청(Request) 기능
       live "/requests", RequestLive.Index, :index
-      live "/requests/new", RequestLive.Form, :new
-      live "/requests/:id", RequestLive.Show, :show
-      live "/requests/:id/edit", RequestLive.Form, :edit
+      # 사용하지 않음
+      # live "/requests/new", RequestLive.Form, :new
+      # live "/requests/:id", RequestLive.Show, :show
+      # live "/requests/:id/edit", RequestLive.Form, :edit
 
       # 대결
       live "/delegations", DelegationLive.Index, :index

@@ -17,9 +17,9 @@ defmodule ItsmWeb.RequestLive.Index do
     <.header>
       Listing Requests
       <:actions>
-        <.button phx-click={JS.dispatch("click", to: {:inner, "a"})}>
+        <%!-- <.button phx-click={JS.dispatch("click", to: {:inner, "a"})}>
           <.link navigate={~p"/requests/new"}>New Request</.link>
-        </.button>
+        </.button> --%>
       </:actions>
     </.header>
 

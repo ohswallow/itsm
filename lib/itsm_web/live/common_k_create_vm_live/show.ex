@@ -445,7 +445,8 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
     params_with_files = Map.put(comment_params, "attachments", uploaded_files)
 
     # Comment Resource Type과 ID 전달 (Resource Type은 "Request"로 고정)
-    case Comments.create_comment("Request", request.id, current_user, params_with_files) do
+    # case Comments.create_comment("Request", request.id, current_user, params_with_files) do
+    case Comments.create_comment(request, current_user, params_with_files) do
       {:ok, _comment} ->
         changeset = Comments.change_comment(%Comment{})
         {:noreply, assign(socket, :form, to_form(changeset))}

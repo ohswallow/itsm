@@ -7,9 +7,7 @@ defmodule Itsm.Comments do
   alias Itsm.Repo
 
   alias Itsm.Comments.Comment
-  alias Itsm.Service.Request
   alias Itsm.Accounts.User
-  alias Itsm.Service
   alias Itsm.Attachments.Attachment
   alias Ecto.Multi
 
@@ -69,49 +67,57 @@ defmodule Itsm.Comments do
   #   end
   # end
 
-  # ✅ 호출할 때: create_comment("Request", request.id, user, params)
-  # ✅ 호출할 때: create_comment("Incident", incident.id, user, params) -- 추후 적용
-  # ✅ 호출할 때: create_comment("Infra_change", incident.id, user, params) -- 추후 적용
-  def create_comment(resource_type, resource_id, %User{} = user, attrs \\ %{}) do
+  def create_comment(resource, %User{} = user, attrs \\ %{}) do
     # 1. 첨부파일 분리
     {attachments, comment_attrs} = Map.pop(attrs, "attachments", [])
 
     # 2. 넘겨받은 Type과 ID를 그대로 사용
     comment_params =
       Map.merge(comment_attrs, %{
-        "resource_type" => resource_type,
-        "resource_id" => resource_id
+        "resource_type" => get_resource_type(resource),
+        "resource_id" => resource.id
       })
 
     Multi.new()
     |> Multi.insert(:comment, Comment.changeset(%Comment{user: user}, comment_params))
-    # 로직 동일
-    |> maybe_insert_attachments(attachments)
+    |> insert_attachments(attachments)
     |> Repo.transaction()
-    |> broadcast_result(resource_id)
+    |> broadcast_result(resource.id)
   end
 
-  defp maybe_insert_attachments(multi, []), do: multi
+  # 구조체의 모듈명을 분석해 마지막 이름 추출
+  # 예: Itsm.Service.Request -> "Request"
+  # 나중에 Incident가 들어오면 자동으로 "Incident"가 됨. 스키마 수정 불필요.
+  defp get_resource_type(struct) do
+    struct.__struct__
+    |> Module.split()
+    |> List.last()
+  end
 
-  defp maybe_insert_attachments(multi, attachments) do
+  # 첨부파일이 없으면 Multi 그대로 통과
+  defp insert_attachments(multi, []), do: multi
+
+  # 첨부파일이 있으면 Multi.run 실행
+  defp insert_attachments(multi, attachments) do
     Multi.run(multi, :attachments, fn repo, %{comment: comment} ->
-      insert_attachments_to_db(repo, comment, attachments)
+      save_attachments_to_db(repo, comment, attachments)
     end)
   end
 
-  defp insert_attachments_to_db(repo, comment, attachments) do
+  defp save_attachments_to_db(repo, comment, attachments) do
     results =
       Enum.map(attachments, fn attachment_attrs ->
-        # 파일은 무조건 Comment 소속
+        # Commnet에 첨부한 파일은 Comment 소속
         attrs =
           Map.merge(attachment_attrs, %{
-            "resource_type" => "Comment",
+            "resource_type" => get_resource_type(comment),
             "resource_id" => comment.id
           })
 
         %Attachment{} |> Attachment.changeset(attrs) |> repo.insert()
       end)
 
+    # 하나라도 실패하면 에러 리턴
     if Enum.all?(results, &match?({:ok, _}, &1)), do: {:ok, results}, else: {:error, :failed}
   end
 
