@@ -312,32 +312,30 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   def comment_form(assigns) do
     ~H"""
     <.form for={@form} id="comment-form" phx-change="validate" phx-submit="save" class="relative">
-      <div class="bg-white border border-zinc-300 rounded-lg shadow-sm focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500">
-        <.input
-          field={@form[:comment]}
-          type="textarea"
-          placeholder="Comment..."
-          class="block w-full border-0 pt-2.5 resize-none focus:ring-0 sm:text-sm"
-          rows="3"
-        />
-        <div class="flex items-center justify-between py-2 px-3 border-t border-zinc-100 bg-zinc-50 rounded-b-lg">
-          <div class="flex items-center gap-2">
-            <label class="cursor-pointer inline-flex items-center gap-1 text-zinc-500 hover:text-blue-600 transition-colors p-1.5 rounded-md hover:bg-zinc-200">
-              <.live_file_input upload={@uploads.attachment} class="hidden" />
-              <.icon name="hero-arrow-up-on-square" class="w-5 h-5" />
-              <span class="text-xs font-medium">파일 업로드</span>
-            </label>
-            <span
-              :if={length(@uploads.attachment.entries) > 0}
-              class="text-xs text-blue-600 font-semibold"
-            >
-              {length(@uploads.attachment.entries)}개 선택됨
-            </span>
-          </div>
-           <.button phx-disable-with="Saving..." class="text-xs px-3 py-1.5">Add Comment</.button>
+      <%!-- <div class="bg-white border border-zinc-300 rounded-lg shadow-sm focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500"> --%>
+      <.input
+        field={@form[:comment]}
+        type="textarea"
+        placeholder="Comment..."
+      />
+      <%!-- <div class="flex items-center justify-between py-2 px-3 border-t border-zinc-100 bg-zinc-50 rounded-b-lg"> --%>
+      <div class="flex items-center justify-between py-2 px-3 border border-t-0 border-zinc-300 bg-zinc-50 rounded-b-lg">
+        <div class="flex items-center gap-2">
+          <label class="cursor-pointer inline-flex items-center gap-1 text-zinc-500 hover:text-blue-600 transition-colors p-1.5 rounded-md hover:bg-zinc-200">
+            <.live_file_input upload={@uploads.attachment} class="hidden" />
+            <.icon name="hero-arrow-up-on-square" class="w-5 h-5" />
+            <span class="text-xs font-medium">파일 업로드</span>
+          </label>
+          <span
+            :if={length(@uploads.attachment.entries) > 0}
+            class="text-xs text-blue-600 font-semibold"
+          >
+            {length(@uploads.attachment.entries)}개 선택됨
+          </span>
         </div>
+         <.button phx-disable-with="Saving..." class="text-xs px-3 py-1.5">Add Comment</.button>
       </div>
-       <%!-- 업로드 파일이  max_entries 이상일때 에러 표시  --%>
+       <%!-- </div> --%> <%!-- 업로드 파일이  max_entries 이상일때 에러 표시  --%>
       <.error :for={err <- upload_errors(@uploads.attachment)}>{Phoenix.Naming.humanize(err)}</.error>
       
       <div

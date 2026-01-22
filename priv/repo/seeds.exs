@@ -139,8 +139,16 @@ aaaaa =
   %Crew{}
   |> Crew.changeset(%{
     name: "AAAAA",
-    description: "K리전 가상머신 신청 처리팀",
+    description: "K리전 공동존 가상머신 처리팀",
     leader_id: alex.id
+  })
+  |> Repo.insert!()
+aaaaa =
+  %Crew{}
+  |> Crew.changeset(%{
+    name: "BBBBB",
+    description: "K리전 은행존 가상머신 처리팀",
+    leader_id: mary.id
   })
   |> Repo.insert!()
 
@@ -163,35 +171,41 @@ aaaaa =
 |> Repo.insert!()
 
 %Member{
-  crew_id: aaaaa.id,
+  crew_id: bbbbb.id,
   user_id: mary.id
+}
+|> Repo.insert!()
+
+%Member{
+  crew_id: bbbbb.id,
+  user_id: nicole.id
 }
 |> Repo.insert!()
 
 %Category{
   name: "가상 머신 신청",
   description: "
-  K리전 가상 머신 신규 구성
+  K리전 공동존 가상 머신 신규 구성
   ",
   group: "K_리전_공동존",
   active: true,
-  request_name: "common_k_create_vm",
-  affiliate: :B0,
+  request_name: "common_k_create_vms",
+  affiliate: :FG,
   duration: 80,
   assignee_crew_id: aaaaa.id
 }
 |> Repo.insert!()
 
 %Category{
-  name: "OKS/OCP 신청",
+  name: "가상 머신 스펙 변경",
   description: "
-  K리전 은행존 OKS/OCP 설치 및 환경설정
+  K리전 은행존 가상머신 vCore/Memory Scale up/down 조정 신청
   ",
   group: "K_리전_은행존",
   active: true,
-  request_name: "bank_k_setup_oks_ocp",
-  affiliate: :C0,
+  request_name: "bank_k_resize_vms",
+  affiliate: :B0,
   duration: 70,
-  assignee_crew_id: aaaaa.id
+  assignee_crew_id: bbbbb.id
 }
 |> Repo.insert!()

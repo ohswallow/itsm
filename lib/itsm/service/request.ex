@@ -6,6 +6,7 @@ defmodule Itsm.Service.Request do
   alias Itsm.Service.Category
   alias Itsm.Service.Approval
   alias Itsm.Attachments.Attachment
+  alias Itsm.Service.BankKResizeVm
 
   @status_values [:request, :check, :plan, :review, :start, :finish, :verify, :closed]
 
@@ -35,9 +36,14 @@ defmodule Itsm.Service.Request do
     belongs_to :requestor_crew, Itsm.Team.Crew, type: :binary_id
     belongs_to :category, Category, type: :integer
     embeds_many :common_k_create_vms, CommonKCreateVm, on_replace: :delete
+    embeds_many :bank_k_resize_vms, BankKResizeVm, on_replace: :delete
 
     has_many :approvals, Approval
-    has_many :comments, Itsm.Comments.Comment
+
+    has_many :comments, Itsm.Comments.Comment,
+      foreign_key: :resource_id,
+      where: [resource_type: "Request"]
+
     # has_many :attachments, Attachment, on_replace: :delete
     has_many :attachments, Itsm.Attachments.Attachment,
       foreign_key: :resource_id,
@@ -78,10 +84,13 @@ defmodule Itsm.Service.Request do
       drop_param: :common_k_create_vms_drop,
       sort_param: :common_k_create_vms_sort
     )
+    |> cast_embed(:bank_k_resize_vms,
+      with: &BankKResizeVm.changeset/2,
+      drop_param: :bank_k_resize_vms_drop,
+      sort_param: :bank_k_resize_vms_sort
+    )
     |> assoc_constraint(:assignee)
     |> assoc_constraint(:category)
     |> cast_assoc(:attachments, with: &Attachment.changeset/2)
-
-    # |> validate_assignee_not_requestor()
   end
 end

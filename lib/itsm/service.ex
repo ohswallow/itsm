@@ -427,15 +427,16 @@ defmodule Itsm.Service do
   end
 
   # ✅ 결과 브로드캐스트 헬퍼
-  defp broadcast_result({:ok, %{request: request}} = _result, event) do
+  defp broadcast_result({:ok, %{request: request}} = _result, _event) do
     request = Repo.preload(request, [:category, :attachments])
-
-    case event do
-      :request_created -> broadcast_approvals_list({event, request})
-      :request_updated -> broadcast_request(request.id, {event, request})
-    end
-
+    broadcast_approvals_list({:request_created, request})
     {:ok, request}
+    # case event do
+    #   :request_created -> broadcast_approvals_list({event, request})
+    #   :request_updated -> broadcast_request(request.id, {event, request})
+    # end
+
+    # {:ok, request}
   end
 
   defp broadcast_result(error, _), do: error

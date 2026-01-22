@@ -28,23 +28,25 @@ defmodule Itsm.ServiceFixtures do
     category
   end
 
-  @doc """
-  Generate a request.
-  """
-  def request_fixture(attrs \\ %{}) do
-    {:ok, request} =
-      attrs
-      |> Enum.into(%{
-        common_k_create_vms: %{},
-        description: "some description",
-        due_date: ~D[2025-09-28],
-        env: :prod,
-        title: "some title"
-      })
-      |> Itsm.Service.create_request()
+  # @doc """
+  # Generate a request.
+  # """
 
-    request
-  end
+  # def request_fixture(attrs \\ %{}) do
+
+  #   {:ok, request} =
+  #     attrs
+  #     |> Enum.into(%{
+  #       common_k_create_vms: %{},
+  #       description: "some description",
+  #       due_date: ~D[2025-09-28],
+  #       env: :prod,
+  #       title: "some title"
+  #     })
+  #     |> Itsm.Service.create_request()
+
+  #   request
+  # end
 
   @doc """
   Generate a approval.
