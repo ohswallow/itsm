@@ -1,12 +1,12 @@
 defmodule ItsmWeb.CategoryLive.Index do
   use ItsmWeb, :live_view
 
-  alias Itsm.Service
   alias Itsm.Service.Category
+  alias Itsm.Categories
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :categories, Service.list_categories())}
+    {:ok, stream(socket, :categories, Categories.list_categories())}
   end
 
   @impl true
@@ -17,7 +17,7 @@ defmodule ItsmWeb.CategoryLive.Index do
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Category")
-    |> assign(:category, Service.get_category!(id))
+    |> assign(:category, Categories.get_category!(id))
   end
 
   defp apply_action(socket, :new, _params) do
@@ -39,8 +39,8 @@ defmodule ItsmWeb.CategoryLive.Index do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    category = Service.get_category!(id)
-    {:ok, _} = Service.delete_category(category)
+    category = Categories.get_category!(id)
+    {:ok, _} = Categories.delete_category(category)
 
     {:noreply, stream_delete(socket, :categories, category)}
   end

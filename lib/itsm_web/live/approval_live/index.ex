@@ -1,12 +1,12 @@
 defmodule ItsmWeb.ApprovalLive.Index do
   use ItsmWeb, :live_view
 
-  alias Itsm.Service
+  alias Itsm.Approvals
   alias Itsm.Service.Approval
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :approvals, Service.list_approvals())}
+    {:ok, stream(socket, :approvals, Approvals.list_approvals())}
   end
 
   @impl true
@@ -17,7 +17,7 @@ defmodule ItsmWeb.ApprovalLive.Index do
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Approval")
-    |> assign(:approval, Service.get_approval!(id))
+    |> assign(:approval, Approvals.get_approval!(id))
   end
 
   defp apply_action(socket, :new, _params) do
@@ -39,8 +39,8 @@ defmodule ItsmWeb.ApprovalLive.Index do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    approval = Service.get_approval!(id)
-    {:ok, _} = Service.delete_approval(approval)
+    approval = Approvals.get_approval!(id)
+    {:ok, _} = Approvals.delete_approval(approval)
 
     {:noreply, stream_delete(socket, :approvals, approval)}
   end

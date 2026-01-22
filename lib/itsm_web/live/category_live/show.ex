@@ -1,7 +1,7 @@
 defmodule ItsmWeb.CategoryLive.Show do
   use ItsmWeb, :live_view
 
-  alias Itsm.Service
+  alias Itsm.Categories
 
   @impl true
   def mount(_params, _session, socket) do
@@ -13,7 +13,7 @@ defmodule ItsmWeb.CategoryLive.Show do
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:category, Service.get_category!(id))}
+     |> assign(:category, Categories.get_category!(id))}
   end
 
   defp page_title(:show), do: "Show Category"

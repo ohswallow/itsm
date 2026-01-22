@@ -1,7 +1,7 @@
 defmodule ItsmWeb.RequestLive.Show do
   use ItsmWeb, :live_view
 
-  alias Itsm.Service
+  alias Itsm.Requests
 
   @impl true
   def render(assigns) do
@@ -38,6 +38,6 @@ defmodule ItsmWeb.RequestLive.Show do
     {:ok,
      socket
      |> assign(:page_title, "Show Request")
-     |> assign(:request, Service.get_request!(id))}
+     |> assign(:request, Requests.get_request!(id))}
   end
 end

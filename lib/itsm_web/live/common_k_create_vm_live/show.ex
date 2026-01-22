@@ -4,8 +4,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   alias Itsm.Service
   alias Itsm.Comments
   alias Itsm.Comments.Comment
-
-  on_mount {ItsmWeb.UserAuth, :mount_current_user}
+  alias Itsm.Requests
 
   def mount(_params, _session, socket) do
     changeset = Comments.change_comment(%Comment{})
@@ -22,10 +21,10 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
 
   def handle_params(%{"id" => id}, _uri, socket) do
     if connected?(socket) do
-      Service.subscribe_request(id)
+      Requests.subscribe_request(id)
     end
 
-    request = Service.get_request!(id)
+    request = Requests.get_request!(id)
     comments = Service.list_comments(request)
 
     {

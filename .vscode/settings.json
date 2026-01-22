@@ -1,0 +1,52 @@
+{
+  "elixirLS.suggestSpecs": false,
+  "elixirLS.dialyzerEnabled": true,
+  "elixirLS.signatureAfterComplete": false,
+  "elixirLS.fetchDeps": false,
+
+  "files.associations": {
+    "*.heex": "phoenix-heex"
+  },
+
+  "[elixir]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "JakeBecker.elixir-ls"
+  },
+
+  "[phoenix-heex]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "JakeBecker.elixir-ls"
+  },
+
+  "emmet.includeLanguages": {
+    "elixir": "html",
+    "phoenix-heex": "html"
+  },
+  "emmet.triggerExpansionOnTab": true,
+
+  "terminal.integrated.defaultProfile.windows": "Command Prompt",
+
+  // 저장 시 줄 끝의 불필요한 공백(스페이스, 탭 등)을 자동 제거
+  "files.trimTrailingWhitespace": true,
+
+  // 파일의 마지막 줄 끝에 자동으로 개행 문자(\n)를 추가
+  "files.insertFinalNewline": true,
+
+  // 특정 문자를 입력할 때 자동으로 코드 포매팅 실행 (예: }, ; 등)
+  "editor.formatOnType": true,
+
+  // 자동 삽입된 공백을 제거하지 않도록 설정 (공백 유지)
+  "editor.trimAutoWhitespace": false,
+
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "deps": true,
+    "_build": true,
+    ".vscode": true,
+    ".elixir_ls": true
+  }
+}

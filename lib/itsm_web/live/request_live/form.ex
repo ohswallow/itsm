@@ -1,8 +1,9 @@
 defmodule ItsmWeb.RequestLive.Form do
   use ItsmWeb, :live_view
 
-  alias Itsm.Service
   alias Itsm.Service.Request
+  alias Itsm.Requests
+  alias Itsm.Service
 
   @impl true
   def render(assigns) do
@@ -48,12 +49,12 @@ defmodule ItsmWeb.RequestLive.Form do
   defp return_to(_), do: "index"
 
   defp apply_action(socket, :edit, %{"id" => id}) do
-    request = Service.get_request!(id)
+    request = Requests.get_request!(id)
 
     socket
     |> assign(:page_title, "Edit Request")
     |> assign(:request, request)
-    |> assign(:form, to_form(Service.change_request(request)))
+    |> assign(:form, to_form(Requests.change_request(request)))
   end
 
   defp apply_action(socket, :new, _params) do
@@ -62,12 +63,12 @@ defmodule ItsmWeb.RequestLive.Form do
     socket
     |> assign(:page_title, "New Request")
     |> assign(:request, request)
-    |> assign(:form, to_form(Service.change_request(request)))
+    |> assign(:form, to_form(Requests.change_request(request)))
   end
 
   @impl true
   def handle_event("validate", %{"request" => request_params}, socket) do
-    changeset = Service.change_request(socket.assigns.request, request_params)
+    changeset = Requests.change_request(socket.assigns.request, request_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
@@ -76,7 +77,7 @@ defmodule ItsmWeb.RequestLive.Form do
   end
 
   defp save_request(socket, :edit, request_params) do
-    case Service.update_request(
+    case Requests.update_request(
            socket.assigns.current_user,
            socket.assigns.request,
            request_params
