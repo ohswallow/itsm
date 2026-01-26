@@ -11,11 +11,12 @@
       <.link navigate={~p"/categories"}>
         <%!-- Service Request --%> {gettext("Service Request")}
       </.link> <.link navigate={~p"/admin/categories"}><%!-- Admin --%> {gettext("Admin")}</.link>
-      <.link navigate={~p"/requests"}>{gettext("Request List")}</.link>
+      <.link navigate={~p"/requests"}>{gettext("My Request List")}</.link>
       <.link navigate={~p"/approvals"}>{gettext("Approval List")}</.link>
       <.link navigate={~p"/delegations"}>{gettext("Delegation")}</.link>
       <.link navigate={~p"/crews"} data-replace="true">{gettext("My Crews")}</.link>
       <.link navigate={~p"/crews/all"} data-replace="true">{gettext("All Crews")}</.link>
+      <.link navigate={~p"/assets"} data-replace="true">{gettext("Assets")}</.link>
       <%!-- <.link
         href="?locale=en"
         method="get"
