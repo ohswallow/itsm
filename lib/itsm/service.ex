@@ -14,168 +14,8 @@ defmodule Itsm.Service do
   alias Itsm.Comments.Comment
   alias Itsm.Attachments.Attachment
   alias Itsm.Team.Member
-
-  # ✅ 특정 request의 변경사항 구독
-  def subscribe_request(request_id) do
-    Phoenix.PubSub.subscribe(Itsm.PubSub, "request:#{request_id}")
-  end
-
-  def broadcast_request(request_id, message) do
-    Phoenix.PubSub.broadcast(Itsm.PubSub, "request:#{request_id}", message)
-  end
-
-  # ✅ 모든 request 리스트 변경사항 구독 (생성, 업데이트 등)
-  def subscribe_approvals_list do
-    Phoenix.PubSub.subscribe(Itsm.PubSub, "approvals_list")
-  end
-
-  def broadcast_approvals_list(message) do
-    Phoenix.PubSub.broadcast(Itsm.PubSub, "approvals_list", message)
-  end
-
-  @doc """
-  Returns the list of categories.
-
-  ## Examples
-
-      iex> list_categories()
-      [%Category{}, ...]
-
-  """
-  def list_categories do
-    Repo.all(Category)
-  end
-
-  def filter_categories(filter) do
-    Category
-    |> with_type(filter["group"])
-    |> search_by(filter["keyword"])
-    |> sort(filter["sort_by"])
-    |> Repo.all()
-  end
-
-  defp with_type(query, group) when group in ~w(K_리전_공동존 K_리전_은행존 P_리전 배치자동화) do
-    where(query, group: ^group)
-  end
-
-  defp with_type(query, _), do: query
-
-  defp search_by(query, keyword) when keyword in ["", nil], do: query
-
-  defp search_by(query, keyword) do
-    where(query, [c], ilike(c.name, ^"%#{keyword}%"))
-  end
-
-  defp sort(query, "name") do
-    order_by(query, :name)
-  end
-
-  defp sort(query, "description_desc") do
-    order_by(query, desc: :description)
-  end
-
-  defp sort(query, "description_asc") do
-    order_by(query, asc: :description)
-  end
-
-  defp sort(query, _) do
-    order_by(query, :id)
-  end
-
-  @doc """
-  Gets a single category.
-
-  Raises `Ecto.NoResultsError` if the Category does not exist.
-
-  ## Examples
-
-      iex> get_category!(123)
-      %Category{}
-
-      iex> get_category!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_category!(id), do: Repo.get!(Category, id)
-
-  @doc """
-  Creates a category.
-
-  ## Examples
-
-      iex> create_category(%{field: value})
-      {:ok, %Category{}}
-
-      iex> create_category(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_category(attrs \\ %{}) do
-    %Category{}
-    |> Category.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  @doc """
-  Updates a category.
-
-  ## Examples
-
-      iex> update_category(category, %{field: new_value})
-      {:ok, %Category{}}
-
-      iex> update_category(category, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_category(%Category{} = category, attrs) do
-    category
-    |> Category.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Deletes a category.
-
-  ## Examples
-
-      iex> delete_category(category)
-      {:ok, %Category{}}
-
-      iex> delete_category(category)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_category(%Category{} = category) do
-    Repo.delete(category)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking category changes.
-
-  ## Examples
-
-      iex> change_category(category)
-      %Ecto.Changeset{data: %Category{}}
-
-  """
-  def change_category(%Category{} = category, attrs \\ %{}) do
-    Category.changeset(category, attrs)
-  end
-
-  @doc """
-  Returns the list of requests.
-
-  ## Examples
-
-      iex> list_requests()
-      [%Request{}, ...]
-
-  """
-  def list_requests do
-    Repo.all(Request)
-    |> Repo.preload(:category)
-  end
+  alias Itsm.Approvals
+  alias Itsm.Requests
 
   def list_assignee_requests(current_user) do
     today = Date.utc_today()
@@ -253,27 +93,6 @@ defmodule Itsm.Service do
     |> Repo.preload([:category, :assignee_crew])
   end
 
-  @doc """
-  Gets a single request.
-
-  Raises `Ecto.NoResultsError` if the Request does not exist.
-
-  ## Examples
-
-      iex> get_request!(123)
-      %Request{}
-
-      iex> get_request!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-
-  def get_request!(id) do
-    Request
-    |> Repo.get!(id)
-    |> Repo.preload([:category, :attachments])
-  end
-
   # ✅ 어떤 구조체(resource)가 들어오든 다 처리하는 범용 함수
   def list_comments(resource) do
     # 1. 리소스 타입 판별 ("Request", "Server" 등 문자열 추출)
@@ -298,23 +117,6 @@ defmodule Itsm.Service do
   # 예외 처리 (혹시 모를 실수 방지)
   defp get_resource_type(struct), do: raise("List comments not supported for #{inspect(struct)}")
 
-  @doc """
-  Creates a request.
-
-  ## Examples
-
-      iex> create_request(%{field: value})
-      {:ok, %Request{}}
-
-      iex> create_request(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-
-  # ============================================================================
-  # Request 생성 및 수정
-  # ============================================================================
-
   def create_request(
         %User{} = user,
         %Category{} = category,
@@ -322,20 +124,8 @@ defmodule Itsm.Service do
         attrs \\ %{},
         attachments \\ []
       ) do
-    # 1. 구조체 명시적 초기화
-    new_request = %Request{
-      requestor: user,
-      requestor_name: user.display_name,
-      category: category,
-      assignee: assignee,
-      assignee_id: assignee.id,
-      assignee_name: assignee.display_name
-      # requestor_crew_id는 폼(attrs)에서 넘어옴
-    }
-
     Multi.new()
-    # 2. Request 생성 (Requests.change_request 대신 직접 changeset 호출)
-    |> Multi.insert(:request, Request.changeset(new_request, attrs))
+    |> Multi.insert(:request, Requests.change_request(user, category, assignee, attrs))
     # 3. 첨부파일 처리 (패턴 매칭 사용)
     |> maybe_insert_attachments(attachments)
     # 4. 결재선 생성
@@ -390,169 +180,11 @@ defmodule Itsm.Service do
   # ✅ 결과 브로드캐스트 헬퍼
   defp broadcast_result({:ok, %{request: request}} = _result, _event) do
     request = Repo.preload(request, [:category, :attachments])
-    broadcast_approvals_list({:request_created, request})
+    Approvals.broadcast_approvals_list({:request_created, request})
     {:ok, request}
-    # case event do
-    #   :request_created -> broadcast_approvals_list({event, request})
-    #   :request_updated -> broadcast_request(request.id, {event, request})
-    # end
-
-    # {:ok, request}
   end
 
   defp broadcast_result(error, _), do: error
-
-  @doc """
-  Updates a request.
-
-  ## Examples
-
-      iex> update_request(request, %{field: new_value})
-      {:ok, %Request{}}
-
-      iex> update_request(request, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  # 수정 필요
-  def update_request(current_user, %Request{requestor_id: requestor_id} = request, attrs)
-      when current_user.id == requestor_id do
-    request
-    |> Request.changeset(attrs)
-    |> Repo.update()
-    |> case do
-      {:ok, request} ->
-        request = Repo.preload(request, :category)
-        broadcast_request(request.id, {:request_updated, request})
-        {:ok, request}
-
-      {:error, _} = error ->
-        error
-    end
-  end
-
-  @doc """
-  Deletes a request.
-
-  ## Examples
-
-      iex> delete_request(request)
-      {:ok, %Request{}}
-
-      iex> delete_request(request)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_request(%Request{} = request) do
-    Repo.delete(request)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking request changes.
-
-  ## Examples
-
-      iex> change_request(request)
-      %Ecto.Changeset{data: %Request{}}
-
-  """
-  def change_request(%Request{} = request, attrs \\ %{}) do
-    Request.changeset(request, attrs)
-  end
-
-  @doc """
-  Returns the list of approvals.
-
-  ## Examples
-
-      iex> list_approvals()
-      [%Approval{}, ...]
-
-  """
-  def list_approvals do
-    Repo.all(Approval)
-  end
-
-  @doc """
-  Gets a single approval.
-
-  Raises `Ecto.NoResultsError` if the Approval does not exist.
-
-  ## Examples
-
-      iex> get_approval!(123)
-      %Approval{}
-
-      iex> get_approval!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_approval!(id), do: Repo.get!(Approval, id)
-
-  @doc """
-  Creates a approval.
-
-  ## Examples
-
-      iex> create_approval(%{field: value})
-      {:ok, %Approval{}}
-
-      iex> create_approval(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_approval(attrs \\ %{}) do
-    %Approval{}
-    |> Approval.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  @doc """
-  Updates a approval.
-
-  ## Examples
-
-      iex> update_approval(approval, %{field: new_value})
-      {:ok, %Approval{}}
-
-      iex> update_approval(approval, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_approval(%Approval{} = approval, attrs) do
-    approval
-    |> Approval.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Deletes a approval.
-
-  ## Examples
-
-      iex> delete_approval(approval)
-      {:ok, %Approval{}}
-
-      iex> delete_approval(approval)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_approval(%Approval{} = approval) do
-    Repo.delete(approval)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking approval changes.
-
-  ## Examples
-
-      iex> change_approval(approval)
-      %Ecto.Changeset{data: %Approval{}}
-
-  """
-  def change_approval(%Approval{} = approval, attrs \\ %{}) do
-    Approval.changeset(approval, attrs)
-  end
 
   def approve_request(request, approver) do
     process_request(request, approver, :approve)
@@ -572,9 +204,9 @@ defmodule Itsm.Service do
         approver_name: approver.display_name
       }
 
-      with {:ok, approval} <- create_approval(approval_attrs),
+      with {:ok, approval} <- Approvals.create_approval(approval_attrs),
            {:ok, request} <- transition_to_next_status(request, action) do
-        broadcast_approvals_list({:request_updated, request})
+        Approvals.broadcast_approvals_list({:request_updated, request})
         {request, approval}
       else
         {:error, _} = error -> Repo.rollback(error)

@@ -10,6 +10,7 @@ defmodule Itsm.Comments do
   alias Itsm.Accounts.User
   alias Itsm.Attachments.Attachment
   alias Ecto.Multi
+  alias Itsm.Requests
 
   @doc """
   Returns the list of comments.
@@ -125,7 +126,7 @@ defmodule Itsm.Comments do
   defp broadcast_result({:ok, %{comment: comment}}, topic_id) do
     comment = Repo.preload(comment, :attachments)
     # PubSub 방송 (토픽 ID로 전파)
-    Itsm.Service.broadcast_request(topic_id, {:comment_created, comment})
+    Requests.broadcast_request(topic_id, {:comment_created, comment})
     {:ok, comment}
   end
 

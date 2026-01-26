@@ -27,7 +27,7 @@ defmodule ItsmWeb.SearchCrewsDialog do
         phx-target={@myself}
         class="flex items-center space-x-2"
       >
-        <.live_select
+        <LiveSelect.live_select
           field={@form[:crew_search]}
           phx-target={@myself}
           allow_clear={true}
@@ -53,7 +53,7 @@ defmodule ItsmWeb.SearchCrewsDialog do
               <span>{option.tag_label}</span>
             </div>
           </:tag>
-        </.live_select>
+        </LiveSelect.live_select>
          <.button phx-disable-with="submitting...">Submit</.button>
       </.form>
     </div>

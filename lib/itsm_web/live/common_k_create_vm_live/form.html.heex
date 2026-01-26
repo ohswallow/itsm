@@ -103,7 +103,7 @@
         </figcaption>
       </div>
     </figure>
-     
+
   </fieldset> --%>
   <%!-- {inspect(@uploads.attachment)}  --%>
   <%!-- <div class="my-4 text-slate-600 text-sm">Add up to {@uploads.attachment.max_entries} attachment
@@ -207,7 +207,7 @@
   </div>
 </.form>
 
-<%!-- <.modal
+<.modal
   :if={@show_crew_modal}
   id="crews-search"
   on_cancel={JS.patch(@current_path)}
@@ -218,5 +218,6 @@
     id="search-crews"
     parent_pid={self()}
   />
-</.modal> --%>
+</.modal>
+
 <.back navigate={~p"/categories"}>Back</.back>

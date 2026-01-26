@@ -404,6 +404,25 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
     {:noreply, socket}
   end
 
+  def handle_event("copy_request", _, %{assigns: %{request: request}} = socket) do
+    request_params = %{
+      "title" => request.title,
+      "description" => request.description,
+      "env" => request.env,
+      "due_date" => request.due_date |> NaiveDateTime.to_date() |> Date.to_iso8601(),
+      "assignee_id" => request.assignee_id,
+      "category_id" => request.category_id
+    }
+
+    IO.inspect(request, label: "copy_request")
+
+    {:noreply,
+     push_navigate(socket,
+       to:
+         "/#{request.category.request_name}/#{request.id}/copy?#{URI.encode_query(request_params)}"
+     )}
+  end
+
   def handle_event("save", %{"comment" => comment_params}, socket) do
     %{request: request, current_user: current_user} = socket.assigns
 

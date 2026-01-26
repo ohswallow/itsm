@@ -25,7 +25,7 @@ defmodule ItsmWeb.SearchUsersDialog do
         phx-target={@myself}
         class="flex items-center space-x-2"
       >
-        <.live_select
+        <LiveSelect.live_select
           field={@form[:user_search]}
           phx-target={@myself}
           allow_clear={true}
@@ -52,7 +52,7 @@ defmodule ItsmWeb.SearchUsersDialog do
               <span class="font-medium mr-1">{option.tag_label}</span>
             </div>
           </:tag>
-        </.live_select>
+        </LiveSelect.live_select>
          <.button phx-disable-with="Adding...">Add</.button>
       </.form>
     </div>

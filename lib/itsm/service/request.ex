@@ -60,7 +60,6 @@ defmodule Itsm.Service.Request do
     timestamps(type: :utc_datetime)
   end
 
-  @doc false
   def changeset(request, attrs) do
     request
     |> cast(attrs, [
@@ -79,6 +78,32 @@ defmodule Itsm.Service.Request do
       :assignee_id,
       :requestor_crew_id
     ])
+    |> assoc_changeset(attrs)
+  end
+
+  def save_changeset(request, attrs) do
+    request
+    |> cast(attrs, [
+      :title,
+      :description,
+      :env,
+      :due_date,
+      :requestor_crew_id
+    ])
+    |> validate_required([
+      :title,
+      :description,
+      :env,
+      :due_date,
+      :assignee_id,
+      :requestor_crew_id
+    ])
+    |> assoc_changeset(attrs)
+  end
+
+  @doc false
+  defp assoc_changeset(request, _attrs) do
+    request
     |> cast_embed(:common_k_create_vms,
       with: &CommonKCreateVm.changeset/2,
       drop_param: :common_k_create_vms_drop,
