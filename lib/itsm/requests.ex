@@ -45,6 +45,7 @@ defmodule Itsm.Requests do
     Request.changeset(request, attrs)
   end
 
+  # TODO: Crews로 분리후에 Crew 파리미터 추가 작업이 필요함
   def change_request(%User{} = user, %Category{} = category, %User{} = assignee, attrs \\ %{}) do
     %Request{
       requestor: user,
@@ -54,7 +55,7 @@ defmodule Itsm.Requests do
       assignee_name: assignee.display_name,
       category: category
     }
-    |> Request.changeset(attrs)
+    |> Request.save_changeset(attrs)
   end
 
   # TODO: 수정이 필요함

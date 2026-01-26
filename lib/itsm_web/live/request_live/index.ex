@@ -50,7 +50,7 @@ defmodule ItsmWeb.RequestLive.Index do
       <%!-- <:col :let={{_id, request}} label="Create vm common k">{request.common_k_create_vms}</:col> --%>
       <:action :let={{_id, request}}>
         <div class="sr-only"><.link navigate={~p"/requests/#{request}"}>Show</.link></div>
-         <.link navigate={~p"/requests/#{request}/edit"}>Edit</.link>
+         <.link navigate={"/#{request.category.request_name}/#{request.id}/edit"}>Edit</.link>
       </:action>
       
       <:action :let={{id, request}}>

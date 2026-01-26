@@ -143,7 +143,8 @@ aaaaa =
     leader_id: alex.id
   })
   |> Repo.insert!()
-aaaaa =
+
+bbbbb =
   %Crew{}
   |> Crew.changeset(%{
     name: "BBBBB",
@@ -189,7 +190,7 @@ aaaaa =
   ",
   group: "K_리전_공동존",
   active: true,
-  request_name: "common_k_create_vms",
+  request_name: "common_k_create_vm",
   affiliate: :FG,
   duration: 80,
   assignee_crew_id: aaaaa.id
@@ -203,7 +204,7 @@ aaaaa =
   ",
   group: "K_리전_은행존",
   active: true,
-  request_name: "bank_k_resize_vms",
+  request_name: "bank_k_resize_vm",
   affiliate: :B0,
   duration: 70,
   assignee_crew_id: bbbbb.id
