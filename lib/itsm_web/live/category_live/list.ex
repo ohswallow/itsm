@@ -4,18 +4,14 @@ defmodule ItsmWeb.CategoryLive.List do
   alias Itsm.Categories
 
   def mount(_params, _session, socket) do
-    # socket = assign(socket, :categories, Service.list_categories())
-    # IO.inspect(self(), label: "MOUNT")
     {:ok, socket}
   end
 
   def handle_params(params, _uri, socket) do
-    # IO.inspect(self(), label: "HANDLE_PARAMS")
-
     socket =
       socket
       |> stream(:categories, Categories.filter_categories(params), reset: true)
-      # |> assign(:form, to_form(%{}))
+      |> assign(:filtered_category_groups, Categories.get_category_groups(params["group"]))
       |> assign(:form, to_form(params))
 
     {:noreply, socket}
@@ -26,16 +22,25 @@ defmodule ItsmWeb.CategoryLive.List do
 
     ~H"""
     <.filter_form form={@form} />
-    <div
-      class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
-      id="categories"
-      phx-update="stream"
-    >
-      <.category_card
-        :for={{dom_id, category} <- @streams.categories}
-        category={category}
-        id={dom_id}
-      />
+    <div id="categories-container" class="mt-6 space-y-10">
+      <div :for={group <- @filtered_category_groups} class="group-section">
+        <div class="relative py-4 border-b border-zinc-100 mb-4">
+          <span class="bg-white pr-3 text-sm font-bold text-zinc-800">{group}</span>
+        </div>
+        
+        <div
+          id={"category_card-container_#{group}"}
+          phx-update="stream"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
+        >
+          <.category_card
+            :for={{dom_id, category} <- @streams.categories}
+            :if={category.group == group}
+            category={category}
+            id={dom_id}
+          />
+        </div>
+      </div>
     </div>
     """
   end
@@ -52,8 +57,11 @@ defmodule ItsmWeb.CategoryLive.List do
       <.input
         type="select"
         field={@form[:group]}
-        prompt="Group"
-        options={[:K_리전_공동존, :K_리전_은행존, :배치자동화, :P_리전]}
+        options={[{"Group", ""}, :K_리전_공동존, :K_리전_은행존, :배치자동화, :P_리전]}
+        size="1"
+        multiple
+        phx-hook="InputSelect.selectAll"
+        value={(@form[:group] && @form[:group].value) || [""]}
       />
       <.input
         type="select"

@@ -45,6 +45,13 @@ defmodule Itsm.Categories do
 
   def get_category!(id), do: Repo.get!(Category, id)
 
+  def get_category_groups(groups) when groups in [nil, [], [""]], do: get_category_groups()
+
+  def get_category_groups(groups), do: groups
+
+  def get_category_groups,
+    do: Category |> distinct([c], c.group) |> select([c], c.group) |> Repo.all()
+
   def create_category(attrs \\ %{}) do
     %Category{}
     |> Category.changeset(attrs)
