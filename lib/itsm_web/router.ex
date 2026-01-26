@@ -106,18 +106,16 @@ defmodule ItsmWeb.Router do
       live "/approvals/:request_id/reject", ApprovalLive.List, :reject
       live "/approvals/:request_id/feedback", ApprovalLive.List, :feedback
 
+      # Request 목록
+      live "/requests", RequestLive.Index, :index
+      live "/requests/:id", RequestLive.Index, :show
+      live "/requests/:id/edit", RequestLive.Index, :edit
+
       # VM 생성
       live "/categories/:id/common_k_create_vm/new", CommonKCreateVmLive.Form, :new
       live "/common_k_create_vm/:id", CommonKCreateVmLive.Show, :show
       live "/common_k_create_vm/:id/edit", CommonKCreateVmLive.Form, :edit
       live "/common_k_create_vm/:id/copy", CommonKCreateVmLive.Form, :copy
-
-      # 요청(Request) 기능
-      live "/requests", RequestLive.Index, :index
-
-      live "/requests/new", RequestLive.Form, :new
-      live "/requests/:id", RequestLive.Show, :show
-      live "/requests/:id/edit", RequestLive.Form, :edit
 
       # 대결
       live "/delegations", DelegationLive.Index, :index
@@ -134,6 +132,14 @@ defmodule ItsmWeb.Router do
 
       live "/evaluations/:id", EvaluationLive.Show, :show
       live "/evaluations/:id/show/edit", EvaluationLive.Show, :edit
+
+      # 자산 관리
+      live "/assets", AssetLive.Index, :index
+      live "/assets/new", AssetLive.Index, :new
+      live "/assets/:id/edit", AssetLive.Index, :edit
+
+      live "/assets/:id", AssetLive.Show, :show
+      live "/assets/:id/show/edit", AssetLive.Show, :edit
 
       # 관리자 기능
       live "/admin/categories", CategoryLive.Index, :index

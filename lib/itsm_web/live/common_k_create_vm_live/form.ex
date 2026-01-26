@@ -119,10 +119,12 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
 
     case Requests.update_request(user, request, request_params) do
       {:ok, _request} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Request updated successfully")
-         |> push_navigate(to: ~p"/requests")}
+        {
+          :noreply,
+          socket
+          |> put_flash(:info, "Request updated successfully")
+          #  |> push_navigate(to: ~p"/requests")
+        }
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -150,10 +152,12 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
         {:noreply, assign(socket, form: to_form(changeset))}
 
       {:error, :approval, _changeset, _so_far_changeset} ->
-        {:noreply,
-         socket
-         |> put_flash(:error, "Approval creation failed")
-         |> push_navigate(to: ~p"/requests")}
+        {
+          :noreply,
+          socket
+          |> put_flash(:error, "Approval creation failed")
+          #  |> push_navigate(to: ~p"/requests")
+        }
 
       {:error, :attachments, _, _} ->
         {:noreply, put_flash(socket, :error, "Attachment upload failed")}

@@ -1,0 +1,34 @@
+<.header>
+  Asset {@asset.id}
+  <:subtitle>This is a asset record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/assets/#{@asset}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit asset</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Name">{@asset.name}</:item>
+  <:item title="Description">{@asset.description}</:item>
+  <:item title="Affiliate">{@asset.affiliate}</:item>
+  <:item title="Category">{@asset.category}</:item>
+  <:item title="Region type">{@asset.region_type}</:item>
+  <:item title="Infra type">{@asset.infra_type}</:item>
+  <:item title="Env">{@asset.env}</:item>
+  <:item title="Location">{@asset.location}</:item>
+  <:item title="Is dmz zone">{@asset.is_dmz_zone}</:item>
+</.list>
+
+<.back navigate={~p"/assets"}>Back to assets</.back>
+
+<.modal :if={@live_action == :edit} id="asset-modal" show on_cancel={JS.patch(~p"/assets/#{@asset}")}>
+  <.live_component
+    module={ItsmWeb.AssetLive.FormComponent}
+    id={@asset.id}
+    title={@page_title}
+    action={@live_action}
+    asset={@asset}
+    patch={~p"/assets/#{@asset}"}
+  />
+</.modal>

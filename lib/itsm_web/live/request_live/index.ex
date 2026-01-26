@@ -16,11 +16,11 @@ defmodule ItsmWeb.RequestLive.Index do
     ~H"""
     <.header>
       Listing Requests
-      <:actions>
-        <%!-- <.button phx-click={JS.dispatch("click", to: {:inner, "a"})}>
+      <%!-- <:actions>
+        <.button phx-click={JS.dispatch("click", to: {:inner, "a"})}>
           <.link navigate={~p"/requests/new"}>New Request</.link>
-        </.button> --%>
-      </:actions>
+        </.button>
+      </:actions> --%>
     </.header>
 
     <.table

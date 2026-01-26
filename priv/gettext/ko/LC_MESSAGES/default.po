@@ -62,8 +62,8 @@ msgstr "관리자"
 msgid "Service Request"
 msgstr "서비스 요청"
 
-msgid "Request List"
-msgstr "요청 목록"
+msgid "My Request List"
+msgstr "요청한 건"
 
 msgid "Approval List"
 msgstr "결재 목록"
