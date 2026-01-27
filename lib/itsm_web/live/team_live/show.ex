@@ -1,7 +1,9 @@
 defmodule ItsmWeb.TeamLive.Show do
   use ItsmWeb, :live_view
 
+  alias Itsm.Crews
   alias Itsm.Team
+  alias Itsm.Members
 
   def mount(params, _session, socket) do
     back_path = params["return_to"] || ~p"/crews"
@@ -11,10 +13,10 @@ defmodule ItsmWeb.TeamLive.Show do
 
   def handle_params(%{"id" => id}, _, socket) do
     if connected?(socket) do
-      Team.subscribe_crew(id)
+      Crews.subscribe_crew(id)
     end
 
-    crew = Team.get_crew_for_show!(id)
+    crew = Crews.get_crew_for_show!(id)
 
     case Team.reassign_leader(crew) do
       {:ok, crew} ->
@@ -25,7 +27,7 @@ defmodule ItsmWeb.TeamLive.Show do
 
       {:error, _message} ->
         # 멤버 아무도 없으면 crew 삭제
-        # Team.delete_crew(crew)
+        # Crews.delete_crew(crew)
 
         {:noreply,
          socket
@@ -222,14 +224,12 @@ defmodule ItsmWeb.TeamLive.Show do
 
       unless existing do
         # 없으면 추가
-        Team.create_member(%{
+        Members.create_member(%{
           "crew_id" => crew.id,
           "user_id" => user_id
         })
       end
     end)
-
-    # crew = Team.get_crew_for_show!(crew.id)
 
     {
       :noreply,

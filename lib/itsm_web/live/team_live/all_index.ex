@@ -1,7 +1,7 @@
 defmodule ItsmWeb.TeamLive.AllIndex do
   use ItsmWeb, :live_view
 
-  alias Itsm.Team
+  alias Itsm.Crews
   alias Itsm.Accounts
 
   # 공통 컴포넌트 임포트
@@ -23,7 +23,7 @@ defmodule ItsmWeb.TeamLive.AllIndex do
     socket =
       socket
       |> assign(:page_title, "All Crew")
-      |> stream(:crews, Team.filter_crews(params), reset: true)
+      |> stream(:crews, Crews.filter_crews(params), reset: true)
       |> assign(:form, to_form(params))
       # 2 현재 필터 조건을 뷰에서 쓸 수 있게 assign
       |> assign(:filter_params, filter_params)

@@ -29,7 +29,7 @@ defmodule Itsm.TeamFixtures do
     {:ok, member} =
       attrs
       |> Enum.into(%{})
-      |> Itsm.Team.create_member()
+      |> Itsm.Members.create_member()
 
     member
   end

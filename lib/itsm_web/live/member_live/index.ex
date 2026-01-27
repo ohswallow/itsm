@@ -1,12 +1,12 @@
 defmodule ItsmWeb.MemberLive.Index do
   use ItsmWeb, :live_view
 
-  alias Itsm.Team
+  alias Itsm.Members
   alias Itsm.Team.Member
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :members, Team.list_members())}
+    {:ok, stream(socket, :members, Members.list_members())}
   end
 
   @impl true
@@ -17,7 +17,7 @@ defmodule ItsmWeb.MemberLive.Index do
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Member")
-    |> assign(:member, Team.get_member!(id))
+    |> assign(:member, Members.get_member!(id))
   end
 
   defp apply_action(socket, :new, _params) do
@@ -39,8 +39,8 @@ defmodule ItsmWeb.MemberLive.Index do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    member = Team.get_member!(id)
-    {:ok, _} = Team.delete_member(member)
+    member = Members.get_member!(id)
+    {:ok, _} = Members.delete_member(member)
 
     {:noreply, stream_delete(socket, :members, member)}
   end
