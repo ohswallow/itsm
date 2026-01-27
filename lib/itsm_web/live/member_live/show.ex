@@ -1,7 +1,7 @@
 defmodule ItsmWeb.MemberLive.Show do
   use ItsmWeb, :live_view
 
-  alias Itsm.Team
+  alias Itsm.Members
 
   @impl true
   def mount(_params, _session, socket) do
@@ -13,7 +13,7 @@ defmodule ItsmWeb.MemberLive.Show do
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:member, Team.get_member!(id))}
+     |> assign(:member, Members.get_member!(id))}
   end
 
   defp page_title(:show), do: "Show Member"

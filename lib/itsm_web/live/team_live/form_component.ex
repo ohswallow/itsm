@@ -2,13 +2,14 @@ defmodule ItsmWeb.TeamLive.FormComponent do
   use ItsmWeb, :live_component
 
   alias Itsm.Team
+  alias Itsm.Crews
 
   def update(%{crew: crew} = assigns, socket) do
     {:ok,
      socket
      |> assign(assigns)
      |> assign_new(:form, fn ->
-       to_form(Team.change_crew(crew))
+       to_form(Crews.change_crew(crew))
      end)}
   end
 
@@ -39,7 +40,7 @@ defmodule ItsmWeb.TeamLive.FormComponent do
     # Crew명 대문자로 변환 => Live view에서 변경하는 방법 대신 Crew.changeset 내부에서 처리하도록 변경
     # crew_params = Map.update(crew_params, "name", "", &String.upcase/1)
 
-    changeset = Team.change_crew(socket.assigns.crew, crew_params)
+    changeset = Crews.change_crew(socket.assigns.crew, crew_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
@@ -49,7 +50,7 @@ defmodule ItsmWeb.TeamLive.FormComponent do
   end
 
   defp save_crew(socket, :edit, crew_params) do
-    case Team.update_crew(socket.assigns.crew, crew_params, socket.assigns.current_user) do
+    case Crews.update_crew(socket.assigns.crew, crew_params, socket.assigns.current_user) do
       {:ok, crew} ->
         notify_parent({:saved, crew})
 

@@ -192,7 +192,7 @@
       type="text"
       readonly
       value={
-        Enum.map(@referenced_crews_id, fn crew_id -> Team.get_crew!(crew_id).name end)
+        Enum.map(@referenced_crews_id, fn crew_id -> Crews.get_crew!(crew_id).name end)
         |> Enum.join(", ")
       }
       placeholder="선택된 crew가 없습니다"

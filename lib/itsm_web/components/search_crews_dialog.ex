@@ -2,9 +2,8 @@ defmodule ItsmWeb.SearchCrewsDialog do
   use ItsmWeb, :live_component
 
   alias Itsm.Accounts
-  # alias Itsm.Team.Crew
-  # alias Itsm.Team.Member
-  alias Itsm.Team
+  alias Itsm.Crews
+  alias Itsm.Members
 
   def update(assigns, socket) do
     socket =
@@ -63,11 +62,11 @@ defmodule ItsmWeb.SearchCrewsDialog do
   def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
     IO.inspect(text, label: "Searching for")
     # 1. Crew 이름으로 직접 검색
-    crews_by_name = Team.search_crews_by_name(text)
+    crews_by_name = Crews.search_crews_by_name(text)
 
     # 2. Member 이름(user.display_name)으로 검색 - Member를 통해 Crew 찾기
     users = Accounts.search_users(%{"q" => text})
-    crews_by_member = Team.search_crews_by_member(users)
+    crews_by_member = Members.search_crews_by_member(users)
 
     # 3. 중복 제거 (crew id 기준)
     crews =
@@ -99,7 +98,7 @@ defmodule ItsmWeb.SearchCrewsDialog do
       ) do
     IO.inspect(params, label: "Selected params")
 
-    crews = Enum.map(crews_id, &Itsm.Team.get_crew!/1)
+    crews = Enum.map(crews_id, &Crews.get_crew!/1)
 
     Enum.each(crews, fn crew ->
       IO.puts("You selected crew: #{crew.name}")
