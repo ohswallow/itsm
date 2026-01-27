@@ -11,7 +11,7 @@ defmodule ItsmWeb.CategoryLive.List do
     socket =
       socket
       |> stream(:categories, Categories.filter_categories(params), reset: true)
-      |> assign(:filtered_category_groups, Categories.get_category_groups(params["group"]))
+      |> assign(:filtered_category_groups, Categories.get_category_groups(params))
       |> assign(:form, to_form(params))
 
     {:noreply, socket}
@@ -53,11 +53,16 @@ defmodule ItsmWeb.CategoryLive.List do
       id="filter-form"
       phx-change="filter"
     >
-      <.input field={@form[:q]} placeholder="Search..." autocomplete="off" phx-debounce="500" />
+      <.input
+        field={@form[:keyword]}
+        placeholder="이름을 입력해주세요"
+        autocomplete="off"
+        phx-debounce="500"
+      />
       <.input
         type="select"
         field={@form[:group]}
-        options={[{"Group", ""}, :K_리전_공동존, :K_리전_은행존, :배치자동화, :P_리전]}
+        options={Categories.group_options()}
         size="1"
         multiple
         phx-hook="InputSelect.selectAll"
@@ -66,15 +71,9 @@ defmodule ItsmWeb.CategoryLive.List do
       <.input
         type="select"
         field={@form[:sort_by]}
-        prompt="Sort By"
-        options={[
-          Name: "name",
-          "Description: High to Low": "description_desc",
-          "Description: Low to High": "description_asc"
-        ]}
-      /> <%!-- <.link navigate={~p"/categories"} class="flex items-center hover:underline"> --%>
-      <%!-- navigate 대신 patch를 사용하여 URL을 변경 --%>
-      <.link patch={~p"/categories"} class="flex items-center hover:underline">Reset</.link>
+        prompt="정렬"
+        options={Categories.sort_options()}
+      /> <.link patch={~p"/categories"} class="flex items-center hover:underline">초기화</.link>
     </.form>
     """
   end
@@ -106,7 +105,7 @@ defmodule ItsmWeb.CategoryLive.List do
     # URL 파라미터를 깔끔하게 정리
     params =
       params
-      |> Map.take(~w(q group sort_by))
+      |> Map.take(~w(keyword group sort_by))
       |> Map.reject(fn {_, v} -> v == "" end)
 
     # push_patch는 현재 URL을 변경하고, 페이지를 새로고침하지 않음

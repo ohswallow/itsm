@@ -37,3 +37,6 @@ npm-debug.log
 
 # Ignore uploaded files
 /priv/static/uploads/
+
+# Ignoe vscode setting
+/.vscode
