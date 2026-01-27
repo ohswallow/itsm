@@ -1,7 +1,7 @@
 defmodule ItsmWeb.TeamLive.MyIndex do
   use ItsmWeb, :live_view
 
-  alias Itsm.Team
+  alias Itsm.Crews
   alias Itsm.Team.Crew
 
   # 공통 컴포넌트 임포트
@@ -10,7 +10,7 @@ defmodule ItsmWeb.TeamLive.MyIndex do
   def mount(_params, _session, socket) do
     current_user = socket.assigns.current_user
 
-    {:ok, stream(socket, :crews, Team.list_my_crews(current_user))}
+    {:ok, stream(socket, :crews, Crews.list_my_crews(current_user))}
   end
 
   def handle_params(params, _url, socket) do
@@ -38,7 +38,7 @@ defmodule ItsmWeb.TeamLive.MyIndex do
     socket
     |> assign(:page_title, "Edit Crew")
     # 수정할 데이터 로딩
-    |> assign(:crew, Team.get_crew!(id))
+    |> assign(:crew, Crews.get_crew!(id))
   end
 
   def render(assigns) do
@@ -103,10 +103,10 @@ defmodule ItsmWeb.TeamLive.MyIndex do
   end
 
   def handle_event("delete", %{"id" => id}, socket) do
-    crew = Team.get_crew!(id)
+    crew = Crews.get_crew!(id)
     current_user = socket.assigns.current_user
 
-    case Team.delete_crew(crew, current_user) do
+    case Crews.delete_crew(crew, current_user) do
       {:ok, _} ->
         # {:noreply, stream_delete(socket, :crews, crew)}
         {:noreply,

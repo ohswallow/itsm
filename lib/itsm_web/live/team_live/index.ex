@@ -1,7 +1,7 @@
 defmodule ItsmWeb.TeamLive.Index do
   use ItsmWeb, :live_view
 
-  alias Itsm.Team
+  alias Itsm.Crews
   alias Itsm.Team.Crew
 
   def mount(_params, _session, socket) do
@@ -18,7 +18,7 @@ defmodule ItsmWeb.TeamLive.Index do
     |> assign(:page_title, "My Crews")
     |> assign(:referrer, ~p"/crews")
     |> assign(:current_tab, :my)
-    |> stream(:crews, Team.list_my_crews(socket.assigns.current_user), reset: true)
+    |> stream(:crews, Crews.list_my_crews(socket.assigns.current_user), reset: true)
   end
 
   defp apply_action(socket, :all, params) do
@@ -26,15 +26,14 @@ defmodule ItsmWeb.TeamLive.Index do
     |> assign(:page_title, "All Crews")
     |> assign(:referrer, ~p"/crews/all")
     |> assign(:current_tab, :all)
-    # |> stream(:crews, Team.list_crews(), reset: true)
-    |> stream(:crews, Team.filter_crews(params), reset: true)
+    |> stream(:crews, Crews.filter_crews(params), reset: true)
     |> assign(:form, to_form(params))
   end
 
   defp apply_action(socket, :edit, %{"id" => crew_id}) do
     socket
     |> assign(:page_title, "Edit Crews")
-    |> assign(:crew, Team.get_crew!(crew_id))
+    |> assign(:crew, Crews.get_crew!(crew_id))
   end
 
   defp apply_action(socket, :new, _params) do
@@ -142,10 +141,10 @@ defmodule ItsmWeb.TeamLive.Index do
   end
 
   def handle_event("delete", %{"id" => id}, socket) do
-    crew = Team.get_crew!(id)
+    crew = Crews.get_crew!(id)
     current_user = socket.assigns.current_user
 
-    case Team.delete_crew(crew, current_user) do
+    case Crews.delete_crew(crew, current_user) do
       {:ok, _} ->
         # {:noreply, stream_delete(socket, :crews, crew)}
         {:noreply,
