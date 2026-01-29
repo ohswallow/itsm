@@ -7,7 +7,14 @@
     label={gettext("My Crew")}
     prompt="Choose a crew"
     options={@crew_options}
-  /> <.input field={@form[:title]} type="text" label={gettext("Title")} phx-debounce="blur" />
+  />
+  <.input
+    field={@form[:title]}
+    type="text"
+    label={gettext("Title")}
+    phx-debounce="blur"
+    class="form-input"
+  />
   <.input
     field={@form[:description]}
     type="textarea"
@@ -22,6 +29,7 @@
     prompt="Choose an environment"
     options={[운영: :prod, 스테이징: :stg, 개발: :dev, DR: :dr]}
     phx-debounce="blur"
+    class="form-select"
   /> <.input field={@form[:due_date]} type="datetime-local" label={gettext("Due Date")} />
   <div class="mb-6">
     <h2 class="text-lg font-semibold text-zinc-700">VM 생성 요청</h2>
