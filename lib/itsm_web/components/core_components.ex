@@ -223,7 +223,6 @@ defmodule ItsmWeb.CoreComponents do
   attr :type, :string, default: nil
   attr :class, :string, default: nil
   attr :rest, :global, include: ~w(disabled form name value)
-
   slot :inner_block, required: true
 
   def button(assigns) do
@@ -231,8 +230,7 @@ defmodule ItsmWeb.CoreComponents do
     <button
       type={@type}
       class={[
-        "phx-submit-loading:opacity-75 rounded-lg bg-zinc-900 hover:bg-zinc-700 py-2 px-3",
-        "text-sm font-semibold leading-6 text-white active:text-white/80",
+        "btn-primary phx-submit-loading:opacity-75 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed",
         @class
       ]}
       {@rest}
@@ -309,19 +307,17 @@ defmodule ItsmWeb.CoreComponents do
       end)
 
     ~H"""
-    <div>
-      <label class="flex items-center gap-4 text-sm leading-6 text-zinc-600">
-        <input type="hidden" name={@name} value="false" disabled={@rest[:disabled]} />
-        <input
-          type="checkbox"
-          id={@id}
-          name={@name}
-          value="true"
-          checked={@checked}
-          class="rounded border-zinc-300 text-zinc-900 focus:ring-0"
-          {@rest}
-        /> {@label}
-      </label>
+    <div class="form-control-group">
+      <input type="hidden" name={@name} value="false" disabled={@rest[:disabled]} />
+      <input
+        type="checkbox"
+        id={@id}
+        name={@name}
+        value="true"
+        checked={@checked}
+        class="form-checkbox"
+        {@rest}
+      /> <label for={@id} class="text-sm text-kb-dark-gray cursor-pointer">{@label}</label>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -329,13 +325,13 @@ defmodule ItsmWeb.CoreComponents do
 
   def input(%{type: "select"} = assigns) do
     ~H"""
-    <div>
+    <div class="space-y-1">
       <.label for={@id}>{@label}</.label>
       
       <select
         id={@id}
         name={@name}
-        class="mt-2 block w-full rounded-md border border-gray-300 bg-white shadow-sm focus:border-zinc-400 focus:ring-0 sm:text-sm"
+        class="form-input bg-white appearance-none"
         multiple={@multiple}
         {@rest}
       >
@@ -349,15 +345,14 @@ defmodule ItsmWeb.CoreComponents do
 
   def input(%{type: "textarea"} = assigns) do
     ~H"""
-    <div>
+    <div class="space-y-1">
       <.label for={@id}>{@label}</.label>
        <textarea
         id={@id}
         name={@name}
         class={[
-          "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6 min-h-[6rem]",
-          @errors == [] && "border-zinc-300 focus:border-zinc-400",
-          @errors != [] && "border-rose-400 focus:border-rose-400"
+          "form-input min-h-[6rem]",
+          @errors != [] && "border-red-500 focus:border-red-500 focus:ring-red-200"
         ]}
         {@rest}
       >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
@@ -369,7 +364,7 @@ defmodule ItsmWeb.CoreComponents do
   # All other inputs text, datetime-local, url, password, etc. are handled here...
   def input(assigns) do
     ~H"""
-    <div>
+    <div class="space-y-1">
       <.label for={@id}>{@label}</.label>
       
       <input
@@ -378,9 +373,8 @@ defmodule ItsmWeb.CoreComponents do
         id={@id}
         value={Phoenix.HTML.Form.normalize_value(@type, @value)}
         class={[
-          "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6",
-          @errors == [] && "border-zinc-300 focus:border-zinc-400",
-          @errors != [] && "border-rose-400 focus:border-rose-400"
+          "form-input",
+          @errors != [] && "border-red-500 focus:border-red-500 focus:ring-red-200"
         ]}
         {@rest}
       />
@@ -397,9 +391,7 @@ defmodule ItsmWeb.CoreComponents do
 
   def label(assigns) do
     ~H"""
-    <label for={@for} class="block text-sm font-semibold leading-6 text-zinc-800">
-      {render_slot(@inner_block)}
-    </label>
+    <label for={@for} class="form-label">{render_slot(@inner_block)}</label>
     """
   end
 
@@ -410,10 +402,8 @@ defmodule ItsmWeb.CoreComponents do
 
   def error(assigns) do
     ~H"""
-    <p class="mt-3 flex gap-3 text-sm leading-6 text-rose-600">
-      <.icon name="hero-exclamation-circle-mini" class="mt-0.5 h-5 w-5 flex-none" /> {render_slot(
-        @inner_block
-      )}
+    <p class="mt-1 flex items-center gap-1 text-xs font-medium text-red-600">
+      <.icon name="hero-exclamation-circle-mini" class="h-4 w-4" /> {render_slot(@inner_block)}
     </p>
     """
   end
@@ -429,13 +419,11 @@ defmodule ItsmWeb.CoreComponents do
 
   def header(assigns) do
     ~H"""
-    <header class={[@actions != [] && "flex items-center justify-between gap-6", @class]}>
+    <header class={["mb-6", @actions != [] && "flex items-center justify-between gap-6", @class]}>
       <div>
-        <h1 class="text-lg font-semibold leading-8 text-zinc-800">{render_slot(@inner_block)}</h1>
+        <h1 class="text-title-h2 leading-8">{render_slot(@inner_block)}</h1>
         
-        <p :if={@subtitle != []} class="mt-2 text-sm leading-6 text-zinc-600">
-          {render_slot(@subtitle)}
-        </p>
+        <p :if={@subtitle != []} class="mt-1 text-caption">{render_slot(@subtitle)}</p>
       </div>
       
       <div class="flex-none">{render_slot(@actions)}</div>
@@ -475,44 +463,36 @@ defmodule ItsmWeb.CoreComponents do
       end
 
     ~H"""
-    <div class="overflow-y-auto px-4 sm:overflow-visible sm:px-0">
-      <table class="w-[40rem] mt-11 sm:w-full">
-        <thead class="text-sm text-left leading-6 text-zinc-500">
+    <div class="table-wrapper card-base !p-0 overflow-hidden shadow-sm">
+      <table class="table-kb">
+        <thead>
           <tr>
-            <th :for={col <- @col} class="p-0 pb-4 pr-6 font-normal">{col[:label]}</th>
+            <th :for={col <- @col} class="text-left">{col[:label]}</th>
             
-            <th :if={@action != []} class="relative p-0 pb-4">
-              <span class="sr-only">{gettext("Actions")}</span>
-            </th>
+            <th :if={@action != []} class="text-right">설정</th>
           </tr>
         </thead>
         
         <tbody
           id={@id}
           phx-update={match?(%Phoenix.LiveView.LiveStream{}, @rows) && "stream"}
-          class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700"
         >
-          <tr :for={row <- @rows} id={@row_id && @row_id.(row)} class="group hover:bg-zinc-50">
+          <tr :for={row <- @rows} id={@row_id && @row_id.(row)} class="group">
             <td
               :for={{col, i} <- Enum.with_index(@col)}
               phx-click={@row_click && @row_click.(row)}
-              class={["relative p-0", @row_click && "hover:cursor-pointer"]}
+              class={[@row_click && "cursor-pointer"]}
             >
-              <div class="block py-4 pr-6">
-                <span class="absolute -inset-y-px right-0 -left-4 group-hover:bg-zinc-50 sm:rounded-l-xl" />
-                <span class={["relative", i == 0 && "font-semibold text-zinc-900"]}>
+              <div class="block">
+                <span class={[i == 0 && "font-bold text-kb-dark-gray"]}>
                   {render_slot(col, @row_item.(row))}
                 </span>
               </div>
             </td>
             
-            <td :if={@action != []} class="relative w-14 p-0">
-              <div class="relative whitespace-nowrap py-4 text-right text-sm font-medium">
-                <span class="absolute -inset-y-px -right-4 left-0 group-hover:bg-zinc-50 sm:rounded-r-xl" />
-                <span
-                  :for={action <- @action}
-                  class="relative ml-4 font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
-                >
+            <td :if={@action != []} class="text-right whitespace-nowrap">
+              <div class="flex justify-end gap-3">
+                <span :for={action <- @action} class="btn-text">
                   {render_slot(action, @row_item.(row))}
                 </span>
               </div>
@@ -540,12 +520,12 @@ defmodule ItsmWeb.CoreComponents do
 
   def list(assigns) do
     ~H"""
-    <div class="mt-14">
-      <dl class="-my-4 divide-y divide-zinc-100">
+    <div class="card-base mt-6">
+      <dl class="-my-4 divide-y border-kb-border-gray">
         <div :for={item <- @item} class="flex gap-4 py-4 text-sm leading-6 sm:gap-8">
-          <dt class="w-1/4 flex-none text-zinc-500">{item.title}</dt>
+          <dt class="w-1/4 flex-none font-semibold text-kb-medium-gray">{item.title}</dt>
           
-          <dd class="text-zinc-700">{render_slot(item)}</dd>
+          <dd class="text-kb-dark-gray">{render_slot(item)}</dd>
         </div>
       </dl>
     </div>
@@ -564,12 +544,12 @@ defmodule ItsmWeb.CoreComponents do
 
   def back(assigns) do
     ~H"""
-    <div class="mt-16">
+    <div class="mt-10">
       <.link
         navigate={@navigate}
-        class="text-sm font-semibold leading-6 text-zinc-900 hover:text-zinc-700"
+        class="btn-text inline-flex items-center gap-1 hover:text-kb-blue transition-colors"
       >
-        <.icon name="hero-arrow-left-solid" class="h-3 w-3" /> {render_slot(@inner_block)}
+        <.icon name="hero-arrow-left-mini" class="h-4 w-4" /> {render_slot(@inner_block)}
       </.link>
     </div>
     """
