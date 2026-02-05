@@ -12,10 +12,12 @@ defmodule Itsm.Service do
   alias Itsm.Delegations.Delegation
   alias Itsm.Accounts.User
   alias Itsm.Comments.Comment
-  alias Itsm.Attachments.Attachment
+  alias Itsm.Comments
+  alias Itsm.Attachments
   alias Itsm.Team.Member
   alias Itsm.Approvals
   alias Itsm.Requests
+  alias Itsm.Util
 
   def list_assignee_requests(current_user) do
     today = Date.utc_today()
@@ -95,12 +97,9 @@ defmodule Itsm.Service do
 
   # ✅ 어떤 구조체(resource)가 들어오든 다 처리하는 범용 함수
   def list_comments(resource) do
-    # 1. 리소스 타입 판별 ("Request", "Server" 등 문자열 추출)
-    resource_type = get_resource_type(resource)
-
     Comment
     # "Request"
-    |> where([c], c.resource_type == ^resource_type)
+    |> where([c], c.resource_type == ^Util.resource_name(resource))
     # ID 매칭
     |> where([c], c.resource_id == ^resource.id)
     |> order_by([c], asc: c.inserted_at)
@@ -109,72 +108,33 @@ defmodule Itsm.Service do
     |> Repo.all()
   end
 
-  # ✅ 리소스 타입 매핑 헬퍼 (Private)
-  # 여기에 한 줄씩만 추가하면 모든 업무에서 사용 가능
-  defp get_resource_type(%Itsm.Service.Request{}), do: "Request"
-  # defp get_resource_type(%Itsm.Infra.Server{}), do: "Server"
-  # defp get_resource_type(%Itsm.Ops.Incident{}), do: "Incident"
-  # 예외 처리 (혹시 모를 실수 방지)
-  defp get_resource_type(struct), do: raise("List comments not supported for #{inspect(struct)}")
-
   def create_request(
         %User{} = user,
         %Category{} = category,
         %User{} = assignee,
-        attrs \\ %{},
-        attachments \\ []
+        handle_attachments,
+        attrs \\ %{}
       ) do
     Multi.new()
     |> Multi.insert(:request, Requests.change_request(user, category, assignee, attrs))
-    # 3. 첨부파일 처리 (패턴 매칭 사용)
-    |> maybe_insert_attachments(attachments)
-    # 4. 결재선 생성
     |> Multi.run(:approval, fn repo, %{request: request} ->
-      Itsm.Approvals.create_approval(repo, request, user)
+      Approvals.create_approval(repo, request, user)
+    end)
+    |> Multi.run(:attachment, fn repo, %{request: request} ->
+      Attachments.create_attachments(repo, request, handle_attachments)
     end)
     |> Repo.transaction()
     |> broadcast_result(:request_created)
   end
 
-  # ✅ 첨부파일 처리: 빈 리스트일 경우 (Multi 그대로 반환)
-  defp maybe_insert_attachments(multi, []), do: multi
-
-  # ✅ 첨부파일 처리: 파일이 있을 경우
-  defp maybe_insert_attachments(multi, attachments) do
-    Multi.run(multi, :attachments, fn repo, %{request: request} ->
-      insert_attachments(repo, request, attachments)
+  def create_comment(resource, %User{} = user, handle_attachments, attrs \\ %{}) do
+    Multi.new()
+    |> Multi.insert(:comment, Comments.changeset_comment(resource, user, attrs))
+    |> Multi.run(:attachments, fn repo, %{comment: comment} ->
+      Attachments.create_attachments(repo, comment, handle_attachments)
     end)
-  end
-
-  # ✅ 실제 DB Insert 로직
-  defp insert_attachments(repo, request, attachments) do
-    results =
-      Enum.map(attachments, fn attachment_attrs ->
-        # [변경 핵심]
-        # %Attachment{request: request} 방식을 제거하고,
-        # 파라미터 맵(attrs)에 직접 type과 id를 병합(merge)합니다.
-
-        attrs =
-          Map.merge(attachment_attrs, %{
-            # "Request"라고 명시
-            "resource_type" => "Request",
-            # 생성된 Request의 ID
-            "resource_id" => request.id
-          })
-
-        # 빈 구조체로 시작
-        %Attachment{}
-        # changeset 안에서 resource_type/id를 cast 함
-        |> Attachment.changeset(attrs)
-        |> repo.insert()
-      end)
-
-    # 전체 성공 여부 확인
-    if Enum.all?(results, &match?({:ok, _}, &1)) do
-      {:ok, results}
-    else
-      {:error, :attachment_save_failed}
-    end
+    |> Repo.transaction()
+    |> Comments.broadcast_result(resource.id)
   end
 
   # ✅ 결과 브로드캐스트 헬퍼

@@ -141,6 +141,8 @@ defmodule ItsmWeb.Router do
       live "/assets/:id", AssetLive.Show, :show
       live "/assets/:id/show/edit", AssetLive.Show, :edit
 
+      get "/attachments/download/:id", AttachmentController, :download
+
       # 관리자 기능
       live "/admin/categories", CategoryLive.Index, :index
       live "/admin/categories/new", CategoryLive.Index, :new

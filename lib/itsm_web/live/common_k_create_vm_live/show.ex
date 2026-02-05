@@ -5,18 +5,15 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   alias Itsm.Comments
   alias Itsm.Comments.Comment
   alias Itsm.Requests
+  alias ItsmWeb.LiveUtil
 
   def mount(_params, _session, socket) do
     changeset = Comments.change_comment(%Comment{})
-    # socket = assign(socket, :form, to_form(changeset))
+
     {:ok,
      socket
      |> assign(:form, to_form(changeset))
-     |> allow_upload(:attachment,
-       accept: ~w(.png .jpg .jpeg .bmp .gif),
-       max_entries: 4,
-       max_file_size: 1 * 1024 * 1024
-     )}
+     |> LiveUtil.allow_uploads()}
   end
 
   def handle_params(%{"id" => id}, _uri, socket) do
@@ -194,14 +191,13 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
           :for={attachment <- @request.attachments}
           class="group relative border border-zinc-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
           phx-click="view_attachment"
-          phx-value-url={attachment.local_path}
           phx-value-filename={attachment.filename}
           phx-value-id={attachment.id}
         >
           <%!-- 썸네일 --%>
           <div class="aspect-square bg-zinc-100 flex items-center justify-center">
             <img
-              src={attachment.local_path}
+              src={~p"/attachments/download/#{attachment.id}"}
               alt={attachment.filename}
               class="w-full h-full object-cover"
             />
@@ -230,14 +226,14 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
     >
       <div class="text-center">
         <img
-          src={@selected_attachment.local_path}
+          src={~p"/attachments/download/#{@selected_attachment.id}"}
           alt={@selected_attachment.filename}
           class="max-h-[70vh] mx-auto rounded-lg"
         />
         <div class="mt-4 flex items-center justify-center gap-4">
           <span class="text-sm text-zinc-600">{@selected_attachment.filename}</span>
           <a
-            href={@selected_attachment.local_path}
+            href={~p"/attachments/download/#{@selected_attachment.id}"}
             download={@selected_attachment.filename}
             class="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
           >
@@ -288,8 +284,8 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
               <div
                 :for={attachment <- @comment.attachments}
                 phx-click="view_attachment"
-                phx-value-url={attachment.local_path}
                 phx-value-filename={attachment.filename}
+                phx-value-id={attachment.id}
                 class="group flex items-center gap-2 bg-white border border-slate-200 rounded px-2 py-1.5 hover:border-blue-400 hover:shadow-sm transition-all cursor-pointer"
               >
                 <div class="bg-blue-50 text-blue-600 rounded p-0.5">
@@ -379,10 +375,8 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   end
 
   # 댓글 첨부파일 클릭 시 모달 띄우기 (DB 조회 없이 URL 사용)
-  def handle_event("view_attachment", %{"url" => url, "filename" => filename}, socket) do
-    attachment = %{local_path: url, filename: filename}
-
-    {:noreply, assign(socket, :selected_attachment, attachment)}
+  def handle_event("view_attachment", %{"id" => id, "filename" => filename}, socket) do
+    {:noreply, assign(socket, :selected_attachment, %{id: id, filename: filename})}
   end
 
   # # 모달 열기/닫기 이벤트
@@ -426,43 +420,12 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   def handle_event("save", %{"comment" => comment_params}, socket) do
     %{request: request, current_user: current_user} = socket.assigns
 
-    # 1. 업로드된 파일 처리 (서버 디스크로 복사)
-    uploaded_files =
-      consume_uploaded_entries(socket, :attachment, fn meta, entry ->
-        # 파일을 저장할 실제 경로 생성 (예: priv/static/uploads 혹은 별도 스토리지)
-        dest =
-          Path.join([
-            "priv",
-            "static",
-            "uploads",
-            "#{entry.uuid}-#{entry.client_name}"
-          ])
-
-        # directory가 없으면 생성
-        File.mkdir_p!(Path.dirname(dest))
-        # 파일 복사
-        File.cp!(meta.path, dest)
-
-        # "/uploads/uuid-filename.jpg" 형태의 문자열을 반환
-        url_path = static_path(socket, "/uploads/#{Path.basename(dest)}")
-
-        # Attachment 스키마에 들어갈 맵 데이터 반환
-        {:ok,
-         %{
-           "filename" => entry.client_name,
-           "local_path" => url_path,
-           "file_type" => entry.client_type,
-           "byte_size" => entry.client_size
-         }}
-      end)
-
-    # 2. comment_params에 attachments 리스트 병합
-    # 키가 문자열("attachments")이어야 cast_assoc에서 인식됨
-    params_with_files = Map.put(comment_params, "attachments", uploaded_files)
-
-    # Comment Resource Type과 ID 전달 (Resource Type은 "Request"로 고정)
-    # case Comments.create_comment("Request", request.id, current_user, params_with_files) do
-    case Comments.create_comment(request, current_user, params_with_files) do
+    case Service.create_comment(
+           request,
+           current_user,
+           fn -> LiveUtil.consume_attachments(socket) end,
+           comment_params
+         ) do
       {:ok, _comment} ->
         changeset = Comments.change_comment(%Comment{})
         {:noreply, assign(socket, :form, to_form(changeset))}
