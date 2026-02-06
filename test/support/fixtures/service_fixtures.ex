@@ -55,7 +55,6 @@ defmodule Itsm.ServiceFixtures do
     {:ok, approval} =
       attrs
       |> Enum.into(%{
-        approved_at: ~U[2025-10-09 10:41:00Z],
         approver_id: "some approver_id",
         approver_name: "some approver_name",
         opnion: "some opnion",

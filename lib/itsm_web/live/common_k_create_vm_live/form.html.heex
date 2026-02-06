@@ -93,21 +93,6 @@
     </div>
   </div>
    <%!-- 파일업로드 --%>
-  <%!-- <fieldset class="fieldset">
-    <legend class="fieldset-legend">Page title</legend>
-    <figure :for={entry <- @uploads.attachment.entries} class="flex justify-around">
-      <div class="relative">
-        <.live_img_preview entry={entry} class="rounded max-h-64 shadow" />
-        <figcaption class="text-center text-sm text-gray-700 mt-2">
-          {entry.client_name}
-        </figcaption>
-      </div>
-    </figure>
-
-  </fieldset> --%>
-  <%!-- {inspect(@uploads.attachment)}  --%>
-  <%!-- <div class="my-4 text-slate-600 text-sm">Add up to {@uploads.attachment.max_entries} attachment
-    (max {trunc(@uploads.attachment.max_file_size / 1_000_000)} MB each)</div> --%>
   <label class="block text-sm font-semibold text-zinc-700 mb-2">{gettext("Attachments")}</label>
   <.live_file_input class="hidden" upload={@uploads.attachment} />
   <%!--  Dropzone UI component  --%>
@@ -123,8 +108,9 @@
       </p>
       
       <p class="text-xs text-gray-500">
-        <%!-- PNG or JPG (Max. {trunc(@uploads.attachment.max_file_size / (1 * 1024 * 1024))} Mb each) --%> {@uploads.attachment.max_entries} photos max,
-        up to {trunc(@uploads.attachment.max_file_size / (1 * 1024 * 1024))} MB each
+        {@uploads.attachment.max_entries} photos max, up to {trunc(
+          @uploads.attachment.max_file_size / (1 * 1024 * 1024)
+        )} MB each
       </p>
     </div>
   </label>
@@ -167,14 +153,13 @@
       </.error>
     </div>
   </div>
-  
-  <.live_select
+   <%!-- 결재자 선택 (이제 필요없음) --%>
+  <%!-- <.live_select
     field={@form[:assignee_id]}
     label={gettext("Approver")}
     placeholder={gettext("Search by name")}
   >
     <:option :let={option}>
-      <%!-- 이름 외 옵션 표출 --%>
       <div class="flex flex-col">
         <span class="font-bold">{option.label}</span>
         <span class="text-sm text-gray-600">
@@ -182,12 +167,11 @@
         </span>
       </div>
     </:option>
-  </.live_select>
-  
+  </.live_select> --%>
   <div class="mb-6">
     <label class="block text-sm font-semibold text-zinc-700 mb-2">
       {gettext("Crews to reference")}
-    </label>
+    </label> <%!-- TODO: crew ID 리스트를 한번에 조회하는 함수 --%>
     <input
       type="text"
       readonly
@@ -202,7 +186,7 @@
   </div>
   
   <div class="flex">
-    <.button phx-disable-with="Saving...">Save Recipe</.button>
+    <.button phx-disable-with="Saving...">Save Request</.button>
     <.loading_spinner class="hidden phx-submit-loading:inline-block ml-4 mb-5" />
   </div>
 </.form>

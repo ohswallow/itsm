@@ -25,6 +25,21 @@ defmodule Itsm.Comments do
     Repo.all(Comment)
   end
 
+  def list_comments(resource) do
+    # 1. 리소스 타입 판별 ("Request", "Server" 등 문자열 추출)
+    resource_type = get_resource_type(resource)
+
+    Comment
+    # "Request"
+    |> where([c], c.resource_type == ^resource_type)
+    # ID 매칭
+    |> where([c], c.resource_id == ^resource.id)
+    |> order_by([c], asc: c.inserted_at)
+    # 첨부파일/작성자 로딩
+    |> preload([:user, :attachments])
+    |> Repo.all()
+  end
+
   @doc """
   Gets a single comment.
 

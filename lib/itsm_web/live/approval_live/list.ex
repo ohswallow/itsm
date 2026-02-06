@@ -1,37 +1,34 @@
+# lib/itsm_web/live/approval_live/list.ex
+
 defmodule ItsmWeb.ApprovalLive.List do
   use ItsmWeb, :live_view
-  alias Itsm.Service
+
   alias Phoenix.LiveView.JS
   alias Itsm.Requests
   alias Itsm.Approvals
+  alias Itsm.Workflow
+  alias Itsm.Service.Request
+
+  # ==================================================
+  # Lifecycle
+  # ==================================================
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok,
-     socket
-     |> stream(:requests, Service.list_assignee_requests(socket.assigns.current_user))}
+    {:ok, stream(socket, :requests, Approvals.list_pending_requests(socket.assigns.current_user))}
   end
 
   @impl true
   def handle_params(params, _url, socket) do
     Approvals.subscribe_approvals_list()
-
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
   defp apply_action(socket, :approve, %{"request_id" => id}) do
     request = Requests.get_request!(id)
 
-    # 상태에 따라 모달 제목 변경
-    page_title =
-      case request.status do
-        :start -> "작업 시작"
-        :finish -> "작업 종료"
-        _ -> "승인"
-      end
-
     socket
-    |> assign(:page_title, page_title)
+    |> assign(:page_title, Workflow.button_label(:service_request, request))
     |> assign(:request, request)
   end
 
@@ -53,10 +50,13 @@ defmodule ItsmWeb.ApprovalLive.List do
     |> assign(:request, nil)
   end
 
+  # ==================================================
+  # Render
+  # ==================================================
+
   @impl true
   def render(assigns) do
     ~H"""
-    <!-- ✅ 모달은 부모가 책임 -->
     <.modal
       :if={@live_action in [:approve, :reject]}
       id="approval-modal"
@@ -99,10 +99,8 @@ defmodule ItsmWeb.ApprovalLive.List do
         fn {_id, request} -> JS.navigate("/#{request.category.request_name}/#{request.id}") end
       }
     >
-      <:col :let={{_id, request}} label="Title">{request.title}</:col>
-      
-      <:col :let={{_id, request}} label="Description">
-        <div class="w-[90px] truncate">{request.description}</div>
+      <:col :let={{_id, request}} label="Title">
+        <div class="w-[90px] truncate">{request.title}</div>
       </:col>
       
       <:col :let={{_id, request}} label={gettext("Environment")}>{request.env}</:col>
@@ -113,122 +111,87 @@ defmodule ItsmWeb.ApprovalLive.List do
       
       <:col :let={{_id, request}} label="Requestor Name">{request.requestor_name}</:col>
       
-      <:col :let={{_id, request}} label="Status">{request.status}</:col>
+      <:col :let={{_id, request}} label="Status">
+        {Workflow.status_label(:service_request, request)}
+      </:col>
       
-      <:col :let={{_id, request}} label="Assignee Crew">{request.assignee_crew_id}</:col>
-      
-      <:col :let={{_id, request}} label="Assignee Name">{request.assignee_name}</:col>
-      
-      <%!-- <:action :let={{_id, request}}>
-        <.link navigate={~p"/approvals/#{request.id}/approve"}>승인</.link>
-      </:action>
-
-      <:action :let={{_id, request}}>
-        <.link navigate={~p"/approvals/#{request.id}/reject"}>반려</.link>
-      </:action> --%>
-      <%!-- <:action :let={{_id, request}}>
-        <%= cond do %>
-          <% request.status == :verify -> %>
-            <.link navigate={~p"/approvals/#{request.id}/feedback"} class="text-green-600 font-medium">
-              평가
-            </.link>
-          <% request.status != :closed -> %>
-            <.link navigate={~p"/approvals/#{request.id}/approve"} class="text-blue-600">승인</.link>
-            <.link navigate={~p"/approvals/#{request.id}/reject"} class="text-red-600 ml-2">반려</.link>
-          <% true -> %>
-            <span class="text-gray-400">closed</span>
-        <% end %>
-      </:action> --%>
-      <:action :let={{_id, request}}>
-        <%= cond do %>
-          <%!-- 1. Request ~ Review 단계: 승인/반려 버튼 노출 --%>
-          <% request.status in [:request, :check, :plan, :review] -> %>
-            <.link
-              navigate={~p"/approvals/#{request.id}/approve"}
-              class="text-blue-600 hover:underline"
-            >
-              승인
-            </.link>
-            <.link
-              navigate={~p"/approvals/#{request.id}/reject"}
-              class="text-red-600 ml-2 hover:underline"
-            >
-              반려
-            </.link> <% # 2. Start 단계: 작업시작 버튼 (내부적으로는 승인 프로세스 태움) %>
-          <% request.status == :start -> %>
-            <.link
-              navigate={~p"/approvals/#{request.id}/approve"}
-              class="text-indigo-600 font-bold hover:underline"
-            >
-              작업시작
-            </.link> <% # 3. Finish 단계: 작업종료 버튼 (내부적으로는 승인 프로세스 태움) %>
-          <% request.status == :finish -> %>
-            <.link
-              navigate={~p"/approvals/#{request.id}/approve"}
-              class="text-indigo-600 font-bold hover:underline"
-            >
-              작업종료
-            </.link> <% # 4. Verify 단계: 평가 버튼 %>
-          <% request.status == :verify -> %>
-            <.link
-              navigate={~p"/approvals/#{request.id}/feedback"}
-              class="text-green-600 font-bold hover:underline"
-            >
-              평가
-            </.link> <% # 5. Closed 단계: 텍스트만 표시 (또는 빈칸) %>
-          <% request.status == :closed -> %>
-            <span class="text-gray-400">closed</span> <% # 그 외 안전장치 %>
-          <% true -> %>
-            <span class="text-gray-300">-</span>
-        <% end %>
-      </:action>
-      
-      <%!-- <:action :let={{_id, request}}>
-        <.link :if={request.status == :verify} navigate={~p"/approvals/#{request.id}/feedback"}>
-          평가
-        </.link>
-      </:action>
-
-      <:action :let={{_id, request}}>
-        <.link :if={request.status != :closed} navigate={~p"/approvals/#{request.id}/approve"}>
-          승인
-        </.link>
-      </:action>
-
-      <:action :let={{_id, request}}>
-        <.link :if={request.status != :closed} navigate={~p"/approvals/#{request.id}/reject"}>
-          반려
-        </.link>
-      </:action> --%>
+      <:action :let={{_id, request}}><.action_cell request={request} /></:action>
     </.table>
     """
   end
 
+  # ==================================================
+  # Components
+  # ==================================================
+
+  defp action_cell(assigns) do
+    assigns = assign(assigns, :action_info, get_action_info(assigns.request))
+
+    ~H"""
+    <%= case @action_info do %>
+      <% :closed -> %>
+        <span class="text-gray-400">closed</span>
+      <% {:feedback, label} -> %>
+        <.link
+          navigate={~p"/approvals/#{@request.id}/feedback"}
+          class="text-green-600 font-bold hover:underline"
+        >
+          {label}
+        </.link>
+      <% {:approve, label, true} -> %>
+        <.link
+          navigate={~p"/approvals/#{@request.id}/approve"}
+          class="text-blue-600 hover:underline font-bold"
+        >
+          {label}
+        </.link>
+        <.link
+          navigate={~p"/approvals/#{@request.id}/reject"}
+          class="text-red-600 ml-2 hover:underline"
+        >
+          반려
+        </.link>
+      <% {:approve, label, false} -> %>
+        <.link
+          navigate={~p"/approvals/#{@request.id}/approve"}
+          class="text-indigo-600 font-bold hover:underline"
+        >
+          {label}
+        </.link>
+    <% end %>
+    """
+  end
+
+  defp get_action_info(%Request{} = request) do
+    cond do
+      Workflow.closed?(request) ->
+        :closed
+
+      Workflow.action_type(:service_request, request) == :feedback ->
+        {:feedback, Workflow.button_label(:service_request, request)}
+
+      true ->
+        {:approve, Workflow.button_label(:service_request, request),
+         Workflow.rejectable?(:service_request, request)}
+    end
+  end
+
+  # ==================================================
+  # Event Handlers
+  # ==================================================
+
   @impl true
   def handle_info({:request_updated, _updated_request}, socket) do
-    # 결재 요청의 status가 업데이트되었을 때 리스트를 새로고침
     {:noreply,
-     socket
-     |> stream(:requests, Service.list_assignee_requests(socket.assigns.current_user),
+     stream(socket, :requests, Approvals.list_pending_requests(socket.assigns.current_user),
        reset: true
      )}
   end
 
   def handle_info({:request_created, _created_request}, socket) do
-    # 결재 요청이 새로 생성되었을 때 리스트를 새로고침
     {:noreply,
-     socket
-     |> stream(:requests, Service.list_assignee_requests(socket.assigns.current_user),
+     stream(socket, :requests, Approvals.list_pending_requests(socket.assigns.current_user),
        reset: true
      )}
   end
-
-  # def handle_info({ItsmWeb.EvaluationDialog, {:saved, _evaluation}}, socket) do
-  #   {:noreply,
-  #    socket
-  #    |> stream(:requests, Service.list_assignee_requests(socket.assigns.current_user),
-  #      reset: true
-  #    )
-  #    |> push_navigate(to: ~p"/approvals")}
-  # end
 end
