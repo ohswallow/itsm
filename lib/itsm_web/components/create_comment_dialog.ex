@@ -2,7 +2,7 @@ defmodule ItsmWeb.CreateCommentDialog do
   use ItsmWeb, :live_component
   alias Itsm.Comments
   alias Itsm.Comments.Comment
-  alias Itsm.Service
+  alias Itsm.Approvals
 
   @impl true
   def update(assigns, socket) do
@@ -86,8 +86,8 @@ defmodule ItsmWeb.CreateCommentDialog do
     end
   end
 
-  defp do_action(:approve, request, user), do: Service.approve_request(request, user)
-  defp do_action(:reject, request, user), do: Service.reject_request(request, user)
+  defp do_action(:approve, request, user), do: Approvals.approve(request, user)
+  defp do_action(:reject, request, user), do: Approvals.reject(request, user)
   # defp perform_action(:approve, request, user) do
   #   Service.approve_or_reject_request(request, user, :approve)
   # end

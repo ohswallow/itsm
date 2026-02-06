@@ -54,10 +54,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   # TODO: 요청을 복사하는 기능 구현 필요함
   defp apply_action(socket, :copy, %{"id" => id}) do
     request = Requests.get_request!(id)
-    # copy할 때도 기존 crews 로드
-    # referenced_crews_id =
-    #   Team.list_reference("Request", id)
-    #   |> Enum.map(& &1.crew_id)
 
     socket
     |> assign(:page_title, "New Request")
@@ -88,18 +84,9 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     {:noreply, cancel_upload(socket, :attachment, ref)}
   end
 
-  def handle_event("validate", %{"request" => reqeust_params}, socket) do
-    changeset = Requests.change_request(%Request{}, reqeust_params)
+  def handle_event("validate", %{"request" => request_params}, socket) do
+    changeset = Requests.change_request(%Request{}, request_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
-  end
-
-  def handle_event("live_select_change", %{"text" => keyword, "id" => live_select_id}, socket) do
-    %{current_user: user} = socket.assigns
-
-    options = Accounts.search_user_options(user, %{"keyword" => keyword})
-    send_update(LiveSelect.Component, id: live_select_id, options: options)
-
-    {:noreply, socket}
   end
 
   def handle_event("open_crew_modal", _, socket) do
@@ -128,14 +115,13 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   end
 
   # TODO: refrence_crews_id  구조체 처리
-  defp save_request(socket, :new, %{"assignee_id" => assignee_id} = request_params) do
+  defp save_request(socket, :new, request_params) do
     %{current_user: user, category: category} = socket.assigns
-    assignee = Accounts.get_user(assignee_id)
+    # assignee = Accounts.get_user(assignee_id)
 
     case Service.create_request(
            user,
            category,
-           assignee,
            request_params,
            consume_attachments(socket)
          ) do
@@ -145,19 +131,11 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
          |> put_flash(:info, "Request created successfully")
          |> push_navigate(to: ~p"/common_k_create_vm/#{request.id}")}
 
-      {:error, :request, %Ecto.Changeset{} = changeset, _so_far_changeset} ->
+      {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
 
-      {:error, :approval, _changeset, _so_far_changeset} ->
-        {
-          :noreply,
-          socket
-          |> put_flash(:error, "Approval creation failed")
-          #  |> push_navigate(to: ~p"/requests")
-        }
-
-      {:error, :attachments, _, _} ->
-        {:noreply, put_flash(socket, :error, "Attachment upload failed")}
+      {:error, reason} ->
+        {:noreply, put_flash(socket, :error, "Request creation failed: #{inspect(reason)}")}
     end
   end
 

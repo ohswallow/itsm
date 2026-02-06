@@ -8,7 +8,17 @@ defmodule Itsm.Service.Request do
   alias Itsm.Attachments.Attachment
   alias Itsm.Service.BankKResizeVm
 
-  @status_values [:request, :check, :plan, :review, :start, :finish, :verify, :closed]
+  @status_values [
+    :request,
+    :validation,
+    :assignment,
+    :check,
+    :start,
+    :finish,
+    :confirmation,
+    :closed,
+    :rejected
+  ]
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -23,14 +33,12 @@ defmodule Itsm.Service.Request do
     # field :requestor_id, :string
 
     # field :assignee_id, :string
-    field :assignee_name, :string
+    # field :assignee_name, :string
     # field :assignee_crew_name, :string
 
-    field :status, Ecto.Enum,
-      values: @status_values,
-      default: :request
+    field :status, Ecto.Enum, values: @status_values
 
-    belongs_to :assignee, Itsm.Accounts.User
+    # belongs_to :assignee, Itsm.Accounts.User
     belongs_to :assignee_crew, Itsm.Team.Crew, type: :binary_id
     belongs_to :requestor, Itsm.Accounts.User
     belongs_to :requestor_crew, Itsm.Team.Crew, type: :binary_id
@@ -67,7 +75,6 @@ defmodule Itsm.Service.Request do
       :description,
       :env,
       :due_date,
-      :assignee_id,
       :requestor_crew_id
     ])
     |> validate_required([
@@ -75,27 +82,6 @@ defmodule Itsm.Service.Request do
       :description,
       :env,
       :due_date,
-      :assignee_id,
-      :requestor_crew_id
-    ])
-    |> assoc_changeset(attrs)
-  end
-
-  def save_changeset(request, attrs) do
-    request
-    |> cast(attrs, [
-      :title,
-      :description,
-      :env,
-      :due_date,
-      :requestor_crew_id
-    ])
-    |> validate_required([
-      :title,
-      :description,
-      :env,
-      :due_date,
-      :assignee_id,
       :requestor_crew_id
     ])
     |> assoc_changeset(attrs)
@@ -114,7 +100,7 @@ defmodule Itsm.Service.Request do
       drop_param: :bank_k_resize_vms_drop,
       sort_param: :bank_k_resize_vms_sort
     )
-    |> assoc_constraint(:assignee)
+    # |> assoc_constraint(:assignee)
     |> assoc_constraint(:category)
     |> cast_assoc(:attachments, with: &Attachment.changeset/2)
   end

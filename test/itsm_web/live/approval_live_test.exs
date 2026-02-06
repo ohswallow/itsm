@@ -4,9 +4,19 @@ defmodule ItsmWeb.ApprovalLiveTest do
   import Phoenix.LiveViewTest
   import Itsm.ServiceFixtures
 
-  @create_attrs %{status: :request, approver_id: "some approver_id", approver_name: "some approver_name", opnion: "some opnion", approved_at: "2025-10-09T10:41:00Z"}
-  @update_attrs %{status: :check, approver_id: "some updated approver_id", approver_name: "some updated approver_name", opnion: "some updated opnion", approved_at: "2025-10-10T10:41:00Z"}
-  @invalid_attrs %{status: nil, approver_id: nil, approver_name: nil, opnion: nil, approved_at: nil}
+  @create_attrs %{
+    status: :request,
+    approver_id: "some approver_id",
+    approver_name: "some approver_name",
+    opnion: "some opnion"
+  }
+  @update_attrs %{
+    status: :validation,
+    approver_id: "some updated approver_id",
+    approver_name: "some updated approver_name",
+    opnion: "some updated opnion"
+  }
+  @invalid_attrs %{status: nil, approver_id: nil, approver_name: nil, opnion: nil}
 
   defp create_approval(_) do
     approval = approval_fixture()

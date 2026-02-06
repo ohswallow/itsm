@@ -1,6 +1,7 @@
 <.header>
   Approval {@approval.id}
   <:subtitle>This is a approval record from your database.</:subtitle>
+  
   <:actions>
     <.link patch={~p"/admin/approvals/#{@approval}/show/edit"} phx-click={JS.push_focus()}>
       <.button>Edit approval</.button>
@@ -10,10 +11,12 @@
 
 <.list>
   <:item title="Status">{@approval.status}</:item>
+  
   <:item title="Approver">{@approval.approver_id}</:item>
+  
   <:item title="Approver name">{@approval.approver_name}</:item>
+  
   <:item title="Comment">{@approval.comment}</:item>
-  <:item title="Approved at">{@approval.approved_at}</:item>
 </.list>
 
 <.back navigate={~p"/admin/approvals"}>Back to approvals</.back>
