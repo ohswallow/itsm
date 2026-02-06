@@ -38,7 +38,6 @@ defmodule ItsmWeb.ApprovalLive.FormComponent do
         /> <.input field={@form[:approver_id]} type="text" label="Approver" />
         <.input field={@form[:approver_name]} type="text" label="Approver name" />
         <.input field={@form[:comment]} type="text" label="Comment" />
-        <.input field={@form[:approved_at]} type="datetime-local" label="Approved at" />
         <:actions><.button phx-disable-with="Saving...">Save Approval</.button></:actions>
       </.simple_form>
     </div>

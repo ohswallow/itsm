@@ -8,7 +8,6 @@ defmodule Itsm.Repo.Migrations.CreateApprovals do
       add :approver_id, references(:users, on_delete: :nothing, type: :binary_id)
       add :approver_name, :string
       add :comment, :text
-      # add :approved_at, :utc_datetime
       add :action, :string
       add :request_id, references(:requests, on_delete: :nothing, type: :binary_id)
 

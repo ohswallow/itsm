@@ -175,7 +175,7 @@ defmodule Itsm.ServiceTest do
 
     import Itsm.ServiceFixtures
 
-    @invalid_attrs %{status: nil, approver_id: nil, approver_name: nil, opnion: nil, approved_at: nil}
+    @invalid_attrs %{status: nil, approver_id: nil, approver_name: nil, opnion: nil}
 
     test "list_approvals/0 returns all approvals" do
       approval = approval_fixture()
@@ -188,14 +188,18 @@ defmodule Itsm.ServiceTest do
     end
 
     test "create_approval/1 with valid data creates a approval" do
-      valid_attrs = %{status: :request, approver_id: "some approver_id", approver_name: "some approver_name", opnion: "some opnion", approved_at: ~U[2025-10-09 10:41:00Z]}
+      valid_attrs = %{
+        status: :request,
+        approver_id: "some approver_id",
+        approver_name: "some approver_name",
+        opnion: "some opnion"
+      }
 
       assert {:ok, %Approval{} = approval} = Service.create_approval(valid_attrs)
       assert approval.status == :request
       assert approval.approver_id == "some approver_id"
       assert approval.approver_name == "some approver_name"
       assert approval.opnion == "some opnion"
-      assert approval.approved_at == ~U[2025-10-09 10:41:00Z]
     end
 
     test "create_approval/1 with invalid data returns error changeset" do
@@ -204,14 +208,19 @@ defmodule Itsm.ServiceTest do
 
     test "update_approval/2 with valid data updates the approval" do
       approval = approval_fixture()
-      update_attrs = %{status: :check, approver_id: "some updated approver_id", approver_name: "some updated approver_name", opnion: "some updated opnion", approved_at: ~U[2025-10-10 10:41:00Z]}
+
+      update_attrs = %{
+        status: :validation,
+        approver_id: "some updated approver_id",
+        approver_name: "some updated approver_name",
+        opnion: "some updated opnion"
+      }
 
       assert {:ok, %Approval{} = approval} = Service.update_approval(approval, update_attrs)
-      assert approval.status == :check
+      assert approval.status == :validation
       assert approval.approver_id == "some updated approver_id"
       assert approval.approver_name == "some updated approver_name"
       assert approval.opnion == "some updated opnion"
-      assert approval.approved_at == ~U[2025-10-10 10:41:00Z]
     end
 
     test "update_approval/2 with invalid data returns error changeset" do
