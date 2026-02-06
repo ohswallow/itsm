@@ -39,14 +39,11 @@
   "editor.trimAutoWhitespace": false,
 
   "files.exclude": {
-    "**/.git": true,
-    "**/.svn": true,
-    "**/.hg": true,
-    "**/.DS_Store": true,
-    "**/Thumbs.db": true,
-    "deps": true,
-    "_build": true,
     ".vscode": true,
-    ".elixir_ls": true
+    "**/.DS_Store": true,
+    "**/.git": true,
+    "**/.hg": true,
+    "**/.svn": true,
+    "**/Thumbs.db": true
   }
 }

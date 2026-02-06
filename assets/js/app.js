@@ -26,6 +26,7 @@ import SortableInputsFor from "./hooks/SortableInputsFor";
 import live_select from "live_select";
 import Raty from "../vendor/raty";
 import LocalTime from "./hooks/LocalTime";
+import { InputSelect } from "./hooks/InputSelect";
 // import RatyHook from "./hooks/raty_hook";
 
 let csrfToken = document
@@ -38,6 +39,7 @@ let liveSocket = new LiveSocket("/live", Socket, {
     ...live_select,
     LocalTime,
     // Raty: RatyHook,
+    "InputSelect.selectAll": InputSelect.selectAll,
   },
   longPollFallbackMs: 2500,
   params: { _csrf_token: csrfToken },

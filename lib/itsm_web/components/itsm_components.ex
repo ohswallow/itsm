@@ -127,10 +127,11 @@ defmodule ItsmWeb.ItsmComponents do
         field={@field}
         allow_clear={true}
         debounce={300}
+        text_input_class="form-input"
         container_extra_class="flex-grow"
-        dropdown_extra_class="bg-white shadow-lg w-full max-h-60 overflow-y-auto"
-        option_extra_class="text-gray-800 border-b border-gray-200 hover:bg-blue-100 py-2 px-4"
-        active_option_class="bg-blue-500 text-white"
+        dropdown_extra_class="bg-white shadow-xl border border-kb-border-gray rounded-md w-full max-h-60 overflow-y-auto z-50"
+        option_extra_class="text-kb-dark-gray border-b border-gray-50 hover:bg-kb-yellow/20 py-2.5 px-4 transition-colors cursor-pointer"
+        active_option_class="bg-kb-yellow text-kb-dark-gray font-bold"
         {@live_select_opts}
       />
       <.error :for={msg <- @errors}>{msg}</.error>

@@ -1,7 +1,7 @@
 defmodule ItsmWeb.TeamLive.AllIndex do
   use ItsmWeb, :live_view
 
-  alias Itsm.Team
+  alias Itsm.Crews
   alias Itsm.Accounts
 
   # 공통 컴포넌트 임포트
@@ -23,7 +23,7 @@ defmodule ItsmWeb.TeamLive.AllIndex do
     socket =
       socket
       |> assign(:page_title, "All Crew")
-      |> stream(:crews, Team.filter_crews(params), reset: true)
+      |> stream(:crews, Crews.filter_crews(params), reset: true)
       |> assign(:form, to_form(params))
       # 2 현재 필터 조건을 뷰에서 쓸 수 있게 assign
       |> assign(:filter_params, filter_params)
@@ -54,27 +54,44 @@ defmodule ItsmWeb.TeamLive.AllIndex do
 
   def filter_form(assigns) do
     ~H"""
-    <.form
-      for={@form}
-      class="sm:flex justify-center gap-4 items-cente mt-2"
-      id="filter-form"
-      phx-change="filter"
-    >
-      <.input field={@form[:keyword]} placeholder="Search..." autocomplete="off" phx-debounce="300" />
-      <%!-- <.input
-        type="select"
-        field={@form[:organization]}
-        prompt="Organization"
-        options={["KB국민은행", "KB국민카드", "KB캐피탈", "KB증권"]}
-      />  --%>
-      <.input
-        type="select"
-        field={@form[:organization_code]}
-        prompt="Organization"
-        options={@org_options}
-      /> <%!-- navigate 대신 patch를 사용하여 URL을 변경 --%>
-      <.link patch={~p"/crews/all"} class="flex items-center hover:underline">Reset</.link>
-    </.form>
+    <div class="filter-section">
+      <.form
+        for={@form}
+        class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end"
+        id="filter-form"
+        phx-change="filter"
+      >
+        <div class="md:col-span-5">
+          <.input
+            field={@form[:keyword]}
+            placeholder="Search..."
+            autocomplete="off"
+            phx-debounce="300"
+          />
+        </div>
+        
+        <div class="md:col-span-3">
+          <.input
+            type="select"
+            field={@form[:organization_code]}
+            prompt="Organization"
+            options={@org_options}
+          />
+        </div>
+        
+        <div class="md:col-span-2 flex justify-end pb-1">
+          <.link
+            patch={~p"/crews/all"}
+            class="btn-secondary py-2 px-4 text-sm group flex items-center w-full justify-center"
+          >
+            <.icon
+              name="hero-arrow-path"
+              class="mr-2 h-4 w-4 group-hover:rotate-180 transition-transform duration-500"
+            /> <span>검색 초기화</span>
+          </.link>
+        </div>
+      </.form>
+    </div>
     """
   end
 

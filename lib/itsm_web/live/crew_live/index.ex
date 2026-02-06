@@ -1,12 +1,12 @@
 defmodule ItsmWeb.CrewLive.Index do
   use ItsmWeb, :live_view
 
-  alias Itsm.Team
+  alias Itsm.Crews
   alias Itsm.Team.Crew
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :crews, Team.list_crews())}
+    {:ok, stream(socket, :crews, Crews.list_crews())}
   end
 
   @impl true
@@ -17,7 +17,7 @@ defmodule ItsmWeb.CrewLive.Index do
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Crew")
-    |> assign(:crew, Team.get_crew!(id))
+    |> assign(:crew, Crews.get_crew!(id))
   end
 
   defp apply_action(socket, :new, _params) do
@@ -39,9 +39,9 @@ defmodule ItsmWeb.CrewLive.Index do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    crew = Team.get_crew!(id)
+    crew = Crews.get_crew!(id)
     current_user = socket.assigns.current_user
-    {:ok, _} = Team.delete_crew(crew, current_user)
+    {:ok, _} = Crews.delete_crew(crew, current_user)
 
     {:noreply, stream_delete(socket, :crews, crew)}
   end

@@ -1,7 +1,7 @@
 defmodule ItsmWeb.MemberLive.FormComponent do
   use ItsmWeb, :live_component
 
-  alias Itsm.Team
+  alias Itsm.Members
 
   @impl true
   def render(assigns) do
@@ -11,7 +11,7 @@ defmodule ItsmWeb.MemberLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage member records in your database.</:subtitle>
       </.header>
-
+      
       <.simple_form
         for={@form}
         id="member-form"
@@ -19,10 +19,7 @@ defmodule ItsmWeb.MemberLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-
-        <:actions>
-          <.button phx-disable-with="Saving...">Save Member</.button>
-        </:actions>
+        <:actions><.button phx-disable-with="Saving...">Save Member</.button></:actions>
       </.simple_form>
     </div>
     """
@@ -34,13 +31,13 @@ defmodule ItsmWeb.MemberLive.FormComponent do
      socket
      |> assign(assigns)
      |> assign_new(:form, fn ->
-       to_form(Team.change_member(member))
+       to_form(Members.change_member(member))
      end)}
   end
 
   @impl true
   def handle_event("validate", %{"member" => member_params}, socket) do
-    changeset = Team.change_member(socket.assigns.member, member_params)
+    changeset = Members.change_member(socket.assigns.member, member_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
@@ -49,7 +46,7 @@ defmodule ItsmWeb.MemberLive.FormComponent do
   end
 
   defp save_member(socket, :edit, member_params) do
-    case Team.update_member(socket.assigns.member, member_params) do
+    case Members.update_member(socket.assigns.member, member_params) do
       {:ok, member} ->
         notify_parent({:saved, member})
 
@@ -64,7 +61,7 @@ defmodule ItsmWeb.MemberLive.FormComponent do
   end
 
   defp save_member(socket, :new, member_params) do
-    case Team.create_member(member_params) do
+    case Members.create_member(member_params) do
       {:ok, member} ->
         notify_parent({:saved, member})
 

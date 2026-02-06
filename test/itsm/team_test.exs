@@ -12,12 +12,12 @@ defmodule Itsm.TeamTest do
 
     test "list_crews/0 returns all crews" do
       crew = crew_fixture()
-      assert Team.list_crews() == [crew]
+      assert Crews.list_crews() == [crew]
     end
 
     test "get_crew!/1 returns the crew with given id" do
       crew = crew_fixture()
-      assert Team.get_crew!(crew.id) == crew
+      assert Crews.get_crew!(crew.id) == crew
     end
 
     test "create_crew/1 with valid data creates a crew" do
@@ -36,26 +36,26 @@ defmodule Itsm.TeamTest do
       crew = crew_fixture()
       update_attrs = %{name: "some updated name", description: "some updated description"}
 
-      assert {:ok, %Crew{} = crew} = Team.update_crew(crew, update_attrs)
+      assert {:ok, %Crew{} = crew} = Crews.update_crew(crew, update_attrs)
       assert crew.name == "some updated name"
       assert crew.description == "some updated description"
     end
 
     test "update_crew/2 with invalid data returns error changeset" do
       crew = crew_fixture()
-      assert {:error, %Ecto.Changeset{}} = Team.update_crew(crew, @invalid_attrs)
-      assert crew == Team.get_crew!(crew.id)
+      assert {:error, %Ecto.Changeset{}} = Crews.update_crew(crew, @invalid_attrs)
+      assert crew == Crews.get_crew!(crew.id)
     end
 
     test "delete_crew/1 deletes the crew" do
       crew = crew_fixture()
-      assert {:ok, %Crew{}} = Team.delete_crew(crew)
-      assert_raise Ecto.NoResultsError, fn -> Team.get_crew!(crew.id) end
+      assert {:ok, %Crew{}} = Crews.delete_crew(crew)
+      assert_raise Ecto.NoResultsError, fn -> Crews.get_crew!(crew.id) end
     end
 
     test "change_crew/1 returns a crew changeset" do
       crew = crew_fixture()
-      assert %Ecto.Changeset{} = Team.change_crew(crew)
+      assert %Ecto.Changeset{} = Crews.change_crew(crew)
     end
   end
 
