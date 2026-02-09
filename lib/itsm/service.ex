@@ -8,34 +8,24 @@ defmodule Itsm.Service do
   alias Itsm.Repo
   alias Itsm.Service.Category
   alias Itsm.Accounts.User
-  alias Itsm.Attachments.Attachment
+  alias Itsm.Attachments
   alias Itsm.Requests
   alias Itsm.Approvals
-
-  # ==================================================
-  # SR 생성
-  # ==================================================
+  alias Itsm.Comments
 
   def create_request(
         %User{} = user,
         %Category{} = category,
-        request_params \\ %{},
-        attachments \\ []
+        handle_attachments,
+        request_params \\ %{}
       ) do
     Multi.new()
-    |> Multi.insert(
-      :request,
-      Requests.change_request(
-        user,
-        category,
-        request_params
-      )
-    )
-    # 3. 첨부파일 처리 (패턴 매칭 사용)
-    |> maybe_insert_attachments(attachments)
-    # 4. 결재선 생성
+    |> Multi.insert(:request, Requests.change_request(user, category, request_params))
     |> Multi.run(:approval, fn repo, %{request: request} ->
-      Itsm.Approvals.create_approval(repo, request, user)
+      Approvals.create_approval(repo, request, user)
+    end)
+    |> Multi.run(:attachment, fn repo, %{request: request} ->
+      Attachments.create_attachments(repo, request, handle_attachments)
     end)
     |> Repo.transaction()
     |> case do
@@ -44,39 +34,18 @@ defmodule Itsm.Service do
         Approvals.broadcast_approvals_list({:request_created, request})
         {:ok, request}
 
-      {:error, _step, changeset, _changes} ->
-        {:error, changeset}
+      error ->
+        error
     end
   end
 
-  # ==================================================
-  # Attachments (Private)
-  # ==================================================
-
-  # ✅ 첨부파일 처리: 빈 리스트일 경우 (Multi 그대로 반환)
-  defp maybe_insert_attachments(multi, []), do: multi
-
-  defp maybe_insert_attachments(multi, attachments) do
-    Multi.run(multi, :attachments, fn repo, %{request: request} ->
-      results =
-        Enum.map(attachments, fn attachment_params ->
-          %Attachment{}
-          |> Attachment.changeset(
-            Map.merge(attachment_params, %{
-              "resource_type" => "Request",
-              "resource_id" => request.id
-            })
-          )
-          |> repo.insert()
-        end)
-
-      # 모든 첨부파일이 성공적으로 저장되었는지 확인
-      if Enum.all?(results, &match?({:ok, _}, &1)) do
-        {:ok, results}
-      else
-        errors = Enum.reject(results, &match?({:ok, _}, &1))
-        {:error, :attachment_save_failed, errors}
-      end
+  def create_comment(resource, %User{} = user, handle_attachments, attrs \\ %{}) do
+    Multi.new()
+    |> Multi.insert(:comment, Comments.changeset_comment(resource, user, attrs))
+    |> Multi.run(:attachments, fn repo, %{comment: comment} ->
+      Attachments.create_attachments(repo, comment, handle_attachments)
     end)
+    |> Repo.transaction()
+    |> Comments.broadcast_result(resource.id)
   end
 end

@@ -9,21 +9,15 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   alias Itsm.Comments
   alias Itsm.Comments.Comment
   alias Itsm.Requests
+  alias ItsmWeb.LiveUtil
   alias Itsm.Workflow
-
-  # ==================================================
-  # Lifecycle
-  # ==================================================
+  alias Itsm.Service
 
   def mount(_params, _session, socket) do
     {:ok,
      socket
      |> assign(:form, to_form(Comments.change_comment(%Comment{})))
-     |> allow_upload(:attachment,
-       accept: ~w(.png .jpg .jpeg .bmp .gif),
-       max_entries: 4,
-       max_file_size: 1 * 1024 * 1024
-     )}
+     |> LiveUtil.allow_uploads()}
   end
 
   def handle_params(%{"id" => id}, _uri, socket) do
@@ -167,12 +161,12 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
           :for={attachment <- @attachments}
           class="group relative border border-zinc-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
           phx-click="view_attachment"
-          phx-value-url={attachment.local_path}
           phx-value-filename={attachment.filename}
+          phx-value-id={attachment.id}
         >
           <div class="aspect-square bg-zinc-100">
             <img
-              src={attachment.local_path}
+              src={~p"/attachments/download/#{attachment.id}"}
               alt={attachment.filename}
               class="w-full h-full object-cover"
             />
@@ -224,8 +218,8 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
               <div
                 :for={attachment <- @comment.attachments}
                 phx-click="view_attachment"
-                phx-value-url={attachment.local_path}
                 phx-value-filename={attachment.filename}
+                phx-value-id={attachment.id}
                 class="group flex items-center gap-2 bg-white border border-slate-200 rounded px-2 py-1.5 hover:border-blue-400 hover:shadow-sm transition-all cursor-pointer"
               >
                 <div class="bg-blue-50 text-blue-600 rounded p-0.5">
@@ -305,14 +299,14 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
     <.modal id="attachment-modal" show on_cancel={JS.push("close_attachment")}>
       <div class="text-center">
         <img
-          src={@attachment.local_path}
+          src={~p"/attachments/download/#{@attachment.id}"}
           alt={@attachment.filename}
           class="max-h-[70vh] mx-auto rounded-lg"
         />
         <div class="mt-4 flex items-center justify-center gap-4">
           <span class="text-sm text-zinc-600">{@attachment.filename}</span>
           <a
-            href={@attachment.local_path}
+            href={~p"/attachments/download/#{@attachment.id}"}
             download={@attachment.filename}
             class="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
           >
@@ -328,8 +322,8 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   # Event Handlers
   # ==================================================
 
-  def handle_event("view_attachment", %{"url" => url, "filename" => filename}, socket) do
-    {:noreply, assign(socket, :selected_attachment, %{local_path: url, filename: filename})}
+  def handle_event("view_attachment", %{"id" => id, "filename" => filename}, socket) do
+    {:noreply, assign(socket, :selected_attachment, %{id: id, filename: filename})}
   end
 
   def handle_event("close_attachment", _, socket) do
@@ -344,28 +338,18 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   def handle_event("save", %{"comment" => comment_params}, socket) do
     %{request: request, current_user: current_user} = socket.assigns
 
-    uploaded_files =
-      consume_uploaded_entries(socket, :attachment, fn meta, entry ->
-        dest = Path.join(["priv", "static", "uploads", "#{entry.uuid}-#{entry.client_name}"])
-        File.mkdir_p!(Path.dirname(dest))
-        File.cp!(meta.path, dest)
-
-        {:ok,
-         %{
-           "filename" => entry.client_name,
-           "local_path" => static_path(socket, "/uploads/#{Path.basename(dest)}"),
-           "file_type" => entry.client_type,
-           "byte_size" => entry.client_size
-         }}
-      end)
-
-    case Comments.create_comment(
+    case Service.create_comment(
            request,
            current_user,
-           Map.put(comment_params, "attachments", uploaded_files)
+           fn -> LiveUtil.consume_attachments(socket) end,
+           comment_params
          ) do
-      {:ok, _} -> {:noreply, assign(socket, :form, to_form(Comments.change_comment(%Comment{})))}
-      {:error, changeset} -> {:noreply, assign(socket, :form, to_form(changeset))}
+      {:ok, _comment} ->
+        changeset = Comments.change_comment(%Comment{})
+        {:noreply, assign(socket, :form, to_form(changeset))}
+
+      {:error, changeset} ->
+        {:noreply, assign(socket, :form, to_form(changeset))}
     end
   end
 

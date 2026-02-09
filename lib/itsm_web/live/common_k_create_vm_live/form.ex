@@ -8,17 +8,14 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   alias Itsm.Service.Request
   alias Itsm.Team
   alias Itsm.Crews
+  alias ItsmWeb.LiveUtil
 
   def mount(params, _session, socket) do
     crew_options = Accounts.crew_ids_names(socket.assigns.current_user)
 
     {:ok,
      socket
-     |> allow_upload(:attachment,
-       accept: ~w(.png .jpg .jpeg .bmp .gif),
-       max_entries: 4,
-       max_file_size: 1 * 1024 * 1024
-     )
+     |> LiveUtil.allow_uploads()
      |> assign(:crew_options, crew_options)
      |> apply_action(socket.assigns.live_action, params)}
   end
@@ -117,13 +114,12 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   # TODO: refrence_crews_id  구조체 처리
   defp save_request(socket, :new, request_params) do
     %{current_user: user, category: category} = socket.assigns
-    # assignee = Accounts.get_user(assignee_id)
 
     case Service.create_request(
            user,
            category,
-           request_params,
-           consume_attachments(socket)
+           fn -> LiveUtil.consume_attachments(socket) end,
+           request_params
          ) do
       {:ok, request} ->
         {:noreply,
@@ -131,43 +127,19 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
          |> put_flash(:info, "Request created successfully")
          |> push_navigate(to: ~p"/common_k_create_vm/#{request.id}")}
 
-      {:error, %Ecto.Changeset{} = changeset} ->
+      {:error, %Ecto.Changeset{} = changeset, _so_far_changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
 
-      {:error, reason} ->
-        {:noreply, put_flash(socket, :error, "Request creation failed: #{inspect(reason)}")}
+      {:error, step, _changeset, _so_far_changeset} ->
+        changeset =
+          socket.assigns.form.source
+          |> Ecto.Changeset.add_error(:base, LiveUtil.handle_multi_error(step))
+          |> Map.put(:action, :insert)
+
+        {:noreply,
+         socket
+         |> assign(:form, to_form(changeset))}
     end
-  end
-
-  # ✅ 파일을 디스크에 저장하고, DB용 맵 리스트를 반환하는 함수
-  defp consume_attachments(socket) do
-    consume_uploaded_entries(socket, :attachment, fn meta, entry ->
-      # 저장 경로 (priv/static/uploads)
-      dest =
-        Path.join([
-          "priv",
-          "static",
-          "uploads",
-          "#{entry.uuid}-#{entry.client_name}"
-        ])
-
-      # directory가 없으면 생성
-      File.mkdir_p!(Path.dirname(dest))
-      # 파일 복사
-      File.cp!(meta.path, dest)
-
-      # "/uploads/uuid-filename.jpg" 형태의 문자열을 반환
-      url_path = static_path(socket, "/uploads/#{Path.basename(dest)}")
-
-      # Attachment 스키마에 들어갈 Map 반환
-      {:ok,
-       %{
-         "filename" => entry.client_name,
-         "local_path" => url_path,
-         "file_type" => entry.client_type,
-         "byte_size" => entry.client_size
-       }}
-    end)
   end
 
   # os_image에 따라 os_version 옵션 동적 변경

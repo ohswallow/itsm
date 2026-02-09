@@ -8,6 +8,8 @@ alias Itsm.Categories
 alias Itsm.Service.Category
 alias Itsm.Team
 alias Itsm.Team.Crew
+alias Itsm.Attachments.Attachment
+alias Itsm.Attachments
 
 import Ecto.Query
 import Ecto.Changeset
