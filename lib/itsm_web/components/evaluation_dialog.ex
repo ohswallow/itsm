@@ -3,7 +3,7 @@ defmodule ItsmWeb.EvaluationDialog do
 
   alias Itsm.Evaluations
   alias Itsm.Evaluations.Evaluation
-  alias Itsm.Service
+  alias Itsm.Approvals
 
   def update(assigns, socket) do
     {:ok,
@@ -81,7 +81,7 @@ defmodule ItsmWeb.EvaluationDialog do
     case Evaluations.create_evaluation(evaluation_params) do
       {:ok, evaluation} ->
         # 평가 저장 후 요청 승인
-        case Service.approve_request(socket.assigns.request, socket.assigns.current_user) do
+        case Approvals.approve(socket.assigns.request, socket.assigns.current_user) do
           {:ok, _request} ->
             notify_parent({:saved, evaluation})
 

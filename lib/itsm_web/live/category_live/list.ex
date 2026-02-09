@@ -47,34 +47,61 @@ defmodule ItsmWeb.CategoryLive.List do
 
   def filter_form(assigns) do
     ~H"""
-    <.form
-      for={@form}
-      class="sm:flex justify-center gap-4 items-cente mt-2"
-      id="filter-form"
-      phx-change="filter"
-    >
-      <.input
-        field={@form[:keyword]}
-        placeholder="이름을 입력해주세요"
-        autocomplete="off"
-        phx-debounce="500"
-      />
-      <.input
-        type="select"
-        field={@form[:group]}
-        options={Categories.group_options()}
-        size="1"
-        multiple
-        phx-hook="InputSelect.selectAll"
-        value={(@form[:group] && @form[:group].value) || [""]}
-      />
-      <.input
-        type="select"
-        field={@form[:sort_by]}
-        prompt="정렬"
-        options={Categories.sort_options()}
-      /> <.link patch={~p"/categories"} class="flex items-center hover:underline">초기화</.link>
-    </.form>
+    <div class="filter-section">
+      <.form
+        for={@form}
+        class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end"
+        id="filter-form"
+        phx-change="filter"
+      >
+        <div class="md:col-span-5">
+          <label class="form-label">서비스 명칭 검색</label>
+          <.input
+            field={@form[:keyword]}
+            placeholder="검색어를 입력하세요..."
+            autocomplete="off"
+            phx-debounce="500"
+            class="form-input"
+          />
+        </div>
+        
+        <div class="md:col-span-3">
+          <label class="form-label">카테고리 그룹</label>
+          <.input
+            type="select"
+            field={@form[:group]}
+            options={Categories.group_options()}
+            multiple
+            size="1"
+            phx-hook="InputSelect.selectAll"
+            value={(@form[:group] && @form[:group].value) || [""]}
+            class="form-select"
+          />
+        </div>
+        
+        <div class="md:col-span-2">
+          <label class="form-label">정렬</label>
+          <.input
+            type="select"
+            field={@form[:sort_by]}
+            prompt="기본 정렬"
+            options={Categories.sort_options()}
+          />
+        </div>
+        
+        <div class="md:col-span-2 flex justify-end pb-1">
+          <.link
+            patch={~p"/categories"}
+            class="btn-secondary py-2 px-4 text-sm group flex items-center w-full justify-center"
+          >
+            <.icon
+              name="hero-arrow-path"
+              class="mr-2 h-4 w-4 group-hover:rotate-180 transition-transform duration-500"
+            /> <span>검색 초기화</span>
+          </.link>
+        </div>
+      </.form>
+    </div>
     """
   end
 
@@ -84,18 +111,18 @@ defmodule ItsmWeb.CategoryLive.List do
 
   def category_card(assigns) do
     ~H"""
-    <%!-- <.link navigate={~p"/categories/#{@category}"} id={@id}> --%>
     <.link navigate={"/categories/#{@category.id}/#{@category.request_name}/new"} id={@id}>
-      <div class="w-full h-60 bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow p-6 flex flex-col justify-between relative lg:w-60">
-        <div class="flex items-center justify-between"></div>
-        <!-- 제목 및 설명 -->
-        <div class="mt-2">
-          <h3 class="text-base font-semibold text-gray-800 mb-2 truncate">{@category.name}</h3>
-          
-          <p class="text-sm text-gray-600 line-clamp-3">{@category.description}</p>
+      <div class="card-interactive shrink-0 lg:w-72">
+        <span class="badge badge-deposit">가상</span>
+        <h3 class="text-title-h3 mt-3">{@category.name}</h3>
+        
+        <p class="text-caption mt-1 h-10">{@category.description}</p>
+        
+        <div class="text-right mt-4">
+          <span class="btn-text inline-flex items-center group-hover:text-kb-yellow transition-colors">
+            신청하기 &gt;
+          </span>
         </div>
-        <!-- 하단 화살표 -->
-        <div class="flex justify-end pt-4"><.icon name="hero-arrow-right" class="h-5 w-5" /></div>
       </div>
     </.link>
     """

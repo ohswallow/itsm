@@ -11,9 +11,13 @@
 # and so on) as they will fail if something goes wrong.
 alias Itsm.Repo
 alias Itsm.Service.Category
+
 alias Itsm.Accounts.User
 alias Itsm.Team.Crew
 alias Itsm.Team.Member
+
+# alias Itsm.Service.Approval
+# alias Itsm.Service.Request
 
 mike =
   %User{}
@@ -198,9 +202,9 @@ bbbbb =
 |> Repo.insert!()
 
 %Category{
-  name: "가상 머신 스펙 변경",
+  name: "가상 머신 스펙 증설",
   description: "
-  K리전 은행존 가상머신 vCore/Memory Scale up/down 조정 신청
+  K리전 은행존 가상머신 vCore/Memory Scale up 신청
   ",
   group: "K_리전_은행존",
   active: true,

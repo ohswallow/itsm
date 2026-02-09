@@ -1,7 +1,7 @@
-defmodule ItsmWeb.CommentLive.Show do
+defmodule ItsmWeb.AdminApprovalLive.Show do
   use ItsmWeb, :live_view
 
-  alias Itsm.Comments
+  alias Itsm.Approvals
 
   @impl true
   def mount(_params, _session, socket) do
@@ -13,9 +13,9 @@ defmodule ItsmWeb.CommentLive.Show do
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:comment, Comments.get_comment!(id))}
+     |> assign(:approval, Approvals.get_approval!(id))}
   end
 
-  defp page_title(:show), do: "Show Comment"
-  defp page_title(:edit), do: "Edit Comment"
+  defp page_title(:show), do: "Show Approval"
+  defp page_title(:edit), do: "Edit Approval"
 end

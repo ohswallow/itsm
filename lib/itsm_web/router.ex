@@ -21,7 +21,7 @@ defmodule ItsmWeb.Router do
   end
 
   scope "/", ItsmWeb do
-    pipe_through :browser
+    pipe_through [:browser, :require_authenticated_user]
 
     get "/", PageController, :home
   end
@@ -56,9 +56,9 @@ defmodule ItsmWeb.Router do
     live_session :redirect_if_user_is_authenticated,
       on_mount: [
         {ItsmWeb.UserAuth, :redirect_if_user_is_authenticated},
-        # 추가된 부분
         {ItsmWeb.UserAuth, :set_locale}
-      ] do
+      ],
+      layout: false do
       live "/users/register", UserRegistrationLive, :new
       live "/users/log_in", UserLoginLive, :new
       live "/users/reset_password", UserForgotPasswordLive, :new
@@ -74,9 +74,9 @@ defmodule ItsmWeb.Router do
     live_session :require_authenticated_user,
       on_mount: [
         {ItsmWeb.UserAuth, :ensure_authenticated},
-        # 추가된 부분
         {ItsmWeb.UserAuth, :set_locale}
-      ] do
+      ],
+      layout: false do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
 
@@ -141,41 +141,48 @@ defmodule ItsmWeb.Router do
       live "/assets/:id", AssetLive.Show, :show
       live "/assets/:id/show/edit", AssetLive.Show, :edit
 
+      get "/attachments/download/:id", AttachmentController, :download
+
       # 관리자 기능
-      live "/admin/categories", CategoryLive.Index, :index
-      live "/admin/categories/new", CategoryLive.Index, :new
-      live "/admin/categories/:id/edit", CategoryLive.Index, :edit
+    end
+  end
 
-      live "/admin/categories/:id", CategoryLive.Show, :show
-      live "/admin/categories/:id/show/edit", CategoryLive.Show, :edit
+  scope "/admin", ItsmWeb do
+    pipe_through [:browser, :require_authenticated_user]
 
-      live "/admin/approvals", ApprovalLive.Index, :index
-      live "/admin/approvals/new", ApprovalLive.Index, :new
-      live "/admin/approvals/:id/edit", ApprovalLive.Index, :edit
+    live_session :require_admin_user,
+      on_mount: [
+        {ItsmWeb.UserAuth, :ensure_authenticated},
+        {ItsmWeb.UserAuth, :set_locale}
+      ],
+      layout: false do
+      live "/categories", AdminCategoryLive.Index, :index
+      live "/categories/new", AdminCategoryLive.Index, :new
+      live "/categories/:id/edit", AdminCategoryLive.Index, :edit
 
-      live "/admin/approvals/:id", ApprovalLive.Show, :show
-      live "/admin/approvals/:id/show/edit", ApprovalLive.Show, :edit
+      live "/categories/:id", AdminCategoryLive.Show, :show
+      live "/categories/:id/show/edit", AdminCategoryLive.Show, :edit
 
-      live "/admin/crews", CrewLive.Index, :index
-      live "/admin/crews/new", CrewLive.Index, :new
-      live "/admin/crews/:id/edit", CrewLive.Index, :edit
+      live "/approvals", AdminApprovalLive.Index, :index
+      live "/approvals/new", AdminApprovalLive.Index, :new
+      live "/approvals/:id/edit", AdminApprovalLive.Index, :edit
 
-      live "/admin/crews/:id", CrewLive.Show, :show
-      live "/admin/crews/:id/show/edit", CrewLive.Show, :edit
+      live "/approvals/:id", AdminApprovalLive.Show, :show
+      live "/approvals/:id/show/edit", AdminApprovalLive.Show, :edit
 
-      live "/admin/members", MemberLive.Index, :index
-      live "/admin/members/new", MemberLive.Index, :new
-      live "/admin/members/:id/edit", MemberLive.Index, :edit
+      live "/crews", AdminCrewLive.Index, :index
+      live "/crews/new", AdminCrewLive.Index, :new
+      live "/crews/:id/edit", AdminCrewLive.Index, :edit
 
-      live "/admin/members/:id", MemberLive.Show, :show
-      live "/admin/members/:id/show/edit", MemberLive.Show, :edit
+      live "/crews/:id", AdminCrewLive.Show, :show
+      live "/crews/:id/show/edit", AdminCrewLive.Show, :edit
 
-      live "/admin/comments", CommentLive.Index, :index
-      live "/admin/comments/new", CommentLive.Index, :new
-      live "/admin/comments/:id/edit", CommentLive.Index, :edit
+      live "/comments", AdminCommentLive.Index, :index
+      live "/comments/new", AdminCommentLive.Index, :new
+      live "/comments/:id/edit", AdminCommentLive.Index, :edit
 
-      live "/admin/comments/:id", CommentLive.Show, :show
-      live "/admin/comments/:id/show/edit", CommentLive.Show, :edit
+      live "/comments/:id", AdminCommentLive.Show, :show
+      live "/comments/:id/show/edit", AdminCommentLive.Show, :edit
     end
   end
 

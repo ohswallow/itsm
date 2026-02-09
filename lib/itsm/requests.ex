@@ -6,6 +6,10 @@ defmodule Itsm.Requests do
   alias Itsm.Service.Category
   alias Itsm.Accounts.User
 
+  # ==================================================
+  # PubSub
+  # ==================================================
+
   def subscribe_request(request_id) do
     Phoenix.PubSub.subscribe(Itsm.PubSub, "request:#{request_id}")
   end
@@ -14,55 +18,70 @@ defmodule Itsm.Requests do
     Phoenix.PubSub.broadcast(Itsm.PubSub, "request:#{request_id}", message)
   end
 
+  # ==================================================
+  # 조회
+  # ==================================================
+
   def get_request!(id) do
     Request
     |> Repo.get!(id)
-    |> Repo.preload([:category, :attachments])
+    |> Repo.preload([
+      :category,
+      :attachments,
+      assignee_crew: [members: :user],
+      requestor_crew: [members: :user],
+      references: :crew
+    ])
   end
 
   def list_requests do
-    Repo.all(Request)
+    Request
+    |> Repo.all()
     |> Repo.preload(:category)
   end
 
-  def create_request(user, attrs \\ %{}) do
-    user
-    |> Ecto.build_assoc(:requests)
-    |> Request.changeset(attrs)
-    |> Ecto.Changeset.put_change(:requestor_name, user.display_name)
-    |> Repo.insert()
-    |> case do
-      {:ok, request} ->
-        request = Repo.preload(request, :category)
-        {:ok, request}
+  # ==================================================
+  # Changeset
+  # ==================================================
 
-      {:error, _} = error ->
-        error
-    end
+  def change_request(%Request{} = request, request_params \\ %{}) do
+    Request.changeset(request, request_params)
   end
 
-  def change_request(%Request{} = request, attrs \\ %{}) do
-    Request.changeset(request, attrs)
-  end
-
-  # TODO: Crews로 분리후에 Crew 파리미터 추가 작업이 필요함
-  def change_request(%User{} = user, %Category{} = category, %User{} = assignee, attrs \\ %{}) do
+  def change_request(%User{} = user, %Category{} = category, request_params) do
     %Request{
       requestor: user,
       requestor_name: user.display_name,
-      assignee: assignee,
-      assignee_id: assignee.id,
-      assignee_name: assignee.display_name,
-      category: category
+      assignee_crew_id: category.assignee_crew_id,
+      category: category,
+      status: :validation
     }
-    |> Request.save_changeset(attrs)
+    |> Request.changeset(request_params)
   end
 
-  # TODO: 수정이 필요함
-  def update_request(current_user, %Request{requestor_id: requestor_id} = request, attrs)
-      when current_user.id == requestor_id do
+  # ==================================================
+  # CUD
+  # ==================================================
+
+  def create_request(%User{} = user, request_params \\ %{}) do
+    user
+    |> Ecto.build_assoc(:requests)
+    |> Request.changeset(request_params)
+    |> Ecto.Changeset.put_change(:requestor_name, user.display_name)
+    |> Repo.insert()
+    |> case do
+      {:ok, request} -> {:ok, Repo.preload(request, :category)}
+      {:error, _} = error -> error
+    end
+  end
+
+  def update_request(
+        %User{id: user_id},
+        %Request{requestor_id: user_id} = request,
+        request_params
+      ) do
     request
-    |> Request.changeset(attrs)
+    |> Request.changeset(request_params)
     |> Repo.update()
     |> case do
       {:ok, request} ->

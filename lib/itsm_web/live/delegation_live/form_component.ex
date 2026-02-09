@@ -32,7 +32,7 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
           {gettext("Use this form to manage delegation records in your database.")}
         </:subtitle>
       </.header>
-      
+
       <.simple_form
         for={@form}
         id="delegation-form"
@@ -56,7 +56,7 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
             </div>
           </:option>
         </.live_select>
-        
+
         <.live_select
           field={@form[:delegatee_id]}
           label={gettext("Delegatee name")}
@@ -73,8 +73,18 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
             </div>
           </:option>
         </.live_select>
-         <.input field={@form[:start_date]} type="date" label={gettext("Start date")} />
-        <.input field={@form[:end_date]} type="date" label={gettext("End date")} />
+        <.itsm_calendar
+          id="start_date_calendar"
+          field={@form[:start_date]}
+          label={gettext("Start date")}
+          min={Date.utc_today()}
+        />
+        <.itsm_calendar
+          id="end_date_calendar"
+          field={@form[:end_date]}
+          label={gettext("End date")}
+          min={Date.utc_today()}
+        />
         <.input
           field={@form[:reason]}
           type="select"

@@ -1,6 +1,7 @@
 <.header>
   Crew {@crew.id}
   <:subtitle>This is a crew record from your database.</:subtitle>
+  
   <:actions>
     <.link patch={~p"/admin/crews/#{@crew}/show/edit"} phx-click={JS.push_focus()}>
       <.button>Edit crew</.button>
@@ -10,6 +11,7 @@
 
 <.list>
   <:item title="Name">{@crew.name}</:item>
+  
   <:item title="Description">{@crew.description}</:item>
 </.list>
 
@@ -22,7 +24,7 @@
   on_cancel={JS.patch(~p"/admin/crews/#{@crew}")}
 >
   <.live_component
-    module={ItsmWeb.CrewLive.FormComponent}
+    module={ItsmWeb.AdminCrewLive.FormComponent}
     id={@crew.id}
     title={@page_title}
     action={@live_action}

@@ -8,22 +8,18 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   alias Itsm.Service.Request
   alias Itsm.Team
   alias Itsm.Crews
+  alias ItsmWeb.LiveUtil
 
   def mount(params, _session, socket) do
     crew_options = Accounts.crew_ids_names(socket.assigns.current_user)
 
     {:ok,
      socket
-     |> allow_upload(:attachment,
-       accept: ~w(.png .jpg .jpeg .bmp .gif),
-       max_entries: 4,
-       max_file_size: 1 * 1024 * 1024
-     )
+     |> LiveUtil.allow_uploads()
      |> assign(:crew_options, crew_options)
      |> apply_action(socket.assigns.live_action, params)}
   end
 
-  # TODO: 요청에 대한 참조 Crew 기능 추가 필요함
   defp apply_action(socket, :new, %{"id" => category_id}) do
     category = Categories.get_category!(String.to_integer(category_id))
 
@@ -31,56 +27,39 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     |> assign(:page_title, "New Request")
     |> assign(:category, category)
     |> assign(:request, %Request{})
-    |> assign(:referenced_crews_id, [])
+    |> assign(:referenced_crews_options, [])
     |> assign(:form, to_form(Requests.change_request(%Request{})))
   end
 
-  # TODO: 요청에 대한 수정에 대한 결제자 변경 기능 및  참조할 Crew 변경 기능이 필요함
   defp apply_action(socket, :edit, %{"id" => id}) do
     request = Requests.get_request!(id)
 
-    # 기존 referenced crews 로드
-    referenced_crews_id =
-      Team.list_reference(:service_request, id)
-      |> Enum.map(& &1.crew_id)
+    # 기존 referenced crews를 옵션 맵으로 로드 (label 유지를 위해)
+    referenced_crews_options =
+      Team.list_reference("Request", id)
+      |> Enum.map(fn ref ->
+        crew = Crews.get_crew!(ref.crew_id)
+        %{label: crew.name, tag_label: crew.name, value: crew.id}
+      end)
 
     socket
     |> assign(:page_title, "Edit Request")
     |> assign(:request, request)
-    |> assign(:referenced_crews_id, referenced_crews_id)
+    |> assign(:referenced_crews_options, referenced_crews_options)
     |> assign(:form, to_form(Requests.change_request(request)))
   end
 
-  # TODO: 요청을 복사하는 기능 구현 필요함
   defp apply_action(socket, :copy, %{"id" => id}) do
     request = Requests.get_request!(id)
-    # copy할 때도 기존 crews 로드
-    # referenced_crews_id =
-    #   Team.list_reference("Request", id)
-    #   |> Enum.map(& &1.crew_id)
 
     socket
     |> assign(:page_title, "New Request")
     |> assign(:request, request)
-    |> assign(:referenced_crews_id, [])
+    |> assign(:referenced_crews_options, [])
   end
 
   def handle_params(_params, uri, socket) do
-    socket =
-      socket
-      |> assign(:show_crew_modal, false)
-      |> assign(:current_path, URI.parse(uri).path)
-
-    {:noreply, socket}
-  end
-
-  def handle_info({ItsmWeb.SearchCrewsDialog, :crews_selected, crews_id}, socket) do
-    socket =
-      socket
-      |> assign(:referenced_crews_id, crews_id)
-      |> assign(:show_crew_modal, false)
-
-    {:noreply, socket}
+    {:noreply, assign(socket, :current_path, URI.parse(uri).path)}
   end
 
   # ✅ 파일 업로드 취소 이벤트 (HTML의 phx-click="cancel" 처리)
@@ -88,22 +67,51 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     {:noreply, cancel_upload(socket, :attachment, ref)}
   end
 
-  def handle_event("validate", %{"request" => reqeust_params}, socket) do
-    changeset = Requests.change_request(%Request{}, reqeust_params)
-    {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
+  def handle_event("validate", %{"request" => request_params}, socket) do
+    # LiveSelect tags 값을 옵션 맵으로 동기화 (label 유지를 위해)
+    referenced_crews_options =
+      cond do
+        # 태그가 있으면 → 옵션 맵 동기화
+        is_list(request_params["referenced_crews"]) ->
+          crews_id = request_params["referenced_crews"]
+          existing = socket.assigns.referenced_crews_options
+          existing_map = Map.new(existing, fn opt -> {opt.value, opt} end)
+
+          Enum.map(crews_id, fn id ->
+            case Map.get(existing_map, id) do
+              nil ->
+                crew = Crews.get_crew!(id)
+                %{label: crew.name, tag_label: crew.name, value: id}
+
+              opt ->
+                opt
+            end
+          end)
+
+        # 모든 태그 삭제됨 → 빈 리스트
+        Map.has_key?(request_params, "referenced_crews_empty_selection") ->
+          []
+
+        # 그 외 (다른 필드 변경) → 기존 유지
+        true ->
+          socket.assigns.referenced_crews_options
+      end
+
+    changeset = Requests.change_request(%Request{}, request_params)
+
+    {:noreply,
+     socket
+     |> assign(:referenced_crews_options, referenced_crews_options)
+     |> assign(form: to_form(changeset, action: :validate))}
   end
 
-  def handle_event("live_select_change", %{"text" => keyword, "id" => live_select_id}, socket) do
-    %{current_user: user} = socket.assigns
-
-    options = Accounts.search_user_options(user, %{"keyword" => keyword})
-    send_update(LiveSelect.Component, id: live_select_id, options: options)
+  def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
+    send_update(LiveSelect.Component,
+      id: live_select_id,
+      options: Crews.live_select_by_name_user_name(text)
+    )
 
     {:noreply, socket}
-  end
-
-  def handle_event("open_crew_modal", _, socket) do
-    {:noreply, assign(socket, :show_crew_modal, true)}
   end
 
   def handle_event("save", %{"request" => request_params}, socket) do
@@ -113,33 +121,39 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   defp save_request(socket, :edit, request_params) do
     %{current_user: user, request: request} = socket.assigns
 
+    # LiveSelect tags 값 추출 (없으면 빈 리스트)
+    crews_id = Map.get(request_params, "referenced_crews", [])
+
     case Requests.update_request(user, request, request_params) do
-      {:ok, _request} ->
-        {
-          :noreply,
-          socket
-          |> put_flash(:info, "Request updated successfully")
-          #  |> push_navigate(to: ~p"/requests")
-        }
+      {:ok, updated_request} ->
+        # reference 동기화 (기존 삭제 → 새로 생성)
+        Team.sync_references("Request", updated_request.id, crews_id)
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "Request updated successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
 
-  # TODO: refrence_crews_id  구조체 처리
-  defp save_request(socket, :new, %{"assignee_id" => assignee_id} = request_params) do
+  defp save_request(socket, :new, request_params) do
     %{current_user: user, category: category} = socket.assigns
-    assignee = Accounts.get_user(assignee_id)
+
+    # LiveSelect tags 값 추출
+    crews_id = Map.get(request_params, "referenced_crews", [])
 
     case Service.create_request(
            user,
            category,
-           assignee,
-           request_params,
-           consume_attachments(socket)
+           fn -> LiveUtil.consume_attachments(socket) end,
+           request_params
          ) do
       {:ok, request} ->
+        # reference 생성
+        Team.sync_references("Request", request.id, crews_id)
+
         {:noreply,
          socket
          |> put_flash(:info, "Request created successfully")
@@ -148,48 +162,16 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
       {:error, :request, %Ecto.Changeset{} = changeset, _so_far_changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
 
-      {:error, :approval, _changeset, _so_far_changeset} ->
-        {
-          :noreply,
-          socket
-          |> put_flash(:error, "Approval creation failed")
-          #  |> push_navigate(to: ~p"/requests")
-        }
+      {:error, step, _changeset, _so_far_changeset} ->
+        changeset =
+          socket.assigns.form.source
+          |> Ecto.Changeset.add_error(:base, LiveUtil.handle_multi_error(step))
+          |> Map.put(:action, :insert)
 
-      {:error, :attachments, _, _} ->
-        {:noreply, put_flash(socket, :error, "Attachment upload failed")}
+        {:noreply,
+         socket
+         |> assign(:form, to_form(changeset))}
     end
-  end
-
-  # ✅ 파일을 디스크에 저장하고, DB용 맵 리스트를 반환하는 함수
-  defp consume_attachments(socket) do
-    consume_uploaded_entries(socket, :attachment, fn meta, entry ->
-      # 저장 경로 (priv/static/uploads)
-      dest =
-        Path.join([
-          "priv",
-          "static",
-          "uploads",
-          "#{entry.uuid}-#{entry.client_name}"
-        ])
-
-      # directory가 없으면 생성
-      File.mkdir_p!(Path.dirname(dest))
-      # 파일 복사
-      File.cp!(meta.path, dest)
-
-      # "/uploads/uuid-filename.jpg" 형태의 문자열을 반환
-      url_path = static_path(socket, "/uploads/#{Path.basename(dest)}")
-
-      # Attachment 스키마에 들어갈 Map 반환
-      {:ok,
-       %{
-         "filename" => entry.client_name,
-         "local_path" => url_path,
-         "file_type" => entry.client_type,
-         "byte_size" => entry.client_size
-       }}
-    end)
   end
 
   # os_image에 따라 os_version 옵션 동적 변경
@@ -199,7 +181,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     |> get_os_version_options()
   end
 
-  # 템플릿에서 사용할 수 있도록 private가 아닌 함수로
   defp get_os_version_options(:Linux),
     do: [{"RHEL 9.6 (보안)", "sec_rhel9_6"}, {"RHEL 9.6 (일반)", "nosec_rhel9_6"}]
 

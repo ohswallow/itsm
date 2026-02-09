@@ -1,4 +1,54 @@
-LocalTime = {
+const LocalTime = {}
+
+LocalTime.pad = (n) => String(n).padStart(2, '0');
+
+LocalTime.getValue = (isoString, format) => {
+  if (!isoString) return "";
+  const dt = new Date(isoString);
+  if (isNaN(dt)) return "";
+
+  const pad = (n) => String(n).padStart(2, '0');
+
+  const map = {
+    YYYY: dt.getFullYear(),
+    YY: String(dt.getFullYear()).slice(-2),
+    MM: pad(dt.getMonth() + 1),
+    M: dt.getMonth() + 1,
+    DD: pad(dt.getDate()),
+    D: dt.getDate(),
+    HH: pad(dt.getHours()),
+    H: dt.getHours(),
+    mm: pad(dt.getMinutes()),
+    m: dt.getMinutes(),
+    ss: pad(dt.getSeconds()),
+    s: dt.getSeconds(),
+  };
+
+  const presets = {
+    "datetime": "YYYY-MM-DD HH:mm",
+    "date": "YYYY-MM-DD",
+    "time": "HH:mm",
+    "hour": "HH",
+    "minute": "mm",
+    "second": "ss"
+  };
+  const pattern = presets[format] || format;
+
+  return pattern.replace(/YYYY|YY|MM|M|DD|D|HH|H|mm|m|ss|s/g, (matched) => map[matched]);
+};
+
+LocalTime.renderElement = (el) => {
+  const format = el.getAttribute("format") || "datetime";
+  const source = el.getAttribute("utc-value") || el.textContent;
+  const result = LocalTime.getValue(source, format);
+  if (el.tagName === "INPUT") {
+    el.value = result;
+  } else {
+    el.textContent = result;
+  }
+};
+
+LocalTime.ToLocaleString = {
   mounted() {
     // 요소의 textContent(UTC 시간)를 가져와서 Date 객체로 변환
     // 서버에서 "2025-11-19T10:30:00Z" 형식으로 내려준다고 가정
@@ -20,5 +70,38 @@ LocalTime = {
 
     this.el.classList.remove("invisible")
   }
-}
+};
+
+LocalTime.ToLocale = {
+  mounted() {
+    LocalTime.renderElement(this.el);
+  },
+  updated() {
+    if (document.activeElement !== this.el) {
+      LocalTime.renderElement(this.el);
+    }
+  }
+};
+
+LocalTime.GridToLocale = {
+  getLocalTime(isoString) {
+    const date = new Date(isoString);
+    return isNaN(date) ? null : date;
+  },
+  findLocalSelectedEl(hook) {
+    const source = hook.el.getAttribute("utc-value");
+    const localTarget = LocalTime.GridToLocale.getLocalTime(source);
+    if (!localTarget) return null;
+
+    return Array.from(hook.el.querySelectorAll("[data-date]")).find(el => {
+      const cellDate = new Date(el.dataset.date);
+      return (
+        localTarget.getFullYear() === cellDate.getFullYear() &&
+        localTarget.getMonth() === cellDate.getMonth() &&
+        localTarget.getDate() === cellDate.getDate()
+      );
+    });
+  }
+};
+
 export default LocalTime;

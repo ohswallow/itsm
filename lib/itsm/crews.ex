@@ -87,6 +87,29 @@ defmodule Itsm.Crews do
     |> Repo.preload([:leader, members: [:user]])
   end
 
+  def live_select_by_name_user_name(name) do
+    user_name_query =
+      Crew
+      |> join(:inner, [c], u in assoc(c, :users))
+      |> where([c, u], ilike(u.display_name, ^"%#{name}%"))
+      |> select([c, u], %{
+        label: c.name,
+        tag_label: c.name,
+        value: c.id,
+        description: c.description
+      })
+
+    Crew
+    |> where([c], ilike(c.name, ^"%#{name}%"))
+    |> select([c], %{label: c.name, tag_label: c.name, value: c.id, description: c.description})
+    |> union(^user_name_query)
+    |> Repo.all()
+  end
+
+  def change_crew(%Crew{} = crew, attrs \\ %{}) do
+    Crew.changeset(crew, attrs)
+  end
+
   def update_crew(%Crew{} = crew, attrs, %User{} = user) do
     # 등록자 본인이거나, 관리자(admin)라면 삭제 허용
     if crew.leader_id == user.id or user.role == :admin do
@@ -108,19 +131,6 @@ defmodule Itsm.Crews do
       {:error, :unauthorized}
     end
   end
-
-  @doc """
-  Deletes a crew.
-
-  ## Examples
-
-      iex> delete_crew(crew)
-      {:ok, %Crew{}}
-
-      iex> delete_crew(crew)
-      {:error, %Ecto.Changeset{}}
-
-  """
 
   # 1. [System/Core] 실제 삭제 로직 (인자 1개)
   # Show LiveView 처럼 시스템이 자동으로 지울 때 사용합니다.
@@ -148,24 +158,5 @@ defmodule Itsm.Crews do
     else
       {:error, :unauthorized}
     end
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking crew changes.
-
-  ## Examples
-
-      iex> change_crew(crew)
-      %Ecto.Changeset{data: %Crew{}}
-
-  """
-  def change_crew(%Crew{} = crew, attrs \\ %{}) do
-    Crew.changeset(crew, attrs)
-  end
-
-  def search_crews_by_name(text) do
-    Crew
-    |> where([c], ilike(c.name, ^"%#{text}%"))
-    |> Repo.all()
   end
 end

@@ -5,6 +5,248 @@ defmodule ItsmWeb.ItsmComponents do
   alias Phoenix.LiveView.JS
   import ItsmWeb.CoreComponents, only: [icon: 1, hide: 1, label: 1, error: 1, translate_error: 1]
 
+  attr :field, Phoenix.HTML.FormField, doc: "@form[:start_date_time]"
+  attr :id, :string
+  attr :label, :string, default: nil
+  attr :default_view_date, :any, default: nil
+  attr :default_selected_date_time, :any, default: nil
+  attr :show_time, :boolean, default: false
+  attr :min, :any, default: nil
+  attr :max, :any, default: nil
+  attr :disabled_dates, :list, default: []
+  attr :errors, :list, default: []
+  attr :rest, :global
+
+  attr :rests, :map,
+    default: %{
+      label: %{},
+      container: %{},
+      selected_date_time: %{},
+      popup: %{},
+      grid: %{},
+      date: %{},
+      hour: %{},
+      minute: %{}
+    }
+
+  def itsm_calendar(assigns) do
+    ~H"""
+    <.live_component
+      module={ItsmWeb.CalendarComponent}
+      id={assigns[:id] || (assigns[:field] && assigns[:field].id) || "calendar-static-id"}
+      label={@label}
+      field={@field}
+      default_view_date={@default_view_date}
+      default_selected_date_time={@default_selected_date_time}
+      show_time={@show_time}
+      min={@min}
+      max={@max}
+      disabled_dates={@disabled_dates}
+      errors={@errors}
+      rests={@rests}
+      rest={assigns[:rest] || %{}}
+    />
+    """
+  end
+
+  attr :field, Phoenix.HTML.FormField
+  attr :id, :string
+  attr :target, :any, default: nil
+  attr :label, :string, default: nil
+  attr :start_col_class, :any, default: nil
+  attr :days, :list, default: [], doc: "[%{disabled: boolean, date: Date, day: integer}]"
+  attr :view_date, :any, default: nil
+  attr :selected_date_time, :any, default: nil
+  attr :show_time, :boolean, default: false
+  attr :errors, :list, default: []
+  attr :rest, :global
+
+  attr :rests, :map,
+    default: %{
+      label: %{},
+      container: %{},
+      selected_date_time: %{},
+      popup: %{},
+      grid: %{},
+      date: %{},
+      hour: %{},
+      minute: %{}
+    }
+
+  def calendar_ui(assigns) do
+    ~H"""
+    <div
+      phx-feedback-for={@field[:name]}
+      class="relative"
+      id={"datepicker-container-#{@id}"}
+      data-calendar-root
+      {@rests[:container]}
+    >
+      <div>
+        <div
+          :if={assigns[:label]}
+          class="block text-sm font-semibold leading-6 text-zinc-800"
+          label={@label}
+        >
+          {@label}
+        </div>
+        <div
+          id={"datepicker-input-#{@id}"}
+          class="flex items-center border rounded-lg px-3 py-2 cursor-pointer hover:border-indigo-500 bg-white"
+          phx-hook="Calendar.Toggle"
+          phx-click={
+            JS.toggle(to: "##{@id}-calendar-popup")
+            |> JS.dispatch("calendar:opened", to: "##{@id}-calendar-popup")
+          }
+        >
+          <input
+            id={"selected_date_time-#{@id}"}
+            name={@field && @field.name}
+            utc-value={@selected_date_time}
+            format={if @show_time, do: "datetime", else: "date"}
+            class="text-transparent bg-transparent border-none focus:ring-0 focus:outline-none cursor-pointer w-full p-0 absolute inset-0 z-10"
+            phx-update="ignore"
+            readonly
+          />
+          <div
+            id={"display_date_time-#{@id}"}
+            class="text-gray-700 pointer-events-none w-full"
+            phx-hook="LocalTime.ToLocale"
+            utc-value={@selected_date_time}
+            format={if @show_time, do: "datetime", else: "date"}
+            {@rests[:selected_date_time]}
+            {@rest}
+          >
+          </div>
+          <span class="text-gray-400">📅</span>
+        </div>
+        <.error :for={msg <- @errors}>{msg}</.error>
+      </div>
+
+      <div
+        id={"#{@id}-calendar-popup"}
+        class="hidden absolute z-50 mt-2 p-4 bg-white border rounded-xl shadow-xl w-80"
+        phx-click-away={JS.hide(to: "##{@id}-calendar-popup")}
+        {@rests[:popup]}
+      >
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex gap-1">
+            <button
+              type="button"
+              phx-click="shift"
+              phx-value-unit="year"
+              phx-value-amount="-1"
+              phx-target={@target}
+              class="p-1 hover:bg-gray-100 rounded text-gray-400"
+            >
+              ≪
+            </button>
+            <button
+              type="button"
+              phx-click="shift"
+              phx-value-unit="month"
+              phx-value-amount="-1"
+              phx-target={@target}
+              class="p-1 hover:bg-gray-100 rounded"
+            >
+              ◀
+            </button>
+          </div>
+
+          <div class="font-bold text-lg">{"#{@view_date.year}년 #{@view_date.month}월"}</div>
+
+          <div class="flex gap-1">
+            <button
+              type="button"
+              phx-click="shift"
+              phx-value-unit="month"
+              phx-value-amount="1"
+              phx-target={@target}
+              class="p-1 hover:bg-gray-100 rounded"
+            >
+              ▶
+            </button>
+            <button
+              type="button"
+              phx-click="shift"
+              phx-value-unit="year"
+              phx-value-amount="1"
+              phx-target={@target}
+              class="p-1 hover:bg-gray-100 rounded text-gray-400"
+            >
+              ≫
+            </button>
+          </div>
+        </div>
+
+        <div
+          id={"#{@id}-calendar-grid"}
+          phx-hook="Calendar.DateGrid"
+          phx-target={@target}
+          class="grid grid-cols-7 gap-1 text-center"
+          utc-value={@selected_date_time}
+          format="datetime"
+          data-show-time={"#{@show_time}"}
+          {@rests[:grid]}
+        >
+          <div :for={day_name <- ~w(일 월 화 수 목 금 토)} class="text-xs text-gray-400 pb-2">
+            {day_name}
+          </div>
+
+          <div
+            :for={{date, index} <- Enum.with_index(@days)}
+            id={"#{@id}-date-#{date.date}"}
+            data-date={date.date}
+            data-disabled={date.disabled || nil}
+            class={[
+              index == 0 && @start_col_class,
+              "p-2 text-sm rounded-lg transition-all cursor-pointer hover:bg-gray-100"
+            ]}
+            phx-update="ignore"
+            {@rests[:date]}
+          >
+            {date.day}
+          </div>
+        </div>
+
+        <div
+          :if={@show_time}
+          class="flex items-center justify-center gap-2 mt-4 pt-4 border-t border-gray-100"
+        >
+          <div class="flex items-center gap-1 bg-gray-50 p-2 rounded-lg border border-gray-200 w-fit">
+            <input
+              id={"#{@id}-selected_date_time-hour"}
+              phx-hook="Calendar.Input"
+              utc-value={@selected_date_time}
+              type="number"
+              format="hour"
+              min="0"
+              max="23"
+              phx-target={@target}
+              phx-update="ignore"
+              class="w-24 bg-transparent text-center font-mono text-lg focus:outline-none focus:text-blue-600"
+              {@rests[:hour]}
+            /> <span class="text-gray-400 font-bold">:</span>
+            <input
+              id={"#{@id}-selected_date_time-minute"}
+              phx-hook="Calendar.Input"
+              utc-value={@selected_date_time}
+              type="number"
+              format="minute"
+              min="0"
+              max="59"
+              phx-target={@target}
+              phx-update="ignore"
+              class="w-24 bg-transparent text-center font-mono text-lg focus:outline-none focus:text-blue-600"
+              {@rests[:minute]}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
   @doc """
   Renders a time element that displays a localized time using a LiveView hook.
   yyyy.mm.dd hh:mm
@@ -16,7 +258,7 @@ defmodule ItsmWeb.ItsmComponents do
     ~H"""
     <time
       id={@id}
-      phx-hook="LocalTime"
+      phx-hook="LocalTime.ToLocaleString"
       datetime={@at}
       class="invisible"
     >
@@ -85,27 +327,27 @@ defmodule ItsmWeb.ItsmComponents do
     ~H"""
     <div class={["lds-spinner", @class]}>
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
     </div>
     """
@@ -122,15 +364,16 @@ defmodule ItsmWeb.ItsmComponents do
     ~H"""
     <div phx-feedback-for={@field.name}>
       <.label for={@field.id}>{@label}</.label>
-      
+
       <LiveSelect.live_select
         field={@field}
         allow_clear={true}
         debounce={300}
+        text_input_class="form-input"
         container_extra_class="flex-grow"
-        dropdown_extra_class="bg-white shadow-lg w-full max-h-60 overflow-y-auto"
-        option_extra_class="text-gray-800 border-b border-gray-200 hover:bg-blue-100 py-2 px-4"
-        active_option_class="bg-blue-500 text-white"
+        dropdown_extra_class="bg-white shadow-xl border border-kb-border-gray rounded-md w-full max-h-60 overflow-y-auto z-50"
+        option_extra_class="text-kb-dark-gray border-b border-gray-50 hover:bg-kb-yellow/20 py-2.5 px-4 transition-colors cursor-pointer"
+        active_option_class="bg-kb-yellow text-kb-dark-gray font-bold"
         {@live_select_opts}
       />
       <.error :for={msg <- @errors}>{msg}</.error>

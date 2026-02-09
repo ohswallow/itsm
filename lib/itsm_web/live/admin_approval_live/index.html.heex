@@ -1,9 +1,7 @@
 <.header>
   Listing Approvals
   <:actions>
-    <.link patch={~p"/admin/approvals/new"}>
-      <.button>New Approval</.button>
-    </.link>
+    <.link patch={~p"/admin/approvals/new"}><.button>New Approval</.button></.link>
   </:actions>
 </.header>
 
@@ -13,16 +11,16 @@
   row_click={fn {_id, approval} -> JS.navigate(~p"/admin/approvals/#{approval}") end}
 >
   <:col :let={{_id, approval}} label="Status">{approval.status}</:col>
+  
   <:col :let={{_id, approval}} label="Approver">{approval.approver_id}</:col>
+  
   <:col :let={{_id, approval}} label="Approver name">{approval.approver_name}</:col>
-  <:col :let={{_id, approval}} label="Comment">{approval.comment}</:col>
-  <:col :let={{_id, approval}} label="Approved at">{approval.approved_at}</:col>
+  
   <:action :let={{_id, approval}}>
-    <div class="sr-only">
-      <.link navigate={~p"/admin/approvals/#{approval}"}>Show</.link>
-    </div>
-    <.link patch={~p"/admin/approvals/#{approval}/edit"}>Edit</.link>
+    <div class="sr-only"><.link navigate={~p"/admin/approvals/#{approval}"}>Show</.link></div>
+     <.link patch={~p"/admin/approvals/#{approval}/edit"}>Edit</.link>
   </:action>
+  
   <:action :let={{id, approval}}>
     <.link
       phx-click={JS.push("delete", value: %{id: approval.id}) |> hide("##{id}")}
@@ -40,7 +38,7 @@
   on_cancel={JS.patch(~p"/admin/approvals")}
 >
   <.live_component
-    module={ItsmWeb.ApprovalLive.FormComponent}
+    module={ItsmWeb.AdminApprovalLive.FormComponent}
     id={@approval.id || :new}
     title={@page_title}
     action={@live_action}
