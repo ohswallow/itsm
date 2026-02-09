@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
-    <.live_title default="Itsm" suffix=" · Phoenix Framework">
+    <.live_title default="KB ITSM" suffix=" · Service Management">
       {assigns[:page_title]}
     </.live_title>
      <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
@@ -13,79 +13,126 @@
   </head>
   
   <body class="bg-white">
-    <ul class="relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
-      <%= if @current_user do %>
-        <li>
-          <% is_ko = Gettext.get_locale(ItsmWeb.Gettext) == "ko" %>
-          <div class="mt-1 flex items-center gap-3 ml-4">
-            <span class={"text-xs font-bold transition-colors #{if is_ko, do: "text-zinc-900", else: "text-zinc-400"}"}>
-              KO
-            </span>
-            <.link
-              href={"?locale=#{if is_ko, do: "en", else: "ko"}"}
-              class="relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-zinc-200 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-              role="button"
-            >
-              <span class="sr-only">Change Language</span>
-              <span class={"pointer-events-none relative inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out overflow-hidden #{if is_ko, do: "translate-x-0", else: "translate-x-5"}"}>
-                <img
-                  src={~p"/images/kr.png"}
-                  alt="한국어"
-                  class={"absolute inset-0 h-full w-full object-cover transition-opacity duration-200 #{if is_ko, do: "opacity-100", else: "opacity-0"}"}
-                />
-                <img
-                  src={~p"/images/us.png"}
-                  alt="English"
-                  class={"absolute inset-0 h-full w-full object-cover transition-opacity duration-200 #{if is_ko, do: "opacity-0", else: "opacity-100"}"}
-                />
-              </span>
-            </.link>
-            <span class={"text-xs font-bold transition-colors #{if is_ko, do: "text-zinc-400", else: "text-zinc-900"}"}>
-              EN
-            </span>
+    <header class="w-full bg-white shadow-sm z-50 h-20 flex items-center">
+      <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center">
+          <div class="flex-shrink-0 flex items-center">
+            <a href="/" class="flex items-center">
+              <img src={~p"/images/itsm_banner.svg"} alt="KB ITSM" class="h-12 w-auto" />
+            </a>
           </div>
-        </li>
-        
-        <li class="text-[0.8125rem] leading-6 text-zinc-900">{@current_user.email}</li>
-        
-        <li>
-          <.link
-            href={~p"/users/settings"}
-            class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
-          >
-            Settings
-          </.link>
-        </li>
-        
-        <li>
-          <.link
-            href={~p"/users/log_out"}
-            method="delete"
-            class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
-          >
-            Log out
-          </.link>
-        </li>
-      <% else %>
-        <li>
-          <.link
-            href={~p"/users/register"}
-            class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
-          >
-            Register
-          </.link>
-        </li>
-        
-        <li>
-          <.link
-            href={~p"/users/log_in"}
-            class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
-          >
-            Log in
-          </.link>
-        </li>
-      <% end %>
-    </ul>
-     {@inner_content}
+          
+          <div class="hidden lg:flex items-center gap-5">
+            <%= if @current_user do %>
+              <nav class="flex gap-6">
+                <.link
+                  navigate={~p"/categories"}
+                  class="text-base font-bold text-gray-700 hover:text-kb-yellow transition-colors"
+                >
+                  {gettext("Service Request")}
+                </.link>
+                <.link
+                  navigate={~p"/admin/categories"}
+                  class="text-base font-bold text-gray-700 hover:text-kb-yellow transition-colors"
+                >
+                  {gettext("Admin")}
+                </.link>
+                <.link
+                  navigate={~p"/requests"}
+                  class="text-base font-bold text-gray-700 hover:text-kb-yellow transition-colors"
+                >
+                  {gettext("My Request List")}
+                </.link>
+                <.link
+                  navigate={~p"/approvals"}
+                  class="text-base font-bold text-gray-700 hover:text-kb-yellow transition-colors"
+                >
+                  {gettext("Approval List")}
+                </.link>
+                <.link
+                  navigate={~p"/delegations"}
+                  class="text-base font-bold text-gray-700 hover:text-kb-yellow transition-colors"
+                >
+                  {gettext("Delegation")}
+                </.link>
+                <.link
+                  navigate={~p"/crews"}
+                  data-replace="true"
+                  class="text-base font-bold text-gray-700 hover:text-kb-yellow transition-colors"
+                >
+                  {gettext("My Crews")}
+                </.link>
+                <.link
+                  navigate={~p"/crews/all"}
+                  data-replace="true"
+                  class="text-base font-bold text-gray-700 hover:text-kb-yellow transition-colors"
+                >
+                  {gettext("All Crews")}
+                </.link>
+                <.link
+                  navigate={~p"/assets"}
+                  data-replace="true"
+                  class="text-base font-bold text-gray-700 hover:text-kb-yellow transition-colors"
+                >
+                  {gettext("Assets")}
+                </.link>
+              </nav>
+              
+              <div class="h-4 w-px bg-gray-300"></div>
+            <% end %>
+            
+            <div class="flex items-center gap-4">
+              <% is_ko = Gettext.get_locale(ItsmWeb.Gettext) == "ko" %>
+              <div class="flex items-center gap-2">
+                <span class={"text-xs font-bold #{if is_ko, do: "text-kb-dark-gray", else: "text-kb-medium-gray"}"}>
+                  KO
+                </span>
+                <.link
+                  href={"?locale=#{if is_ko, do: "en", else: "ko"}"}
+                  class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-200 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-kb-yellow focus:ring-offset-2"
+                  role="button"
+                >
+                  <span class={"pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out overflow-hidden #{if is_ko, do: "translate-x-0", else: "translate-x-5"}"}>
+                    <img
+                      src={~p"/images/kr.png"}
+                      class={"absolute inset-0 h-full w-full object-cover transition-opacity duration-200 #{if is_ko, do: "opacity-100", else: "opacity-0"}"}
+                    />
+                    <img
+                      src={~p"/images/us.png"}
+                      class={"absolute inset-0 h-full w-full object-cover transition-opacity duration-200 #{if is_ko, do: "opacity-0", else: "opacity-100"}"}
+                    />
+                  </span>
+                </.link>
+                <span class={"text-xs font-bold #{if is_ko, do: "text-kb-medium-gray", else: "text-kb-dark-gray"}"}>
+                  EN
+                </span>
+              </div>
+              
+              <%= if @current_user do %>
+                <div class="h-4 w-px bg-gray-300 mx-1"></div>
+                
+                <div class="flex items-center gap-3 text-sm font-medium">
+                  <span class="text-kb-dark-gray truncate max-w-[120px]">
+                    {@current_user.email}
+                  </span>
+                  <.link href={~p"/users/settings"} class="text-gray-400 hover:text-kb-blue">
+                    <.icon name="hero-cog-6-tooth-solid" class="w-5 h-5" />
+                  </.link>
+                  <.link
+                    href={~p"/users/log_out"}
+                    method="delete"
+                    class="text-gray-400 hover:text-red-600"
+                  >
+                    <.icon name="hero-arrow-right-on-rectangle-solid" class="w-5 h-5" />
+                  </.link>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <main class="container mx-auto px-4 lg:px-8 py-12">{@inner_content}</main>
   </body>
 </html>

@@ -1,0 +1,16 @@
+<svg width="160" height="50" viewBox="0 0 160 50" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    /* 폰트는 시스템에 설치된 것을 우선 사용하며, 없을 경우 기본 sans-serif로 표시됩니다. */
+    .kb-font {
+      font-family: "NanumSquare Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
+    }
+  </style>
+  
+  <text x="10" y="35" class="kb-font" font-size="28" font-weight="800" fill="#F7B500">
+    KB
+  </text>
+  
+  <text x="62" y="35" class="kb-font" font-size="28" font-weight="700" fill="#4A4340">
+    ITSM
+  </text>
+</svg>

@@ -169,3 +169,44 @@ msgstr "부서"
 
 msgid "Leader"
 msgstr "리더"
+
+# Button labels
+msgid "Approve"
+msgstr "승인"
+
+msgid "Accept"
+msgstr "접수"
+
+msgid "Start Work"
+msgstr "작업시작"
+
+msgid "Finish Work"
+msgstr "작업종료"
+
+msgid "Verify"
+msgstr "검증"
+
+# Status labels
+msgid "Under Review"
+msgstr "요청 검토중"
+
+msgid "Pending Accept"
+msgstr "접수 대기"
+
+msgid "Under Work Review"
+msgstr "작업 검토중"
+
+msgid "Pending Work"
+msgstr "작업 대기"
+
+msgid "In Progress"
+msgstr "작업중"
+
+msgid "Pending Verify"
+msgstr "검증 대기"
+
+msgid "Closed"
+msgstr "완료"
+
+msgid "Waiting"
+msgstr "대기중"

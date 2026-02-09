@@ -21,7 +21,7 @@ defmodule ItsmWeb.Router do
   end
 
   scope "/", ItsmWeb do
-    pipe_through :browser
+    pipe_through [:browser, :require_authenticated_user]
 
     get "/", PageController, :home
   end
@@ -56,9 +56,9 @@ defmodule ItsmWeb.Router do
     live_session :redirect_if_user_is_authenticated,
       on_mount: [
         {ItsmWeb.UserAuth, :redirect_if_user_is_authenticated},
-        # 추가된 부분
         {ItsmWeb.UserAuth, :set_locale}
-      ] do
+      ],
+      layout: false do
       live "/users/register", UserRegistrationLive, :new
       live "/users/log_in", UserLoginLive, :new
       live "/users/reset_password", UserForgotPasswordLive, :new
@@ -74,9 +74,9 @@ defmodule ItsmWeb.Router do
     live_session :require_authenticated_user,
       on_mount: [
         {ItsmWeb.UserAuth, :ensure_authenticated},
-        # 추가된 부분
         {ItsmWeb.UserAuth, :set_locale}
-      ] do
+      ],
+      layout: false do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
 
@@ -140,6 +140,8 @@ defmodule ItsmWeb.Router do
 
       live "/assets/:id", AssetLive.Show, :show
       live "/assets/:id/show/edit", AssetLive.Show, :edit
+
+      get "/attachments/download/:id", AttachmentController, :download
 
       # 관리자 기능
       live "/admin/categories", CategoryLive.Index, :index
