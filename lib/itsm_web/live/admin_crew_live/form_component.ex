@@ -1,4 +1,4 @@
-defmodule ItsmWeb.CrewLive.FormComponent do
+defmodule ItsmWeb.AdminCrewLive.FormComponent do
   use ItsmWeb, :live_component
 
   alias Itsm.Team

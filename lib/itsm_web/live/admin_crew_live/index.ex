@@ -1,4 +1,4 @@
-defmodule ItsmWeb.CrewLive.Index do
+defmodule ItsmWeb.AdminCrewLive.Index do
   use ItsmWeb, :live_view
 
   alias Itsm.Crews
@@ -33,7 +33,7 @@ defmodule ItsmWeb.CrewLive.Index do
   end
 
   @impl true
-  def handle_info({ItsmWeb.CrewLive.FormComponent, {:saved, crew}}, socket) do
+  def handle_info({ItsmWeb.AdminCrewLive.FormComponent, {:saved, crew}}, socket) do
     {:noreply, stream_insert(socket, :crews, crew)}
   end
 

@@ -1,10 +1,6 @@
 <.header>
   Listing Crews
-  <:actions>
-    <.link patch={~p"/admin/crews/new"}>
-      <.button>New Crew</.button>
-    </.link>
-  </:actions>
+  <:actions><.link patch={~p"/admin/crews/new"}><.button>New Crew</.button></.link></:actions>
 </.header>
 
 <.table
@@ -13,13 +9,14 @@
   row_click={fn {_id, crew} -> JS.navigate(~p"/admin/crews/#{crew}") end}
 >
   <:col :let={{_id, crew}} label="Name">{crew.name}</:col>
+  
   <:col :let={{_id, crew}} label="Description">{crew.description}</:col>
+  
   <:action :let={{_id, crew}}>
-    <div class="sr-only">
-      <.link navigate={~p"/admin/crews/#{crew}"}>Show</.link>
-    </div>
-    <.link patch={~p"/admin/crews/#{crew}/edit"}>Edit</.link>
+    <div class="sr-only"><.link navigate={~p"/admin/crews/#{crew}"}>Show</.link></div>
+     <.link patch={~p"/admin/crews/#{crew}/edit"}>Edit</.link>
   </:action>
+  
   <:action :let={{id, crew}}>
     <.link
       phx-click={JS.push("delete", value: %{id: crew.id}) |> hide("##{id}")}
@@ -37,7 +34,7 @@
   on_cancel={JS.patch(~p"/admin/crews")}
 >
   <.live_component
-    module={ItsmWeb.CrewLive.FormComponent}
+    module={ItsmWeb.AdminCrewLive.FormComponent}
     id={@crew.id || :new}
     title={@page_title}
     action={@live_action}

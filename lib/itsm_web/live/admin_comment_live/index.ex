@@ -1,4 +1,4 @@
-defmodule ItsmWeb.CommentLive.Index do
+defmodule ItsmWeb.AdminCommentLive.Index do
   use ItsmWeb, :live_view
 
   alias Itsm.Comments
@@ -33,7 +33,7 @@ defmodule ItsmWeb.CommentLive.Index do
   end
 
   @impl true
-  def handle_info({ItsmWeb.CommentLive.FormComponent, {:saved, comment}}, socket) do
+  def handle_info({ItsmWeb.AdminCommentLive.FormComponent, {:saved, comment}}, socket) do
     {:noreply, stream_insert(socket, :comments, comment)}
   end
 
