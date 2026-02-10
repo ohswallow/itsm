@@ -1,4 +1,4 @@
-defmodule ItsmWeb.ApprovalLive.FormComponent do
+defmodule ItsmWeb.AdminApprovalLive.FormComponent do
   use ItsmWeb, :live_component
 
   alias Itsm.Approvals

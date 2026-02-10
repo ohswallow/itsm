@@ -16,8 +16,6 @@
   
   <:col :let={{_id, approval}} label="Approver name">{approval.approver_name}</:col>
   
-  <:col :let={{_id, approval}} label="Comment">{approval.comment}</:col>
-  
   <:action :let={{_id, approval}}>
     <div class="sr-only"><.link navigate={~p"/admin/approvals/#{approval}"}>Show</.link></div>
      <.link patch={~p"/admin/approvals/#{approval}/edit"}>Edit</.link>
@@ -40,7 +38,7 @@
   on_cancel={JS.patch(~p"/admin/approvals")}
 >
   <.live_component
-    module={ItsmWeb.ApprovalLive.FormComponent}
+    module={ItsmWeb.AdminApprovalLive.FormComponent}
     id={@approval.id || :new}
     title={@page_title}
     action={@live_action}

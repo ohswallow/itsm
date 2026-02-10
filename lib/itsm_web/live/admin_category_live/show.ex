@@ -1,7 +1,7 @@
-defmodule ItsmWeb.ApprovalLive.Show do
+defmodule ItsmWeb.AdminCategoryLive.Show do
   use ItsmWeb, :live_view
 
-  alias Itsm.Approvals
+  alias Itsm.Categories
 
   @impl true
   def mount(_params, _session, socket) do
@@ -13,9 +13,9 @@ defmodule ItsmWeb.ApprovalLive.Show do
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:approval, Approvals.get_approval!(id))}
+     |> assign(:category, Categories.get_category!(id))}
   end
 
-  defp page_title(:show), do: "Show Approval"
-  defp page_title(:edit), do: "Edit Approval"
+  defp page_title(:show), do: "Show Category"
+  defp page_title(:edit), do: "Edit Category"
 end

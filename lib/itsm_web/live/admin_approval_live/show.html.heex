@@ -15,8 +15,6 @@
   <:item title="Approver">{@approval.approver_id}</:item>
   
   <:item title="Approver name">{@approval.approver_name}</:item>
-  
-  <:item title="Comment">{@approval.comment}</:item>
 </.list>
 
 <.back navigate={~p"/admin/approvals"}>Back to approvals</.back>
@@ -28,7 +26,7 @@
   on_cancel={JS.patch(~p"/admin/approvals/#{@approval}")}
 >
   <.live_component
-    module={ItsmWeb.ApprovalLive.FormComponent}
+    module={ItsmWeb.AdminApprovalLive.FormComponent}
     id={@approval.id}
     title={@page_title}
     action={@live_action}
