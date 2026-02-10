@@ -1,4 +1,4 @@
-defmodule ItsmWeb.ApprovalLive.Index do
+defmodule ItsmWeb.AdminApprovalLive.Index do
   use ItsmWeb, :live_view
 
   alias Itsm.Approvals
@@ -33,7 +33,7 @@ defmodule ItsmWeb.ApprovalLive.Index do
   end
 
   @impl true
-  def handle_info({ItsmWeb.ApprovalLive.FormComponent, {:saved, approval}}, socket) do
+  def handle_info({ItsmWeb.AdminApprovalLive.FormComponent, {:saved, approval}}, socket) do
     {:noreply, stream_insert(socket, :approvals, approval)}
   end
 

@@ -1,4 +1,4 @@
-defmodule ItsmWeb.CategoryLive.FormComponent do
+defmodule ItsmWeb.AdminCategoryLive.FormComponent do
   use ItsmWeb, :live_component
 
   alias Itsm.Categories

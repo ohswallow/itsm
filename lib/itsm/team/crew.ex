@@ -12,6 +12,7 @@ defmodule Itsm.Team.Crew do
 
     belongs_to :leader, Itsm.Accounts.User, type: :binary_id
     has_many :members, Itsm.Team.Member
+    many_to_many :users, Itsm.Accounts.User, join_through: Itsm.Team.Member
 
     timestamps(type: :utc_datetime)
   end

@@ -1,4 +1,4 @@
-defmodule ItsmWeb.CategoryLive.Index do
+defmodule ItsmWeb.AdminCategoryLive.Index do
   use ItsmWeb, :live_view
 
   alias Itsm.Service.Category
@@ -33,7 +33,7 @@ defmodule ItsmWeb.CategoryLive.Index do
   end
 
   @impl true
-  def handle_info({ItsmWeb.CategoryLive.FormComponent, {:saved, category}}, socket) do
+  def handle_info({ItsmWeb.AdminCategoryLive.FormComponent, {:saved, category}}, socket) do
     {:noreply, stream_insert(socket, :categories, category)}
   end
 

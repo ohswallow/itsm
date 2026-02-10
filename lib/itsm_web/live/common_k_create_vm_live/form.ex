@@ -127,7 +127,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
          |> put_flash(:info, "Request created successfully")
          |> push_navigate(to: ~p"/common_k_create_vm/#{request.id}")}
 
-      {:error, %Ecto.Changeset{} = changeset, _so_far_changeset} ->
+      {:error, :request, %Ecto.Changeset{} = changeset, _so_far_changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
 
       {:error, step, _changeset, _so_far_changeset} ->

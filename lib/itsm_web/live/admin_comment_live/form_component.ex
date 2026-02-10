@@ -1,4 +1,4 @@
-defmodule ItsmWeb.CommentLive.FormComponent do
+defmodule ItsmWeb.AdminCommentLive.FormComponent do
   use ItsmWeb, :live_component
 
   alias Itsm.Comments
@@ -11,7 +11,7 @@ defmodule ItsmWeb.CommentLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage comment records in your database.</:subtitle>
       </.header>
-
+      
       <.simple_form
         for={@form}
         id="comment-form"
@@ -20,9 +20,7 @@ defmodule ItsmWeb.CommentLive.FormComponent do
         phx-submit="save"
       >
         <.input field={@form[:comment]} type="text" label="Comment" />
-        <:actions>
-          <.button phx-disable-with="Saving...">Save Comment</.button>
-        </:actions>
+        <:actions><.button phx-disable-with="Saving...">Save Comment</.button></:actions>
       </.simple_form>
     </div>
     """
