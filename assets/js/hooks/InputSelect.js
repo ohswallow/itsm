@@ -1,4 +1,5 @@
 const InputSelect = {};
+
 InputSelect.selectAll = {
     mounted() {
         const allList = ["", "All", null, undefined];
@@ -22,4 +23,4 @@ InputSelect.selectAll = {
     }
 }
 
-export { InputSelect };
+export default InputSelect;

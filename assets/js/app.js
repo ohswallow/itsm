@@ -26,7 +26,8 @@ import SortableInputsFor from "./hooks/SortableInputsFor";
 import live_select from "live_select";
 import Raty from "../vendor/raty";
 import LocalTime from "./hooks/LocalTime";
-import { InputSelect } from "./hooks/InputSelect";
+import InputSelect from "./hooks/InputSelect";
+import Calendar from "./hooks/Calendar";
 // import RatyHook from "./hooks/raty_hook";
 
 let csrfToken = document
@@ -37,9 +38,13 @@ let liveSocket = new LiveSocket("/live", Socket, {
     MaintainHeight,
     SortableInputsFor,
     ...live_select,
-    LocalTime,
     // Raty: RatyHook,
     "InputSelect.selectAll": InputSelect.selectAll,
+    "LocalTime.ToLocaleString": LocalTime.ToLocaleString,
+    "LocalTime.ToLocale": LocalTime.ToLocale,
+    "LocalTime.GridToLocale": LocalTime.GridToLocale,
+    "Calendar.DateGrid": Calendar.DateGrid,
+    "Calendar.Input": Calendar.Input
   },
   longPollFallbackMs: 2500,
   params: { _csrf_token: csrfToken },
