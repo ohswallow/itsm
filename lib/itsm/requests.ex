@@ -29,7 +29,8 @@ defmodule Itsm.Requests do
       :category,
       :attachments,
       assignee_crew: [members: :user],
-      requestor_crew: [members: :user]
+      requestor_crew: [members: :user],
+      references: :crew
     ])
   end
 
