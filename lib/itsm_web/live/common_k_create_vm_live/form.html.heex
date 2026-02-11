@@ -110,7 +110,6 @@
    <%!-- 파일업로드 --%>
   <label class="block text-sm font-semibold text-zinc-700 mb-2">{gettext("Attachments")}</label>
   <.live_file_input class="hidden" upload={@uploads.attachment} />
-  <%!--  Dropzone UI component  --%>
   <label
     class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 mt-2"
     for={@uploads.attachment.ref}
@@ -147,14 +146,6 @@
       
       <p class="text-xs text-zinc-400">{format_file_size(entry.client_size)}</p>
       
-      <%!-- 파일업로드 진행률을 위한 bar인데, 대용량일 경우 필요함. 지금 현재 기준(1MB)는 너무 빨라서 보이지 않음. --%>
-      <%!-- <div class="w-full bg-gray-200 rounded-full h-1 mt-2">
-              <div
-                class="bg-blue-600 h-1 rounded-full transition-all duration-300"
-                style={"width: #{entry.progress}%"}
-              >
-              </div>
-            </div> --%>
       <button
         type="button"
         phx-click="cancel-upload"
@@ -168,36 +159,32 @@
       </.error>
     </div>
   </div>
-   <%!-- 결재자 선택 (이제 필요없음) --%>
-  <%!-- <.live_select
-    field={@form[:assignee_id]}
-    label={gettext("Approver")}
-    placeholder={gettext("Search by name")}
-  >
-    <:option :let={option}>
-      <div class="flex flex-col">
-        <span class="font-bold">{option.label}</span>
-        <span class="text-sm text-gray-600">
-          ID: {option.value} | Email: {option.email} | Organization: {option.organization} | Department: {option.department}
-        </span>
-      </div>
-    </:option>
-  </.live_select> --%>
-  <div class="mb-6">
+   <%!-- 참조 Crew 선택 - LiveSelect inline (tags mode) --%>
+  <div class="mb-6" phx-feedback-for={@form[:referenced_crews].name}>
     <label class="block text-sm font-semibold text-zinc-700 mb-2">
       {gettext("Crews to reference")}
-    </label> <%!-- TODO: crew ID 리스트를 한번에 조회하는 함수 --%>
-    <input
-      type="text"
-      readonly
-      value={
-        Enum.map(@referenced_crews_id, fn crew_id -> Crews.get_crew!(crew_id).name end)
-        |> Enum.join(", ")
-      }
-      placeholder="선택된 crew가 없습니다"
-      phx-click="open_crew_modal"
-      class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-pointer"
-    />
+    </label>
+    <LiveSelect.live_select
+      field={@form[:referenced_crews]}
+      mode={:tags}
+      allow_clear={true}
+      debounce={300}
+      placeholder="Crew명 또는 Member 이름을 입력하세요"
+      text_input_class="form-input"
+      container_extra_class="flex-grow"
+      dropdown_extra_class="bg-white shadow-xl border border-kb-border-gray rounded-md w-full max-h-60 overflow-y-auto z-50"
+      option_extra_class="text-kb-dark-gray border-b border-gray-50 hover:bg-kb-yellow/20 py-2.5 px-4 transition-colors cursor-pointer"
+      active_option_class="bg-kb-yellow text-kb-dark-gray font-bold"
+      tags_container_extra_class="flex flex-wrap gap-2 items-start max-h-28 overflow-y-auto pr-2"
+      value={@referenced_crews_options}
+    >
+      <:option :let={option}>
+        <div class="flex flex-col">
+          <span class="font-bold">{option.label}</span>
+          <span class="text-sm text-gray-600">{option.description}</span>
+        </div>
+      </:option>
+    </LiveSelect.live_select>
   </div>
   
   <%= if @form.errors[:base] do %>
@@ -213,18 +200,5 @@
     <.loading_spinner class="hidden phx-submit-loading:inline-block ml-4 mb-5" />
   </div>
 </.form>
-
-<.modal
-  :if={@show_crew_modal}
-  id="crews-search"
-  on_cancel={JS.patch(@current_path)}
-  show
->
-  <.live_component
-    module={ItsmWeb.SearchCrewsDialog}
-    id="search-crews"
-    parent_pid={self()}
-  />
-</.modal>
 
 <.back navigate={~p"/categories"}>Back</.back>

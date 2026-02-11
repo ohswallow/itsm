@@ -5,7 +5,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
 
   import ItsmWeb.Components.WorkflowSidebar
 
-  # alias Itsm.Service
   alias Itsm.Comments
   alias Itsm.Comments.Comment
   alias Itsm.Requests
@@ -98,6 +97,10 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
       <:item title="Requestor">{@request.requestor_name}</:item>
        <%!-- <:item title="Assignee">{@request.assignee_name || "-"}</:item> --%>
       <:item title="Category">{@request.category.name}</:item>
+      
+      <:item title="Referenced Crew">
+        {Enum.map_join(@request.references, ", ", fn ref -> ref.crew.name end)}
+      </:item>
     </.list>
     """
   end

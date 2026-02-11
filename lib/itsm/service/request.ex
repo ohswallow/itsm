@@ -27,18 +27,9 @@ defmodule Itsm.Service.Request do
     field :description, :string
     field :env, Ecto.Enum, values: [:prod, :stg, :dev, :dr]
     field :due_date, :utc_datetime
-    # field :requestor_id, :binary_id
-
     field :requestor_name, :string
-    # field :requestor_id, :string
-
-    # field :assignee_id, :string
-    # field :assignee_name, :string
-    # field :assignee_crew_name, :string
-
     field :status, Ecto.Enum, values: @status_values
 
-    # belongs_to :assignee, Itsm.Accounts.User
     belongs_to :assignee_crew, Itsm.Team.Crew, type: :binary_id
     belongs_to :requestor, Itsm.Accounts.User
     belongs_to :requestor_crew, Itsm.Team.Crew, type: :binary_id
@@ -52,18 +43,14 @@ defmodule Itsm.Service.Request do
       foreign_key: :resource_id,
       where: [resource_type: "Request"]
 
-    # has_many :attachments, Attachment, on_replace: :delete
     has_many :attachments, Itsm.Attachments.Attachment,
       foreign_key: :resource_id,
       where: [resource_type: "Request"],
       on_replace: :delete
 
-    # has_many :referenced_crews, Itsm.Team.Reference, foreign_key: :reference_id, where: [reference_type: "Request"]
     has_many :references, Itsm.Team.Reference,
-      foreign_key: :reference_id,
-      where: [reference_type: "Request"]
-
-    # has_many :referenced_crews, through: [:references, :crew]
+      foreign_key: :resource_id,
+      where: [resource_type: "Request"]
 
     timestamps(type: :utc_datetime)
   end
