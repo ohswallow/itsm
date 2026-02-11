@@ -8,7 +8,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   alias Itsm.Service.Request
   alias Itsm.Team
   alias Itsm.Crews
-  alias Itsm.Members
   alias ItsmWeb.LiveUtil
 
   def mount(params, _session, socket) do
@@ -63,7 +62,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     {:noreply, assign(socket, :current_path, URI.parse(uri).path)}
   end
 
-  # ✅ 파일 업로드 취소
+  # ✅ 파일 업로드 취소 이벤트 (HTML의 phx-click="cancel" 처리)
   def handle_event("cancel-upload", %{"ref" => ref}, socket) do
     {:noreply, cancel_upload(socket, :attachment, ref)}
   end
@@ -106,33 +105,10 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
      |> assign(form: to_form(changeset, action: :validate))}
   end
 
-  # ✅ LiveSelect 검색 - Crew 이름 + Member 이름으로 검색
   def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
-    # 1. Crew 이름으로 직접 검색
-    crews_by_name = Crews.search_crews_by_name(text)
-
-    # 2. Member 이름(user.display_name)으로 검색 → Crew 찾기
-    users = Accounts.search_users(%{"q" => text})
-    crews_by_member = Members.search_crews_by_member(users)
-
-    # 3. 중복 제거
-    crews =
-      (crews_by_name ++ crews_by_member)
-      |> Enum.uniq_by(& &1.id)
-
-    options =
-      Enum.map(crews, fn crew ->
-        %{
-          label: crew.name,
-          tag_label: crew.name,
-          value: crew.id,
-          description: crew.description
-        }
-      end)
-
     send_update(LiveSelect.Component,
       id: live_select_id,
-      options: options
+      options: Crews.live_select_by_name_user_name(text)
     )
 
     {:noreply, socket}
@@ -147,12 +123,8 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
 
     # LiveSelect tags 값 추출 (없으면 빈 리스트)
     crews_id = Map.get(request_params, "referenced_crews", [])
-    clean_params = Map.delete(request_params, "referenced_crews")
-    # LiveSelect 관련 추가 키도 제거
-    clean_params =
-      Map.drop(clean_params, ["referenced_crews_text_input", "referenced_crews_empty_selection"])
 
-    case Requests.update_request(user, request, clean_params) do
+    case Requests.update_request(user, request, request_params) do
       {:ok, updated_request} ->
         # reference 동기화 (기존 삭제 → 새로 생성)
         Team.sync_references("Request", updated_request.id, crews_id)
@@ -171,13 +143,12 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
 
     # LiveSelect tags 값 추출
     crews_id = Map.get(request_params, "referenced_crews", [])
-    clean_params = Map.delete(request_params, "referenced_crews")
 
     case Service.create_request(
            user,
            category,
            fn -> LiveUtil.consume_attachments(socket) end,
-           clean_params
+           request_params
          ) do
       {:ok, request} ->
         # reference 생성

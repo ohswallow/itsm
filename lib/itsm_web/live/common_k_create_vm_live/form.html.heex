@@ -177,7 +177,14 @@
       active_option_class="bg-kb-yellow text-kb-dark-gray font-bold"
       tags_container_extra_class="flex flex-wrap gap-2 items-start max-h-28 overflow-y-auto pr-2"
       value={@referenced_crews_options}
-    />
+    >
+      <:option :let={option}>
+        <div class="flex flex-col">
+          <span class="font-bold">{option.label}</span>
+          <span class="text-sm text-gray-600">{option.description}</span>
+        </div>
+      </:option>
+    </LiveSelect.live_select>
   </div>
   
   <%= if @form.errors[:base] do %>

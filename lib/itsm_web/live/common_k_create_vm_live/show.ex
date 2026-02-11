@@ -5,14 +5,12 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
 
   import ItsmWeb.Components.WorkflowSidebar
 
-  # alias Itsm.Service
   alias Itsm.Comments
   alias Itsm.Comments.Comment
   alias Itsm.Requests
   alias ItsmWeb.LiveUtil
   alias Itsm.Workflow
   alias Itsm.Service
-  alias Itsm.Crews
 
   def mount(_params, _session, socket) do
     {:ok,
