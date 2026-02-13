@@ -95,7 +95,7 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
 
     # 본인 선택이 가능한 화면에서 호출 시
     options =
-      Accounts.search_user_options(current_user, %{"keyword" => keyword, "include_self" => true})
+      Accounts.live_select_by_name(current_user, keyword)
 
     send_update(LiveSelect.Component, id: live_select_id, options: options)
 

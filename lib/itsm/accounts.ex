@@ -355,46 +355,13 @@ defmodule Itsm.Accounts do
     end
   end
 
-  def search_users(params) do
+  def live_select_by_name(%User{} = user, keyword) do
     User
-    |> search_by(params["q"])
-    |> filter_by_organization(params["organization_code"])
-    |> filter_by_department(params["department_code"])
-    |> Repo.all()
-  end
-
-  # Admin용 전체 사용자 검색
-  def search_user_options(%User{role: :admin}, params) do
-    User
-    |> search_by(params["keyword"])
-    |> order_by(:display_name)
-    |> select_user_options()
-    |> Repo.all()
-  end
-
-  # 일반 유저용: 조직/부서 필터링 + 본인 제외 여부 제어
-  def search_user_options(%User{} = user, params) do
-    User
-    |> search_by(params["keyword"])
+    |> search_by(keyword)
     |> where([u], u.organization_code == ^user.organization_code)
     |> where([u], u.department_code == ^user.department_code)
-    |> maybe_exclude_self(user, params)
     |> order_by(:display_name)
-    |> select_user_options()
-    |> Repo.all()
-  end
-
-  # Case 1: params에 "include_self"가 true면 -> 본인 포함 검색
-  defp maybe_exclude_self(query, _user, %{"include_self" => true}), do: query
-
-  # Case 2: 그 외의 경우(기본값) -> 본인 제외 검색
-  defp maybe_exclude_self(query, user, _params) do
-    where(query, [u], u.id != ^user.id)
-  end
-
-  # Admin용과 일반용 함수에서 중복되는 select 구문 분리
-  defp select_user_options(query) do
-    select(query, [u], %{
+    |> select([u], %{
       value: u.id,
       label: u.display_name,
       tag_label: fragment("? || '(' || ? || ')'", u.display_name, u.employee_number),
@@ -403,6 +370,7 @@ defmodule Itsm.Accounts do
       employee_number: u.employee_number,
       department: u.department
     })
+    |> Repo.all()
   end
 
   # 1. 이름 검색
@@ -411,22 +379,6 @@ defmodule Itsm.Accounts do
 
   defp search_by(query, keyword) do
     where(query, [c], ilike(c.display_name, ^"%#{keyword}%"))
-  end
-
-  # 2. 조직 코드 필터링
-  # 파라미터가 없으면(nil) -> 전체 검색 (Admin용)
-  defp filter_by_organization(query, nil), do: query
-  # 파라미터가 있으면 -> 해당 조직만 검색 (일반 유저용)
-  defp filter_by_organization(query, code) do
-    where(query, [u], u.organization_code == ^code)
-  end
-
-  # 3. 부서 코드 필터링
-  # 파라미터가 없으면(nil) -> 전체 검색 (Admin용)
-  defp filter_by_department(query, nil), do: query
-  # 파라미터가 있으면 -> 해당 부서만 검색 (일반 유저용)
-  defp filter_by_department(query, code) do
-    where(query, [u], u.department_code == ^code)
   end
 
   @doc """

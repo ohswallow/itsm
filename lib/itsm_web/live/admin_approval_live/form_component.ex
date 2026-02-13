@@ -1,7 +1,7 @@
 defmodule ItsmWeb.AdminApprovalLive.FormComponent do
   use ItsmWeb, :live_component
 
-  alias Itsm.Approvals
+  alias Itsm.Admin.Approvals
 
   @impl true
   def update(%{approval: approval} = assigns, socket) do

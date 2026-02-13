@@ -1,7 +1,7 @@
 defmodule ItsmWeb.AdminApprovalLive.Show do
   use ItsmWeb, :live_view
 
-  alias Itsm.Approvals
+  alias Itsm.Admin.Approvals
 
   @impl true
   def mount(_params, _session, socket) do

@@ -106,9 +106,11 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   end
 
   def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
+    %{current_user: user} = socket.assigns
+
     send_update(LiveSelect.Component,
       id: live_select_id,
-      options: Crews.live_select_by_name_user_name(text)
+      options: Crews.live_select_by_name_user_name(text, user)
     )
 
     {:noreply, socket}

@@ -2,7 +2,7 @@ defmodule ItsmWeb.AdminCategoryLive.Index do
   use ItsmWeb, :live_view
 
   alias Itsm.Service.Category
-  alias Itsm.Categories
+  alias Itsm.Admin.Categories
 
   @impl true
   def mount(_params, _session, socket) do
