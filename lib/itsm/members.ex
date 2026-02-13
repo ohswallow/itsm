@@ -4,12 +4,6 @@ defmodule Itsm.Members do
   alias Itsm.Team.Member
   alias Itsm.Crews
 
-  def list_members do
-    Repo.all(Member)
-  end
-
-  def get_member!(id), do: Repo.get!(Member, id)
-
   def create_member(attrs \\ %{}) do
     %Member{}
     |> Member.changeset(attrs)
@@ -25,32 +19,5 @@ defmodule Itsm.Members do
       error ->
         error
     end
-  end
-
-  def update_member(%Member{} = member, attrs) do
-    member
-    |> Member.changeset(attrs)
-    |> Repo.update()
-  end
-
-  def delete_member(%Member{} = member) do
-    Repo.delete(member)
-  end
-
-  def change_member(%Member{} = member, attrs \\ %{}) do
-    Member.changeset(member, attrs)
-  end
-
-  def search_crews_by_member([]), do: []
-
-  def search_crews_by_member(users) do
-    users_id = Enum.map(users, & &1.id)
-
-    Member
-    |> where([m], m.user_id in ^users_id)
-    |> join(:inner, [m], c in assoc(m, :crew))
-    |> select([m, c], c)
-    |> distinct(true)
-    |> Repo.all()
   end
 end

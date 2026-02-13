@@ -1,7 +1,7 @@
-defmodule ItsmWeb.CrewLive.Show do
+defmodule ItsmWeb.AdminCrewLive.Show do
   use ItsmWeb, :live_view
 
-  alias Itsm.Crews
+  alias Itsm.Admin.Crews
 
   @impl true
   def mount(_params, _session, socket) do

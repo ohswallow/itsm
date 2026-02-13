@@ -1,7 +1,7 @@
 defmodule ItsmWeb.AdminApprovalLive.Index do
   use ItsmWeb, :live_view
 
-  alias Itsm.Approvals
+  alias Itsm.Admin.Approvals
   alias Itsm.Service.Approval
 
   @impl true

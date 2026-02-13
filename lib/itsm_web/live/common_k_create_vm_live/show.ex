@@ -86,7 +86,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
     <.list>
       <:item title="Title">{@request.title}</:item>
       
-      <:item title="Description">{@request.description}</:item>
+      <:item title="Description"><pre>{@request.description}</pre></:item>
       
       <:item title="Environment">{@request.env}</:item>
       
@@ -127,7 +127,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
             <div>
               <dt class="text-sm font-medium text-zinc-500">서버 설명</dt>
               
-              <dd class="text-sm text-zinc-900">{vm.description}</dd>
+              <dd class="text-sm text-zinc-900"><pre>{vm.description}</pre></dd>
             </div>
             
             <div>

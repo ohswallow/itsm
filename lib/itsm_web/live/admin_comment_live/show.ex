@@ -1,7 +1,7 @@
 defmodule ItsmWeb.AdminCommentLive.Show do
   use ItsmWeb, :live_view
 
-  alias Itsm.Comments
+  alias Itsm.Admin.Comments
 
   @impl true
   def mount(_params, _session, socket) do

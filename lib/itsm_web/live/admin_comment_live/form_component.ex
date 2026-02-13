@@ -1,7 +1,7 @@
 defmodule ItsmWeb.AdminCommentLive.FormComponent do
   use ItsmWeb, :live_component
 
-  alias Itsm.Comments
+  alias Itsm.Admin.Comments
 
   @impl true
   def render(assigns) do
