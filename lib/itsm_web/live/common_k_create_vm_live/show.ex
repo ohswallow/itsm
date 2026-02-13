@@ -67,7 +67,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
       <.header>
         {@request.title}
         <:subtitle>Request ID: {@request.id}</:subtitle>
-
         <:actions>
           <.link navigate={~p"/common_k_create_vm/#{@request}/edit"} class="text-sm text-zinc-700">
             Edit
@@ -111,7 +110,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
     ~H"""
     <div class="mt-8">
       <h2 class="text-lg font-semibold text-zinc-700 mb-4">VM 생성 요청</h2>
-
       <div class="space-y-4">
         <div
           :for={{vm, index} <- Enum.with_index(@vms, 1)}
@@ -160,7 +158,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
     ~H"""
     <div class="mt-8">
       <h2 class="text-lg font-semibold text-zinc-700 mb-4">첨부파일 ({length(@attachments)})</h2>
-
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         <div
           :for={attachment <- @attachments}
@@ -230,7 +227,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
                 <div class="bg-blue-50 text-blue-600 rounded p-0.5">
                   <.icon name="hero-paper-clip" class="w-3 h-3" />
                 </div>
-
                 <span class="text-xs text-slate-600 group-hover:text-blue-600 max-w-[158px] truncate">
                   {attachment.filename}
                 </span>
@@ -263,7 +259,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
         </div>
         <.button phx-disable-with="Saving..." class="text-xs px-3 py-1.5">Add Comment</.button>
       </div>
-
       <.error :for={err <- upload_errors(@uploads.attachment)}>{Phoenix.Naming.humanize(err)}</.error>
 
       <div
@@ -281,7 +276,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
           <p class="text-xs text-zinc-600 truncate px-1">{entry.client_name}</p>
 
           <p class="text-xs text-zinc-400">{format_file_size(entry.client_size)}</p>
-
           <button
             type="button"
             phx-click="cancel-upload"

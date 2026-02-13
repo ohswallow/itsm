@@ -21,8 +21,6 @@ defmodule Itsm.Categories do
 
   def sort_options, do: Enum.map(@sort_options_list, &{&1.label, &1.value})
 
-  def list_categories, do: Repo.all(Category)
-
   def filter_categories(filter) do
     Category
     |> with_type(filter["group"])
@@ -32,7 +30,8 @@ defmodule Itsm.Categories do
   end
 
   def get_category_groups(%{"group" => group, "keyword" => keyword})
-      when group not in [nil, [], [""]] and keyword in [nil, ""], do: group
+      when group not in [nil, [], [""]] and keyword in [nil, ""],
+      do: group
 
   def get_category_groups(filter) do
     Category
@@ -44,26 +43,6 @@ defmodule Itsm.Categories do
   end
 
   def get_category!(id), do: Repo.get!(Category, id)
-
-  def create_category(attrs \\ %{}) do
-    %Category{}
-    |> Category.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  def update_category(%Category{} = category, attrs) do
-    category
-    |> Category.changeset(attrs)
-    |> Repo.update()
-  end
-
-  def delete_category(%Category{} = category) do
-    Repo.delete(category)
-  end
-
-  def change_category(%Category{} = category, attrs \\ %{}) do
-    Category.changeset(category, attrs)
-  end
 
   defp with_type(query, group) when group in [nil, [], [""]], do: query
 

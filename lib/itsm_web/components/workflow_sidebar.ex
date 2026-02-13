@@ -37,7 +37,6 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
         <div class="text-center mb-5 pb-4 border-b border-gray-100">
           <.label>WorkFlow</.label>
         </div>
-
         <div class="space-y-3">
           <.workflow_step
             :for={step <- @step_data}
@@ -171,7 +170,6 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
         <div class="text-xs text-left text-gray-400 mb-2 font-medium border-b pb-1">
           {@crew.description}
         </div>
-
         <div class="space-y-1">
           <div :for={member <- @crew.members} class="text-xs text-gray-700">
             {member.user.display_name}

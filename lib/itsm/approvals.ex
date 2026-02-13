@@ -25,12 +25,6 @@ defmodule Itsm.Approvals do
   # 조회
   # ==================================================
 
-  def list_approvals do
-    Repo.all(Approval)
-  end
-
-  def get_approval!(id), do: Repo.get!(Approval, id)
-
   def list_approvals_by_request(request_id) do
     Approval
     |> where([a], a.request_id == ^request_id)
@@ -124,9 +118,8 @@ defmodule Itsm.Approvals do
   end
 
   # ==================================================
-  # CRUD
+  # CUD
   # ==================================================
-
   def create_approval(repo, %Request{} = request, %User{} = user) do
     %Approval{
       approver: user,
@@ -142,19 +135,5 @@ defmodule Itsm.Approvals do
     %Approval{}
     |> Approval.changeset(approval_params)
     |> Repo.insert()
-  end
-
-  def change_approval(%Approval{} = approval, approval_params \\ %{}) do
-    Approval.changeset(approval, approval_params)
-  end
-
-  def update_approval(%Approval{} = approval, approval_params) do
-    approval
-    |> Approval.changeset(approval_params)
-    |> Repo.update()
-  end
-
-  def delete_approval(%Approval{} = approval) do
-    Repo.delete(approval)
   end
 end

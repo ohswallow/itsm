@@ -1,0 +1,29 @@
+defmodule Itsm.Admin.Categories do
+  import Ecto.Query, warn: false
+  alias Itsm.Repo
+  alias Itsm.Service.Category
+
+  defdelegate get_category!(id), to: Itsm.Categories
+
+  def list_categories, do: Repo.all(Category)
+
+  def change_category(%Category{} = category, attrs \\ %{}) do
+    Category.changeset(category, attrs)
+  end
+
+  def create_category(attrs \\ %{}) do
+    %Category{}
+    |> Category.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_category(%Category{} = category, attrs) do
+    category
+    |> Category.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_category(%Category{} = category) do
+    Repo.delete(category)
+  end
+end

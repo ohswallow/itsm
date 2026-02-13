@@ -2,7 +2,7 @@ defmodule ItsmWeb.AdminCrewLive.FormComponent do
   use ItsmWeb, :live_component
 
   alias Itsm.Team
-  alias Itsm.Crews
+  alias Itsm.Admin.Crews
 
   @impl true
   def update(%{crew: crew} = assigns, socket) do
@@ -49,9 +49,7 @@ defmodule ItsmWeb.AdminCrewLive.FormComponent do
   end
 
   defp save_crew(socket, :edit, crew_params) do
-    current_user = socket.assigns.current_user
-
-    case Crews.update_crew(socket.assigns.crew, crew_params, current_user) do
+    case Crews.update_crew(socket.assigns.crew, crew_params) do
       {:ok, crew} ->
         notify_parent({:saved, crew})
 

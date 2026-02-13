@@ -1,7 +1,7 @@
 defmodule ItsmWeb.AdminCategoryLive.FormComponent do
   use ItsmWeb, :live_component
 
-  alias Itsm.Categories
+  alias Itsm.Admin.Categories
 
   @impl true
   def render(assigns) do

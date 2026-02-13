@@ -87,22 +87,28 @@ defmodule Itsm.Crews do
     |> Repo.preload([:leader, members: [:user]])
   end
 
-  def live_select_by_name_user_name(name) do
-    user_name_query =
-      Crew
-      |> join(:inner, [c], u in assoc(c, :users))
-      |> where([c, u], ilike(u.display_name, ^"%#{name}%"))
-      |> select([c, u], %{
-        label: c.name,
-        tag_label: c.name,
-        value: c.id,
-        description: c.description
-      })
+  def live_select_by_name_user_name(name, %User{id: user_id}) do
+    user_crew_ids =
+      Member
+      |> where([m], m.user_id == ^user_id)
+      |> select([m], m.crew_id)
 
     Crew
-    |> where([c], ilike(c.name, ^"%#{name}%"))
-    |> select([c], %{label: c.name, tag_label: c.name, value: c.id, description: c.description})
-    |> union(^user_name_query)
+    |> join(:inner, [c], u in assoc(c, :users))
+    |> where([c], c.id not in subquery(user_crew_ids))
+    |> where(
+      [c, u],
+      ilike(c.name, ^"%#{name}%") or
+        ilike(c.description, ^"%#{name}%") or
+        ilike(u.display_name, ^"%#{name}%")
+    )
+    |> distinct(true)
+    |> select([c], %{
+      label: c.name,
+      tag_label: c.name,
+      value: c.id,
+      description: c.description
+    })
     |> Repo.all()
   end
 
@@ -112,7 +118,7 @@ defmodule Itsm.Crews do
 
   def update_crew(%Crew{} = crew, attrs, %User{} = user) do
     # 등록자 본인이거나, 관리자(admin)라면 삭제 허용
-    if crew.leader_id == user.id or user.role == :admin do
+    if crew.leader_id == user.id do
       crew
       |> Crew.changeset(attrs)
       |> Repo.update()
@@ -152,7 +158,7 @@ defmodule Itsm.Crews do
   # Index LiveView 처럼 사용자가 버튼을 눌렀을 때 사용합니다.
   # 권한을 체크한 뒤, 권한이 있으면 위의 1번 함수를 호출합니다.
   def delete_crew(%Crew{} = crew, %User{} = user) do
-    if crew.leader_id == user.id or user.role == :admin do
+    if crew.leader_id == user.id do
       # 권한 통과! -> 1번 함수(실제 삭제) 호출
       delete_crew(crew)
     else

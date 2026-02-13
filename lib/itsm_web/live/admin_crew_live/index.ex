@@ -1,7 +1,7 @@
 defmodule ItsmWeb.AdminCrewLive.Index do
   use ItsmWeb, :live_view
 
-  alias Itsm.Crews
+  alias Itsm.Admin.Crews
   alias Itsm.Team.Crew
 
   @impl true
@@ -40,8 +40,7 @@ defmodule ItsmWeb.AdminCrewLive.Index do
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     crew = Crews.get_crew!(id)
-    current_user = socket.assigns.current_user
-    {:ok, _} = Crews.delete_crew(crew, current_user)
+    {:ok, _} = Crews.delete_crew(crew)
 
     {:noreply, stream_delete(socket, :crews, crew)}
   end

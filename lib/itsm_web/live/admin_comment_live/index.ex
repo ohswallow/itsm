@@ -1,7 +1,7 @@
 defmodule ItsmWeb.AdminCommentLive.Index do
   use ItsmWeb, :live_view
 
-  alias Itsm.Comments
+  alias Itsm.Admin.Comments
   alias Itsm.Comments.Comment
 
   @impl true
