@@ -44,7 +44,8 @@ let liveSocket = new LiveSocket("/live", Socket, {
     "LocalTime.ToLocale": LocalTime.ToLocale,
     "LocalTime.GridToLocale": LocalTime.GridToLocale,
     "Calendar.DateGrid": Calendar.DateGrid,
-    "Calendar.Input": Calendar.Input
+    "Calendar.Input": Calendar.Input,
+    "Calendar.Toggle": Calendar.Toggle
   },
   longPollFallbackMs: 2500,
   params: { _csrf_token: csrfToken },

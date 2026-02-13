@@ -5,7 +5,7 @@ const Calendar = {};
 Calendar.updateSelectedDateTime = (container, phxTarget, pushEventTo) => {
   const selectedDateEl = container.querySelector(".selected-date");
   const gridEl = container.querySelector("[phx-hook='Calendar.DateGrid']");
-  const baseSource = selectedDateEl ? selectedDateEl.dataset.date : gridEl.getAttribute("datetime");
+  const baseSource = selectedDateEl ? selectedDateEl.dataset.date : gridEl.getAttribute("utc-value");
 
   const dt = new Date(baseSource);
   if (isNaN(dt)) return null;
@@ -35,6 +35,23 @@ Calendar.updateSelectedDateTime = (container, phxTarget, pushEventTo) => {
   return isoString;
 };
 
+Calendar.updateDateElementStatus = (el) => {
+    if (!el) return;
+
+    const isDisabled = el.hasAttribute('data-disabled') && el.getAttribute('data-disabled') !== "false";
+
+    const disabledClasses = ["text-gray-300", "cursor-not-allowed", "opacity-50"];
+    const enabledClasses = ["cursor-pointer", "hover:bg-gray-100"];
+
+    if (isDisabled) {
+      el.classList.remove(...enabledClasses);
+      el.classList.add(...disabledClasses);
+    } else {
+      el.classList.remove(...disabledClasses);
+      el.classList.add(...enabledClasses);
+    }
+};
+
 Calendar.DateGrid = {
   mounted() {
     this.el.addEventListener("click", e => {
@@ -57,6 +74,12 @@ Calendar.DateGrid = {
     });
 
     this.applySelection();
+    this.syncAllDatesStatus();
+  },
+
+  syncAllDatesStatus() {
+    const dateEls = this.el.querySelectorAll('[id*="-date-"]');
+    dateEls.forEach(el => Calendar.updateDateElementStatus(el));
   },
 
   highlightDate(el) {
@@ -89,6 +112,18 @@ Calendar.Input = {
     if (document.activeElement !== this.el) {
       LocalTime.renderElement(this.el);
     }
+  }
+};
+
+Calendar.Toggle = {
+  mounted() {
+    const popupId = this.el.id.replace("datepicker-input-", "") + "-calendar-popup";
+    const popup = document.getElementById(popupId);
+
+    popup.addEventListener("calendar:opened", () => {
+      const dateEls = popup.querySelectorAll('[data-date]');
+      dateEls.forEach(el => Calendar.updateDateElementStatus(el));
+    });
   }
 };
 

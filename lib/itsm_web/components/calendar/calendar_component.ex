@@ -31,8 +31,7 @@ defmodule ItsmWeb.CalendarComponent do
       socket.assigns[:default_view_date] || Date.utc_today()
     end)
     |> assign_new(:selected_date_time, fn ->
-      socket.assigns[:default_selected_date_time] ||
-        DateTime.utc_now()
+      socket.assigns[:default_selected_date_time]
     end)
     |> assign_new(:show_time, fn -> false end)
   end

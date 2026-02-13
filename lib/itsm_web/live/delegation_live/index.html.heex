@@ -13,19 +13,33 @@
   <:col :let={{_id, delegation}} label={gettext("Delegator name")}>
     {delegation.delegator_name}
   </:col>
-  
+
   <:col :let={{_id, delegation}} label={gettext("Delegatee name")}>
     {delegation.delegatee_name}
   </:col>
-  
-  <:col :let={{_id, delegation}} label={gettext("Start date")}>{delegation.start_date}</:col>
-  
-  <:col :let={{_id, delegation}} label={gettext("End date")}>{delegation.end_date}</:col>
-  
+
+  <:col :let={{id, delegation}} label={gettext("Start date")}>
+    <div
+      id={"delegation_start_date_#{id}"}
+      phx-hook="LocalTime.ToLocale"
+      format="date"
+      utc-value={delegation.start_date}
+    />
+  </:col>
+
+  <:col :let={{id, delegation}} label={gettext("End date")}>
+    <div
+      id={"delegation_end_date_#{id}"}
+      phx-hook="LocalTime.ToLocale"
+      format="date"
+      utc-value={delegation.end_date}
+    />
+  </:col>
+
   <:col :let={{_id, delegation}} label={gettext("Reason")}>{delegation.reason}</:col>
-  
+
   <:col :let={{_id, delegation}} label={gettext("Created_by")}>{delegation.created_by_name}</:col>
-  
+
   <:action :let={{_id, delegation}}>
     <%= if can_delete?(@current_user, delegation) do %>
       <.link

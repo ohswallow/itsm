@@ -31,28 +31,30 @@ defmodule ItsmWeb.RequestLive.Index do
       }
     >
       <:col :let={{_id, request}} label="Title">{request.title}</:col>
-      
+
       <:col
         :let={{_id, request}}
         label="Description"
       >
         <div class="w-[90px] truncate">{request.description}</div>
       </:col>
-      
+
       <:col :let={{_id, request}} label="Env">{request.env}</:col>
-      
-      <:col :let={{id, request}} label="Due date"><.local_time id={id} at={request.due_date} /></:col>
-      
+
+      <:col :let={{id, request}} label="Due date">
+        <div id={id} phx-hook="LocalTime.ToLocale" format="date" utc-value={request.due_date} />
+      </:col>
+
       <:col :let={{_id, request}} label="Request Type">{request.category.request_name}</:col>
-      
+
       <:col :let={{_id, request}} label="Request Name">{request.category.name}</:col>
-      
+
       <%!-- <:col :let={{_id, request}} label="Create vm common k">{request.common_k_create_vms}</:col> --%>
       <:action :let={{_id, request}}>
         <div class="sr-only"><.link navigate={~p"/requests/#{request}"}>Show</.link></div>
-         <.link navigate={"/#{request.category.request_name}/#{request.id}/edit"}>Edit</.link>
+        <.link navigate={"/#{request.category.request_name}/#{request.id}/edit"}>Edit</.link>
       </:action>
-      
+
       <:action :let={{id, request}}>
         <.link
           phx-click={JS.push("delete", value: %{id: request.id}) |> hide("##{id}")}

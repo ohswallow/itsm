@@ -14,6 +14,7 @@ defmodule ItsmWeb.ItsmComponents do
   attr :min, :any, default: nil
   attr :max, :any, default: nil
   attr :disabled_dates, :list, default: []
+  attr :errors, :list, default: []
   attr :rest, :global
 
   attr :rests, :map,
@@ -41,6 +42,7 @@ defmodule ItsmWeb.ItsmComponents do
       min={@min}
       max={@max}
       disabled_dates={@disabled_dates}
+      errors={@errors}
       rests={@rests}
       rest={assigns[:rest] || %{}}
     />
@@ -56,6 +58,7 @@ defmodule ItsmWeb.ItsmComponents do
   attr :view_date, :any, default: nil
   attr :selected_date_time, :any, default: nil
   attr :show_time, :boolean, default: false
+  attr :errors, :list, default: []
   attr :rest, :global
 
   attr :rests, :map,
@@ -73,6 +76,7 @@ defmodule ItsmWeb.ItsmComponents do
   def calendar_ui(assigns) do
     ~H"""
     <div
+      phx-feedback-for={@field[:name]}
       class="relative"
       id={"datepicker-container-#{@id}"}
       data-calendar-root
@@ -87,13 +91,19 @@ defmodule ItsmWeb.ItsmComponents do
           {@label}
         </div>
         <div
+          id={"datepicker-input-#{@id}"}
           class="flex items-center border rounded-lg px-3 py-2 cursor-pointer hover:border-indigo-500 bg-white"
-          phx-click={JS.toggle(to: "##{@id}-calendar-popup")}
+          phx-hook="Calendar.Toggle"
+          phx-click={
+            JS.toggle(to: "##{@id}-calendar-popup")
+            |> JS.dispatch("calendar:opened", to: "##{@id}-calendar-popup")
+          }
         >
           <input
             id={"selected_date_time-#{@id}"}
             name={@field && @field.name}
-            {if @show_time, do: %{datetime: @selected_date_time, format: "datetime"}, else: %{date: @selected_date_time, format: "date"}}
+            utc-value={@selected_date_time}
+            format={if @show_time, do: "datetime", else: "date"}
             class="text-transparent bg-transparent border-none focus:ring-0 focus:outline-none cursor-pointer w-full p-0 absolute inset-0 z-10"
             phx-update="ignore"
             readonly
@@ -102,14 +112,15 @@ defmodule ItsmWeb.ItsmComponents do
             id={"display_date_time-#{@id}"}
             class="text-gray-700 pointer-events-none w-full"
             phx-hook="LocalTime.ToLocale"
-            {if @show_time, do: %{datetime: @selected_date_time, format: "datetime"}, else: %{date: @selected_date_time, format: "date"}}
+            utc-value={@selected_date_time}
+            format={if @show_time, do: "datetime", else: "date"}
             {@rests[:selected_date_time]}
             {@rest}
           >
           </div>
           <span class="text-gray-400">📅</span>
         </div>
-        <%!-- <.error :for={msg <- @field.errors}>{msg}</.error> --%>
+        <.error :for={msg <- @errors}>{msg}</.error>
       </div>
 
       <div
@@ -173,7 +184,7 @@ defmodule ItsmWeb.ItsmComponents do
           phx-hook="Calendar.DateGrid"
           phx-target={@target}
           class="grid grid-cols-7 gap-1 text-center"
-          datetime={@selected_date_time}
+          utc-value={@selected_date_time}
           format="datetime"
           data-show-time={"#{@show_time}"}
           {@rests[:grid]}
@@ -189,11 +200,7 @@ defmodule ItsmWeb.ItsmComponents do
             data-disabled={date.disabled || nil}
             class={[
               index == 0 && @start_col_class,
-              "p-2 text-sm rounded-lg transition-all",
-              if(date.disabled,
-                do: "text-gray-300 cursor-not-allowed opacity-50",
-                else: "cursor-pointer hover:bg-gray-100"
-              )
+              "p-2 text-sm rounded-lg transition-all cursor-pointer hover:bg-gray-100"
             ]}
             phx-update="ignore"
             {@rests[:date]}
@@ -210,7 +217,7 @@ defmodule ItsmWeb.ItsmComponents do
             <input
               id={"#{@id}-selected_date_time-hour"}
               phx-hook="Calendar.Input"
-              hour={@selected_date_time}
+              utc-value={@selected_date_time}
               type="number"
               format="hour"
               min="0"
@@ -223,7 +230,7 @@ defmodule ItsmWeb.ItsmComponents do
             <input
               id={"#{@id}-selected_date_time-minute"}
               phx-hook="Calendar.Input"
-              minute={@selected_date_time}
+              utc-value={@selected_date_time}
               type="number"
               format="minute"
               min="0"

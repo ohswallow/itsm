@@ -37,7 +37,6 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
         <div class="text-center mb-5 pb-4 border-b border-gray-100">
           <.label>WorkFlow</.label>
         </div>
-        
         <div class="space-y-3">
           <.workflow_step
             :for={step <- @step_data}
@@ -73,10 +72,10 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
               {@step.index + 1}
           <% end %>
         </div>
-        
+
         <div><span class={step_label_class(@step.status)}>{@step.label}</span></div>
       </div>
-      
+
       <div class="text-right">
         <.step_info step={@step} resource={@resource} workflow_type={@workflow_type} />
       </div>
@@ -104,7 +103,13 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
     ~H"""
     <div class="text-xs font-medium text-green-700">{@approval.approver_name}</div>
 
-    <div class="text-xs text-green-500">{format_datetime(@approval.inserted_at)}</div>
+    <div
+      id={"approval_#{@status}_date_#{@approval.id}"}
+      class="text-xs text-green-500"
+      phx-hook="LocalTime.ToLocale"
+      format="MM/DD HH:mm"
+      utc-value={@approval.inserted_at}
+    />
     """
   end
 
@@ -138,7 +143,13 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
     ~H"""
     <div class="text-xs font-medium text-red-700">{@approval.approver_name}</div>
 
-    <div class="text-xs text-red-500">{format_datetime(@approval.inserted_at)}</div>
+    <div
+      id={"approval_#{@status}_date_#{@approval.id}"}
+      class="text-xs text-red-500"
+      phx-hook="LocalTime.ToLocale"
+      format="MM/DD HH:mm"
+      utc-value={@approval.inserted_at}
+    />
     """
   end
 
@@ -159,7 +170,6 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
         <div class="text-xs text-left text-gray-400 mb-2 font-medium border-b pb-1">
           {@crew.description}
         </div>
-        
         <div class="space-y-1">
           <div :for={member <- @crew.members} class="text-xs text-gray-700">
             {member.user.display_name}
@@ -198,10 +208,6 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
         approval: approval
       }
     end)
-  end
-
-  defp format_datetime(datetime) do
-    Calendar.strftime(datetime, "%m/%d %H:%M")
   end
 
   # ==================================================

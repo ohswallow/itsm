@@ -39,7 +39,7 @@ LocalTime.getValue = (isoString, format) => {
 
 LocalTime.renderElement = (el) => {
   const format = el.getAttribute("format") || "datetime";
-  const source = el.getAttribute(format);
+  const source = el.getAttribute("utc-value") || el.textContent;
   const result = LocalTime.getValue(source, format);
   if (el.tagName === "INPUT") {
     el.value = result;
@@ -89,7 +89,7 @@ LocalTime.GridToLocale = {
     return isNaN(date) ? null : date;
   },
   findLocalSelectedEl(hook) {
-    const source = hook.el.getAttribute(hook.el.getAttribute("format") || "datetime");
+    const source = hook.el.getAttribute("utc-value");
     const localTarget = LocalTime.GridToLocale.getLocalTime(source);
     if (!localTarget) return null;
 
