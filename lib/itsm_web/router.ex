@@ -183,6 +183,13 @@ defmodule ItsmWeb.Router do
 
       live "/comments/:id", AdminCommentLive.Show, :show
       live "/comments/:id/show/edit", AdminCommentLive.Show, :edit
+
+      live "/common_codes", AdminCommonCodeLive.Index, :index
+      live "/common_codes/new", AdminCommonCodeLive.Index, :new
+      live "/common_codes/:id/edit", AdminCommonCodeLive.Index, :edit
+
+      live "/common_codes/:id", AdminCommonCodeLive.Show, :show
+      live "/common_codes/:id/show/edit", AdminCommonCodeLive.Show, :edit
     end
   end
 
