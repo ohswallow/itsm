@@ -58,7 +58,7 @@ defmodule ItsmWeb.Router do
         {ItsmWeb.UserAuth, :redirect_if_user_is_authenticated},
         {ItsmWeb.UserAuth, :set_locale}
       ],
-      layout: false do
+      layout: {ItsmWeb.Layouts, :default} do
       live "/users/register", UserRegistrationLive, :new
       live "/users/log_in", UserLoginLive, :new
       live "/users/reset_password", UserForgotPasswordLive, :new
@@ -76,7 +76,7 @@ defmodule ItsmWeb.Router do
         {ItsmWeb.UserAuth, :ensure_authenticated},
         {ItsmWeb.UserAuth, :set_locale}
       ],
-      layout: false do
+      layout: {ItsmWeb.Layouts, :default} do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
 
@@ -155,7 +155,9 @@ defmodule ItsmWeb.Router do
         {ItsmWeb.UserAuth, :ensure_authenticated},
         {ItsmWeb.UserAuth, :set_locale}
       ],
-      layout: false do
+      layout: {ItsmWeb.Layouts, :admin} do
+      live "/", AdminCategoryLive.Index, :index
+
       live "/categories", AdminCategoryLive.Index, :index
       live "/categories/new", AdminCategoryLive.Index, :new
       live "/categories/:id/edit", AdminCategoryLive.Index, :edit
@@ -203,7 +205,8 @@ defmodule ItsmWeb.Router do
         {ItsmWeb.UserAuth, :mount_current_user},
         # 추가된 부분
         {ItsmWeb.UserAuth, :set_locale}
-      ] do
+      ],
+      layout: {ItsmWeb.Layouts, :default} do
       live "/users/confirm/:token", UserConfirmationLive, :edit
       live "/users/confirm", UserConfirmationInstructionsLive, :new
     end

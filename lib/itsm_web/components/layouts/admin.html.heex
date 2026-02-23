@@ -1,0 +1,76 @@
+<header class="w-full bg-white shadow-sm z-50 h-20 flex items-center">
+  <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center ">
+      <div class="flex-shrink-0 flex items-center">
+        <a href="/" class="flex items-center">
+          <img src={~p"/images/itsm_banner.svg"} alt="KB ITSM" class="h-12 w-auto" />
+        </a>
+        <span class="ml-2 text-sm text-gray-500">
+          {gettext("Admin") <> " " <> gettext("Console")}
+        </span>
+      </div>
+      
+      <div :if={@current_user} class="hidden lg:flex items-center gap-5 center">
+        <nav class="flex gap-6">
+          <.link
+            :for={menu <- ItsmWeb.RouterUtil.admin_menu_items()}
+            href={menu.path}
+            class="text-base font-bold text-gray-700 hover:text-kb-yellow transition-colors"
+          >
+            {Gettext.gettext(ItsmWeb.Gettext, menu.name)}
+          </.link>
+        </nav>
+        
+        <div class="h-4 w-px bg-gray-300"></div>
+        
+        <div class="flex items-center gap-4">
+          <% is_ko = Gettext.get_locale(ItsmWeb.Gettext) == "ko" %>
+          <div class="flex items-center gap-2">
+            <span class={"text-xs font-bold #{if is_ko, do: "text-kb-dark-gray", else: "text-kb-medium-gray"}"}>
+              KO
+            </span>
+            <.link
+              href={"?locale=#{if is_ko, do: "en", else: "ko"}"}
+              class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-200 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-kb-yellow focus:ring-offset-2"
+              role="button"
+            >
+              <span class={"pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out overflow-hidden #{if is_ko, do: "translate-x-0", else: "translate-x-5"}"}>
+                <img
+                  src={~p"/images/kr.png"}
+                  class={"absolute inset-0 h-full w-full object-cover transition-opacity duration-200 #{if is_ko, do: "opacity-100", else: "opacity-0"}"}
+                />
+                <img
+                  src={~p"/images/us.png"}
+                  class={"absolute inset-0 h-full w-full object-cover transition-opacity duration-200 #{if is_ko, do: "opacity-0", else: "opacity-100"}"}
+                />
+              </span>
+            </.link>
+            <span class={"text-xs font-bold #{if is_ko, do: "text-kb-medium-gray", else: "text-kb-dark-gray"}"}>
+              EN
+            </span>
+          </div>
+          
+          <div class="h-4 w-px bg-gray-300 mx-1"></div>
+          
+          <div class="flex items-center gap-3 text-sm font-medium">
+            <span class="text-kb-dark-gray truncate max-w-[120px]">{@current_user.email}</span>
+            <.link href={~p"/users/settings"} class="text-gray-400 hover:text-kb-blue">
+              <.icon name="hero-cog-6-tooth-solid" class="w-5 h-5" />
+            </.link>
+            <.link
+              href={~p"/users/log_out"}
+              method="delete"
+              class="text-gray-400 hover:text-red-600"
+            >
+              <.icon name="hero-arrow-right-on-rectangle-solid" class="w-5 h-5" />
+            </.link>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="px-4 py-20 sm:px-6 lg:px-8">
+  <div class="mx-auto max-w-4xl"><.flash_group flash={@flash} /> {@inner_content}</div>
+</main>
