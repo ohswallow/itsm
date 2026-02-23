@@ -210,3 +210,9 @@ msgstr "완료"
 
 msgid "Waiting"
 msgstr "대기중"
+
+msgid "Console"
+msgstr "콘솔"
+
+msgid "Common codes"
+msgstr "공통 코드"

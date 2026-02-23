@@ -5,9 +5,9 @@ defmodule Itsm.CommonFixtures do
   """
 
   @doc """
-  Generate a common codes.
+  Generate a common code.
   """
-  def common_codes_fixture(attrs \\ %{}) do
+  def common_code_fixture(attrs \\ %{}) do
     {:ok, codes} =
       attrs
       |> Enum.into(%{
@@ -18,7 +18,7 @@ defmodule Itsm.CommonFixtures do
         label: "some label",
         sort_order: 42
       })
-      |> Itsm.Admin.CommonCodes.create_common_codes()
+      |> Itsm.Admin.CommonCodes.create_common_code()
 
     codes
   end
