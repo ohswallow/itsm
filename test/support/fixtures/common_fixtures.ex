@@ -4,22 +4,19 @@ defmodule Itsm.CommonFixtures do
   entities via the `Itsm.Common` context.
   """
 
-  @doc """
-  Generate a common codes.
-  """
-  def common_codes_fixture(attrs \\ %{}) do
-    {:ok, codes} =
-      attrs
-      |> Enum.into(%{
-        code: "some code",
-        description: "some description",
-        group_code: "some group_code",
-        is_active: true,
-        label: "some label",
-        sort_order: 42
-      })
-      |> Itsm.Admin.CommonCodes.create_common_codes()
+  # def common_codes_fixture(attrs \\ %{}) do
+  #   {:ok, codes} =
+  #     attrs
+  #     |> Enum.into(%{
+  #       code: "some code",
+  #       description: "some description",
+  #       group_code: "some group_code",
+  #       is_active: true,
+  #       label: "some label",
+  #       sort_order: 42
+  #     })
+  #     |> Itsm.Admin.CommonCodes.create_common_codes()
 
-    codes
-  end
+  #   codes
+  # end
 end

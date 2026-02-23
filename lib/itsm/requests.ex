@@ -30,7 +30,7 @@ defmodule Itsm.Requests do
       :attachments,
       assignee_crew: [members: :user],
       requestor_crew: [members: :user],
-      references: :crew
+      references: [crew: [members: :user]]
     ])
   end
 

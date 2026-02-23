@@ -31,7 +31,7 @@ defmodule Itsm.CommonCodes do
 
   defp with_type(query, group_code), do: where(query, [c], c.group_code == ^group_code)
 
-  defp is_active(query, is_active) when is_active in [nil], do: query
+  # defp is_active(query, is_active) when is_active in [nil], do: query
 
   defp is_active(query, is_active), do: where(query, [c], c.is_active == ^is_active)
 end
