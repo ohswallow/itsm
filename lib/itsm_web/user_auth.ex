@@ -164,6 +164,24 @@ defmodule ItsmWeb.UserAuth do
     end
   end
 
+  def on_mount(:ensure_is_admin_authenticated, _params, session, socket) do
+    socket = mount_current_user(socket, session)
+
+    if socket.assigns.current_user && socket.assigns.current_user.role == :admin do
+      {:cont, socket}
+    else
+      socket =
+        socket
+        |> Phoenix.LiveView.put_flash(
+          :error,
+          "You must log in and be an admin to access this page."
+        )
+        |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")
+
+      {:halt, socket}
+    end
+  end
+
   # on_mount 콜백 추가
   def on_mount(:set_locale, params, session, socket) do
     locale = params["locale"] || session["locale"] || "ko"
