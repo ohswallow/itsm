@@ -152,7 +152,7 @@ defmodule ItsmWeb.Router do
 
     live_session :require_admin_user,
       on_mount: [
-        {ItsmWeb.UserAuth, :ensure_authenticated},
+        {ItsmWeb.UserAuth, :ensure_is_admin_authenticated},
         {ItsmWeb.UserAuth, :set_locale}
       ],
       layout: {ItsmWeb.Layouts, :admin} do
