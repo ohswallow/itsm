@@ -20,6 +20,6 @@ defmodule Itsm.CommonFixtures do
       })
       |> Itsm.Admin.CommonCodes.create_common_code()
 
-  #   codes
-  # end
+    codes
+  end
 end
