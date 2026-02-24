@@ -15,6 +15,7 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
 
   alias Itsm.Workflow
   alias Itsm.Approvals
+  import ItsmWeb.CustomComponents
 
   attr :workflow_type, :atom, required: true
   attr :resource, :map, required: true
@@ -37,6 +38,7 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
         <div class="text-center mb-5 pb-4 border-b border-gray-100">
           <.label>WorkFlow</.label>
         </div>
+        
         <div class="space-y-3">
           <.workflow_step
             :for={step <- @step_data}
@@ -72,10 +74,10 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
               {@step.index + 1}
           <% end %>
         </div>
-
+        
         <div><span class={step_label_class(@step.status)}>{@step.label}</span></div>
       </div>
-
+      
       <div class="text-right">
         <.step_info step={@step} resource={@resource} workflow_type={@workflow_type} />
       </div>
@@ -160,25 +162,26 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
     """
   end
 
-  attr :crew, :map, required: true
+  # attr :crew, :map, required: true
 
-  defp crew_tooltip(assigns) do
-    ~H"""
-    <div class="relative group cursor-pointer">
-      <span class="text-xs font-semibold text-blue-600">{@crew.name}</span>
-      <div class="hidden group-hover:block absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-20 min-w-[140px]">
-        <div class="text-xs text-left text-gray-400 mb-2 font-medium border-b pb-1">
-          {@crew.description}
-        </div>
-        <div class="space-y-1">
-          <div :for={member <- @crew.members} class="text-xs text-gray-700">
-            {member.user.display_name}
-          </div>
-        </div>
-      </div>
-    </div>
-    """
-  end
+  # defp crew_tooltip(assigns) do
+  #   ~H"""
+  #   <div class="relative group cursor-pointer">
+  #     <span class="text-xs font-semibold text-blue-600">{@crew.name}</span>
+  #     <div class="hidden group-hover:block absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-20 min-w-[140px]">
+  #       <div class="text-xs text-left text-gray-400 mb-2 font-medium border-b pb-1">
+  #         {@crew.description}
+  #       </div>
+
+  #       <div class="space-y-1">
+  #         <div :for={member <- @crew.members} class="text-xs text-gray-700">
+  #           {member.user.display_name}
+  #         </div>
+  #       </div>
+  #     </div>
+  #   </div>
+  #   """
+  # end
 
   defp load_approvals_by_status(request_id) do
     request_id
