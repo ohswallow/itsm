@@ -5,10 +5,9 @@ defmodule Itsm.Repo.Migrations.CreateApprovals do
     create table(:approvals, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :status, :string
-      add :approver_id, references(:users, on_delete: :nothing, type: :binary_id)
-      add :approver_name, :string
-      add :comment, :text
       add :action, :string
+      add :approver_name, :string
+      add :approver_id, references(:users, on_delete: :nothing, type: :binary_id)
       add :request_id, references(:requests, on_delete: :nothing, type: :binary_id)
 
       timestamps(type: :utc_datetime)
