@@ -19,51 +19,51 @@ defmodule ItsmWeb.AssetLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={@form[:name]} type="text" label="Name" />
-        <.input field={@form[:description]} type="text" label="Description" />
+        <.input field={@form[:name]} type="text" label={gettext("Name")} />
+        <.input field={@form[:description]} type="text" label={gettext("Description")} />
         <.input
           field={@form[:affiliate]}
           type="select"
-          label="Affiliate"
+          label={gettext("Affiliate")}
           prompt="Choose a value"
-          options={Ecto.Enum.values(Itsm.Assets.Asset, :affiliate)}
+          options={@affiliate_options}
         />
         <.input
           field={@form[:category]}
           type="select"
-          label="Category"
+          label={gettext("Category")}
           prompt="Choose a value"
-          options={Ecto.Enum.values(Itsm.Assets.Asset, :category)}
+          options={@category_options}
         />
         <.input
           field={@form[:region_type]}
           type="select"
-          label="Region type"
+          label={gettext("Region type")}
           prompt="Choose a value"
-          options={Ecto.Enum.values(Itsm.Assets.Asset, :region_type)}
+          options={@region_type_options}
         />
         <.input
           field={@form[:infra_type]}
           type="select"
-          label="Infra type"
+          label={gettext("Infra type")}
           prompt="Choose a value"
-          options={Ecto.Enum.values(Itsm.Assets.Asset, :infra_type)}
+          options={@infra_type_options}
         />
         <.input
           field={@form[:env]}
           type="select"
-          label="Env"
+          label={gettext("Environment")}
           prompt="Choose a value"
-          options={Ecto.Enum.values(Itsm.Assets.Asset, :env)}
+          options={@env_options}
         />
         <.input
           field={@form[:location]}
           type="select"
-          label="Location"
+          label={gettext("Location")}
           prompt="Choose a value"
-          options={Ecto.Enum.values(Itsm.Assets.Asset, :location)}
+          options={@location_options}
         />
-        <.input field={@form[:is_dmz_zone]} type="checkbox" label="Is dmz zone" />
+        <.input field={@form[:is_dmz_zone]} type="checkbox" label={gettext("Is dmz zone")} />
         <:actions>
           <.button phx-disable-with="Saving...">Save Asset</.button>
         </:actions>
@@ -76,6 +76,7 @@ defmodule ItsmWeb.AssetLive.FormComponent do
   def update(%{asset: asset} = assigns, socket) do
     {:ok,
      socket
+     |> initialize_options()
      |> assign(assigns)
      |> assign_new(:form, fn ->
        to_form(Assets.change_asset(asset))
@@ -90,6 +91,17 @@ defmodule ItsmWeb.AssetLive.FormComponent do
 
   def handle_event("save", %{"asset" => asset_params}, socket) do
     save_asset(socket, socket.assigns.action, asset_params)
+  end
+
+  defp initialize_options(socket) do
+    assign(socket,
+      affiliate_options: Itsm.CommonCodes.get_select_options("계열사"),
+      category_options: Itsm.CommonCodes.get_select_options("카테고리"),
+      region_type_options: Itsm.CommonCodes.get_select_options("지역_유형"),
+      infra_type_options: Itsm.CommonCodes.get_select_options("인프라_유형"),
+      env_options: Itsm.CommonCodes.get_select_options("운영_구분"),
+      location_options: Itsm.CommonCodes.get_select_options("장소")
+    )
   end
 
   defp save_asset(socket, :edit, asset_params) do

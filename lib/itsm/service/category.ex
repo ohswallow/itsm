@@ -9,10 +9,8 @@ defmodule Itsm.Service.Category do
     field :name, :string
     field :description, :string
     field :group, :string
-
-    field :affiliate, Ecto.Enum,
-      values: [:A0, :B0, :C0, :D0, :FG, :I0, :L0, :M0, :N4, :N1, :S2, :T0, :V0]
-
+    # group_code: "계열사"
+    field :affiliate, :string
     field :request_name, :string
     field :duration, :integer, default: 60
     # field :assignee_crew, :string

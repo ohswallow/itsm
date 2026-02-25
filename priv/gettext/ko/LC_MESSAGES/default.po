@@ -164,6 +164,9 @@ msgstr "리더만 이 crew를 변경할 수 있습니다."
 msgid "Organization"
 msgstr "계열사"
 
+msgid "Affiliate"
+msgstr "계열사"
+
 msgid "Department"
 msgstr "부서"
 
@@ -216,3 +219,27 @@ msgstr "콘솔"
 
 msgid "Common codes"
 msgstr "공통 코드"
+
+msgid "Category"
+msgstr "카테고리"
+
+msgid "Region type"
+msgstr "지역 유형"
+
+msgid "Infra type"
+msgstr "인프라 유형"
+
+msgid "Location"
+msgstr "장소"
+
+msgid "Is dmz zone"
+msgstr "DMZ 구간"
+
+msgid "Categories"
+msgstr "카테고리목록"
+
+msgid "Approvals"
+msgstr "결제목록"
+
+msgid "Comments"
+msgstr "댓글목록"

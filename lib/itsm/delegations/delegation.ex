@@ -5,7 +5,8 @@ defmodule Itsm.Delegations.Delegation do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "delegations" do
-    field :reason, Ecto.Enum, values: [:vacation, :business_trip, :dispatch, :training, :others]
+    # group_code: "사유"
+    field :reason, :string
     field :delegator_name, :string
     field :delegatee_name, :string
     field :created_by_name, :string

@@ -27,7 +27,7 @@ defmodule ItsmWeb.CategoryLive.List do
         <div class="relative py-4 border-b border-zinc-100 mb-4">
           <span class="bg-white pr-3 text-sm font-bold text-zinc-800">{group}</span>
         </div>
-        
+
         <div
           id={"category_card-container_#{group}"}
           phx-update="stream"
@@ -64,13 +64,13 @@ defmodule ItsmWeb.CategoryLive.List do
             class="form-input"
           />
         </div>
-        
+
         <div class="md:col-span-3">
           <label class="form-label">카테고리 그룹</label>
           <.input
             type="select"
             field={@form[:group]}
-            options={Categories.group_options()}
+            options={[{"그룹", ""}] ++ Itsm.CommonCodes.get_select_options("지역_유형")}
             multiple
             size="1"
             phx-hook="InputSelect.selectAll"
@@ -78,7 +78,7 @@ defmodule ItsmWeb.CategoryLive.List do
             class="form-select"
           />
         </div>
-        
+
         <div class="md:col-span-2">
           <label class="form-label">정렬</label>
           <.input
@@ -88,7 +88,7 @@ defmodule ItsmWeb.CategoryLive.List do
             options={Categories.sort_options()}
           />
         </div>
-        
+
         <div class="md:col-span-2 flex justify-end pb-1">
           <.link
             patch={~p"/categories"}
@@ -97,7 +97,7 @@ defmodule ItsmWeb.CategoryLive.List do
             <.icon
               name="hero-arrow-path"
               class="mr-2 h-4 w-4 group-hover:rotate-180 transition-transform duration-500"
-            /> <span>검색 초기화</span>
+            /> <span>초기화</span>
           </.link>
         </div>
       </.form>
@@ -115,9 +115,9 @@ defmodule ItsmWeb.CategoryLive.List do
       <div class="card-interactive shrink-0 lg:w-72">
         <span class="badge badge-deposit">가상</span>
         <h3 class="text-title-h3 mt-3">{@category.name}</h3>
-        
+
         <p class="text-caption mt-1 h-10">{@category.description}</p>
-        
+
         <div class="text-right mt-4">
           <span class="btn-text inline-flex items-center group-hover:text-kb-yellow transition-colors">
             신청하기 &gt;

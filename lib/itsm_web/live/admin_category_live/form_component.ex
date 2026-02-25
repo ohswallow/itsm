@@ -11,7 +11,7 @@ defmodule ItsmWeb.AdminCategoryLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage category records in your database.</:subtitle>
       </.header>
-      
+
       <.simple_form
         for={@form}
         id="category-form"
@@ -26,10 +26,23 @@ defmodule ItsmWeb.AdminCategoryLive.FormComponent do
           type="select"
           label="Affiliate"
           prompt="Choose a value"
-          options={Ecto.Enum.values(Itsm.Service.Category, :affiliate)}
+          options={Itsm.CommonCodes.get_select_options("계열사")}
         /> <.input field={@form[:request_name]} type="text" label="Request name" />
-        <.input field={@form[:group]} type="text" label="Group" />
+        <.input
+          field={@form[:group]}
+          type="select"
+          label="Group"
+          prompt="Choose a value"
+          options={Itsm.CommonCodes.get_select_options("지역_유형")}
+        />
         <.input field={@form[:active]} type="checkbox" label="Active" />
+        <.input
+          field={@form[:assignee_crew_id]}
+          type="select"
+          label="Assignee Crew"
+          prompt="Choose a value"
+          options={@assignee_crews_options}
+        />
         <:actions><.button phx-disable-with="Saving...">Save Category</.button></:actions>
       </.simple_form>
     </div>
@@ -38,12 +51,16 @@ defmodule ItsmWeb.AdminCategoryLive.FormComponent do
 
   @impl true
   def update(%{category: category} = assigns, socket) do
+    assignee_crews_options =
+      Itsm.Crews.list_crews() |> Enum.map(fn crew -> {crew.name, crew.id} end)
+
     {:ok,
      socket
      |> assign(assigns)
      |> assign_new(:form, fn ->
        to_form(Categories.change_category(category))
-     end)}
+     end)
+     |> assign_new(:assignee_crews_options, fn -> assignee_crews_options end)}
   end
 
   @impl true

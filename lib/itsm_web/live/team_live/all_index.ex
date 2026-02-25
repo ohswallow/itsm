@@ -2,7 +2,6 @@ defmodule ItsmWeb.TeamLive.AllIndex do
   use ItsmWeb, :live_view
 
   alias Itsm.Crews
-  alias Itsm.Accounts
 
   # 공통 컴포넌트 임포트
   import ItsmWeb.TeamLive.TableComponents
@@ -10,8 +9,7 @@ defmodule ItsmWeb.TeamLive.AllIndex do
   def mount(_params, _session, socket) do
     # socket = assign(socket, :categories, Service.list_categories())
     # IO.inspect(self(), label: "MOUNT")
-    org_options = Accounts.list_organization_options()
-    {:ok, socket |> assign(:org_options, org_options)}
+    {:ok, socket |> assign(:org_options, Itsm.CommonCodes.get_select_options("계열사"))}
   end
 
   def handle_params(params, _uri, socket) do
@@ -34,7 +32,7 @@ defmodule ItsmWeb.TeamLive.AllIndex do
   def render(assigns) do
     ~H"""
     <.header>{@page_title}</.header>
-     <.filter_form form={@form} org_options={@org_options} />
+    <.filter_form form={@form} org_options={@org_options} />
     <.crew_table
       crews={@streams.crews}
       row_click={
@@ -69,16 +67,16 @@ defmodule ItsmWeb.TeamLive.AllIndex do
             phx-debounce="300"
           />
         </div>
-        
+
         <div class="md:col-span-3">
           <.input
             type="select"
             field={@form[:organization_code]}
-            prompt="Organization"
+            prompt="계열사"
             options={@org_options}
           />
         </div>
-        
+
         <div class="md:col-span-2 flex justify-end pb-1">
           <.link
             patch={~p"/crews/all"}
@@ -87,7 +85,7 @@ defmodule ItsmWeb.TeamLive.AllIndex do
             <.icon
               name="hero-arrow-path"
               class="mr-2 h-4 w-4 group-hover:rotate-180 transition-transform duration-500"
-            /> <span>검색 초기화</span>
+            /> <span>초기화</span>
           </.link>
         </div>
       </.form>

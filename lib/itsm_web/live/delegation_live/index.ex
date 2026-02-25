@@ -84,7 +84,7 @@ defmodule ItsmWeb.DelegationLive.Index do
 
   # 삭제 권한이 있는지 확인하는 헬퍼 함수
   # 1. 관리자(admin)라면 무조건 true
-  defp can_delete?(%User{role: :admin}, _delegation), do: true
+  defp can_delete?(%User{role: "admin"}, _delegation), do: true
 
   # 2. 일반 유저라도 본인이 만든(created_by_id 일치) 위임이라면 true
   defp can_delete?(%User{id: user_id}, %Delegation{created_by_id: created_by_id})

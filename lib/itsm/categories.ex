@@ -3,13 +3,6 @@ defmodule Itsm.Categories do
   alias Itsm.Repo
   alias Itsm.Service.Category
 
-  @group_options_list [
-    %{label: "K_리전_공동존", value: "K_리전_공동존"},
-    %{label: "K_리전_은행존", value: "K_리전_은행존"},
-    %{label: "배치자동화", value: "배치자동화"},
-    %{label: "P_리전", value: "P_리전"}
-  ]
-
   @sort_options_list [
     %{label: "이름 오름차순", value: "name_asc", order: [asc: :name]},
     %{label: "이름 내림차순", value: "name_desc", order: [desc: :name]}
@@ -17,14 +10,13 @@ defmodule Itsm.Categories do
 
   @sort_options_map_for_query Map.new(@sort_options_list, fn opt -> {opt.value, opt.order} end)
 
-  def group_options, do: [{"그룹", ""}] ++ Enum.map(@group_options_list, &{&1.label, &1.value})
-
   def sort_options, do: Enum.map(@sort_options_list, &{&1.label, &1.value})
 
   def filter_categories(filter) do
     Category
     |> with_type(filter["group"])
     |> search_by(filter["keyword"])
+    |> where([c], c.active == true)
     |> sort(filter["sort_by"])
     |> Repo.all()
   end
@@ -39,6 +31,7 @@ defmodule Itsm.Categories do
     |> select([c], c.group)
     |> with_type(filter["group"])
     |> search_by(filter["keyword"])
+    |> where([c], c.active == true)
     |> Repo.all()
   end
 

@@ -90,7 +90,7 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
           type="select"
           label={gettext("Reason")}
           prompt="Choose a value"
-          options={Ecto.Enum.values(Itsm.Delegations.Delegation, :reason)}
+          options={Itsm.CommonCodes.get_select_options("사유")}
         />
         <:actions><.button phx-disable-with="Saving...">Save Delegation</.button></:actions>
       </.simple_form>

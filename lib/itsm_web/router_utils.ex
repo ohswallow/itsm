@@ -1,6 +1,4 @@
 defmodule ItsmWeb.RouterUtil do
-  use ItsmWeb, :router
-
   def admin_menu_items do
     ItsmWeb.Router.__routes__()
     |> Enum.filter(fn route ->

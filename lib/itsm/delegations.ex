@@ -34,7 +34,7 @@ defmodule Itsm.Delegations do
   # --------------------------------------------------------
   # 1. Admin일 경우: 모든 부서의 데이터를 다 보여줌 (Join 불필요)
   # --------------------------------------------------------
-  def list_delegations(%User{role: :admin}, date) do
+  def list_delegations(%User{role: "admin"}, date) do
     Delegation
     |> where([d], d.end_date >= ^date)
     |> order_by([d], asc: d.start_date)
@@ -203,7 +203,7 @@ defmodule Itsm.Delegations do
 
   def delete_delegation(%Delegation{} = delegation, %User{} = current_user) do
     # 등록자 본인이거나, 관리자(admin)라면 삭제 허용
-    if delegation.created_by_id == current_user.id or current_user.role == :admin do
+    if delegation.created_by_id == current_user.id or current_user.role == "admin" do
       # Repo.delete(delegation)
       delegation
       |> Repo.delete()

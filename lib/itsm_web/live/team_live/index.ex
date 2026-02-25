@@ -52,7 +52,7 @@ defmodule ItsmWeb.TeamLive.Index do
         </.button>
       </:actions>
     </.header>
-     <.filter_form :if={@current_tab == :all} form={@form} />
+    <.filter_form :if={@current_tab == :all} form={@form} />
     <.table
       id="crews"
       rows={@streams.crews}
@@ -62,23 +62,23 @@ defmodule ItsmWeb.TeamLive.Index do
         end
       }
     >
-      <:col :let={{_id, crew}} label="Name">{crew.name}</:col>
-      
-      <:col :let={{_id, crew}} label="Description">{crew.description}</:col>
-      
-      <:col :let={{_id, crew}} :if={@current_tab == :all} label="Organization">
-        {crew.leader.organization}
+      <:col :let={{_id, crew}} label={gettext("Name")}>{crew.name}</:col>
+
+      <:col :let={{_id, crew}} label={gettext("Description")}>{crew.description}</:col>
+
+      <:col :let={{_id, crew}} :if={@current_tab == :all} label={gettext("Organization")}>
+        {Itsm.CommonCodes.get_label("계열사", crew.leader.organization_code)}
       </:col>
-      
-      <:col :let={{_id, crew}} :if={@current_tab == :all} label="Department">
+
+      <:col :let={{_id, crew}} :if={@current_tab == :all} label={gettext("Department")}>
         {crew.leader.department}
       </:col>
-      
-      <:col :let={{_id, crew}} label="Leader">
+
+      <:col :let={{_id, crew}} label={gettext("Leader")}>
         {crew.leader.display_name} <span class="text-xs text-gray-400">({crew.leader_id})</span>
       </:col>
-       <%!-- :my 일때만 보이게, :all 일때는 안보임 --%>
-      <:col :let={{_id, crew}} :if={@current_tab == :my} label="Actions">
+      <%!-- :my 일때만 보이게, :all 일때는 안보임 --%>
+      <:col :let={{_id, crew}} :if={@current_tab == :my} label={gettext("Actions")}>
         <.dropdown_menu id={"#{crew.id}-menu"}>
           <.link
             patch={~p"/crews/#{crew}/edit"}

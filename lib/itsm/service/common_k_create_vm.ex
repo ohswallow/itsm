@@ -6,7 +6,8 @@ defmodule Itsm.Service.CommonKCreateVm do
     field :ip, :string
     field :description, :string
     field :hostname, :string
-    field :os_image, Ecto.Enum, values: [:Linux, :Windows]
+    # group_code: "운영체제"
+    field :os_image, :string
     field :os_version, :string
     field :cpu_memory, :string
   end

@@ -25,7 +25,8 @@ defmodule Itsm.Service.Request do
   schema "requests" do
     field :title, :string
     field :description, :string
-    field :env, Ecto.Enum, values: [:prod, :stg, :dev, :dr]
+    # group_code: "운영_구분"
+    field :env, :string
     field :due_date, :utc_datetime
     field :requestor_name, :string
     field :status, Ecto.Enum, values: @status_values
