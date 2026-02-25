@@ -30,24 +30,26 @@ defmodule ItsmWeb.RequestLive.Index do
         fn {_id, request} -> JS.navigate("/#{request.category.request_name}/#{request.id}") end
       }
     >
-      <:col :let={{_id, request}} label="Title">{request.title}</:col>
+      <:col :let={{_id, request}} label={gettext("Title")}>{request.title}</:col>
 
       <:col
         :let={{_id, request}}
-        label="Description"
+        label={gettext("Description")}
       >
         <div class="w-[90px] truncate">{request.description}</div>
       </:col>
 
-      <:col :let={{_id, request}} label="Env">{request.env}</:col>
+      <:col :let={{_id, request}} label={gettext("Environment")}>{request.env}</:col>
 
-      <:col :let={{id, request}} label="Due date">
-        <div id={id} phx-hook="LocalTime.ToLocale" format="date" utc-value={request.due_date} />
+      <:col :let={{id, request}} label={gettext("Due Date")}>
+        <div id={id} phx-hook="LocalTime.ToLocale" utc-value={request.due_date} />
       </:col>
 
-      <:col :let={{_id, request}} label="Request Type">{request.category.request_name}</:col>
+      <:col :let={{_id, request}} label={gettext("Request Type")}>
+        {request.category.request_name}
+      </:col>
 
-      <:col :let={{_id, request}} label="Request Name">{request.category.name}</:col>
+      <:col :let={{_id, request}} label={gettext("Request Name")}>{request.category.name}</:col>
 
       <%!-- <:col :let={{_id, request}} label="Create vm common k">{request.common_k_create_vms}</:col> --%>
       <:action :let={{_id, request}}>

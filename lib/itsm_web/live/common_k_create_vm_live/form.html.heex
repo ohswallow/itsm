@@ -34,7 +34,7 @@
     type="select"
     label={gettext("Environment")}
     prompt="Choose an environment"
-    options={[운영: :prod, 스테이징: :stg, 개발: :dev, DR: :dr]}
+    options={Itsm.CommonCodes.get_select_options("운영_구분")}
     phx-debounce="blur"
     class="form-select"
   />
@@ -76,7 +76,7 @@
             label="OS 종류"
             type="select"
             prompt="Choose a value"
-            options={Ecto.Enum.values(Itsm.Service.CommonKCreateVm, :os_image)}
+            options={Itsm.CommonCodes.get_select_options("운영체제")}
             phx-debounce="blur"
           />
           <.input
@@ -84,7 +84,7 @@
             type="select"
             label="OS 버전"
             prompt="Choose a value"
-            options={os_version_options_for(common_k_create_vm_f)}
+            options={Itsm.CommonCodes.get_select_options(common_k_create_vm_f[:os_image].value)}
             phx-debounce="blur"
           />
           <.input

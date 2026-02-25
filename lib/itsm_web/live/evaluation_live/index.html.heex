@@ -12,8 +12,8 @@
   rows={@streams.evaluations}
   row_click={fn {_id, evaluation} -> JS.navigate(~p"/evaluations/#{evaluation}") end}
 >
-  <:col :let={{_id, evaluation}} label="Comment">{evaluation.comment}</:col>
-  <:col :let={{_id, evaluation}} label="Rating">{evaluation.rating}</:col>
+  <:col :let={{_id, evaluation}} label={gettext("Comment")}>{evaluation.comment}</:col>
+  <:col :let={{_id, evaluation}} label={gettext("Rating")}>{evaluation.rating}</:col>
   <%!-- <:col :let={{_id, evaluation}} label="Rating">
     <div>
       <div

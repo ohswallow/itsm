@@ -22,7 +22,7 @@ defmodule ItsmWeb.AdminCrewLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage crew records in your database.</:subtitle>
       </.header>
-      
+
       <.simple_form
         for={@form}
         id="crew-form"

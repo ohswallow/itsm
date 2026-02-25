@@ -7,15 +7,17 @@ defmodule ItsmWeb.TeamLive.TableComponents do
     ~H"""
     <.table id="crews" rows={@crews} row_click={@row_click}>
       <:col :let={{_id, crew}} label={gettext("Name")}>{crew.name}</:col>
-      
+
       <:col :let={{_id, crew}} label={gettext("Description")}>{crew.description}</:col>
-      
-      <:col :let={{_id, crew}} label={gettext("Organization")}>{crew.leader.organization}</:col>
-      
+
+      <:col :let={{_id, crew}} label={gettext("Organization")}>
+        {Itsm.CommonCodes.get_label("계열사", crew.leader.organization_code)}
+      </:col>
+
       <:col :let={{_id, crew}} label={gettext("Department")}>{crew.leader.department}</:col>
-      
+
       <:col :let={{_id, crew}} label={gettext("Leader")}>{crew.leader.display_name}</:col>
-      
+
       <%!--
          [수정된 부분]
          render_slot(@action, crew) -> render_slot(@action, {_id, crew})

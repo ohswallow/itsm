@@ -33,7 +33,7 @@ defmodule ItsmWeb.EvaluationLive.FormComponent do
           >
           </div>
         </fieldset>
-        <.input field={@form[:comment]} type="text" label="Comment" />
+        <.input field={@form[:comment]} type="text" label={gettext("Comment")} />
         <:actions>
           <.button phx-disable-with="Saving...">Save Evaluation</.button>
         </:actions>

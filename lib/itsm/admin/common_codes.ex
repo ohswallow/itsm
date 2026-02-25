@@ -38,5 +38,5 @@ defmodule Itsm.Admin.CommonCodes do
 
   defdelegate list_common_codes_by_group(group_code), to: Itsm.CommonCodes
   defdelegate get_select_options(group_code), to: Itsm.CommonCodes
-  defdelegate get_label(code), to: Itsm.CommonCodes
+  defdelegate get_label(group_code, code), to: Itsm.CommonCodes
 end

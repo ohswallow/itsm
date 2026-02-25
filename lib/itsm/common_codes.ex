@@ -11,6 +11,8 @@ defmodule Itsm.CommonCodes do
     |> Repo.all()
   end
 
+  def get_select_options(group_code) when is_nil(group_code) or group_code == "", do: []
+
   def get_select_options(group_code) do
     CommonCode
     |> with_type(group_code)
@@ -20,9 +22,10 @@ defmodule Itsm.CommonCodes do
     |> Repo.all()
   end
 
-  def get_label(code) do
+  def get_label(group_code, code) do
     CommonCode
     |> where([c], c.code == ^code)
+    |> with_type(group_code)
     |> select([c], c.label)
     |> Repo.one()
   end

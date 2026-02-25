@@ -42,7 +42,7 @@ defmodule ItsmWeb.TeamLive.Show do
       {@crew.name}
       <:subtitle>{@crew.description}</:subtitle>
       <%!-- 리더만 멤버추가 가능 --%>
-      <:actions :if={@current_user.id == @crew.leader_id or @current_user.role == :admin}>
+      <:actions :if={@current_user.id == @crew.leader_id}>
         <.link patch={~p"/crews/#{@crew}/member"} phx-click={JS.push_focus()}>
           <.button>Add Member</.button>
         </.link>
@@ -63,7 +63,13 @@ defmodule ItsmWeb.TeamLive.Show do
               </p>
               <%!-- <p class="text-xs text-gray-500">Updated {@crew.leader.updated_at}</p> --%>
               <p class="text-xs text-gray-500">
-                {if @crew.leader, do: "Updated #{@crew.leader.updated_at}", else: ""}
+                Updated
+                <span
+                  id="leader-updated-at"
+                  phx-hook="LocalTime.ToLocale"
+                  utc-value={if @crew.leader, do: @crew.leader.updated_at, else: ""}
+                >
+                </span>
               </p>
             </div>
           </div>
@@ -91,7 +97,15 @@ defmodule ItsmWeb.TeamLive.Show do
                   {member.user.display_name} ({member.user.email})
                 </p>
 
-                <p class="text-xs text-gray-500">Added {member.user.inserted_at}</p>
+                <p class="text-xs text-gray-500">
+                  Added
+                  <span
+                    id={"member-inserted-at-#{member.user_id}"}
+                    phx-hook="LocalTime.ToLocale"
+                    utc-value={member.user.inserted_at}
+                  >
+                  </span>
+                </p>
               </div>
               <%!-- 접속한 본인 you 표시 --%>
               <span

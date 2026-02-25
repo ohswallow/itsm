@@ -5,9 +5,12 @@ defmodule ItsmWeb.AdminApprovalLive.FormComponent do
 
   @impl true
   def update(%{approval: approval} = assigns, socket) do
+    crew_options = Itsm.Accounts.crew_ids_names(socket.assigns.current_user)
+
     {:ok,
      socket
      |> assign(assigns)
+     |> assign(:crew_options, crew_options)
      |> assign_new(:form, fn ->
        to_form(Approvals.change_approval(approval))
      end)}
@@ -21,7 +24,7 @@ defmodule ItsmWeb.AdminApprovalLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage approval records in your database.</:subtitle>
       </.header>
-      
+
       <.simple_form
         for={@form}
         id="approval-form"

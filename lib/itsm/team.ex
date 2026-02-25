@@ -199,7 +199,7 @@ defmodule Itsm.Team do
   defp authorize_leader_change(crew, actor) do
     cond do
       # 관리자 또는 리더 본인일때 허용
-      actor.role == :admin -> :ok
+      actor.role == "admin" -> :ok
       crew.leader_id == actor.id -> :ok
       true -> {:error, "You don't have permission to change the leader."}
     end
@@ -209,7 +209,7 @@ defmodule Itsm.Team do
   defp authorize_member_removal(crew, target_user_id, actor) do
     cond do
       # 관리자
-      actor.role == :admin -> :ok
+      actor.role == "admin" -> :ok
       # 리더가 멤버 강퇴
       crew.leader_id == actor.id -> :ok
       # 본인이 탈퇴

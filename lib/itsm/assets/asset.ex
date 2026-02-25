@@ -5,17 +5,20 @@ defmodule Itsm.Assets.Asset do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "assets" do
-    field :env, Ecto.Enum, values: [:prod, :stg, :dev, :dr]
+    # group_code: "운영_구분"
+    field :env, :string
     field :name, :string
     field :description, :string
-    field :location, Ecto.Enum, values: [:yeouido_it, :gimpo_it, :branch, :head_office]
-    field :category, Ecto.Enum, values: [:server, :network, :storage, :hypervisor, :appliance]
-
-    field :affiliate, Ecto.Enum,
-      values: [:A0, :B0, :C0, :D0, :FG, :I0, :L0, :M0, :N4, :N1, :S2, :T0, :V0]
-
-    field :region_type, Ecto.Enum, values: [:P_region, :K_region_common, :K_region_bank, :legacy]
-    field :infra_type, Ecto.Enum, values: [:on_premise, :aws, :azure, :appliance]
+    # group_code: "장소"
+    field :location, :string
+    # group_code: "카테고리"
+    field :category, :string
+    # group_code: "계열사"
+    field :affiliate, :string
+    # group_code: "지역_유형"
+    field :region_type, :string
+    # group_code: "인프라_유형"
+    field :infra_type, :string
     field :is_dmz_zone, :boolean, default: false
     # field :service_crew_id, :binary_id
     # field :system_crew_id, :binary_id

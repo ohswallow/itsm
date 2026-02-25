@@ -83,15 +83,15 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   defp request_info(assigns) do
     ~H"""
     <.list>
-      <:item title="Title">{@request.title}</:item>
+      <:item title={gettext("Title")}>{@request.title}</:item>
 
-      <:item title="Description">{@request.description}</:item>
+      <:item title={gettext("Description")}>{@request.description}</:item>
 
-      <:item title="Environment">{@request.env}</:item>
+      <:item title={gettext("Environment")}>{@request.env}</:item>
 
-      <:item title="Status">{Workflow.status_label(:service_request, @request)}</:item>
+      <:item title={gettext("Status")}>{Workflow.status_label(:service_request, @request)}</:item>
 
-      <:item title="Due date">
+      <:item title={gettext("Due Date")}>
         <div id="due_date" phx-hook="LocalTime.ToLocale" format="date" utc-value={@request.due_date} />
       </:item>
 
@@ -207,7 +207,13 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
       <div class="flex-1">
         <div class="flex items-center gap-2 mb-1">
           <span class="font-semibold text-slate-900">{@comment.user.display_name}</span>
-          <span class="text-xs text-slate-500">{@comment.inserted_at}</span>
+          <span
+            id={"comment-#{@id}-timestamp"}
+            class="text-xs text-slate-500"
+            phx-hook="LocalTime.ToLocale"
+            utc-value={@comment.inserted_at}
+          >
+          </span>
         </div>
 
         <div class="bg-slate-50 rounded-lg p-3">

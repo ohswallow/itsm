@@ -167,7 +167,7 @@ defmodule ItsmWeb.UserAuth do
   def on_mount(:ensure_is_admin_authenticated, _params, session, socket) do
     socket = mount_current_user(socket, session)
 
-    if socket.assigns.current_user && socket.assigns.current_user.role == :admin do
+    if socket.assigns.current_user && socket.assigns.current_user.role == "admin" do
       {:cont, socket}
     else
       socket =

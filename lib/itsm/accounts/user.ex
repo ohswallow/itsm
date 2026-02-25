@@ -15,7 +15,8 @@ defmodule Itsm.Accounts.User do
     field :organization_code, :string
     field :department, :string
     field :department_code, :string
-    field :role, Ecto.Enum, values: [:admin, :general, :auditor], default: :general
+    # group_code: "역할"
+    field :role, :string, default: "general"
 
     has_many :members, Itsm.Team.Member
     has_many :crews, through: [:members, :crew]

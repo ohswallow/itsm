@@ -10,17 +10,17 @@
   rows={@streams.approvals}
   row_click={fn {_id, approval} -> JS.navigate(~p"/admin/approvals/#{approval}") end}
 >
-  <:col :let={{_id, approval}} label="Status">{approval.status}</:col>
-  
-  <:col :let={{_id, approval}} label="Approver">{approval.approver_id}</:col>
-  
-  <:col :let={{_id, approval}} label="Approver name">{approval.approver_name}</:col>
-  
+  <:col :let={{_id, approval}} label={gettext("Status")}>{approval.status}</:col>
+
+  <:col :let={{_id, approval}} label={gettext("Approver")}>{approval.approver_id}</:col>
+
+  <:col :let={{_id, approval}} label={gettext("Approver name")}>{approval.approver_name}</:col>
+
   <:action :let={{_id, approval}}>
     <div class="sr-only"><.link navigate={~p"/admin/approvals/#{approval}"}>Show</.link></div>
-     <.link patch={~p"/admin/approvals/#{approval}/edit"}>Edit</.link>
+    <.link patch={~p"/admin/approvals/#{approval}/edit"}>Edit</.link>
   </:action>
-  
+
   <:action :let={{id, approval}}>
     <.link
       phx-click={JS.push("delete", value: %{id: approval.id}) |> hide("##{id}")}

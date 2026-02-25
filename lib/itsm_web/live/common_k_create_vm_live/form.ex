@@ -176,21 +176,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     end
   end
 
-  # os_image에 따라 os_version 옵션 동적 변경
-  defp os_version_options_for(common_k_create_vm_f) do
-    common_k_create_vm_f.source
-    |> Ecto.Changeset.get_field(:os_image)
-    |> get_os_version_options()
-  end
-
-  defp get_os_version_options(:Linux),
-    do: [{"RHEL 9.6 (보안)", "sec_rhel9_6"}, {"RHEL 9.6 (일반)", "nosec_rhel9_6"}]
-
-  defp get_os_version_options(:Windows),
-    do: [{"Windows Server 2022", "win22"}, {"Windows Server 2025", "win25"}]
-
-  defp get_os_version_options(_), do: []
-
   defp format_file_size(bytes) when bytes < 1024, do: "#{bytes} B"
   defp format_file_size(bytes) when bytes < 1024 * 1024, do: "#{round(bytes / 1024)} KB"
   defp format_file_size(bytes), do: "#{round(bytes / (1024 * 1024))} MB"
