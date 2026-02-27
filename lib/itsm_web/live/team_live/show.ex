@@ -1,9 +1,9 @@
 defmodule ItsmWeb.TeamLive.Show do
+  alias Itsm.Accounts
   use ItsmWeb, :live_view
 
   alias Itsm.Crews
   alias Itsm.Team
-  alias Itsm.Members
 
   def mount(params, _session, socket) do
     back_path = params["return_to"] || ~p"/crews"
@@ -11,29 +11,22 @@ defmodule ItsmWeb.TeamLive.Show do
     {:ok, assign(socket, :back_path, back_path)}
   end
 
-  def handle_params(%{"id" => id}, _, socket) do
+  def handle_params(%{"id" => id}, _params, socket) do
     if connected?(socket) do
+      IO.inspect(self(), label: "pubsub등록")
       Crews.subscribe_crew(id)
     end
 
-    crew = Crews.get_crew_for_show!(id)
+    crew =
+      Crews.get_crew!(id)
+      |> Crews.preload_leader_and_users()
 
-    case Team.reassign_leader(crew) do
-      {:ok, crew} ->
-        {:noreply,
-         socket
-         |> assign(:page_title, "Show Crew")
-         |> assign(:crew, crew)}
-
-      {:error, _message} ->
-        # 멤버 아무도 없으면 crew 삭제
-        # Crews.delete_crew(crew)
-
-        {:noreply,
-         socket
-         |> put_flash(:warning, "No members available in this crew")
-         |> push_navigate(to: ~p"/crews", replace: true)}
-    end
+    {:noreply,
+     socket
+     |> assign(:page_title, "Show Crew")
+     |> assign(:crew, crew)
+     |> stream(:users, Crews.list_regular_users(crew))
+     |> assign(:show_member_modal, false)}
   end
 
   def render(assigns) do
@@ -41,18 +34,16 @@ defmodule ItsmWeb.TeamLive.Show do
     <.header>
       {@crew.name}
       <:subtitle>{@crew.description}</:subtitle>
-      <%!-- 리더만 멤버추가 가능 --%>
-      <:actions :if={@current_user.id == @crew.leader_id}>
-        <.link patch={~p"/crews/#{@crew}/member"} phx-click={JS.push_focus()}>
-          <.button>Add Member</.button>
-        </.link>
+       <%!-- 리더만 멤버추가 가능 --%>
+      <:actions :if={@current_user == @crew.leader}>
+        <.button phx-click="show_member_modal">Add Member</.button>
       </:actions>
     </.header>
 
     <div class="mt-6 mb-6 p-6 space-y-6">
       <div class="space-y-3">
         <h3 class="text-sm font-bold text-gray-700">Leader</h3>
-
+        
         <div id="leader-info" phx-update="replace" class="flex items-center py-2">
           <div class="flex items-center gap-3">
             <div>
@@ -61,7 +52,7 @@ defmodule ItsmWeb.TeamLive.Show do
                   do: "#{@crew.leader.display_name} (#{@crew.leader.email})",
                   else: "Loading..."}
               </p>
-              <%!-- <p class="text-xs text-gray-500">Updated {@crew.leader.updated_at}</p> --%>
+               <%!-- <p class="text-xs text-gray-500">Updated {@crew.leader.updated_at}</p> --%>
               <p class="text-xs text-gray-500">
                 Updated
                 <span
@@ -73,64 +64,63 @@ defmodule ItsmWeb.TeamLive.Show do
               </p>
             </div>
           </div>
-          <%!-- 접속자가 leader일 경우 you 표시 --%>
+           <%!-- 접속자가 leader일 경우 you 표시 --%>
           <span
-            :if={@current_user.id == @crew.leader_id}
+            :if={@current_user == @crew.leader}
             class="ml-12 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full"
           >
             You
           </span>
         </div>
       </div>
-      <%!-- leader 외 멤버 더 있을때만 member 표시 --%>
-      <div :if={Enum.count(@crew.members) > 1} class="space-y-3">
+       <%!-- leader 외 멤버 더 있을때만 member 표시 --%>
+      <div :if={Enum.count(@crew.users) > 1} class="space-y-3">
         <h3 class="text-sm font-bold text-gray-700">Members</h3>
-
-        <div class="space-y-1">
+        
+        <div id="members" phx-update="stream" class="space-y-1">
           <div
-            :for={member <- Enum.reject(@crew.members, &(&1.user_id == @crew.leader_id))}
+            :for={{dom_id, user} <- @streams.users}
+            id={dom_id}
             class="flex items-center justify-between py-2"
           >
             <div class="flex items-center gap-3">
               <div>
-                <p class="text-sm text-gray-900 break-all">
-                  {member.user.display_name} ({member.user.email})
-                </p>
-
+                <p class="text-sm text-gray-900 break-all">{user.display_name} ({user.email})</p>
+                
                 <p class="text-xs text-gray-500">
                   Added
                   <span
-                    id={"member-inserted-at-#{member.user_id}"}
+                    id={"member-inserted-at-#{user.id}"}
                     phx-hook="LocalTime.ToLocale"
-                    utc-value={member.user.inserted_at}
+                    utc-value={user.inserted_at}
                   >
                   </span>
                 </p>
               </div>
-              <%!-- 접속한 본인 you 표시 --%>
+               <%!-- 접속한 본인 you 표시 --%>
               <span
-                :if={member.user_id == @current_user.id}
+                :if={user == @current_user}
                 class="ml-12 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full"
               >
                 You
               </span>
             </div>
-
+            
             <div class="flex gap-1">
               <%!-- leader 위임 버튼 --%>
               <button
-                :if={@current_user.id == @crew.leader_id}
+                :if={@current_user == @crew.leader}
                 phx-click="switch_leader"
-                phx-value-user-id={member.user_id}
+                phx-value-user-id={user.id}
                 class="text-gray-400 hover:text-gray-600 px-2 py-1"
                 data-confirm="Are you sure you want to change the crew leader?"
               >
                 <.icon name="hero-trophy" class="w-4 h-4" />
               </button>
               <button
-                :if={@current_user.id == @crew.leader_id or @current_user.id == member.user_id}
+                :if={@current_user == @crew.leader or @current_user == user}
                 phx-click="remove_member"
-                phx-value-user-id={member.user_id}
+                phx-value-user-id={user.id}
                 class="text-gray-400 hover:text-gray-600 px-2 py-1"
                 data-confirm="Are you sure you want to remove the member?"
               >
@@ -141,23 +131,19 @@ defmodule ItsmWeb.TeamLive.Show do
         </div>
       </div>
     </div>
-    <%!-- /crews 또는 /crews/all 진입에 따라 다름 --%>
+     <%!-- /crews 또는 /crews/all 진입에 따라 다름 --%>
     <.back navigate={@back_path}>Back</.back>
 
     <.modal
-      :if={@live_action == :member}
+      :if={@show_member_modal}
       id="search-users"
       show
       on_cancel={JS.patch(~p"/crews/#{@crew}")}
     >
       <.live_component
-        module={ItsmWeb.SearchUsersDialog}
-        id={@crew.id}
-        title={@page_title}
-        action={@live_action}
-        crew={@crew}
+        id="search-users-dialog"
         current_user={@current_user}
-        parent_pid={self()}
+        module={ItsmWeb.SearchUsersDialog}
       />
     </.modal>
     """
@@ -166,15 +152,11 @@ defmodule ItsmWeb.TeamLive.Show do
   def handle_event("switch_leader", %{"user-id" => user_id}, socket) do
     %{crew: crew, current_user: current_user} = socket.assigns
 
-    case Team.switch_leader(crew, user_id, current_user) do
+    leader = Accounts.get_user!(user_id)
+
+    case Team.switch_leader(crew, leader, current_user) do
       {:ok, _crew} ->
         {:noreply, put_flash(socket, :info, "Leader changed successfully")}
-
-      # socket =
-      #   socket
-      #   |> put_flash(:info, "Leader changed successfully")
-
-      # {:noreply, socket}
 
       {:error, message} ->
         {:noreply, put_flash(socket, :error, message)}
@@ -200,11 +182,22 @@ defmodule ItsmWeb.TeamLive.Show do
     end
   end
 
+  def handle_event("show_member_modal", _params, socket) do
+    {:noreply, assign(socket, :show_member_modal, true)}
+  end
+
   # 리더 변경, 리더 할당, 멤버 추가, 멤버 삭제 시
   def handle_info({event, crew}, socket)
       # when event in [:leader_changed, :leader_assigned, :member_added] do
       when event in [:leader_changed, :leader_assigned, :member_added, :member_removed] do
-    {:noreply, assign(socket, :crew, crew)}
+    IO.inspect("handle_info received:#{inspect(self())} #{event}")
+    crew = Crews.preload_leader_and_users(crew)
+
+    {:noreply,
+     socket
+     |> assign(:show_member_modal, false)
+     |> assign(:crew, crew)
+     |> stream(:users, Crews.list_regular_users(crew), reset: true)}
   end
 
   # def handle_info({:member_removed, _removed_user_id, crew}, socket) do
@@ -227,30 +220,17 @@ defmodule ItsmWeb.TeamLive.Show do
   # end
 
   # 멤버 추가 다이얼로그에서 선택된 유저들 처리
-  def handle_info({ItsmWeb.SearchUsersDialog, :users_selected, users_id}, socket) do
+  def handle_info({ItsmWeb.SearchUsersDialog, :users_selected, user_ids}, socket) do
     %{crew: crew} = socket.assigns
 
-    # 이미 존재하는 user인지 확인하고, 없으면 추가
-    Enum.each(users_id, fn user_id ->
-      # 이미 존재하는지 확인
-      existing = Enum.find(crew.members, &(&1.user_id == user_id))
-      IO.puts("You selected #{user_id}")
+    users = Accounts.get_users(user_ids)
 
-      unless existing do
-        # 없으면 추가
-        Members.create_member(%{
-          "crew_id" => crew.id,
-          "user_id" => user_id
-        })
-      end
-    end)
+    case Crews.add_member(crew, users) do
+      {:ok, _crew} ->
+        {:noreply, put_flash(socket, :info, "Members added successfully")}
 
-    {
-      :noreply,
-      socket
-      |> put_flash(:info, "Members added successfully")
-      |> push_patch(to: ~p"/crews/#{crew}")
-      #  |> assign(:crew, crew)
-    }
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Failed to add members")}
+    end
   end
 end

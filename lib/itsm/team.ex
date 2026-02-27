@@ -12,18 +12,17 @@ defmodule Itsm.Team do
   alias Itsm.Accounts.User
   alias Itsm.Team.Member
   alias Itsm.Team.Reference
-  alias Ecto.Multi
 
   def create_crew(attrs, %User{} = user) do
-    Multi.new()
+    Ecto.Multi.new()
     # 1. Crew 생성 (leader_id 명시적 주입)
-    |> Multi.insert(:crew, fn _ ->
+    |> Ecto.Multi.insert(:crew, fn _ ->
       params = Map.put(attrs, "leader_id", user.id)
 
       Crew.changeset(%Crew{}, params)
     end)
     # 2. 리더를 멤버로 추가 (앞 단계의 crew 결과 사용)
-    |> Multi.insert(:leader_as_member, fn %{crew: crew} ->
+    |> Ecto.Multi.insert(:leader_as_member, fn %{crew: crew} ->
       %Member{}
       |> Member.changeset(%{crew_id: crew.id, user_id: user.id})
     end)
@@ -94,17 +93,25 @@ defmodule Itsm.Team do
   # -------------------------------------------------------------------
   # 1. 리더 변경 (Switch Leader)
   # -------------------------------------------------------------------
-  def switch_leader(%Crew{} = crew, new_leader_id, %User{} = actor) do
-    with :ok <- authorize_leader_change(crew, actor),
-         :ok <- ensure_new_leader_is_member(crew, new_leader_id),
-         {:ok, crew} <- perform_update_leader(crew, new_leader_id) do
-      # 업데이트 후 Show용 데이터 재조회 (Preload 등)
-      crew = Crews.get_crew_for_show!(crew.id)
-      Crews.broadcast_crew(crew.id, {:leader_changed, crew})
+  def switch_leader(%Crew{} = crew, %User{} = leader, %User{} = user) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.run(:authorization, fn _repo, _changes ->
+      if leader == user, do: {:ok, :authorized}, else: {:error, :unauthorized}
+    end)
+    |> Ecto.Multi.run(:new_leader_is_crew, fn _repo, _changes ->
+      if Enum.member?(crew.users, leader),
+        do: {:ok, :authorized},
+        else: {:error, "New leader must be a member of the crew."}
+    end)
+    |> Ecto.Multi.update(:update_crew, Crew.leader_changeset(crew, leader))
+    |> Repo.transaction()
+    |> case do
+      {:ok, crew} ->
+        Crews.broadcast_crew(crew.id, {:leader_changed, crew})
+        {:ok, crew}
 
-      {:ok, crew}
-    else
-      {:error, _} = error -> error
+      {error, _} ->
+        error
     end
   end
 
@@ -137,91 +144,30 @@ defmodule Itsm.Team do
   end
 
   # -------------------------------------------------------------------
-  # 3. 리더 재할당 (Reassign Leader - 배치/퇴사자 대응)
-  # -------------------------------------------------------------------
-  def reassign_leader(%Crew{} = crew) do
-    # 1. 현재 리더가 DB(User 테이블)에 실제로 존재하는지 확인
-    # (배치로 User가 삭제되었을 경우를 대비)
-    if crew.leader_id && user_exists?(crew.leader_id) do
-      {:ok, crew}
-    else
-      # 리더가 없거나, 리더 ID는 있는데 User 테이블에 없으면 재할당
-      assign_new_leader(crew)
-    end
-  end
-
-  defp user_exists?(user_id) do
-    Repo.exists?(from u in User, where: u.id == ^user_id)
-  end
-
-  defp assign_new_leader(%Crew{} = crew) do
-    # 다음 리더 후보 찾기
-    case get_next_available_member(crew.id) do
-      nil ->
-        {:error, "No members available to be leader"}
-
-      %Member{user_id: new_leader_id} ->
-        {:ok, crew} = perform_update_leader(crew, new_leader_id)
-
-        # 재할당 후 브로드캐스트
-        crew = Crews.get_crew_for_show!(crew.id)
-        Crews.broadcast_crew(crew.id, {:leader_assigned, crew})
-
-        {:ok, crew}
-    end
-  end
-
-  # 다음 리더 찾기 (User 테이블과 조인하여 '실존하는' 멤버만 선택)
-  # Member 테이블엔 있는데 User 테이블엔 없는 유령 회원이 리더가 되는 것을 방지
-  defp get_next_available_member(crew_id) do
-    Member
-    # User가 존재하는 멤버만
-    |> join(:inner, [m], u in assoc(m, :user))
-    |> where([m, u], m.crew_id == ^crew_id)
-    # 가장 오래된 멤버 순
-    |> order_by([m, u], asc: m.inserted_at)
-    |> limit(1)
-    |> Repo.one()
-  end
-
-  # -------------------------------------------------------------------
   # Helper Functions (Private)
   # -------------------------------------------------------------------
 
-  # 실제 DB 업데이트
-  defp perform_update_leader(crew, new_leader_id) do
-    crew
-    |> Crew.changeset(%{leader_id: new_leader_id})
-    |> Repo.update()
+  # 권한 확인: 리더 변경 (Admin or Leader)
+  defp check_authorization(%Crew{leader: leader}, %User{} = user) do
+    if leader == user, do: {:ok, :authorized}, else: {:error, :unauthorized}
   end
 
-  # 권한 확인: 리더 변경 (Admin or Leader)
-  defp authorize_leader_change(crew, actor) do
-    cond do
-      # 관리자 또는 리더 본인일때 허용
-      actor.role == "admin" -> :ok
-      crew.leader_id == actor.id -> :ok
-      true -> {:error, "You don't have permission to change the leader."}
-    end
+  defp check_authorization(_crew, _user),
+    do: {:error, "You don't have permission to change the leader."}
+
+  defp check_new_leader_is_crew(%Crew{} = crew, %User{} = leader) do
+    if Enum.member?(crew.users, leader),
+      do: {:ok, :authorized},
+      else: {:error, "New leader must be a member of the crew."}
   end
 
   # 권한 확인: 멤버 삭제 (Admin or Leader or Self)
   defp authorize_member_removal(crew, target_user_id, actor) do
     cond do
-      # 관리자
-      actor.role == "admin" -> :ok
-      # 리더가 멤버 강퇴
       crew.leader_id == actor.id -> :ok
       # 본인이 탈퇴
       target_user_id == actor.id -> :ok
       true -> {:error, "You don't have permission to remove this member."}
     end
-  end
-
-  # 유효성 검사: 새 리더가 멤버인지 확인
-  defp ensure_new_leader_is_member(crew, new_leader_id) do
-    is_member? = Enum.any?(crew.members, fn m -> m.user_id == new_leader_id end)
-
-    if is_member?, do: :ok, else: {:error, "The selected user is not a member of this crew."}
   end
 end

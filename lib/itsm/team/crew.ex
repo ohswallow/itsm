@@ -29,6 +29,18 @@ defmodule Itsm.Team.Crew do
     |> validate_length(:description, min: 5, max: 30)
   end
 
+  def users_changeset(crew, users) do
+    crew
+    |> change()
+    |> put_assoc(:users, users)
+  end
+
+  def leader_changeset(crew, leader) do
+    crew
+    |> change()
+    |> put_assoc(:leader, leader)
+  end
+
   # Crew 이름을 대문자로 변환
   defp normalize_name(changeset) do
     # get_change는 cast가 끝난 후 "진짜 변경될 값"만 가져옴
