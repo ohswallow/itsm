@@ -197,6 +197,7 @@ bbbbb =
   request_name: "common_k_create_vm",
   affiliate: "FG",
   duration: 80,
+  category: "서버",
   assignee_crew_id: aaaaa.id
 }
 |> Repo.insert!()
@@ -211,6 +212,7 @@ bbbbb =
   request_name: "bank_k_resize_vm",
   affiliate: "B0",
   duration: 70,
+  category: "서버",
   assignee_crew_id: bbbbb.id
 }
 |> Repo.insert!()
@@ -266,14 +268,13 @@ defmodule Itsm.Repo.Seeds.InsertCommonCodes do
       %{code: "본사", label: "본사", description: "본사 입니다."},
       %{code: "여의도IT센터", label: "여의도IT센터", description: "여의도IT센터 입니다."},
       %{code: "김포IT센터", label: "김포IT센터", description: "김포IT센터 입니다."},
-      %{code: "지점", label: "지점", description: "지점 입니다."}
+      %{code: "영업점", label: "영업점", description: "영업점 입니다."}
     ]
 
     category = [
       %{code: "서버", label: "서버", description: "서버 자산입니다."},
       %{code: "네트워크", label: "네트워크", description: "네트워크 자산입니다."},
       %{code: "스토리지", label: "스토리지", description: "스토리지 자산입니다."},
-      %{code: "하이퍼바이저", label: "하이퍼바이저", description: "하이퍼바이저 자산입니다."},
       %{code: "어플라이언스", label: "어플라이언스", description: "어플라이언스 자산입니다."}
     ]
 
@@ -302,10 +303,11 @@ defmodule Itsm.Repo.Seeds.InsertCommonCodes do
     ]
 
     infra_type = [
-      %{code: "온프레미스", label: "온프레미스", description: "온프레미스 입니다."},
-      %{code: "AWS", label: "AWS", description: "AWS 입니다."},
-      %{code: "Azure", label: "Azure", description: "Azure 입니다."},
-      %{code: "어플라이언스", label: "어플라이언스", description: "어플라이언스 입니다."}
+      %{code: "bare_metal", label: "베어메탈", description: "일반 x86/Unix 물리 장비"},
+      %{code: "hypervisor", label: "하이퍼바이저", description: "VMware ESXi 등 가상화를 제공하는 물리 호스트"},
+      %{code: "private_cloud", label: "프라이빗 클라우드", description: "사내 하이퍼바이저 위에서 구동되는 가상 머신(VM)"},
+      %{code: "public_cloud", label: "퍼블릭 클라우드", description: "AWS, Azure 등 외부 클라우드 자원"},
+      %{code: "mainframe", label: "메인프레임", description: "코어뱅킹용 메인프레임 시스템"}
     ]
 
     reason = [

@@ -72,8 +72,8 @@
             phx-debounce="blur"
           />
           <.input
-            field={common_k_create_vm_f[:description]}
-            label={gettext("Description")}
+            field={common_k_create_vm_f[:service_name]}
+            label={gettext("Service Name")}
             type="text"
             phx-debounce="blur"
           />
@@ -94,10 +94,29 @@
             phx-debounce="blur"
           />
           <.input
-            field={common_k_create_vm_f[:cpu_memory]}
-            label="CPU/메모리"
-            type="text"
+            field={common_k_create_vm_f[:cpu]}
+            label="CPU (vCore)"
+            type="number"
             phx-debounce="blur"
+          />
+          <.input
+            field={common_k_create_vm_f[:memory]}
+            label="Memory (GB)"
+            type="number"
+            phx-debounce="blur"
+          />
+          <.input
+            field={common_k_create_vm_f[:location]}
+            type="select"
+            label={gettext("Location")}
+            prompt="Choose a value"
+            options={Itsm.CommonCodes.get_select_options("장소")}
+            phx-debounce="blur"
+          />
+          <.input
+            field={common_k_create_vm_f[:is_dmz_zone]}
+            label={gettext("Is DMZ?")}
+            type="checkbox"
           />
         </div>
         

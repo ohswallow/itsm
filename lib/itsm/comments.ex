@@ -45,5 +45,18 @@ defmodule Itsm.Comments do
   def create_comment(resource, %User{} = user, attrs \\ %{}) do
     changeset_comment(resource, user, attrs)
     |> Repo.insert()
+    |> case do
+      {:ok, comment} ->
+        # 🌟 1. Show.ex 화면을 위해 :user와 :attachments 둘 다 Preload!
+        preloaded_comment = Repo.preload(comment, [:user, :attachments])
+
+        # 🌟 2. 여기서 직접 PubSub 방송을 쏩니다! (기존 로직 활용)
+        Requests.broadcast_request(resource.id, {:comment_created, preloaded_comment})
+
+        {:ok, preloaded_comment}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 end
