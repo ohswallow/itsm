@@ -243,3 +243,14 @@ msgstr "결제목록"
 
 msgid "Comments"
 msgstr "댓글목록"
+
+msgid "Service Name"
+msgstr "서비스명"
+
+msgid "Is DMZ?"
+msgstr "DMZ 설치여부"
+
+msgid "Task Name"
+msgstr "작업명"
+
+
