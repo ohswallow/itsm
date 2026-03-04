@@ -54,4 +54,25 @@ defmodule Itsm.Service.Approval do
     |> assoc_constraint(:approver)
     |> assoc_constraint(:request)
   end
+
+  def admin_changeset(approval, attrs) do
+    approval
+    |> cast(attrs, [
+      :status,
+      :approver_name,
+      :action,
+      :approver_id,
+      :request_id,
+      :inserted_at
+    ])
+    |> validate_required([
+      :status,
+      :approver_name,
+      :action,
+      :approver_id,
+      :request_id
+    ])
+    |> assoc_constraint(:approver)
+    |> assoc_constraint(:request)
+  end
 end

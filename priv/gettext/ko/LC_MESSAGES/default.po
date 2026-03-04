@@ -243,3 +243,6 @@ msgstr "결제목록"
 
 msgid "Comments"
 msgstr "댓글목록"
+
+msgid "Requests"
+msgstr "요청목록"

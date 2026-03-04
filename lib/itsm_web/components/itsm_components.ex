@@ -107,6 +107,7 @@ defmodule ItsmWeb.ItsmComponents do
             class="text-transparent bg-transparent border-none focus:ring-0 focus:outline-none cursor-pointer w-full p-0 absolute inset-0 z-10"
             phx-update="ignore"
             readonly
+            value={@selected_date_time}
           />
           <div
             id={"display_date_time-#{@id}"}
