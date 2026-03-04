@@ -24,6 +24,10 @@
     {Itsm.CommonCodes.get_label("지역_유형", category.group)}
   </:col>
 
+  <:col :let={{_id, category}} label={gettext("Category")}>{category.category}</:col>
+
+  <:col :let={{_id, category}} label={gettext("Duration")}>{category.duration}</:col>
+
   <:col :let={{_id, category}} label={gettext("Active")}>{category.active}</:col>
 
   <:action :let={{_id, category}}>

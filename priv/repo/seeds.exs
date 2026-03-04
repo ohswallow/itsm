@@ -195,6 +195,7 @@ bbbbb =
   request_name: "common_k_create_vm",
   affiliate: "FG",
   duration: 80,
+  category: "서버",
   assignee_crew_id: aaaaa.id
 }
 |> Repo.insert!()
@@ -209,6 +210,7 @@ bbbbb =
   request_name: "bank_k_resize_vm",
   affiliate: "B0",
   duration: 70,
+  category: "서버",
   assignee_crew_id: bbbbb.id
 }
 |> Repo.insert!()
@@ -253,6 +255,9 @@ bbbbb =
 |> Repo.insert!()
 
 %CommonCode{sort_order: 3, group_code: "장소", code: "지점", label: "지점", description: "지점 입니다."}
+|> Repo.insert!()
+
+%CommonCode{sort_order: 4, group_code: "장소", code: "영업점", label: "영업점", description: "영업점 입니다."}
 |> Repo.insert!()
 
 %CommonCode{sort_order: 0, group_code: "카테고리", code: "서버", label: "서버", description: "서버 자산입니다."}
@@ -486,9 +491,45 @@ bbbbb =
 %CommonCode{
   sort_order: 3,
   group_code: "인프라_유형",
-  code: "어플라이언스",
-  label: "어플라이언스",
-  description: "어플라이언스 입니다."
+  code: "bare_metal",
+  label: "베어메탈",
+  description: "일반 x86/Unix 물리 장비"
+}
+|> Repo.insert!()
+
+%CommonCode{
+  sort_order: 4,
+  group_code: "인프라_유형",
+  code: "hypervisor",
+  label: "하이퍼바이저",
+  description: "VMware ESXi 등 가상화를 제공하는 물리 호스트"
+}
+|> Repo.insert!()
+
+%CommonCode{
+  sort_order: 5,
+  group_code: "인프라_유형",
+  code: "private_cloud",
+  label: "프라이빗 클라우드",
+  description: "사내 하이퍼바이저 위에서 구동되는 가상 머신(VM)"
+}
+|> Repo.insert!()
+
+%CommonCode{
+  sort_order: 6,
+  group_code: "인프라_유형",
+  code: "public_cloud",
+  label: "퍼블릭 클라우드",
+  description: "AWS, Azure 등 외부 클라우드 자원"
+}
+|> Repo.insert!()
+
+%CommonCode{
+  sort_order: 7,
+  group_code: "인프라_유형",
+  code: "mainframe",
+  label: "메인프레임",
+  description: "코어뱅킹용 메인프레임 시스템"
 }
 |> Repo.insert!()
 

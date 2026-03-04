@@ -78,9 +78,12 @@ defmodule ItsmWeb.CreateCommentDialog do
 
     with {:ok, _comment} <- Comments.create_comment(request, user, comment_params),
          {:ok, _} <- do_action(action, request, user) do
-      {:noreply, push_navigate(socket, to: ~p"/approvals")}
+      {:noreply,
+       socket
+       |> clear_flash()
+       |> push_patch(to: ~p"/approvals")}
     else
-      {:error, changeset} ->
+      {:error, %Ecto.Changeset{} = changeset} ->
         IO.inspect(changeset, label: "Approval Error")
         {:noreply, put_flash(socket, :error, "Failed")}
     end

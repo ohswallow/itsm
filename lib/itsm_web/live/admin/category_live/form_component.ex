@@ -19,34 +19,40 @@ defmodule ItsmWeb.Admin.CategoryLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={@form[:name]} type="text" label="Name" />
-        <.input field={@form[:description]} type="text" label="Description" />
+        <.input field={@form[:name]} type="text" label={gettext("Name")} />
+        <.input field={@form[:description]} type="text" label={gettext("Description")} />
         <.input
           field={@form[:affiliate]}
           type="select"
-          label="Affiliate"
+          label={gettext("Affiliate")}
           prompt="Choose a value"
           options={Itsm.CommonCodes.get_select_options("계열사")}
-        /> <.input field={@form[:request_name]} type="text" label="Request name" />
+        /> <.input field={@form[:request_name]} type="text" label={gettext("Request name")} />
         <.input
           field={@form[:group]}
           type="select"
-          label="Group"
+          label={gettext("Group")}
           prompt="Choose a value"
           options={Itsm.CommonCodes.get_select_options("지역_유형")}
         />
-        <.input field={@form[:active]} type="checkbox" label="Active" />
+        <.input field={@form[:category]} type="text" label={gettext("Category")} />
+        <.input
+          field={@form[:duration]}
+          type="number"
+          label={gettext("Duration")}
+        />
+        <.input field={@form[:active]} type="checkbox" label={gettext("Active")} />
         <.input
           field={@form[:assignee_crew_id]}
           type="select"
-          label="Assignee Crew"
+          label={gettext("Assignee Crew")}
           prompt="Choose a value"
           options={@assignee_crews_options}
         />
         <.itsm_calendar
           :if={@action == :edit}
           field={@form[:inserted_at]}
-          label="Inserted At"
+          label={gettext("Inserted At")}
           show_time
           default_selected_date_time={@form[:inserted_at].value}
         />
