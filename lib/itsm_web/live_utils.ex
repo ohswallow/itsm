@@ -4,12 +4,21 @@ defmodule ItsmWeb.LiveUtil do
   """
   alias Phoenix.LiveView
 
-  def handle_multi_error(step) do
-    case step do
-      :approval -> "Approval creation failed"
-      :attachment -> "Attachment upload failed"
-      _ -> "Data processing failed at step: #{step}."
-    end
+  def translate_step_error(:approval), do: "Approval creation failed"
+  def translate_step_error(:attachment), do: "Attachment upload failed"
+  def translate_step_error(:crew_is_auth), do: "You don't have permission to change the leader."
+
+  def translate_step_error(:crew_new_leader_is_crew),
+    do: "New leader must be a member of the crew."
+
+  def translate_step_error(:crew_authorize_user_removal),
+    do: "You don't have permission to remove this member."
+
+  def translate_step_error(:crew_update_leader), do: "Leader update failed"
+  def translate_step_error(step), do: "Data processing failed at an unknown step. #{step}"
+
+  def fetch_safe(data, field, default \\ "") do
+    if data, do: Map.get(data, field, default), else: default
   end
 
   def allow_uploads(%Phoenix.LiveView.Socket{} = socket, upload_key \\ :attachment) do

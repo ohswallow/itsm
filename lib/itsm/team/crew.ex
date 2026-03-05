@@ -10,7 +10,8 @@ defmodule Itsm.Team.Crew do
     # field :organization, :string
     # field :department, :string
 
-    belongs_to :leader, Itsm.Accounts.User, type: :binary_id
+    belongs_to :leader, Itsm.Accounts.User, foreign_key: :leader_id
+
     has_many :members, Itsm.Team.Member
     many_to_many :users, Itsm.Accounts.User, join_through: Itsm.Team.Member
 
@@ -35,10 +36,10 @@ defmodule Itsm.Team.Crew do
     |> put_assoc(:users, users)
   end
 
-  def leader_changeset(crew, leader) do
+  def leader_changeset(crew, %{id: leader_id}) do
     crew
-    |> change()
-    |> put_assoc(:leader, leader)
+    |> cast(%{leader_id: leader_id}, [:leader_id])
+    |> validate_required([:leader_id])
   end
 
   # Crew 이름을 대문자로 변환
