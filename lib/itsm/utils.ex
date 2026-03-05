@@ -7,4 +7,9 @@ defmodule Itsm.Util do
     |> Module.split()
     |> List.last()
   end
+
+  def maybe_put_change(changeset, _field, nil), do: changeset
+
+  def maybe_put_change(changeset, field, value),
+    do: Ecto.Changeset.put_change(changeset, field, value)
 end

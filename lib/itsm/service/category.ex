@@ -12,8 +12,11 @@ defmodule Itsm.Service.Category do
     # group_code: "계열사"
     field :affiliate, :string
     field :request_name, :string
+    # 용도 : SLA 계산용
     field :duration, :integer, default: 60
-    # field :assignee_crew, :string
+
+    # 용도 : 서비스 요청 시 카테고리 구분 (서버, 네트워크, 보안, 미들웨어, 인터페이스 등)
+    field :category, :string
 
     belongs_to :assignee_crew, Itsm.Team.Crew, type: :binary_id
 

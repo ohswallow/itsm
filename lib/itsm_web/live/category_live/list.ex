@@ -18,8 +18,6 @@ defmodule ItsmWeb.CategoryLive.List do
   end
 
   def render(assigns) do
-    # IO.inspect(self(), label: "RENDER")
-
     ~H"""
     <.filter_form form={@form} />
     <div id="categories-container" class="mt-6 space-y-10">

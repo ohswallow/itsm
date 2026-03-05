@@ -8,6 +8,7 @@ defmodule Itsm.Approvals do
   alias Itsm.Team.Member
   alias Itsm.Workflow
   alias Itsm.Requests
+  alias Itsm.Finalization
 
   # ==================================================
   # PubSub
@@ -108,6 +109,12 @@ defmodule Itsm.Approvals do
     # 트랜잭션 커밋 후 broadcast
     case result do
       {:ok, {preloaded_request, _approval}} ->
+        # TODO : Sync 호출 (자산 한번에 10개 이상 신청 대응)
+        # 상태가 :finish(또는 워크플로우에 맞는 완료 상태)일 때 바로 실행
+        if preloaded_request.status == :confirmation do
+          Finalization.execute_after_finish(preloaded_request)
+        end
+
         broadcast_approvals_list({:request_updated, preloaded_request})
         Requests.broadcast_request(preloaded_request.id, {:request_updated, preloaded_request})
         result
