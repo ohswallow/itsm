@@ -38,7 +38,6 @@
     phx-debounce="blur"
     class="form-select"
   />
-  <%!-- <.itsm_calendar field={@form[:due_date]} label={gettext("Due Date")} min={Date.utc_today()} /> --%>
   <.itsm_calendar
     field={@form[:due_date]}
     label={gettext("Due Date")}
@@ -47,7 +46,7 @@
   />
   <div class="mb-6">
     <h2 class="text-lg font-semibold text-zinc-700">VM 생성 요청</h2>
-    
+
     <button
       class="mt-4 text-zinc-700"
       name="request[common_k_create_vms_sort][]"
@@ -119,7 +118,7 @@
             type="checkbox"
           />
         </div>
-        
+
         <button
           type="button"
           name="request[common_k_create_vms_drop][]"
@@ -130,10 +129,10 @@
           <.icon name="hero-x-mark" class="w-5 h-5" />
         </button>
       </.inputs_for>
-       <input type="hidden" name="request[common_k_create_vms_drop][]" />
+      <input type="hidden" name="request[common_k_create_vms_drop][]" />
     </div>
   </div>
-   <%!-- 파일업로드 --%>
+  <%!-- 파일업로드 --%>
   <label class="block text-sm font-semibold text-zinc-700 mb-2">{gettext("Attachments")}</label>
   <.live_file_input class="hidden" upload={@uploads.attachment} />
   <label
@@ -146,7 +145,7 @@
       <p class="mb-2 text-sm text-gray-500">
         <span class="font-semibold">Click to upload</span> or drag and drop
       </p>
-      
+
       <p class="text-xs text-gray-500">
         {@uploads.attachment.max_entries} photos max, up to {trunc(
           @uploads.attachment.max_file_size / (1 * 1024 * 1024)
@@ -155,7 +154,7 @@
     </div>
   </label>
   <.error :for={err <- upload_errors(@uploads.attachment)}>{Phoenix.Naming.humanize(err)}</.error>
-  
+
   <div
     :if={length(@uploads.attachment.entries) > 0}
     class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-4"
@@ -167,11 +166,11 @@
       <div class="aspect-square bg-zinc-100 rounded-md overflow-hidden mb-2">
         <.live_img_preview entry={entry} class="w-full h-full object-cover" />
       </div>
-      
+
       <p class="text-xs text-zinc-600 truncate px-1">{entry.client_name}</p>
-      
+
       <p class="text-xs text-zinc-400">{format_file_size(entry.client_size)}</p>
-      
+
       <button
         type="button"
         phx-click="cancel-upload"
@@ -185,7 +184,7 @@
       </.error>
     </div>
   </div>
-   <%!-- 참조 Crew 선택 - LiveSelect inline (tags mode) --%>
+  <%!-- 참조 Crew 선택 - LiveSelect inline (tags mode) --%>
   <div class="mb-6" phx-feedback-for={@form[:referenced_crews].name}>
     <label class="block text-sm font-semibold text-zinc-700 mb-2">
       {gettext("Crews to reference")}
@@ -212,7 +211,7 @@
       </:option>
     </LiveSelect.live_select>
   </div>
-  
+
   <%= if @form.errors[:base] do %>
     <div class="alert alert-danger">
       <p text-red-500>
@@ -220,7 +219,7 @@
       </p>
     </div>
   <% end %>
-  
+
   <div class="flex">
     <.button phx-disable-with="Saving...">Save Request</.button>
     <.loading_spinner class="hidden phx-submit-loading:inline-block ml-4 mb-5" />

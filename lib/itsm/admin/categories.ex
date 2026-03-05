@@ -9,6 +9,7 @@ defmodule Itsm.Admin.Categories do
 
   def change_category(%Category{} = category, attrs \\ %{}) do
     Category.changeset(category, attrs)
+    |> Itsm.Util.maybe_put_change(:inserted_at, attrs[:inserted_at])
   end
 
   def create_category(attrs \\ %{}) do
@@ -20,6 +21,7 @@ defmodule Itsm.Admin.Categories do
   def update_category(%Category{} = category, attrs) do
     category
     |> Category.changeset(attrs)
+    |> Itsm.Util.maybe_put_change(:inserted_at, attrs[:inserted_at])
     |> Repo.update()
   end
 

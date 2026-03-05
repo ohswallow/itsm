@@ -102,21 +102,21 @@ defmodule ItsmWeb.ApprovalLive.List do
       <:col :let={{_id, request}} label={gettext("Title")}>
         <div class="w-[90px] truncate">{request.title}</div>
       </:col>
-      
+
       <:col :let={{_id, request}} label={gettext("Environment")}>{request.env}</:col>
-      
+
       <:col :let={{id, request}} label={gettext("Due Date")}>
         <span id={"due_date_#{id}"} phx-hook="LocalTime.ToLocale" utc-value={request.due_date}></span>
       </:col>
-      
+
       <:col :let={{_id, request}} label={gettext("Request Name")}>{request.category.name}</:col>
-      
+
       <:col :let={{_id, request}} label={gettext("Requestor Name")}>{request.requestor_name}</:col>
-      
+
       <:col :let={{_id, request}} label={gettext("Status")}>
         {Workflow.status_label(:service_request, request)}
       </:col>
-      
+
       <:action :let={{_id, request}}><.action_cell request={request} /></:action>
     </.table>
     """

@@ -104,7 +104,13 @@ Calendar.Input = {
     this.el.addEventListener("input", e => {
       const container = this.el.closest("[data-calendar-root]");
       if (!container) return;
+      let min = parseInt(this.el.getAttribute("min"));
+      let max = parseInt(this.el.getAttribute("max"));
+      let val = parseInt(this.el.value);
 
+      if (isNaN(val)) this.el.value = 0;
+      if (val > max) this.el.value = max;
+      if (val < min) this.el.value = min;
       Calendar.updateSelectedDateTime(container, this.el.getAttribute("phx-target"), this.pushEventTo.bind(this));
     });
   },

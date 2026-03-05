@@ -156,42 +156,47 @@ defmodule ItsmWeb.Router do
         {ItsmWeb.UserAuth, :set_locale}
       ],
       layout: {ItsmWeb.Layouts, :admin} do
-      live "/", AdminCategoryLive.Index, :index
+      live "/", Admin.CategoryLive.Index, :index
 
-      live "/categories", AdminCategoryLive.Index, :index
-      live "/categories/new", AdminCategoryLive.Index, :new
-      live "/categories/:id/edit", AdminCategoryLive.Index, :edit
+      live "/requests", Admin.RequestLive.Index, :index
+      live "/requests/new", Admin.RequestLive.Index, :new
+      live "/requests/:id/edit", Admin.RequestLive.Index, :edit
 
-      live "/categories/:id", AdminCategoryLive.Show, :show
-      live "/categories/:id/show/edit", AdminCategoryLive.Show, :edit
+      live "/requests/:id", Admin.RequestLive.Show, :show
+      live "/requests/:id/show/edit", Admin.RequestLive.Show, :edit
 
-      live "/approvals", AdminApprovalLive.Index, :index
-      live "/approvals/new", AdminApprovalLive.Index, :new
-      live "/approvals/:id/edit", AdminApprovalLive.Index, :edit
+      live "/categories", Admin.CategoryLive.Index, :index
+      live "/categories/new", Admin.CategoryLive.Index, :new
+      live "/categories/:id/edit", Admin.CategoryLive.Index, :edit
 
-      live "/approvals/:id", AdminApprovalLive.Show, :show
-      live "/approvals/:id/show/edit", AdminApprovalLive.Show, :edit
+      live "/categories/:id", Admin.CategoryLive.Show, :show
+      live "/categories/:id/show/edit", Admin.CategoryLive.Show, :edit
 
-      live "/crews", AdminCrewLive.Index, :index
-      live "/crews/new", AdminCrewLive.Index, :new
-      live "/crews/:id/edit", AdminCrewLive.Index, :edit
+      live "/approvals", Admin.ApprovalLive.Index, :index
+      live "/approvals/:id/edit", Admin.ApprovalLive.Index, :edit
 
-      live "/crews/:id", AdminCrewLive.Show, :show
-      live "/crews/:id/show/edit", AdminCrewLive.Show, :edit
+      live "/approvals/:id", Admin.ApprovalLive.Show, :show
+      live "/approvals/:id/show/edit", Admin.ApprovalLive.Show, :edit
 
-      live "/comments", AdminCommentLive.Index, :index
-      live "/comments/new", AdminCommentLive.Index, :new
-      live "/comments/:id/edit", AdminCommentLive.Index, :edit
+      live "/crews", Admin.CrewLive.Index, :index
+      live "/crews/new", Admin.CrewLive.Index, :new
+      live "/crews/:id/edit", Admin.CrewLive.Index, :edit
 
-      live "/comments/:id", AdminCommentLive.Show, :show
-      live "/comments/:id/show/edit", AdminCommentLive.Show, :edit
+      live "/crews/:id", Admin.CrewLive.Show, :show
+      live "/crews/:id/show/edit", Admin.CrewLive.Show, :edit
 
-      live "/common_codes", AdminCommonCodeLive.Index, :index
-      live "/common_codes/new", AdminCommonCodeLive.Index, :new
-      live "/common_codes/:id/edit", AdminCommonCodeLive.Index, :edit
+      live "/comments", Admin.CommentLive.Index, :index
+      live "/comments/:id/edit", Admin.CommentLive.Index, :edit
 
-      live "/common_codes/:id", AdminCommonCodeLive.Show, :show
-      live "/common_codes/:id/show/edit", AdminCommonCodeLive.Show, :edit
+      live "/comments/:id", Admin.CommentLive.Show, :show
+      live "/comments/:id/show/edit", Admin.CommentLive.Show, :edit
+
+      live "/common_codes", Admin.CommonCodeLive.Index, :index
+      live "/common_codes/new", Admin.CommonCodeLive.Index, :new
+      live "/common_codes/:id/edit", Admin.CommonCodeLive.Index, :edit
+
+      live "/common_codes/:id", Admin.CommonCodeLive.Show, :show
+      live "/common_codes/:id/show/edit", Admin.CommonCodeLive.Show, :edit
     end
   end
 

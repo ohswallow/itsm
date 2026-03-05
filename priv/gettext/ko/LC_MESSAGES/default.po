@@ -253,4 +253,5 @@ msgstr "DMZ 설치여부"
 msgid "Task Name"
 msgstr "작업명"
 
-
+msgid "Requests"
+msgstr "요청목록"

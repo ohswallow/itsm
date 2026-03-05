@@ -5,9 +5,10 @@ defmodule Itsm.Admin.Comments do
 
   def list_comments do
     Repo.all(Comment)
+    |> Repo.preload([:user])
   end
 
-  def get_comment!(id), do: Repo.get!(Comment, id)
+  def get_comment!(id), do: Repo.get!(Comment, id) |> Repo.preload([:user])
 
   defdelegate change_comment(comment, attrs \\ %{}), to: Itsm.Comments
 
