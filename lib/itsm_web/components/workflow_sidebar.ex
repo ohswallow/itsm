@@ -174,8 +174,8 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
   #       </div>
 
   #       <div class="space-y-1">
-  #         <div :for={member <- @crew.members} class="text-xs text-gray-700">
-  #           {member.user.display_name}
+  #         <div :for={user <- @crew.users} class="text-xs text-gray-700">
+  #           {user.display_name}
   #         </div>
   #       </div>
   #     </div>

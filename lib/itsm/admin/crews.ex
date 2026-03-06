@@ -1,7 +1,7 @@
 defmodule Itsm.Admin.Crews do
   import Ecto.Query, warn: false
   alias Itsm.Repo
-  alias Itsm.Team.Crew
+  alias Itsm.Crews.Crew
 
   defdelegate broadcast_crew(crew_id, event), to: Itsm.Crews
   defdelegate broadcast_crews_list(event), to: Itsm.Crews
@@ -22,7 +22,7 @@ defmodule Itsm.Admin.Crews do
     |> case do
       {:ok, crew} ->
         # Preload 및 Broadcast
-        crew = Repo.preload(crew, [:leader, members: [:user]])
+        crew = Repo.preload(crew, [:leader, :users])
         broadcast_crew(crew.id, {:crew_updated, crew})
         broadcast_crews_list({:crew_updated, crew})
         {:ok, crew}

@@ -13,8 +13,8 @@ alias Itsm.Repo
 alias Itsm.Service.Category
 
 alias Itsm.Accounts.User
-alias Itsm.Team.Crew
-alias Itsm.Team.Member
+alias Itsm.Crews.Crew
+alias Itsm.Crews.CrewsUsers
 alias Itsm.Common.CommonCode
 
 # alias Itsm.Service.Approval
@@ -155,31 +155,31 @@ bbbbb =
   })
   |> Repo.insert!()
 
-%Member{
+%CrewsUsers{
   crew_id: aaaaa.id,
   user_id: alex.id
 }
 |> Repo.insert!()
 
-%Member{
+%CrewsUsers{
   crew_id: aaaaa.id,
   user_id: jase.id
 }
 |> Repo.insert!()
 
-%Member{
+%CrewsUsers{
   crew_id: aaaaa.id,
   user_id: mike.id
 }
 |> Repo.insert!()
 
-%Member{
+%CrewsUsers{
   crew_id: bbbbb.id,
   user_id: mary.id
 }
 |> Repo.insert!()
 
-%Member{
+%CrewsUsers{
   crew_id: bbbbb.id,
   user_id: nicole.id
 }

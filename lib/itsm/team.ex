@@ -7,11 +7,9 @@ defmodule Itsm.Team do
   import Ecto.Query, warn: false
   alias Itsm.Repo
 
-  alias Itsm.Team.Crew
   alias Itsm.Crews
   alias Itsm.Accounts.User
-  alias Itsm.Team.Member
-  alias Itsm.Team.Reference
+  alias Itsm.Crews.{Crew, CrewsUsers, Reference}
 
   def create_crew(attrs, %User{} = user) do
     Ecto.Multi.new()
@@ -23,8 +21,8 @@ defmodule Itsm.Team do
     end)
     # 2. 리더를 멤버로 추가 (앞 단계의 crew 결과 사용)
     |> Ecto.Multi.insert(:leader_as_member, fn %{crew: crew} ->
-      %Member{}
-      |> Member.changeset(%{crew_id: crew.id, user_id: user.id})
+      %CrewsUsers{}
+      |> CrewsUsers.changeset(%{crew_id: crew.id, user_id: user.id})
     end)
     # 3. 트랜잭션 실행
     |> Repo.transaction()
@@ -33,7 +31,7 @@ defmodule Itsm.Team do
       # 중요: %{crew: crew}로 패턴 매칭해서 꺼내야 함
       {:ok, %{crew: crew}} ->
         # 멤버가 추가된 직후라 아직 crew.members에 없을 수 있으므로 preload 필수
-        crew = Repo.preload(crew, [:leader, members: [:user]])
+        crew = Repo.preload(crew, [:leader, :users])
         Crews.broadcast_crews_list({:crew_created, crew})
         {:ok, crew}
 

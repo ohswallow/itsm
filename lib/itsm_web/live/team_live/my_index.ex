@@ -2,7 +2,7 @@ defmodule ItsmWeb.TeamLive.MyIndex do
   use ItsmWeb, :live_view
 
   alias Itsm.Crews
-  alias Itsm.Team.Crew
+  alias Itsm.Crews.Crew
 
   # 공통 컴포넌트 임포트
   import ItsmWeb.TeamLive.TableComponents

@@ -5,7 +5,7 @@ defmodule Itsm.Approvals do
   alias Itsm.Accounts.User
   alias Itsm.Service.Approval
   alias Itsm.Service.Request
-  alias Itsm.Team.Member
+  alias Itsm.Crews.CrewsUsers
   alias Itsm.Workflow
   alias Itsm.Requests
   alias Itsm.Finalization
@@ -35,7 +35,7 @@ defmodule Itsm.Approvals do
 
   def list_pending_requests(%User{} = current_user) do
     my_crew_ids =
-      from(m in Member, where: m.user_id == ^current_user.id, select: m.crew_id)
+      from(m in CrewsUsers, where: m.user_id == ^current_user.id, select: m.crew_id)
       |> Repo.all()
 
     requests_i_assigned =
@@ -96,8 +96,8 @@ defmodule Itsm.Approvals do
             Repo.preload(updated_request, [
               :category,
               :attachments,
-              requestor_crew: [members: :user],
-              assignee_crew: [members: :user]
+              requestor_crew: [:users],
+              assignee_crew: [:users]
             ])
 
           {preloaded_request, approval}

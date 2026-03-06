@@ -1,9 +1,8 @@
 defmodule Itsm.Crews do
   import Ecto.Query, warn: false
   alias Itsm.Repo
-  alias Itsm.Team.Crew
+  alias Itsm.Crews.{Crew, CrewsUsers}
   alias Itsm.Accounts.User
-  alias Itsm.Team.Member
 
   # 특정 crew의 변경사항
   def subscribe_crew(crew_id) do
@@ -55,7 +54,7 @@ defmodule Itsm.Crews do
 
   def live_select_by_name_user_name(name, %User{id: user_id}) do
     user_crew_ids =
-      Member
+      CrewsUsers
       |> where([m], m.user_id == ^user_id)
       |> select([m], m.crew_id)
 
@@ -91,7 +90,7 @@ defmodule Itsm.Crews do
       |> case do
         {:ok, crew} ->
           # Preload 및 Broadcast
-          crew = Repo.preload(crew, [:leader, members: [:user]])
+          crew = Repo.preload(crew, [:leader, :users])
           broadcast_crew(crew, {:crew_updated, crew})
           broadcast_crews_list({:crew_updated, crew})
           {:ok, crew}
@@ -162,7 +161,7 @@ defmodule Itsm.Crews do
     |> Repo.transaction()
     |> case do
       {:ok, %{crew_update_leader: crew}} ->
-        broadcast_crew(crew, {:leader_changed, leader})
+        broadcast_crew(crew, {:leader_changed, crew})
         {:ok, crew}
 
       error ->
@@ -226,7 +225,7 @@ defmodule Itsm.Crews do
   end
 
   defp remove_user(repo, %Crew{} = crew, %User{} = target_user) do
-    repo.get_by(Member, crew_id: crew.id, user_id: target_user.id)
+    repo.get_by(CrewsUsers, crew_id: crew.id, user_id: target_user.id)
     |> repo.delete()
     |> case do
       {:ok, _} ->

@@ -110,10 +110,7 @@ defmodule ItsmWeb.TeamLive.Show do
             <div class="flex gap-1">
               <%!-- leader 위임 버튼 --%>
               <button
-                :if={
-                  @current_user == @leader or
-                    (@leader in ["", nil] and Enum.member?(@crew.users, @current_user))
-                }
+                :if={@current_user == @leader or @leader in ["", nil]}
                 phx-click="switch_leader"
                 phx-value-user-id={user.id}
                 class="text-gray-400 hover:text-gray-600 px-2 py-1"
@@ -190,17 +187,17 @@ defmodule ItsmWeb.TeamLive.Show do
     end
   end
 
-  # 리더 변경, 리더 할당, 멤버 추가, 멤버 삭제 시
-  def handle_info({:leader_changed, leader}, socket) do
-    IO.inspect("handle_info received:#{inspect(self())} leader_changed")
-    %{leader: previous_leader} = socket.assigns
+  # 리더 변경시 각 버튼의 권한이 달라지므로 전체 stream 전체 reset 처리
+  def handle_info({:leader_changed, %{id: crew_id}}, socket) do
+    crew =
+      Crews.get_crew!(crew_id)
+      |> Crews.preload_leader_and_users()
 
     socket =
       socket
       |> assign(:show_member_modal, false)
-      |> assign(:leader, leader)
-      |> stream_delete(:users, leader)
-      |> stream_insert(:users, previous_leader)
+      |> assign(:leader, crew.leader)
+      |> stream(:users, Crews.list_regular_users(crew), reset: true)
 
     {:noreply, socket}
   end

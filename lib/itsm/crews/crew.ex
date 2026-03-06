@@ -1,4 +1,4 @@
-defmodule Itsm.Team.Crew do
+defmodule Itsm.Crews.Crew do
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -12,8 +12,7 @@ defmodule Itsm.Team.Crew do
 
     belongs_to :leader, Itsm.Accounts.User, foreign_key: :leader_id
 
-    has_many :members, Itsm.Team.Member
-    many_to_many :users, Itsm.Accounts.User, join_through: Itsm.Team.Member
+    many_to_many :users, Itsm.Accounts.User, join_through: Itsm.Crews.CrewsUsers
 
     timestamps(type: :utc_datetime)
   end

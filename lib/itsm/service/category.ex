@@ -18,7 +18,7 @@ defmodule Itsm.Service.Category do
     # 용도 : 서비스 요청 시 카테고리 구분 (서버, 네트워크, 보안, 미들웨어, 인터페이스 등)
     field :category, :string
 
-    belongs_to :assignee_crew, Itsm.Team.Crew, type: :binary_id
+    belongs_to :assignee_crew, Itsm.Crews.Crew, type: :binary_id
 
     timestamps(type: :utc_datetime)
   end
