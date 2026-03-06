@@ -28,9 +28,9 @@ defmodule Itsm.Requests do
     |> Repo.preload([
       :category,
       :attachments,
-      assignee_crew: [members: :user],
-      requestor_crew: [members: :user],
-      references: [crew: [members: :user]]
+      assignee_crew: [:users],
+      requestor_crew: [:users],
+      references: [crew: [:users]]
     ])
   end
 

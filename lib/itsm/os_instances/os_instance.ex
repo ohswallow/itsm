@@ -14,7 +14,7 @@ defmodule Itsm.OsInstances.OsInstance do
     # field :crew_id, :binary_id
 
     belongs_to :asset, Itsm.Assets.Asset, type: :binary_id
-    belongs_to :crew, Itsm.Team.Crew, type: :binary_id
+    belongs_to :crew, Itsm.Crews.Crew, type: :binary_id
 
     timestamps(type: :utc_datetime)
   end

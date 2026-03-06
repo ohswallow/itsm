@@ -1,4 +1,4 @@
-defmodule Itsm.Team.Reference do
+defmodule Itsm.Crews.Reference do
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -8,7 +8,7 @@ defmodule Itsm.Team.Reference do
     field :resource_type, :string
     field :resource_id, :binary_id
 
-    belongs_to :crew, Itsm.Team.Crew, type: :binary_id
+    belongs_to :crew, Itsm.Crews.Crew, type: :binary_id
 
     timestamps(type: :utc_datetime)
   end

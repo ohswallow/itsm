@@ -10,11 +10,9 @@ defmodule ItsmWeb.CustomComponents do
         <div class="text-xs text-left text-gray-400 mb-2 font-medium border-b pb-1">
           {@crew.description}
         </div>
-
+        
         <div class="space-y-1">
-          <div :for={member <- @crew.members} class="text-xs text-gray-700">
-            {member.user.display_name}
-          </div>
+          <div :for={user <- @crew.users} class="text-xs text-gray-700">{user.display_name}</div>
         </div>
       </div>
     </div>

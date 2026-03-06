@@ -4,7 +4,7 @@ defmodule Itsm.TeamTest do
   alias Itsm.Team
 
   describe "crews" do
-    alias Itsm.Team.Crew
+    alias Itsm.Crews.Crew
 
     import Itsm.TeamFixtures
 
@@ -79,7 +79,7 @@ defmodule Itsm.TeamTest do
     test "create_member/1 with valid data creates a member" do
       valid_attrs = %{}
 
-      assert {:ok, %Member{} = member} = Team.create_member(valid_attrs)
+      assert {:ok, %CrewsUsers{} = member} = Team.create_member(valid_attrs)
     end
 
     test "create_member/1 with invalid data returns error changeset" do
@@ -90,7 +90,7 @@ defmodule Itsm.TeamTest do
       member = member_fixture()
       update_attrs = %{}
 
-      assert {:ok, %Member{} = member} = Team.update_member(member, update_attrs)
+      assert {:ok, %CrewsUsers{} = member} = Team.update_member(member, update_attrs)
     end
 
     test "update_member/2 with invalid data returns error changeset" do
@@ -101,7 +101,7 @@ defmodule Itsm.TeamTest do
 
     test "delete_member/1 deletes the member" do
       member = member_fixture()
-      assert {:ok, %Member{}} = Team.delete_member(member)
+      assert {:ok, %CrewsUsers{}} = Team.delete_member(member)
       assert_raise Ecto.NoResultsError, fn -> Team.get_member!(member.id) end
     end
 

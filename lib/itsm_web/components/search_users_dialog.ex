@@ -78,4 +78,8 @@ defmodule ItsmWeb.SearchUsersDialog do
 
     {:noreply, socket}
   end
+
+  def handle_event("submit", %{"[user_search_empty_selection]" => _}, socket) do
+    {:noreply, socket}
+  end
 end

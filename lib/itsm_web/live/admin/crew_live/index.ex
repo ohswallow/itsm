@@ -2,7 +2,7 @@ defmodule ItsmWeb.Admin.CrewLive.Index do
   use ItsmWeb, :live_view
 
   alias Itsm.Admin.Crews
-  alias Itsm.Team.Crew
+  alias Itsm.Crews.Crew
 
   @impl true
   def mount(_params, _session, socket) do

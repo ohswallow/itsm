@@ -31,9 +31,9 @@ defmodule Itsm.Service.Request do
     field :requestor_name, :string
     field :status, Ecto.Enum, values: @status_values
 
-    belongs_to :assignee_crew, Itsm.Team.Crew, type: :binary_id
+    belongs_to :assignee_crew, Itsm.Crews.Crew, type: :binary_id
     belongs_to :requestor, Itsm.Accounts.User
-    belongs_to :requestor_crew, Itsm.Team.Crew, type: :binary_id
+    belongs_to :requestor_crew, Itsm.Crews.Crew, type: :binary_id
     belongs_to :category, Category, type: :integer
     embeds_many :common_k_create_vms, CommonKCreateVm, on_replace: :delete
     embeds_many :bank_k_resize_vms, BankKResizeVm, on_replace: :delete
@@ -49,7 +49,7 @@ defmodule Itsm.Service.Request do
       where: [resource_type: "Request"],
       on_replace: :delete
 
-    has_many :references, Itsm.Team.Reference,
+    has_many :references, Itsm.Crews.Reference,
       foreign_key: :resource_id,
       where: [resource_type: "Request"]
 

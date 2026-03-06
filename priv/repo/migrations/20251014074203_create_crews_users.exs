@@ -1,8 +1,8 @@
-defmodule Itsm.Repo.Migrations.CreateMembers do
+defmodule Itsm.Repo.Migrations.CreateCrewsUsers do
   use Ecto.Migration
 
   def change do
-    create table(:members, primary_key: false) do
+    create table(:crews_users, primary_key: false) do
       add :crew_id, references(:crews, on_delete: :delete_all, type: :binary_id),
         primary_key: true
 
@@ -12,7 +12,7 @@ defmodule Itsm.Repo.Migrations.CreateMembers do
       timestamps(type: :utc_datetime)
     end
 
-    create index(:members, [:crew_id])
-    create index(:members, [:user_id])
+    create index(:crews_users, [:crew_id])
+    create index(:crews_users, [:user_id])
   end
 end

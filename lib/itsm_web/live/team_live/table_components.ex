@@ -1,23 +1,29 @@
 defmodule ItsmWeb.TeamLive.TableComponents do
   use ItsmWeb, :html
 
+  alias ItsmWeb.LiveUtil
+
   def crew_table(assigns) do
     assigns = assign_new(assigns, :action, fn -> [] end)
 
     ~H"""
     <.table id="crews" rows={@crews} row_click={@row_click}>
       <:col :let={{_id, crew}} label={gettext("Name")}>{crew.name}</:col>
-
+      
       <:col :let={{_id, crew}} label={gettext("Description")}>{crew.description}</:col>
-
+      
       <:col :let={{_id, crew}} label={gettext("Organization")}>
-        {Itsm.CommonCodes.get_label("계열사", crew.leader.organization_code)}
+        {Itsm.CommonCodes.get_label("계열사", LiveUtil.fetch_safe(crew.leader, "organization_code"))}
       </:col>
-
-      <:col :let={{_id, crew}} label={gettext("Department")}>{crew.leader.department}</:col>
-
-      <:col :let={{_id, crew}} label={gettext("Leader")}>{crew.leader.display_name}</:col>
-
+      
+      <:col :let={{_id, crew}} label={gettext("Department")}>
+        {LiveUtil.fetch_safe(crew.leader, "department")}
+      </:col>
+      
+      <:col :let={{_id, crew}} label={gettext("Leader")}>
+        {LiveUtil.fetch_safe(crew.leader, "display_name")}
+      </:col>
+      
       <%!--
          [수정된 부분]
          render_slot(@action, crew) -> render_slot(@action, {_id, crew})

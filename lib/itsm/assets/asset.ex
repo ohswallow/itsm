@@ -25,8 +25,8 @@ defmodule Itsm.Assets.Asset do
 
     has_one :os_instance, Itsm.OsInstances.OsInstance
 
-    belongs_to :service_crew, Itsm.Team.Crew, type: :binary_id
-    belongs_to :system_crew, Itsm.Team.Crew, type: :binary_id
+    belongs_to :service_crew, Itsm.Crews.Crew, type: :binary_id
+    belongs_to :system_crew, Itsm.Crews.Crew, type: :binary_id
 
     timestamps(type: :utc_datetime)
   end
