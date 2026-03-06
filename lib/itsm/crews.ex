@@ -1,16 +1,15 @@
 defmodule Itsm.Crews do
   import Ecto.Query, warn: false
   alias Itsm.Repo
-  alias Itsm.Team.Crew
+  alias Itsm.Crews.{Crew, CrewsUsers}
   alias Itsm.Accounts.User
-  alias Itsm.Team.Member
 
   # 특정 crew의 변경사항
   def subscribe_crew(crew_id) do
     Phoenix.PubSub.subscribe(Itsm.PubSub, "crew:#{crew_id}")
   end
 
-  def broadcast_crew(crew_id, event) do
+  def broadcast_crew(%Crew{id: crew_id}, event) do
     Phoenix.PubSub.broadcast(Itsm.PubSub, "crew:#{crew_id}", event)
   end
 
@@ -30,66 +29,32 @@ defmodule Itsm.Crews do
 
   def filter_crews(params) do
     Crew
-    # Leader(User) 테이블과 Inner Join 하고, 'leader'라는 별칭(as)을 붙임
-    |> join(:inner, [c], u in assoc(c, :leader), as: :leader)
-    # Join된 데이터를 이용해 Preload (쿼리 한 번으로 가져오기 위함)
-    |> preload([leader: u], leader: u)
+    |> join(:inner, [c], l in assoc(c, :leader))
     |> with_org(params["organization_code"])
     |> search_by(params["keyword"])
+    |> preload(:leader)
     |> Repo.all()
-  end
-
-  # organization이 있을 때: 'leader' 별칭을 사용하여 User 테이블의 organization 컬럼 조회
-  # defp with_organization(query, organization_code) do
-  #   #  when organization in ~w(KB국민은행 KB국민카드 KB캐피탈 KB증권) do
-  #   where(query, [leader: u], u.organization_code == ^organization_code)
-  # end
-
-  # defp with_organization(query, _), do: query
-
-  # [수정] 이름이 아니라 코드로 비교 (u.organization_code)
-  defp with_org(query, organization_code)
-       when is_binary(organization_code) and organization_code != "" do
-    where(query, [leader: u], u.organization_code == ^organization_code)
-  end
-
-  defp with_org(query, _), do: query
-
-  defp search_by(query, keyword) when keyword in ["", nil], do: query
-
-  # Crew(c) 이름, Crew(c) 설명, Leader(u) 이름(display_name)으로 검색
-  defp search_by(query, keyword) do
-    # filter_crews에서 'as: :leader'로 조인했으므로, 여기서 [leader: u]로 접근 가능
-    where(
-      query,
-      [c, leader: u],
-      ilike(c.name, ^"%#{keyword}%") or
-        ilike(c.description, ^"%#{keyword}%") or ilike(u.display_name, ^"%#{keyword}%") or
-        ilike(u.department, ^"%#{keyword}%")
-    )
   end
 
   def list_my_crews(%User{} = user) do
-    Crew
-    |> join(:inner, [c], m in Member, on: m.crew_id == c.id)
-    |> where([_c, m], m.user_id == ^user.id)
-    |> order_by([c, _m], asc: c.name)
-    |> distinct([c], c.id)
-    |> Repo.all()
-    |> Repo.preload(:leader)
+    user
+    |> Repo.preload(crews: [:leader])
+    |> Map.get(:crews)
   end
 
   def get_crew!(id), do: Repo.get!(Crew, id)
 
-  # 뷰에서 필요한 모든 프리로드 조건
-  def get_crew_for_show!(id) do
-    Repo.get!(Crew, id)
-    |> Repo.preload([:leader, members: [:user]])
+  def list_regular_users(%Crew{} = crew) do
+    List.delete(crew.users, crew.leader)
+  end
+
+  def preload_leader_and_users(%Crew{} = crew) do
+    Repo.preload(crew, [:leader, :users])
   end
 
   def live_select_by_name_user_name(name, %User{id: user_id}) do
     user_crew_ids =
-      Member
+      CrewsUsers
       |> where([m], m.user_id == ^user_id)
       |> select([m], m.crew_id)
 
@@ -125,8 +90,8 @@ defmodule Itsm.Crews do
       |> case do
         {:ok, crew} ->
           # Preload 및 Broadcast
-          crew = Repo.preload(crew, [:leader, members: [:user]])
-          broadcast_crew(crew.id, {:crew_updated, crew})
+          crew = Repo.preload(crew, [:leader, :users])
+          broadcast_crew(crew, {:crew_updated, crew})
           broadcast_crews_list({:crew_updated, crew})
           {:ok, crew}
 
@@ -164,5 +129,116 @@ defmodule Itsm.Crews do
     else
       {:error, :unauthorized}
     end
+  end
+
+  def add_member(%Crew{} = crew, add_users) when is_list(add_users) do
+    new_users =
+      (crew.users ++ add_users)
+      |> Enum.uniq_by(& &1.id)
+
+    crew
+    |> Crew.users_changeset(new_users)
+    |> Repo.update()
+    |> case do
+      {:ok, crew} ->
+        broadcast_crew(crew, {:member_added, add_users})
+        {:ok, crew}
+
+      {:error, _} = error ->
+        error
+    end
+  end
+
+  def switch_leader(%Crew{} = crew, %User{} = leader, %User{} = user) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.run(:crew_is_auth, fn _repo, _changes ->
+      check_is_auth(crew, user)
+    end)
+    |> Ecto.Multi.run(:crew_new_leader_is_crew, fn _repo, _changes ->
+      check_new_leader_is_crew(crew, leader)
+    end)
+    |> Ecto.Multi.update(:crew_update_leader, Crew.leader_changeset(crew, leader))
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{crew_update_leader: crew}} ->
+        broadcast_crew(crew, {:leader_changed, crew})
+        {:ok, crew}
+
+      error ->
+        error
+    end
+  end
+
+  def remove_user_from_crew(%Crew{} = crew, %User{} = target_user, %User{} = actor) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.run(:crew_authorize_user_removal, fn _repo, _changes ->
+      authorize_user_removal(crew, target_user, actor)
+    end)
+    |> Ecto.Multi.run(:crew_remove_user, fn repo, _changes ->
+      remove_user(repo, crew, target_user)
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{crew_remove_user: crew}} ->
+        broadcast_crew(crew, {:member_removed, target_user})
+        {:ok, crew}
+
+      error ->
+        error
+    end
+  end
+
+  defp with_org(query, keyword) when keyword in ["", nil], do: query
+
+  defp with_org(query, organization_code) do
+    where(query, [c, l], l.organization_code == ^organization_code)
+  end
+
+  defp search_by(query, keyword) when keyword in ["", nil], do: query
+
+  defp search_by(query, keyword) do
+    where(
+      query,
+      [c, l],
+      ilike(c.name, ^"%#{keyword}%") or
+        ilike(c.description, ^"%#{keyword}%") or ilike(l.display_name, ^"%#{keyword}%") or
+        ilike(l.department, ^"%#{keyword}%")
+    )
+  end
+
+  defp check_is_auth(%Crew{leader: leader}, _user) when leader in [nil, ""],
+    do: {:ok, :authorized}
+
+  defp check_is_auth(%Crew{users: []}, _user), do: {:ok, :authorized}
+
+  defp check_is_auth(%Crew{leader: leader}, %User{} = user) do
+    if leader == user, do: {:ok, :authorized}, else: {:error, :unauthorized}
+  end
+
+  defp check_new_leader_is_crew(%Crew{leader: leader}, _user) when leader in [nil, ""],
+    do: {:ok, :authorized}
+
+  defp check_new_leader_is_crew(%Crew{users: []}, _user), do: {:ok, :authorized}
+
+  defp check_new_leader_is_crew(%Crew{} = crew, %User{} = leader) do
+    if Enum.member?(crew.users, leader), do: {:ok, :authorized}, else: {:error, :unauthorized}
+  end
+
+  defp remove_user(repo, %Crew{} = crew, %User{} = target_user) do
+    repo.get_by(CrewsUsers, crew_id: crew.id, user_id: target_user.id)
+    |> repo.delete()
+    |> case do
+      {:ok, _} ->
+        {:ok, crew}
+
+      {:error, _} = error ->
+        error
+    end
+  end
+
+  defp authorize_user_removal(crew, target_user, user) do
+    if user == crew.leader or user == target_user,
+      do: {:ok, :authorized},
+      else: {:error, :unauthorized}
   end
 end

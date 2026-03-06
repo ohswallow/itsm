@@ -48,6 +48,12 @@ defmodule Itsm.Accounts do
 
   def get_user(id), do: Repo.get(User, id)
 
+  def get_users(ids) when is_list(ids) do
+    User
+    |> where([u], u.id in ^ids)
+    |> Repo.all()
+  end
+
   @doc """
   Gets a single user.
 

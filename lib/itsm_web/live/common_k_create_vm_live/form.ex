@@ -167,7 +167,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
       {:error, step, _changeset, _so_far_changeset} ->
         changeset =
           socket.assigns.form.source
-          |> Ecto.Changeset.add_error(:base, LiveUtil.handle_multi_error(step))
+          |> Ecto.Changeset.add_error(:base, LiveUtil.translate_step_error(step))
           |> Map.put(:action, :insert)
 
         {:noreply,

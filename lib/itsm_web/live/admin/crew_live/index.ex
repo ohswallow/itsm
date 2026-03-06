@@ -2,7 +2,7 @@ defmodule ItsmWeb.Admin.CrewLive.Index do
   use ItsmWeb, :live_view
 
   alias Itsm.Admin.Crews
-  alias Itsm.Team.Crew
+  alias Itsm.Crews.Crew
   alias Itsm.Paging
 
   @impl true
@@ -33,7 +33,7 @@ defmodule ItsmWeb.Admin.CrewLive.Index do
       Paging.search_and_pagination(params, url, Crew, [
         :name,
         :description,
-        {:members, {:user, :display_name}}
+        {:users, :display_name}
       ])
 
     socket

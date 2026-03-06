@@ -18,8 +18,13 @@ defmodule Itsm.Accounts.User do
     # group_code: "역할"
     field :role, :string, default: "general"
 
-    has_many :members, Itsm.Team.Member
-    has_many :crews, through: [:members, :crew]
+    # has_many through :  CrewsUsers에 N:N 조인 컬럼목적 컬럼 아닌 컬럼 존재시 CrewsUsers 에 접근할수 있게 사용하는 목적
+    # many_to_many join_through : 순수 조인 컬럼 있다면 join_through 사용해야함
+    # has_many :members, Itsm.Crews.CrewsUsers
+    # has_many :crews, through: [:members, :crew]
+
+    many_to_many :crews, Itsm.Crews.Crew, join_through: Itsm.Crews.CrewsUsers
+
     has_many :comments, Itsm.Comments.Comment
     has_many :requests, Itsm.Service.Request, foreign_key: :requestor_id
 

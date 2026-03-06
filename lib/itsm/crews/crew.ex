@@ -1,4 +1,4 @@
-defmodule Itsm.Team.Crew do
+defmodule Itsm.Crews.Crew do
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -10,9 +10,9 @@ defmodule Itsm.Team.Crew do
     # field :organization, :string
     # field :department, :string
 
-    belongs_to :leader, Itsm.Accounts.User, type: :binary_id
-    has_many :members, Itsm.Team.Member
-    many_to_many :users, Itsm.Accounts.User, join_through: Itsm.Team.Member
+    belongs_to :leader, Itsm.Accounts.User, foreign_key: :leader_id
+
+    many_to_many :users, Itsm.Accounts.User, join_through: Itsm.Crews.CrewsUsers
 
     timestamps(type: :utc_datetime)
   end
@@ -27,6 +27,18 @@ defmodule Itsm.Team.Crew do
     |> unique_constraint(:name)
     |> validate_format(:name, ~r/^[A-Za-z]{5}$/, message: "must be exactly 5 alphabetic letters")
     |> validate_length(:description, min: 5, max: 30)
+  end
+
+  def users_changeset(crew, users) do
+    crew
+    |> change()
+    |> put_assoc(:users, users)
+  end
+
+  def leader_changeset(crew, %{id: leader_id}) do
+    crew
+    |> cast(%{leader_id: leader_id}, [:leader_id])
+    |> validate_required([:leader_id])
   end
 
   # Crew 이름을 대문자로 변환
