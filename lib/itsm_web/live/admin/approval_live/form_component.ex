@@ -62,6 +62,7 @@ defmodule ItsmWeb.Admin.ApprovalLive.FormComponent do
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
+  @impl true
   def handle_event("save", %{"approval" => approval_params}, socket) do
     save_approval(socket, socket.assigns.action, approval_params)
   end

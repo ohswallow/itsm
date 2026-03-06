@@ -1,53 +1,53 @@
 <.header>
   Listing Requests
 </.header>
-
-<.table
-  id="requests"
-  rows={@streams.requests}
-  row_click={fn {_id, request} -> JS.navigate("/admin/requests/#{request.id}") end}
->
-  <:col :let={{_id, request}} label={gettext("Title")}>{request.title}</:col>
-
-  <:col
-    :let={{_id, request}}
-    label={gettext("Description")}
+<.itsm_table_container results={@results}>
+  <.table
+    id="requests"
+    rows={@streams.requests}
+    row_click={fn {_id, request} -> JS.navigate("/admin/requests/#{request.id}") end}
   >
-    <div class="w-[90px] truncate">{request.description}</div>
-  </:col>
+    <:col :let={{_id, request}} label={gettext("Title")}>{request.title}</:col>
 
-  <:col :let={{_id, request}} label={gettext("Environment")}>{request.env}</:col>
-
-  <:col :let={{id, request}} label={gettext("Due Date")}>
-    <div id={"due_date_#{id}"} phx-hook="LocalTime.ToLocale" utc-value={request.due_date} />
-  </:col>
-
-  <:col :let={{_id, request}} label={gettext("Request Type")}>
-    {request.category.request_name}
-  </:col>
-
-  <:col :let={{_id, request}} label={gettext("Request Name")}>{request.category.name}</:col>
-
-  <:action :let={{_id, request}}>
-    <div class="sr-only"><.link navigate={~p"/admin/requests/#{request}"}>Show</.link></div>
-    <.link navigate={"/admin/requests/#{request.id}/edit"}>Edit</.link>
-  </:action>
-
-  <:action :let={{id, request}}>
-    <.link
-      phx-click={JS.push("delete", value: %{id: request.id}) |> hide("##{id}")}
-      data-confirm="Are you sure?"
+    <:col
+      :let={{_id, request}}
+      label={gettext("Description")}
     >
-      Delete
-    </.link>
-  </:action>
-</.table>
+      <div class="w-[90px] truncate">{request.description}</div>
+    </:col>
 
+    <:col :let={{_id, request}} label={gettext("Environment")}>{request.env}</:col>
+
+    <:col :let={{id, request}} label={gettext("Due Date")}>
+      <div id={"due_date_#{id}"} phx-hook="LocalTime.ToLocale" utc-value={request.due_date} />
+    </:col>
+
+    <:col :let={{_id, request}} label={gettext("Request Type")}>
+      {request.category.request_name}
+    </:col>
+
+    <:col :let={{_id, request}} label={gettext("Request Name")}>{request.category.name}</:col>
+
+    <:action :let={{_id, request}}>
+      <div class="sr-only"><.link navigate={~p"/admin/requests/#{request}"}>Show</.link></div>
+      <.link navigate={"/admin/requests/#{request.id}/edit"}>Edit</.link>
+    </:action>
+
+    <:action :let={{id, request}}>
+      <.link
+        phx-click={JS.push("delete", value: %{id: request.id}) |> hide("##{id}")}
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
+  </.table>
+</.itsm_table_container>
 <.modal
   :if={@live_action == :edit}
   id="request-modal"
   show
-  on_cancel={JS.patch(~p"/admin/requests")}
+  on_cancel={JS.patch(~p"/admin/requests?#{@results.params}")}
 >
   <.live_component
     module={ItsmWeb.Admin.RequestLive.FormComponent}
@@ -55,6 +55,6 @@
     title={@page_title}
     action={@live_action}
     request={@request}
-    patch={~p"/admin/requests"}
+    patch={~p"/admin/requests?#{@results.params}"}
   />
 </.modal>

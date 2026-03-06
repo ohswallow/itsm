@@ -4,6 +4,20 @@ defmodule ItsmWeb.Admin.CategoryLive.FormComponent do
   alias Itsm.Admin.Categories
 
   @impl true
+  def update(%{category: category} = assigns, socket) do
+    assignee_crews_options =
+      Itsm.Crews.list_crews() |> Enum.map(fn crew -> {crew.name, crew.id} end)
+
+    {:ok,
+     socket
+     |> assign(assigns)
+     |> assign_new(:form, fn ->
+       to_form(Categories.change_category(category))
+     end)
+     |> assign_new(:assignee_crews_options, fn -> assignee_crews_options end)}
+  end
+
+  @impl true
   def render(assigns) do
     ~H"""
     <div>
@@ -65,25 +79,12 @@ defmodule ItsmWeb.Admin.CategoryLive.FormComponent do
   end
 
   @impl true
-  def update(%{category: category} = assigns, socket) do
-    assignee_crews_options =
-      Itsm.Crews.list_crews() |> Enum.map(fn crew -> {crew.name, crew.id} end)
-
-    {:ok,
-     socket
-     |> assign(assigns)
-     |> assign_new(:form, fn ->
-       to_form(Categories.change_category(category))
-     end)
-     |> assign_new(:assignee_crews_options, fn -> assignee_crews_options end)}
-  end
-
-  @impl true
   def handle_event("validate", %{"category" => category_params}, socket) do
     changeset = Categories.change_category(socket.assigns.category, category_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
+  @impl true
   def handle_event("save", %{"category" => category_params}, socket) do
     save_category(socket, socket.assigns.action, category_params)
   end

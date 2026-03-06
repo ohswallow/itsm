@@ -1,38 +1,38 @@
 <.header>
   Listing Comments
 </.header>
+<.itsm_table_container results={@results}>
+  <.table
+    id="comments"
+    rows={@streams.comments}
+    row_click={fn {_id, comment} -> JS.navigate(~p"/admin/comments/#{comment}") end}
+  >
+    <:col :let={{_id, comment}} label={gettext("Resource")}>{comment.resource_type}</:col>
 
-<.table
-  id="comments"
-  rows={@streams.comments}
-  row_click={fn {_id, comment} -> JS.navigate(~p"/admin/comments/#{comment}") end}
->
-  <:col :let={{_id, comment}} label={gettext("Resource")}>{comment.resource_type}</:col>
+    <:col :let={{_id, comment}} label={gettext("Comment")}>{comment.comment}</:col>
 
-  <:col :let={{_id, comment}} label={gettext("Comment")}>{comment.comment}</:col>
+    <:col :let={{_id, comment}} label={gettext("User")}>{comment.user.display_name}</:col>
 
-  <:col :let={{_id, comment}} label={gettext("User")}>{comment.user.display_name}</:col>
+    <:action :let={{_id, comment}}>
+      <div class="sr-only"><.link navigate={~p"/admin/comments/#{comment}"}>Show</.link></div>
+      <.link patch={~p"/admin/comments/#{comment}/edit"}>Edit</.link>
+    </:action>
 
-  <:action :let={{_id, comment}}>
-    <div class="sr-only"><.link navigate={~p"/admin/comments/#{comment}"}>Show</.link></div>
-    <.link patch={~p"/admin/comments/#{comment}/edit"}>Edit</.link>
-  </:action>
-
-  <:action :let={{id, comment}}>
-    <.link
-      phx-click={JS.push("delete", value: %{id: comment.id}) |> hide("##{id}")}
-      data-confirm="Are you sure?"
-    >
-      Delete
-    </.link>
-  </:action>
-</.table>
-
+    <:action :let={{id, comment}}>
+      <.link
+        phx-click={JS.push("delete", value: %{id: comment.id}) |> hide("##{id}")}
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
+  </.table>
+</.itsm_table_container>
 <.modal
   :if={@live_action == :edit}
   id="comment-modal"
   show
-  on_cancel={JS.patch(~p"/admin/comments")}
+  on_cancel={JS.patch(~p"/admin/comments?#{@results.params}")}
 >
   <.live_component
     module={ItsmWeb.Admin.CommentLive.FormComponent}
@@ -40,6 +40,6 @@
     title={@page_title}
     action={@live_action}
     comment={@comment}
-    patch={~p"/admin/comments"}
+    patch={~p"/admin/comments?#{@results.params}"}
   />
 </.modal>

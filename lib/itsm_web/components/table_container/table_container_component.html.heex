@@ -1,0 +1,10 @@
+<div>
+  <.table_container_ui
+    {@rest}
+    id="table-container-static-id"
+    results={@results}
+    target={@myself}
+  >
+    {render_slot(@inner_block)}
+  </.table_container_ui>
+</div>

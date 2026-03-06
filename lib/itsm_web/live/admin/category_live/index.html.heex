@@ -1,55 +1,57 @@
 <.header>
   Listing Categories
   <:actions>
-    <.link patch={~p"/admin/categories/new"}><.button>New Category</.button></.link>
+    <.link patch={~p"/admin/categories/new"}>
+      <.button>New Category</.button>
+    </.link>
   </:actions>
 </.header>
+<.itsm_table_container results={@results}>
+  <.table
+    id="categories"
+    rows={@streams.categories}
+    row_click={fn {_id, category} -> JS.navigate(~p"/admin/categories/#{category}") end}
+  >
+    <:col :let={{_id, category}} label={gettext("Name")}>{category.name}</:col>
 
-<.table
-  id="categories"
-  rows={@streams.categories}
-  row_click={fn {_id, category} -> JS.navigate(~p"/admin/categories/#{category}") end}
->
-  <:col :let={{_id, category}} label={gettext("Name")}>{category.name}</:col>
+    <:col :let={{_id, category}} label={gettext("Description")}>{category.description}</:col>
 
-  <:col :let={{_id, category}} label={gettext("Description")}>{category.description}</:col>
+    <:col :let={{_id, category}} label={gettext("Affiliate")}>
+      {Itsm.CommonCodes.get_label("계열사", category.affiliate)}
+    </:col>
 
-  <:col :let={{_id, category}} label={gettext("Affiliate")}>
-    {Itsm.CommonCodes.get_label("계열사", category.affiliate)}
-  </:col>
+    <:col :let={{_id, category}} label={gettext("Request name")}>{category.request_name}</:col>
 
-  <:col :let={{_id, category}} label={gettext("Request name")}>{category.request_name}</:col>
+    <:col :let={{_id, category}} label={gettext("Group")}>
+      {Itsm.CommonCodes.get_label("지역_유형", category.group)}
+    </:col>
 
-  <:col :let={{_id, category}} label={gettext("Group")}>
-    {Itsm.CommonCodes.get_label("지역_유형", category.group)}
-  </:col>
+    <:col :let={{_id, category}} label={gettext("Category")}>{category.category}</:col>
 
-  <:col :let={{_id, category}} label={gettext("Category")}>{category.category}</:col>
+    <:col :let={{_id, category}} label={gettext("Duration")}>{category.duration}</:col>
 
-  <:col :let={{_id, category}} label={gettext("Duration")}>{category.duration}</:col>
+    <:col :let={{_id, category}} label={gettext("Active")}>{category.active}</:col>
 
-  <:col :let={{_id, category}} label={gettext("Active")}>{category.active}</:col>
+    <:action :let={{_id, category}}>
+      <div class="sr-only"><.link navigate={~p"/admin/categories/#{category}"}>Show</.link></div>
+      <.link patch={~p"/admin/categories/#{category}/edit"}>Edit</.link>
+    </:action>
 
-  <:action :let={{_id, category}}>
-    <div class="sr-only"><.link navigate={~p"/admin/categories/#{category}"}>Show</.link></div>
-    <.link patch={~p"/admin/categories/#{category}/edit"}>Edit</.link>
-  </:action>
-
-  <:action :let={{id, category}}>
-    <.link
-      phx-click={JS.push("delete", value: %{id: category.id}) |> hide("##{id}")}
-      data-confirm="Are you sure?"
-    >
-      Delete
-    </.link>
-  </:action>
-</.table>
-
+    <:action :let={{id, category}}>
+      <.link
+        phx-click={JS.push("delete", value: %{id: category.id}) |> hide("##{id}")}
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
+  </.table>
+</.itsm_table_container>
 <.modal
   :if={@live_action in [:new, :edit]}
   id="category-modal"
   show
-  on_cancel={JS.patch(~p"/admin/categories")}
+  on_cancel={JS.patch(~p"/admin/categories?#{@results.params}")}
 >
   <.live_component
     module={ItsmWeb.Admin.CategoryLive.FormComponent}
@@ -57,6 +59,6 @@
     title={@page_title}
     action={@live_action}
     category={@category}
-    patch={~p"/admin/categories"}
+    patch={~p"/admin/categories?#{@results.params}"}
   />
 </.modal>
