@@ -4,6 +4,16 @@ defmodule ItsmWeb.Admin.CommentLive.FormComponent do
   alias Itsm.Admin.Comments
 
   @impl true
+  def update(%{comment: comment} = assigns, socket) do
+    {:ok,
+     socket
+     |> assign(assigns)
+     |> assign_new(:form, fn ->
+       to_form(Comments.change_comment(comment))
+     end)}
+  end
+
+  @impl true
   def render(assigns) do
     ~H"""
     <div>
@@ -31,16 +41,6 @@ defmodule ItsmWeb.Admin.CommentLive.FormComponent do
       </.simple_form>
     </div>
     """
-  end
-
-  @impl true
-  def update(%{comment: comment} = assigns, socket) do
-    {:ok,
-     socket
-     |> assign(assigns)
-     |> assign_new(:form, fn ->
-       to_form(Comments.change_comment(comment))
-     end)}
   end
 
   @impl true

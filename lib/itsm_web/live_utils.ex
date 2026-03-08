@@ -17,7 +17,7 @@ defmodule ItsmWeb.LiveUtil do
   def translate_step_error(:crew_update_leader), do: "Leader update failed"
   def translate_step_error(step), do: "Data processing failed at an unknown step. #{step}"
 
-  def fetch_safe(data, field, default \\ "") do
+  def fetch_safe(data, field, default \\ "") when is_atom(field) do
     if data, do: Map.get(data, field, default), else: default
   end
 

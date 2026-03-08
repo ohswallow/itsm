@@ -24,6 +24,24 @@ defmodule ItsmWeb.CalendarComponent do
      |> update_calendar_grid()}
   end
 
+  @impl true
+  def handle_event("shift", %{"unit" => unit, "amount" => amount}, socket) do
+    new_date =
+      socket.assigns.view_date
+      |> Date.beginning_of_month()
+      |> Date.shift([{String.to_existing_atom(unit), String.to_integer(amount)}])
+      |> Date.beginning_of_month()
+
+    {:noreply, socket |> assign(view_date: new_date) |> update_calendar_grid()}
+  end
+
+  @impl true
+  def handle_event("selected_date_time", %{"datetime" => datetime}, socket) do
+    {:noreply,
+     socket
+     |> assign(selected_date_time: datetime |> DateTime.from_iso8601() |> elem(1))}
+  end
+
   defp assign_initial_values(socket) do
     socket
     |> assign_new(:id, fn -> socket.assigns[:field] && socket.assigns[:field].id end)
@@ -82,23 +100,5 @@ defmodule ItsmWeb.CalendarComponent do
 
   defp check_list_and_continue(false, date, min, max) do
     is_disabled?(date, min, max, nil)
-  end
-
-  @impl true
-  def handle_event("shift", %{"unit" => unit, "amount" => amount}, socket) do
-    new_date =
-      socket.assigns.view_date
-      |> Date.beginning_of_month()
-      |> Date.shift([{String.to_existing_atom(unit), String.to_integer(amount)}])
-      |> Date.beginning_of_month()
-
-    {:noreply, socket |> assign(view_date: new_date) |> update_calendar_grid()}
-  end
-
-  @impl true
-  def handle_event("selected_date_time", %{"datetime" => datetime}, socket) do
-    {:noreply,
-     socket
-     |> assign(selected_date_time: datetime |> DateTime.from_iso8601() |> elem(1))}
   end
 end

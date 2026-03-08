@@ -3,7 +3,9 @@ defmodule ItsmWeb.ItsmComponents do
   use Gettext, backend: ItsmWeb.Gettext
 
   alias Phoenix.LiveView.JS
-  import ItsmWeb.CoreComponents, only: [icon: 1, hide: 1, label: 1, error: 1, translate_error: 1]
+
+  import ItsmWeb.CoreComponents,
+    only: [icon: 1, hide: 1, label: 1, error: 1, translate_error: 1, input: 1]
 
   attr :field, Phoenix.HTML.FormField, doc: "@form[:start_date_time]"
   attr :id, :string
@@ -76,20 +78,20 @@ defmodule ItsmWeb.ItsmComponents do
   def calendar_ui(assigns) do
     ~H"""
     <div
+      {@rests[:container]}
       phx-feedback-for={@field[:name]}
       class="relative"
       id={"datepicker-container-#{@id}"}
       data-calendar-root
-      {@rests[:container]}
     >
       <div>
-        <div
+        <d
           :if={assigns[:label]}
-          class="block text-sm font-semibold leading-6 text-zinc-800"
           label={@label}
+          class="block text-sm font-semibold leading-6 text-zinc-800"
         >
           {@label}
-        </div>
+        </d>
         <div
           id={"datepicker-input-#{@id}"}
           class="flex items-center border rounded-lg px-3 py-2 cursor-pointer hover:border-indigo-500 bg-white"
@@ -110,13 +112,13 @@ defmodule ItsmWeb.ItsmComponents do
             value={@selected_date_time}
           />
           <div
+            {@rests[:selected_date_time]}
+            {@rest}
             id={"display_date_time-#{@id}"}
             class="text-gray-700 pointer-events-none w-full"
             phx-hook="LocalTime.ToLocale"
             utc-value={@selected_date_time}
             format={if @show_time, do: "datetime", else: "date"}
-            {@rests[:selected_date_time]}
-            {@rest}
           >
           </div>
           <span class="text-gray-400">📅</span>
@@ -125,10 +127,10 @@ defmodule ItsmWeb.ItsmComponents do
       </div>
 
       <div
+        {@rests[:popup]}
         id={"#{@id}-calendar-popup"}
         class="hidden absolute z-50 mt-2 p-4 bg-white border rounded-xl shadow-xl w-80"
         phx-click-away={JS.hide(to: "##{@id}-calendar-popup")}
-        {@rests[:popup]}
       >
         <div class="flex items-center justify-between mb-4">
           <div class="flex gap-1">
@@ -181,6 +183,7 @@ defmodule ItsmWeb.ItsmComponents do
         </div>
 
         <div
+          {@rests[:grid]}
           id={"#{@id}-calendar-grid"}
           phx-hook="Calendar.DateGrid"
           phx-target={@target}
@@ -188,7 +191,6 @@ defmodule ItsmWeb.ItsmComponents do
           utc-value={@selected_date_time}
           format="datetime"
           data-show-time={"#{@show_time}"}
-          {@rests[:grid]}
         >
           <div :for={day_name <- ~w(일 월 화 수 목 금 토)} class="text-xs text-gray-400 pb-2">
             {day_name}
@@ -196,6 +198,7 @@ defmodule ItsmWeb.ItsmComponents do
 
           <div
             :for={{date, index} <- Enum.with_index(@days)}
+            {@rests[:date]}
             id={"#{@id}-date-#{date.date}"}
             data-date={date.date}
             data-disabled={date.disabled || nil}
@@ -204,7 +207,6 @@ defmodule ItsmWeb.ItsmComponents do
               "p-2 text-sm rounded-lg transition-all cursor-pointer hover:bg-gray-100"
             ]}
             phx-update="ignore"
-            {@rests[:date]}
           >
             {date.day}
           </div>
@@ -216,6 +218,7 @@ defmodule ItsmWeb.ItsmComponents do
         >
           <div class="flex items-center gap-1 bg-gray-50 p-2 rounded-lg border border-gray-200 w-fit">
             <input
+              {@rests[:hour]}
               id={"#{@id}-selected_date_time-hour"}
               phx-hook="Calendar.Input"
               utc-value={@selected_date_time}
@@ -226,9 +229,9 @@ defmodule ItsmWeb.ItsmComponents do
               phx-target={@target}
               phx-update="ignore"
               class="w-24 bg-transparent text-center font-mono text-lg focus:outline-none focus:text-blue-600"
-              {@rests[:hour]}
             /> <span class="text-gray-400 font-bold">:</span>
             <input
+              {@rests[:minute]}
               id={"#{@id}-selected_date_time-minute"}
               phx-hook="Calendar.Input"
               utc-value={@selected_date_time}
@@ -239,11 +242,171 @@ defmodule ItsmWeb.ItsmComponents do
               phx-target={@target}
               phx-update="ignore"
               class="w-24 bg-transparent text-center font-mono text-lg focus:outline-none focus:text-blue-600"
-              {@rests[:minute]}
             />
           </div>
         </div>
       </div>
+    </div>
+    """
+  end
+
+  attr :id, :string, default: "table-static-id"
+  attr :results, :map, required: true
+  attr :rest, :map, default: %{}
+  slot :inner_block, required: true
+
+  def itsm_table_container(assigns) do
+    ~H"""
+    <.live_component
+      module={ItsmWeb.TableContainerComponent}
+      id={assigns[:id] || (assigns[:field] && assigns[:field].id) || "table-static-id"}
+      results={@results}
+      rest={assigns[:rest] || %{}}
+    >
+      {render_slot(@inner_block)}
+    </.live_component>
+    """
+  end
+
+  attr :id, :string, default: "table-static-id"
+  attr :results, :map, required: true
+  attr :rest, :map, default: %{}
+  slot :inner_block, required: true
+  attr :target, :any, default: nil
+
+  def table_container_ui(assigns) do
+    ~H"""
+    <div class="filter-section">
+      <form
+        {@rest}
+        phx-change="update-filters"
+        class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end"
+        phx-target={@target}
+      >
+        <div class="md:col-span-4">
+          <label class="form-label">검색 컬럼 선택</label>
+          <.input
+            id={@id <> "util_filters_search_columns"}
+            type="select"
+            name="search_columns[]"
+            options={@results.columns_options}
+            multiple
+            size="1"
+            phx-hook="InputSelect.selectAll"
+            value={@results.params.search_columns || [""]}
+          />
+        </div>
+
+        <div class="md:col-span-6">
+          <label class="form-label">검색</label>
+          <.input
+            type="text"
+            name="search"
+            placeholder="검색어를 입력해주세요"
+            value={@results.params.search}
+            phx-debounce="300"
+          />
+        </div>
+
+        <div class="md:col-span-2 flex justify-end pb-1">
+          <.link
+            patch={@results.current_path}
+            class="btn-secondary py-2 px-4 text-sm group flex items-center w-full justify-center"
+          >
+            <.icon
+              name="hero-arrow-path"
+              class="mr-2 h-4 w-4 group-hover:rotate-180 transition-transform duration-500"
+            /> <span>초기화</span>
+          </.link>
+        </div>
+      </form>
+    </div>
+
+    <div class="table-container">{render_slot(@inner_block)}</div>
+
+    <div class="grid grid-cols-3 items-center w-full mt-6">
+      <div class="justify-self-start flex items-center">
+        <div class="text-sm text-zinc-600">Total: {@results.total_count}</div>
+        <form phx-change="update-filters" phx-target={@target} class="ml-4">
+          <input
+            type="number"
+            name="page_size"
+            value={@results.params.page_size}
+            class="w-12 px-2 py-1 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-zinc-400"
+            phx-debounce="500"
+          />
+        </form>
+      </div>
+      <nav class="justify-self-center flex gap-2 items-center">
+        <div class="pagination flex items-center">
+          <.link
+            :if={@results.params.page > 1}
+            patch={"#{@results.current_path}?#{Plug.Conn.Query.encode(Map.put(@results.params, :page, @results.params.page - 1))}"}
+            class="pagination-item"
+          >
+            &lt;
+          </.link>
+          <span :if={@results.params.page <= 1} class="pagination-item pagination-item-disabled">
+            &lt;
+          </span>
+
+          <div class="pagination flex items-center">
+            <span
+              :for={
+                page_num <-
+                  Enum.uniq([
+                    1,
+                    @results.params.page - 1,
+                    @results.params.page,
+                    @results.params.page + 1,
+                    @results.total_pages
+                  ])
+              }
+              :if={page_num > 0 and page_num <= @results.total_pages}
+              class="flex items-center"
+            >
+              <span
+                :if={
+                  page_num == @results.total_pages and @results.params.page < @results.total_pages - 2
+                }
+                class="pagination-item border-none"
+              >
+                ...
+              </span>
+
+              <.link
+                patch={"#{@results.current_path}?#{Plug.Conn.Query.encode(Map.put(@results.params, :page, page_num))}"}
+                class={[
+                  "pagination-item",
+                  page_num == @results.params.page && "pagination-item-active"
+                ]}
+              >
+                {page_num}
+              </.link>
+              <span
+                :if={page_num == 1 and @results.params.page > 3}
+                class="pagination-item border-none"
+              >
+                ...
+              </span>
+            </span>
+          </div>
+
+          <.link
+            :if={@results.params.page < @results.total_pages}
+            patch={"#{@results.current_path}?#{Plug.Conn.Query.encode(Map.put(@results.params, :page, @results.params.page + 1))}"}
+            class="pagination-item"
+          >
+            &gt;
+          </.link>
+          <span
+            :if={@results.params.page >= @results.total_pages}
+            class="pagination-item pagination-item-disabled"
+          >
+            &gt;
+          </span>
+        </div>
+      </nav>
     </div>
     """
   end

@@ -64,6 +64,7 @@ defmodule ItsmWeb.Admin.RequestLive.FormComponent do
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
+  @impl true
   def handle_event("save", %{"request" => request_params}, socket) do
     save_request(socket, socket.assigns.action, request_params)
   end

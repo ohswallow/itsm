@@ -51,6 +51,7 @@ defmodule ItsmWeb.Admin.CrewLive.FormComponent do
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
+  @impl true
   def handle_event("save", %{"crew" => crew_params}, socket) do
     save_crew(socket, socket.assigns.action, crew_params)
   end
