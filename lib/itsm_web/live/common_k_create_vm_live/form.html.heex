@@ -41,8 +41,7 @@
   <.itsm_calendar
     field={@form[:due_date]}
     label={gettext("Due Date")}
-    min={Date.utc_today()}
-    show_time
+    min={DateTime.utc_now()}
   />
   <div class="mb-6">
     <h2 class="text-lg font-semibold text-zinc-700">VM 생성 요청</h2>
