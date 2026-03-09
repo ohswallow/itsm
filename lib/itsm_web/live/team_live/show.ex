@@ -24,7 +24,6 @@ defmodule ItsmWeb.TeamLive.Show do
      socket
      |> assign(:page_title, "Show Crew")
      |> assign(:crew, crew)
-     |> assign(:leader, crew.leader)
      |> assign(:show_member_modal, false)
      |> stream(:users, Crews.list_regular_users(crew))}
   end
@@ -35,7 +34,7 @@ defmodule ItsmWeb.TeamLive.Show do
       {@crew.name}
       <:subtitle>{@crew.description}</:subtitle>
        <%!-- 리더만 멤버추가 가능 --%>
-      <:actions :if={@current_user == @leader or Enum.empty?(@crew.users)}>
+      <:actions :if={@current_user == @crew.leader or Enum.empty?(@crew.users)}>
         <.button phx-click="show_member_modal">Add Member</.button>
       </:actions>
     </.header>
@@ -48,8 +47,8 @@ defmodule ItsmWeb.TeamLive.Show do
           <div class="flex items-center gap-3">
             <div>
               <p class="text-sm text-gray-900">
-                <%!-- 리더가 없을때의 경우를 대비해서 if문으로 --%> {if @leader,
-                  do: "#{@leader.display_name} (#{@leader.email})",
+                <%!-- 리더가 없을때의 경우를 대비해서 if문으로 --%> {if @crew.leader,
+                  do: "#{@crew.leader.display_name} (#{@crew.leader.email})",
                   else: "Loading..."}
               </p>
                <%!-- <p class="text-xs text-gray-500">Updated {@crew.leader.updated_at}</p> --%>
@@ -58,7 +57,7 @@ defmodule ItsmWeb.TeamLive.Show do
                 <span
                   id="leader-updated-at"
                   phx-hook="LocalTime.ToLocale"
-                  utc-value={if @leader, do: @leader.updated_at, else: ""}
+                  utc-value={if @crew.leader, do: @crew.leader.updated_at, else: ""}
                 >
                 </span>
               </p>
@@ -66,7 +65,7 @@ defmodule ItsmWeb.TeamLive.Show do
           </div>
            <%!-- 접속자가 leader일 경우 you 표시 --%>
           <span
-            :if={@current_user == @leader}
+            :if={@current_user == @crew.leader}
             class="ml-12 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full"
           >
             You
@@ -110,7 +109,7 @@ defmodule ItsmWeb.TeamLive.Show do
             <div class="flex gap-1">
               <%!-- leader 위임 버튼 --%>
               <button
-                :if={@current_user == @leader or @leader in ["", nil]}
+                :if={@current_user == @crew.leader or @crew.leader in ["", nil]}
                 phx-click="switch_leader"
                 phx-value-user-id={user.id}
                 class="text-gray-400 hover:text-gray-600 px-2 py-1"
@@ -119,7 +118,7 @@ defmodule ItsmWeb.TeamLive.Show do
                 <.icon name="hero-trophy" class="w-4 h-4" />
               </button>
               <button
-                :if={@current_user == @leader or @current_user == user}
+                :if={@current_user == @crew.leader or @current_user == user}
                 phx-click="remove_member"
                 phx-value-user-id={user.id}
                 class="text-gray-400 hover:text-gray-600 px-2 py-1"
@@ -180,6 +179,7 @@ defmodule ItsmWeb.TeamLive.Show do
   def handle_event("show_member_modal", _params, socket) do
     %{crew: crew, current_user: current_user} = socket.assigns
 
+    # 리더가 없을경우 현재 로그인 사람 리더가 됨
     if Enum.empty?(crew.users) and crew.leader in ["", nil] do
       switch_leader(socket, crew, current_user, current_user)
     else
@@ -196,18 +196,18 @@ defmodule ItsmWeb.TeamLive.Show do
     socket =
       socket
       |> assign(:show_member_modal, false)
-      |> assign(:leader, crew.leader)
+      |> assign(:crew, crew)
       |> stream(:users, Crews.list_regular_users(crew), reset: true)
 
     {:noreply, socket}
   end
 
   def handle_info({:member_added, add_users}, socket) do
-    %{leader: leader} = socket.assigns
+    %{crew: crew} = socket.assigns
 
     socket =
       add_users
-      |> List.delete(leader)
+      |> List.delete(crew.leader)
       |> Enum.reduce(socket, fn user, acc ->
         stream_insert(acc, :users, user, at: 0)
       end)
@@ -217,8 +217,6 @@ defmodule ItsmWeb.TeamLive.Show do
   end
 
   def handle_info({:member_removed, removed_user}, socket) do
-    IO.inspect("handle_info received:#{inspect(self())} #{:member_removed}")
-
     {:noreply,
      socket
      |> assign(:show_member_modal, false)
@@ -228,6 +226,10 @@ defmodule ItsmWeb.TeamLive.Show do
   # 멤버 추가 다이얼로그에서 선택된 유저들 처리
   def handle_info({ItsmWeb.SearchUsersDialog, :users_selected, user_ids}, socket) do
     %{crew: crew} = socket.assigns
+
+    crew =
+      Crews.get_crew!(crew.id)
+      |> Crews.preload_leader_and_users()
 
     users = Accounts.get_users(user_ids)
 
