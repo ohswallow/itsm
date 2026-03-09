@@ -41,7 +41,7 @@
   <.itsm_calendar
     field={@form[:due_date]}
     label={gettext("Due Date")}
-    min={Date.utc_today()}
+    min={DateTime.utc_now()}
     show_time
   />
   <div class="mb-6">

@@ -43,6 +43,17 @@ defmodule ItsmWeb.CalendarComponent do
   end
 
   defp assign_initial_values(socket) do
+    defaults = %{
+      label: %{},
+      container: %{},
+      selected_date_time: %{},
+      popup: %{},
+      grid: %{},
+      date: %{},
+      hour: %{},
+      minute: %{}
+    }
+
     socket
     |> assign_new(:id, fn -> socket.assigns[:field] && socket.assigns[:field].id end)
     |> assign_new(:view_date, fn ->
@@ -52,6 +63,7 @@ defmodule ItsmWeb.CalendarComponent do
       socket.assigns[:default_selected_date_time]
     end)
     |> assign_new(:show_time, fn -> false end)
+    |> assign(:rests, Map.merge(defaults, socket.assigns[:rests]))
   end
 
   defp update_calendar_grid(%{assigns: assigns} = socket) do

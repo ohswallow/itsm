@@ -42,9 +42,13 @@ LocalTime.renderElement = (el) => {
   const source = el.getAttribute("utc-value") || el.textContent;
   const result = LocalTime.getValue(source, format);
   if (el.tagName === "INPUT") {
-    el.value = result;
+    if (el.value !== String(result)) {
+      el.value = result;
+    }
   } else {
-    el.textContent = result;
+   if (el.textContent !== String(result)) {
+      el.textContent = result;
+    }
   }
 };
 
