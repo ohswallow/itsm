@@ -2,54 +2,91 @@ import LocalTime from "./LocalTime";
 
 const Calendar = {};
 
-Calendar.updateSelectedDateTime = (container, phxTarget, pushEventTo) => {
-  const selectedDateEl = container.querySelector(".selected-date");
-  const gridEl = container.querySelector("[phx-hook='Calendar.DateGrid']");
-  const baseSource = selectedDateEl ? selectedDateEl.dataset.date : gridEl.getAttribute("utc-value");
+Calendar.getContext = (container) => {
+  if (!container) return null;
+  const uniqueId = container.id.replace("datepicker-container-", "");
+  return {
+    uniqueId,
+    hInput: document.getElementById(`${uniqueId}-selected_date_time-hour`),
+    mInput: document.getElementById(`${uniqueId}-selected_date_time-minute`),
+    sInput: document.getElementById(`selected_date_time-${uniqueId}`),
+    selectedDateEl: container.querySelector(".selected-date")
+  };
+};
 
-  const dt = new Date(baseSource);
-  if (isNaN(dt)) return null;
-
-  const hInput = container.querySelector('input[format="hour"]');
-  const mInput = container.querySelector('input[format="minute"]');
-
+Calendar.clampDateTime = (hInput, mInput, sInput, baseDate) => {
+  let h = 0;
+  let m = 0;
   if (hInput && mInput) {
-    dt.setHours(parseInt(hInput.value, 10) || 0);
-    dt.setMinutes(parseInt(mInput.value, 10) || 0);
-    dt.setSeconds(0);
+    h = parseInt(hInput.value, 10) || 0;
+    m = parseInt(mInput.value, 10) || 0;
+
+    const hMinLimit = parseInt(hInput.min, 10) || 0;
+    const hMaxLimit = parseInt(hInput.max, 10) || 23;
+    const mMinLimit = parseInt(mInput.min, 10) || 0;
+    const mMaxLimit = parseInt(mInput.max, 10) || 59;
+
+    h = Math.min(hMaxLimit, Math.max(hMinLimit, h));
+    m = Math.min(mMaxLimit, Math.max(mMinLimit, m));
   }
 
+  let dt = new Date(baseDate);
+  dt.setHours(h, m, 0, 0);
+  if (sInput.min) {
+    const dtmin = new Date(sInput.min);
+    if (dtmin && !isNaN(dtmin.getTime()) && dt < dtmin) {
+      dt = dtmin;
+      }
+
+  }
+  if (sInput.max) {
+    const dtmax = new Date(sInput.max);
+    if (dtmax && !isNaN(dtmax.getTime()) && dt > dtmax) {
+      dt = dtmax;
+      }
+  }
+  return new Date(dt);
+}
+
+Calendar.updateSelectedDateTime = (container, phxTarget, pushEventTo) => {
+  const ctx = Calendar.getContext(container);
+  if (!ctx || !ctx.sInput || !ctx.selectedDateEl) return null;
+
+  const dt = Calendar.clampDateTime(ctx.hInput, ctx.mInput, ctx.sInput, ctx.selectedDateEl.dataset.date);
+  if (!dt || isNaN(dt.getTime())) return null;
   const isoString = dt.toISOString();
 
-  const selectedDateTimeId = container.id.replace("datepicker-container-", "selected_date_time-");
-  const selectedDateTime = document.getElementById(selectedDateTimeId);
-
-  if (selectedDateTime) {
-    selectedDateTime.value = isoString;
-    selectedDateTime.setAttribute("value", isoString);
-    selectedDateTime.dispatchEvent(new Event("input", { bubbles: true }));
+  if (ctx.sInput.value !== isoString) {
+    ctx.sInput.value = isoString;
+    ctx.sInput.setAttribute("value", isoString);
+    ctx.sInput.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
-  pushEventTo(phxTarget, "selected_date_time", { datetime: isoString });
+  [ctx.hInput, ctx.mInput].forEach(input => {
+    if (input) {
+      const format = input.getAttribute("format");
+      input.value = String(format === "hour") ? dt.getHours() : (format === "minute") ? dt.getMinutes() : 0
+      input.setAttribute("utc-value", isoString);
+      LocalTime.renderElement(input);
+    }
+  });
 
-  return isoString;
+  pushEventTo(phxTarget, "selected_date_time", { datetime: isoString });
 };
 
 Calendar.updateDateElementStatus = (el) => {
-    if (!el) return;
+  const isDisabled = el.hasAttribute('data-disabled') && el.getAttribute('data-disabled') !== "false";
 
-    const isDisabled = el.hasAttribute('data-disabled') && el.getAttribute('data-disabled') !== "false";
+  const disabledClasses = ["text-gray-300", "cursor-not-allowed", "opacity-50"];
+  const enabledClasses = ["cursor-pointer", "hover:bg-gray-100"];
 
-    const disabledClasses = ["text-gray-300", "cursor-not-allowed", "opacity-50"];
-    const enabledClasses = ["cursor-pointer", "hover:bg-gray-100"];
-
-    if (isDisabled) {
-      el.classList.remove(...enabledClasses);
-      el.classList.add(...disabledClasses);
-    } else {
-      el.classList.remove(...disabledClasses);
-      el.classList.add(...enabledClasses);
-    }
+  if (isDisabled) {
+    el.classList.remove(...enabledClasses);
+    el.classList.add(...disabledClasses);
+  } else {
+    el.classList.remove(...disabledClasses);
+    el.classList.add(...enabledClasses);
+  }
 };
 
 Calendar.DateGrid = {
@@ -58,11 +95,14 @@ Calendar.DateGrid = {
       const dateCell = e.target.closest("[data-date]");
       if (!dateCell || dateCell.hasAttribute("data-disabled")) return;
 
-      this.highlightDate(dateCell);
+      const prevSelected = this.el.querySelector(".selected-date");
+      if (prevSelected) {
+        prevSelected.classList.remove("bg-indigo-600", "text-white", "shadow-md", "selected-date");
+      }
+      dateCell.classList.add("bg-indigo-600", "text-white", "shadow-md", "selected-date");
 
-      const container = this.el.closest("[data-calendar-root]");
       Calendar.updateSelectedDateTime(
-        container,
+        this.el.closest("[data-calendar-root]"),
         this.el.getAttribute("phx-target"),
         this.pushEventTo.bind(this)
       );
@@ -72,53 +112,35 @@ Calendar.DateGrid = {
         if (window.liveSocket) window.liveSocket.execJS(this.el, `[[ "hide", { "to": "#${popupId}" } ]]`);
       }
     });
-
-    this.applySelection();
-    this.syncAllDatesStatus();
   },
-
-  syncAllDatesStatus() {
-    const dateEls = this.el.querySelectorAll('[id*="-date-"]');
-    dateEls.forEach(el => Calendar.updateDateElementStatus(el));
-  },
-
-  highlightDate(el) {
-    this.el.querySelectorAll("[data-date]").forEach(cell => {
-      cell.classList.remove("bg-indigo-600", "text-white", "shadow-md", "selected-date");
-    });
-
-    if (el) {
-      el.classList.add("bg-indigo-600", "text-white", "shadow-md", "selected-date");
-    }
-  },
-
-  applySelection() {
-    const currentEl = LocalTime.GridToLocale.findLocalSelectedEl(this);
-    this.highlightDate(currentEl);
-  }
 };
 
 Calendar.Input = {
   mounted() {
     LocalTime.renderElement(this.el);
     this.el.addEventListener("input", e => {
-      const container = this.el.closest("[data-calendar-root]");
-      if (!container) return;
-      let min = parseInt(this.el.getAttribute("min"));
-      let max = parseInt(this.el.getAttribute("max"));
-      let val = parseInt(this.el.value);
+      if (!e.inputType) {
+        Calendar.updateSelectedDateTime(
+          this.el.closest("[data-calendar-root]"),
+          this.el.getAttribute("phx-target"),
+          this.pushEventTo.bind(this)
+        );
+      }
+    });
 
-      if (isNaN(val)) this.el.value = 0;
-      if (val > max) this.el.value = max;
-      if (val < min) this.el.value = min;
-      Calendar.updateSelectedDateTime(container, this.el.getAttribute("phx-target"), this.pushEventTo.bind(this));
+    this.el.addEventListener("blur", () => {
+      Calendar.updateSelectedDateTime(
+        this.el.closest("[data-calendar-root]"),
+        this.el.getAttribute("phx-target"),
+        this.pushEventTo.bind(this)
+      );
     });
   },
   updated() {
     if (document.activeElement !== this.el) {
       LocalTime.renderElement(this.el);
     }
-  }
+  },
 };
 
 Calendar.Toggle = {
@@ -130,6 +152,12 @@ Calendar.Toggle = {
       const dateEls = popup.querySelectorAll('[data-date]');
       dateEls.forEach(el => Calendar.updateDateElementStatus(el));
     });
+  },
+  updated() {
+    const popupId = this.el.id.replace("datepicker-input-", "") + "-calendar-popup";
+    const popup = document.getElementById(popupId);
+    const dateEls = popup.querySelectorAll('[data-date]');
+    dateEls.forEach(el => Calendar.updateDateElementStatus(el));
   }
 };
 
