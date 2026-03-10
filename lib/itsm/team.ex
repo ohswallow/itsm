@@ -8,36 +8,25 @@ defmodule Itsm.Team do
   alias Itsm.Repo
 
   alias Itsm.Crews
+  alias Itsm.Crews.Crew
+  alias Itsm.Crews.Reference
   alias Itsm.Accounts.User
-  alias Itsm.Crews.{Crew, CrewsUsers, Reference}
 
-  def create_crew(attrs, %User{} = user) do
-    Ecto.Multi.new()
-    # 1. Crew 생성 (leader_id 명시적 주입)
-    |> Ecto.Multi.insert(:crew, fn _ ->
-      params = Map.put(attrs, "leader_id", user.id)
-
-      Crew.changeset(%Crew{}, params)
-    end)
-    # 2. 리더를 멤버로 추가 (앞 단계의 crew 결과 사용)
-    |> Ecto.Multi.insert(:leader_as_member, fn %{crew: crew} ->
-      %CrewsUsers{}
-      |> CrewsUsers.changeset(%{crew_id: crew.id, user_id: user.id})
-    end)
-    # 3. 트랜잭션 실행
-    |> Repo.transaction()
+  def create_crew(attrs, %User{} = leader) do
+    Crew.changeset(%Crew{leader: leader, users: [leader]}, attrs)
+    |> Repo.insert()
     # 4. Pub/sub 브로드캐스트 및 결과 반환
     |> case do
       # 중요: %{crew: crew}로 패턴 매칭해서 꺼내야 함
-      {:ok, %{crew: crew}} ->
+      {:ok, crew} ->
         # 멤버가 추가된 직후라 아직 crew.members에 없을 수 있으므로 preload 필수
         crew = Repo.preload(crew, [:leader, :users])
         Crews.broadcast_crews_list({:crew_created, crew})
         {:ok, crew}
 
       # Multi 에러 패턴: {:error, 실패한_단계명, changeset, 성공한_데이터들}
-      {:error, op, changeset, _} ->
-        Logger.warning("create_crew failed at #{op}: #{inspect(changeset.errors)}")
+      {:error, changeset} ->
+        Logger.warning("create_crew failed at #{inspect(changeset.errors)}")
         {:error, changeset}
     end
   end

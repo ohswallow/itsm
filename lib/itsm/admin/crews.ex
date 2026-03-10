@@ -15,6 +15,8 @@ defmodule Itsm.Admin.Crews do
 
   defdelegate change_crew(crew, attrs \\ %{}), to: Itsm.Crews
 
+  defdelegate create_crew(leader, attrs \\ %{}), to: Itsm.Crews
+
   def update_crew(%Crew{} = crew, attrs) do
     crew
     |> Crew.changeset(attrs)

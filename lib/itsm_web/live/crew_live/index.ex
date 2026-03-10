@@ -1,11 +1,11 @@
-defmodule ItsmWeb.TeamLive.MyIndex do
+defmodule ItsmWeb.CrewLive.Index do
   use ItsmWeb, :live_view
 
   alias Itsm.Crews
   alias Itsm.Crews.Crew
 
   # 공통 컴포넌트 임포트
-  import ItsmWeb.TeamLive.TableComponents
+  import ItsmWeb.CrewLive.TableComponents
 
   def mount(_params, _session, socket) do
     current_user = socket.assigns.current_user
@@ -86,7 +86,7 @@ defmodule ItsmWeb.TeamLive.MyIndex do
       on_cancel={JS.patch(~p"/crews")}
     >
       <.live_component
-        module={ItsmWeb.TeamLive.FormComponent}
+        module={ItsmWeb.CrewLive.FormComponent}
         id={@crew.id || :new}
         title={@page_title}
         action={@live_action}
@@ -98,7 +98,7 @@ defmodule ItsmWeb.TeamLive.MyIndex do
     """
   end
 
-  def handle_info({ItsmWeb.TeamLive.FormComponent, {:saved, crew}}, socket) do
+  def handle_info({ItsmWeb.CrewLive.FormComponent, {:saved, crew}}, socket) do
     {:noreply, stream_insert(socket, :crews, crew)}
   end
 

@@ -1,7 +1,6 @@
-defmodule ItsmWeb.TeamLive.FormComponent do
+defmodule ItsmWeb.CrewLive.FormComponent do
   use ItsmWeb, :live_component
 
-  alias Itsm.Team
   alias Itsm.Crews
 
   def update(%{crew: crew} = assigns, socket) do
@@ -45,12 +44,13 @@ defmodule ItsmWeb.TeamLive.FormComponent do
   end
 
   def handle_event("save", %{"crew" => crew_params}, socket) do
-    IO.inspect(crew_params, label: "crew params")
     save_crew(socket, socket.assigns.action, crew_params)
   end
 
   defp save_crew(socket, :edit, crew_params) do
-    case Crews.update_crew(socket.assigns.crew, crew_params, socket.assigns.current_user) do
+    %{crew: crew, current_user: current_user} = socket.assigns
+
+    case Crews.update_crew(crew, crew_params, current_user) do
       {:ok, crew} ->
         notify_parent({:saved, crew})
 
@@ -72,7 +72,7 @@ defmodule ItsmWeb.TeamLive.FormComponent do
   end
 
   defp save_crew(socket, :new, crew_params) do
-    case Team.create_crew(crew_params, socket.assigns.current_user) do
+    case Crews.create_crew(socket.assigns.current_user, crew_params) do
       {:ok, crew} ->
         notify_parent({:saved, crew})
 

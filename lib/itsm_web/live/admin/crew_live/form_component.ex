@@ -1,7 +1,6 @@
 defmodule ItsmWeb.Admin.CrewLive.FormComponent do
   use ItsmWeb, :live_component
 
-  alias Itsm.Team
   alias Itsm.Admin.Crews
 
   @impl true
@@ -22,7 +21,7 @@ defmodule ItsmWeb.Admin.CrewLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage crew records in your database.</:subtitle>
       </.header>
-
+      
       <.simple_form
         for={@form}
         id="crew-form"
@@ -74,7 +73,7 @@ defmodule ItsmWeb.Admin.CrewLive.FormComponent do
   defp save_crew(socket, :new, crew_params) do
     current_user = socket.assigns.current_user
 
-    case Team.create_crew(crew_params, current_user) do
+    case Crews.create_crew(current_user, crew_params) do
       {:ok, crew} ->
         notify_parent({:saved, crew})
 

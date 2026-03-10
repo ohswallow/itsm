@@ -80,22 +80,12 @@ defmodule ItsmWeb.Router do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
 
-      # live "/categories", CategoryLive.Index
-      # live "/categories/:id", CategoryLive.Show
-
-      # live "/crews/all/:id", TeamLive.Show, :all
-
       # 내 크루 관리
-      live "/crews", TeamLive.MyIndex, :index
-      live "/crews/new", TeamLive.MyIndex, :new
-      live "/crews/:id/edit", TeamLive.MyIndex, :edit
-
-      # 전체 크루 검색
-      live "/crews/all", TeamLive.AllIndex, :index
-
-      # 상세 페이지 (공통)
-      live "/crews/:id", TeamLive.Show, :show
-      live "/crews/:id/member", TeamLive.Show, :member
+      live "/crews", CrewLive.Index, :index
+      live "/crews/all", CrewLive.AllIndex, :index
+      live "/crews/new", CrewLive.Index, :new
+      live "/crews/:id/edit", CrewLive.Index, :edit
+      live "/crews/:id", CrewLive.Show, :show
 
       # 카테고리(SR 유형) 목록
       live "/categories", CategoryLive.List
