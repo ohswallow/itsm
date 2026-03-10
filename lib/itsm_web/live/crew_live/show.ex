@@ -1,4 +1,4 @@
-defmodule ItsmWeb.TeamLive.Show do
+defmodule ItsmWeb.CrewLive.Show do
   alias Itsm.Accounts
   use ItsmWeb, :live_view
 

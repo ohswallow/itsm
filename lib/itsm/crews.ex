@@ -81,6 +81,20 @@ defmodule Itsm.Crews do
     Crew.changeset(crew, attrs)
   end
 
+  def create_crew(%User{} = leader, attrs \\ %{}) do
+    Crew.changeset(%Crew{leader: leader, users: [leader]}, attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, crew} ->
+        crew = Repo.preload(crew, [:leader, :users])
+        broadcast_crews_list({:crew_created, crew})
+        {:ok, crew}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
   def update_crew(%Crew{} = crew, attrs, %User{} = user) do
     # 등록자 본인이거나, 관리자(admin)라면 삭제 허용
     if crew.leader_id == user.id do

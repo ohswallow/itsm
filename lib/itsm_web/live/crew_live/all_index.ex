@@ -1,10 +1,10 @@
-defmodule ItsmWeb.TeamLive.AllIndex do
+defmodule ItsmWeb.CrewLive.AllIndex do
   use ItsmWeb, :live_view
 
   alias Itsm.Crews
 
   # 공통 컴포넌트 임포트
-  import ItsmWeb.TeamLive.TableComponents
+  import ItsmWeb.CrewLive.TableComponents
 
   def mount(_params, _session, socket) do
     # socket = assign(socket, :categories, Service.list_categories())
@@ -32,7 +32,7 @@ defmodule ItsmWeb.TeamLive.AllIndex do
   def render(assigns) do
     ~H"""
     <.header>{@page_title}</.header>
-    <.filter_form form={@form} org_options={@org_options} />
+     <.filter_form form={@form} org_options={@org_options} />
     <.crew_table
       crews={@streams.crews}
       row_click={
@@ -67,7 +67,7 @@ defmodule ItsmWeb.TeamLive.AllIndex do
             phx-debounce="300"
           />
         </div>
-
+        
         <div class="md:col-span-3">
           <.input
             type="select"
@@ -76,7 +76,7 @@ defmodule ItsmWeb.TeamLive.AllIndex do
             options={@org_options}
           />
         </div>
-
+        
         <div class="md:col-span-2 flex justify-end pb-1">
           <.link
             patch={~p"/crews/all"}

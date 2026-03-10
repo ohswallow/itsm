@@ -20,9 +20,9 @@ defmodule Itsm.Crews.Crew do
   @doc false
   def changeset(crew, attrs) do
     crew
-    |> cast(attrs, [:name, :description, :leader_id])
+    |> cast(attrs, [:name, :description])
     |> normalize_name()
-    |> validate_required([:name, :description, :leader_id])
+    |> validate_required([:name, :description])
     |> unsafe_validate_unique(:name, Itsm.Repo)
     |> unique_constraint(:name)
     |> validate_format(:name, ~r/^[A-Za-z]{5}$/, message: "must be exactly 5 alphabetic letters")
