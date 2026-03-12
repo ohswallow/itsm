@@ -31,7 +31,7 @@
               {@asset.env}
             </span>
             <span class="inline-flex items-center rounded-md border border-zinc-200 bg-zinc-50 px-2 py-1 text-xs font-medium text-zinc-700">
-              {@asset.affiliate}
+              {Itsm.CommonCodes.get_label("계열사", @asset.affiliate)}
             </span>
             <%= if @asset.is_dmz_zone do %>
               <span class="inline-flex items-center gap-1 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-medium text-red-700">
@@ -44,11 +44,11 @@
       
       <div class="my-6 border-t border-zinc-100"></div>
       
-      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <div class="flex items-center gap-2">
           <.icon name="hero-map-pin" class="h-5 w-5 text-zinc-400" />
           <div>
-            <p class="text-xs text-zinc-500">Location</p>
+            <p class="text-xs text-zinc-500 mb-0.5">Location</p>
             
             <p class="text-sm font-medium text-zinc-900">{@asset.location}</p>
           </div>
@@ -57,7 +57,7 @@
         <div class="flex items-center gap-2">
           <.icon name="hero-building-office-2" class="h-5 w-5 text-zinc-400" />
           <div>
-            <p class="text-xs text-zinc-500">Region</p>
+            <p class="text-xs text-zinc-500 mb-0.5">Region</p>
             
             <p class="text-sm font-medium text-zinc-900">{@asset.region_type}</p>
           </div>
@@ -66,7 +66,7 @@
         <div class="flex items-center gap-2">
           <.icon name="hero-cloud" class="h-5 w-5 text-zinc-400" />
           <div>
-            <p class="text-xs text-zinc-500">Infrastructure</p>
+            <p class="text-xs text-zinc-500 mb-0.5">Infrastructure</p>
             
             <p class="text-sm font-medium text-zinc-900">{@asset.infra_type}</p>
           </div>
@@ -75,11 +75,37 @@
         <div class="flex items-center gap-2">
           <.icon name="hero-calendar" class="h-5 w-5 text-zinc-400" />
           <div>
-            <p class="text-xs text-zinc-500">Created Date</p>
+            <p class="text-xs text-zinc-500 mb-0.5">Created Date</p>
             
             <p class="text-sm font-medium text-zinc-900">
               {Calendar.strftime(@asset.inserted_at, "%Y-%m-%d %H:%M")}
             </p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <.icon name="hero-user-group" class="h-5 w-5 text-zinc-400" />
+          <div>
+            <p class="text-xs text-zinc-500 mb-0.5">Service Crew</p>
+            
+            <%= if @asset.service_crew do %>
+              <ItsmWeb.CustomComponents.crew_tooltip crew={@asset.service_crew} />
+            <% else %>
+              <span class="text-sm font-medium text-zinc-400">Unassigned</span>
+            <% end %>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <.icon name="hero-wrench-screwdriver" class="h-5 w-5 text-zinc-400" />
+          <div>
+            <p class="text-xs text-zinc-500 mb-0.5">System Crew</p>
+            
+            <%= if @asset.system_crew do %>
+              <ItsmWeb.CustomComponents.crew_tooltip crew={@asset.system_crew} />
+            <% else %>
+              <span class="text-sm font-medium text-zinc-400">Unassigned</span>
+            <% end %>
           </div>
         </div>
       </div>
