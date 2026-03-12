@@ -25,6 +25,10 @@ defmodule Itsm.Assets.Asset do
 
     has_one :os_instance, Itsm.OsInstances.OsInstance
 
+    # 추후 추가
+    # has_many :db_instances, Itsm.DbInstances.DbInstance
+    # has_many :was_instances, Itsm.WasInstances.WasInstance
+
     belongs_to :service_crew, Itsm.Crews.Crew, type: :binary_id
     belongs_to :system_crew, Itsm.Crews.Crew, type: :binary_id
 

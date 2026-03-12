@@ -1,44 +1,111 @@
-<.header>
-  Asset {@asset.id}
-  <:subtitle>This is a asset record from your database.</:subtitle>
+<div class="mx-auto max-w-5xl">
+  <div class="flex flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
+    <div class="border-b border-zinc-200 bg-white p-6">
+      <div class="flex items-start gap-4">
+        <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-50 ring-1 ring-blue-200">
+          <.icon name="hero-server-solid" class="h-7 w-7 text-blue-600" />
+        </div>
+        
+        <div class="flex-1">
+          <div class="flex justify-between items-start">
+            <div>
+              <h2 class="text-xl font-semibold text-zinc-900">{@asset.name}</h2>
+              
+              <p class="mt-0.5 font-mono text-sm text-zinc-500">{@asset.id}</p>
+            </div>
+            
+            <div class="flex gap-2">
+              <.link patch={~p"/assets/#{@asset}/show/edit"} phx-click={JS.push_focus()}>
+                <.button class="flex items-center gap-2 bg-white text-zinc-700 border border-zinc-300 hover:bg-zinc-50">
+                  <.icon name="hero-pencil-square" class="h-4 w-4" /> Edit Asset
+                </.button>
+              </.link>
+            </div>
+          </div>
+          
+          <div class="mt-3 flex flex-wrap gap-2">
+            <span class="inline-flex items-center rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
+              {@asset.category}
+            </span>
+            <span class="inline-flex items-center rounded-md border border-zinc-200 bg-zinc-50 px-2 py-1 text-xs font-medium text-zinc-700">
+              {@asset.env}
+            </span>
+            <span class="inline-flex items-center rounded-md border border-zinc-200 bg-zinc-50 px-2 py-1 text-xs font-medium text-zinc-700">
+              {@asset.affiliate}
+            </span>
+            <%= if @asset.is_dmz_zone do %>
+              <span class="inline-flex items-center gap-1 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-medium text-red-700">
+                <.icon name="hero-shield-check-solid" class="h-3 w-3" /> DMZ Zone
+              </span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+      
+      <div class="my-6 border-t border-zinc-100"></div>
+      
+      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div class="flex items-center gap-2">
+          <.icon name="hero-map-pin" class="h-5 w-5 text-zinc-400" />
+          <div>
+            <p class="text-xs text-zinc-500">Location</p>
+            
+            <p class="text-sm font-medium text-zinc-900">{@asset.location}</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <.icon name="hero-building-office-2" class="h-5 w-5 text-zinc-400" />
+          <div>
+            <p class="text-xs text-zinc-500">Region</p>
+            
+            <p class="text-sm font-medium text-zinc-900">{@asset.region_type}</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <.icon name="hero-cloud" class="h-5 w-5 text-zinc-400" />
+          <div>
+            <p class="text-xs text-zinc-500">Infrastructure</p>
+            
+            <p class="text-sm font-medium text-zinc-900">{@asset.infra_type}</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <.icon name="hero-calendar" class="h-5 w-5 text-zinc-400" />
+          <div>
+            <p class="text-xs text-zinc-500">Created Date</p>
+            
+            <p class="text-sm font-medium text-zinc-900">
+              {Calendar.strftime(@asset.inserted_at, "%Y-%m-%d %H:%M")}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="flex-1 bg-zinc-50 p-6">
+      <h3 class="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-500">
+        Connected Resources
+      </h3>
+      
+      <div class="grid gap-4 lg:grid-cols-2">
+        <.resource_card
+          :for={section <- resource_sections(@asset)}
+          title={section.title}
+          icon={section.icon}
+          icon_class={section.icon_class}
+          items={section.items}
+        />
+      </div>
+    </div>
+  </div>
   
-  <:actions>
-    <.link patch={~p"/assets/#{@asset}/show/edit"} phx-click={JS.push_focus()}>
-      <.button>Edit asset</.button>
-    </.link>
-  </:actions>
-</.header>
-
-<.list>
-  <:item title={gettext("Name")}>{@asset.name}</:item>
-  
-  <:item title={gettext("Description")}>{@asset.description}</:item>
-  
-  <:item title={gettext("Affiliate")}>{@asset.affiliate}</:item>
-  
-  <:item title={gettext("Category")}>{@asset.category}</:item>
-  
-  <:item title={gettext("Region type")}>{@asset.region_type}</:item>
-  
-  <:item title={gettext("Infra type")}>{@asset.infra_type}</:item>
-  
-  <:item title={gettext("Environment")}>{@asset.env}</:item>
-  
-  <:item title={gettext("Location")}>{@asset.location}</:item>
-  
-  <:item title={gettext("Is dmz zone")}>{@asset.is_dmz_zone}</:item>
-  
-  <:item title={gettext("Created Date")}>
-    <div
-      id="created_date"
-      phx-hook="LocalTime.ToLocale"
-      format="datetime"
-      utc-value={@asset.inserted_at}
-    />
-  </:item>
-</.list>
-
-<.back navigate={~p"/assets"}>Back to assets</.back>
+  <div class="mt-6">
+    <.back navigate={~p"/assets"}>Back to assets</.back>
+  </div>
+</div>
 
 <.modal
   :if={@live_action == :edit}

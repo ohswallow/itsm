@@ -25,4 +25,18 @@ defmodule Itsm.OsInstances.OsInstance do
     |> cast(attrs, [:ip, :os_type, :os_version, :cpu_core, :memory_gb, :asset_id, :crew_id])
     |> validate_required([:ip, :os_type, :os_version, :cpu_core, :memory_gb, :asset_id, :crew_id])
   end
+
+  defimpl Itsm.Assets.ResourceCardData, for: Itsm.OsInstances.OsInstance do
+    def to_card_item(os) do
+      %{
+        name: os.os_type,
+        badge: os.os_version,
+        details: [
+          {"IP Address", os.ip},
+          {"CPU Core", "#{os.cpu_core} Cores"},
+          {"Memory", "#{os.memory_gb} GB"}
+        ]
+      }
+    end
+  end
 end

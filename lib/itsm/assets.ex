@@ -10,6 +10,10 @@ defmodule Itsm.Assets do
   alias Itsm.Repo
   alias Itsm.OsInstances
 
+  # 추후 db_instance, was_instance 등이 추가되면 이곳에 preload를 덧붙이면 됩니다.
+  # @resource_preloads [:os_instance, :db_instances, :was_instances, :applications]
+  @resource_preloads [:os_instance]
+
   # ==================================================
   # PubSub
   # ==================================================
@@ -61,6 +65,16 @@ defmodule Itsm.Assets do
 
   """
   def get_asset!(id), do: Repo.get!(Asset, id)
+
+  @doc """
+  Asset 단건 조회 시 연관된 Instance를 함께 가져옵니다.
+  차후 db_instance, was_instance 등이 추가되면 이곳에 preload를 덧붙이면 됩니다.
+  """
+  def get_asset_with_relations!(id) do
+    Asset
+    |> Repo.get!(id)
+    |> Repo.preload(@resource_preloads)
+  end
 
   @doc """
   Creates a asset.
