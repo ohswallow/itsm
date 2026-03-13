@@ -4,7 +4,7 @@ defmodule Itsm.Admin.Crews do
   alias Itsm.Crews.Crew
 
   defdelegate broadcast_crew(crew_id, event), to: Itsm.Crews
-  defdelegate broadcast_crews_list(event), to: Itsm.Crews
+  defdelegate broadcast_crews(event), to: Itsm.Crews
 
   defdelegate get_crew!(id), to: Itsm.Crews
 
@@ -25,8 +25,8 @@ defmodule Itsm.Admin.Crews do
       {:ok, crew} ->
         # Preload 및 Broadcast
         crew = Repo.preload(crew, [:leader, :users])
-        broadcast_crew(crew.id, {:crew_updated, crew})
-        broadcast_crews_list({:crew_updated, crew})
+        broadcast_crew(crew.id, {:update_crew, crew})
+        broadcast_crews({:update_crew, crew})
         {:ok, crew}
 
       {:error, _} = error ->
@@ -38,7 +38,7 @@ defmodule Itsm.Admin.Crews do
     Repo.delete(crew)
     |> case do
       {:ok, deleted_crew} ->
-        broadcast_crews_list({:crew_deleted, deleted_crew})
+        broadcast_crews({:delete_crew, deleted_crew})
         {:ok, deleted_crew}
 
       {:error, _} = error ->

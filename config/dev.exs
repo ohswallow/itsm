@@ -21,7 +21,7 @@ config :itsm, ItsmWeb.Endpoint,
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [
     ip: {127, 0, 0, 1},
-    port: 4000
+    port: 14000
     # thousand_island_options: [
     #   read_timeout: 300_000
     # ]

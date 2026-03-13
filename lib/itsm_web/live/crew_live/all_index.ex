@@ -7,14 +7,14 @@ defmodule ItsmWeb.CrewLive.AllIndex do
   import ItsmWeb.CrewLive.TableComponents
 
   def mount(_params, _session, socket) do
-    # socket = assign(socket, :categories, Service.list_categories())
-    # IO.inspect(self(), label: "MOUNT")
+    if(connected?(socket)) do
+      Crews.subscribe_crews()
+    end
+
     {:ok, socket |> assign(:org_options, Itsm.CommonCodes.get_select_options("계열사"))}
   end
 
   def handle_params(params, _uri, socket) do
-    # IO.inspect(self(), label: "HANDLE_PARAMS")
-
     # 1. URL에 지저분한 파라미터가 섞이지 않도록 필요한 필터만
     filter_params = Map.take(params, ["keyword", "organization_code"])
 
@@ -29,26 +29,31 @@ defmodule ItsmWeb.CrewLive.AllIndex do
     {:noreply, socket}
   end
 
-  def render(assigns) do
-    ~H"""
-    <.header>{@page_title}</.header>
-     <.filter_form form={@form} org_options={@org_options} />
-    <.crew_table
-      crews={@streams.crews}
-      row_click={
-        fn {_id, crew} ->
-          # 3. 돌아올 URL을 미리 만듦 (필터가 포함된 URL)
-          # 예: "/crews/all?q=AAA&organization=KB국민은행"
-          return_url = ~p"/crews/all?#{@filter_params}"
+  def handle_event("filter", params, socket) do
+    # URL 파라미터를 깔끔하게 정리
+    params =
+      params
+      |> Map.take(~w(keyword organization_code))
+      |> Map.reject(fn {_, v} -> v == "" end)
 
-          # 4. return_to 파라미터에 위에서 만든 URL을 통째로 넘김
-          JS.navigate(~p"/crews/#{crew}?return_to=#{return_url}")
-        end
-      }
-    >
-    </.crew_table>
-    """
+    # push_patch는 현재 URL을 변경하고, 페이지를 새로고침하지 않음
+    # 이 경우, 현재 LiveView의 상태를 유지하면서 URL만 업데이트
+    socket = push_patch(socket, to: ~p"/crews/all?#{params}")
+
+    {:noreply, socket}
   end
+
+  def handle_info({:crews, {:delete_crew, crew}}, socket) do
+    {:noreply, stream_delete(socket, :crews, crew)}
+  end
+
+  def handle_info({:crews, {event, _crew}}, socket) when event in [:create_crew, :update_crew] do
+    %{filter_params: params} = socket.assigns
+
+    {:noreply, push_patch(socket, to: ~p"/crews/all?#{params}")}
+  end
+
+  def handle_info(_event, socket), do: {:noreply, socket}
 
   def filter_form(assigns) do
     ~H"""
@@ -91,19 +96,5 @@ defmodule ItsmWeb.CrewLive.AllIndex do
       </.form>
     </div>
     """
-  end
-
-  def handle_event("filter", params, socket) do
-    # URL 파라미터를 깔끔하게 정리
-    params =
-      params
-      |> Map.take(~w(keyword organization_code))
-      |> Map.reject(fn {_, v} -> v == "" end)
-
-    # push_patch는 현재 URL을 변경하고, 페이지를 새로고침하지 않음
-    # 이 경우, 현재 LiveView의 상태를 유지하면서 URL만 업데이트
-    socket = push_patch(socket, to: ~p"/crews/all?#{params}")
-
-    {:noreply, socket}
   end
 end

@@ -1,0 +1,16 @@
+<.header>{@page_title}</.header>
+ <.filter_form form={@form} org_options={@org_options} />
+<.crew_table
+  crews={@streams.crews}
+  row_click={
+    fn {_id, crew} ->
+      # 3. 돌아올 URL을 미리 만듦 (필터가 포함된 URL)
+      # 예: "/crews/all?q=AAA&organization=KB국민은행"
+      return_url = ~p"/crews/all?#{@filter_params}"
+
+      # 4. return_to 파라미터에 위에서 만든 URL을 통째로 넘김
+      JS.navigate(~p"/crews/#{crew}?return_to=#{return_url}")
+    end
+  }
+>
+</.crew_table>

@@ -82,7 +82,7 @@ defmodule ItsmWeb.Admin.CrewLive.FormComponent do
          |> put_flash(:info, "Crew created successfully")
          |> push_patch(to: socket.assigns.patch)}
 
-      {:error, %Ecto.Changeset{} = changeset} ->
+      {:error, _step, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
