@@ -73,7 +73,13 @@ defmodule Itsm.Assets do
   def get_asset_with_relations!(id) do
     Asset
     |> Repo.get!(id)
-    |> Repo.preload(@resource_preloads)
+    |> Repo.preload(
+      @resource_preloads ++
+        [
+          service_crew: [:users],
+          system_crew: [:users]
+        ]
+    )
   end
 
   @doc """

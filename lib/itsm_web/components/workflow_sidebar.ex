@@ -162,27 +162,6 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
     """
   end
 
-  # attr :crew, :map, required: true
-
-  # defp crew_tooltip(assigns) do
-  #   ~H"""
-  #   <div class="relative group cursor-pointer">
-  #     <span class="text-xs font-semibold text-blue-600">{@crew.name}</span>
-  #     <div class="hidden group-hover:block absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-20 min-w-[140px]">
-  #       <div class="text-xs text-left text-gray-400 mb-2 font-medium border-b pb-1">
-  #         {@crew.description}
-  #       </div>
-
-  #       <div class="space-y-1">
-  #         <div :for={user <- @crew.users} class="text-xs text-gray-700">
-  #           {user.display_name}
-  #         </div>
-  #       </div>
-  #     </div>
-  #   </div>
-  #   """
-  # end
-
   defp load_approvals_by_status(request_id) do
     request_id
     |> Approvals.list_approvals_by_request()
