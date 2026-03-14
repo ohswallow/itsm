@@ -2,6 +2,7 @@ defmodule ItsmWeb.CrewLive.FormComponent do
   use ItsmWeb, :live_component
 
   alias Itsm.Crews
+  alias ItsmWeb.LiveUtil
 
   def update(%{crew: crew} = assigns, socket) do
     {:ok,
@@ -50,7 +51,7 @@ defmodule ItsmWeb.CrewLive.FormComponent do
   defp save_crew(socket, :edit, crew_params) do
     %{crew: crew, current_user: current_user} = socket.assigns
 
-    case Crews.update_crew(crew, crew_params, current_user) do
+    case Crews.update_crew(crew, current_user, crew_params) do
       {:ok, crew} ->
         notify_parent({:saved, crew})
 
@@ -59,14 +60,13 @@ defmodule ItsmWeb.CrewLive.FormComponent do
          |> put_flash(:info, gettext("Crew updated successfully"))
          |> push_patch(to: socket.assigns.patch)}
 
-      # 권한 없는 사용자가 update 시도할 때
-      {:error, :unauthorized} ->
+      {:error, step} ->
         {:noreply,
          socket
-         |> put_flash(:error, gettext("Only the leader can edit this crew."))
+         |> put_flash(:error, LiveUtil.translate_error(step, :crew, "update_crew"))
          |> push_patch(to: socket.assigns.patch)}
 
-      {:error, %Ecto.Changeset{} = changeset} ->
+      {:error, _step, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
@@ -81,7 +81,7 @@ defmodule ItsmWeb.CrewLive.FormComponent do
          |> put_flash(:info, "Crew '#{crew.name}' created successfully")
          |> push_patch(to: socket.assigns.patch)}
 
-      {:error, %Ecto.Changeset{} = changeset} ->
+      {:error, _step, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
     end
   end

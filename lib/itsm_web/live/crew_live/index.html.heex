@@ -1,0 +1,52 @@
+<.header>
+  {@page_title}
+  <:actions>
+    <.button phx-click={JS.dispatch("click", to: {:inner, "a"})}>
+      <.link patch={~p"/crews/new"}>New Crew</.link>
+    </.button>
+  </:actions>
+</.header>
+
+<.crew_table
+  crews={@streams.crews}
+  row_click={
+    fn {_id, crew} ->
+      JS.navigate(~p"/crews/#{crew}")
+    end
+  }
+>
+  <:action :let={{_id, crew}} label="Actions">
+    <.dropdown_menu id={"#{crew.id}-menu"}>
+      <.link
+        patch={~p"/crews/#{crew}/edit"}
+        class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+      >
+        <.icon name="hero-pencil" class="w-4 h-4" /> Edit Crew
+      </.link>
+      <.link
+        phx-click={JS.push("delete", value: %{id: crew.id})}
+        data-confirm="Are you sure?"
+        class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+      >
+        <.icon name="hero-trash" class="w-4 h-4" /> Delete Crew
+      </.link>
+    </.dropdown_menu>
+  </:action>
+</.crew_table>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="crew-modal"
+  show
+  on_cancel={JS.patch(~p"/crews")}
+>
+  <.live_component
+    module={ItsmWeb.CrewLive.FormComponent}
+    id={@crew.id || :new}
+    title={@page_title}
+    action={@live_action}
+    crew={@crew}
+    current_user={@current_user}
+    patch={~p"/crews"}
+  />
+</.modal>

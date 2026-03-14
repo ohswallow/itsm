@@ -3,14 +3,20 @@ defmodule ItsmWeb.CrewLive.Index do
 
   alias Itsm.Crews
   alias Itsm.Crews.Crew
+  alias Itsm.Accounts.User
+  alias ItsmWeb.LiveUtil
 
   # 공통 컴포넌트 임포트
   import ItsmWeb.CrewLive.TableComponents
 
   def mount(_params, _session, socket) do
-    current_user = socket.assigns.current_user
+    %{current_user: user} = socket.assigns
 
-    {:ok, stream(socket, :crews, Crews.list_my_crews(current_user))}
+    if connected?(socket) do
+      Crews.subscribe_crews()
+    end
+
+    {:ok, stream(socket, :crews, Crews.list_my_crews(user))}
   end
 
   def handle_params(params, _url, socket) do
@@ -21,7 +27,6 @@ defmodule ItsmWeb.CrewLive.Index do
   defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, "My Crews")
-    # 모달이 없으므로 nil
     |> assign(:crew, nil)
   end
 
@@ -29,7 +34,6 @@ defmodule ItsmWeb.CrewLive.Index do
   defp apply_action(socket, :new, _params) do
     socket
     |> assign(:page_title, "New Crew")
-    # 빈 구조체 전달
     |> assign(:crew, %Crew{})
   end
 
@@ -37,69 +41,7 @@ defmodule ItsmWeb.CrewLive.Index do
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Crew")
-    # 수정할 데이터 로딩
     |> assign(:crew, Crews.get_crew!(id))
-  end
-
-  def render(assigns) do
-    ~H"""
-    <.header>
-      {@page_title}
-      <:actions>
-        <.button phx-click={JS.dispatch("click", to: {:inner, "a"})}>
-          <.link patch={~p"/crews/new"}>New Crew</.link>
-        </.button>
-      </:actions>
-    </.header>
-
-    <.crew_table
-      crews={@streams.crews}
-      row_click={
-        fn {_id, crew} ->
-          JS.navigate(~p"/crews/#{crew}")
-        end
-      }
-    >
-      <:action :let={{_id, crew}} label="Actions">
-        <.dropdown_menu id={"#{crew.id}-menu"}>
-          <.link
-            patch={~p"/crews/#{crew}/edit"}
-            class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-          >
-            <.icon name="hero-pencil" class="w-4 h-4" /> Edit Crew
-          </.link>
-          <.link
-            phx-click={JS.push("delete", value: %{id: crew.id})}
-            data-confirm="Are you sure?"
-            class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-          >
-            <.icon name="hero-trash" class="w-4 h-4" /> Delete Crew
-          </.link>
-        </.dropdown_menu>
-      </:action>
-    </.crew_table>
-
-    <.modal
-      :if={@live_action in [:new, :edit]}
-      id="crew-modal"
-      show
-      on_cancel={JS.patch(~p"/crews")}
-    >
-      <.live_component
-        module={ItsmWeb.CrewLive.FormComponent}
-        id={@crew.id || :new}
-        title={@page_title}
-        action={@live_action}
-        crew={@crew}
-        current_user={@current_user}
-        patch={~p"/crews"}
-      />
-    </.modal>
-    """
-  end
-
-  def handle_info({ItsmWeb.CrewLive.FormComponent, {:saved, crew}}, socket) do
-    {:noreply, stream_insert(socket, :crews, crew)}
   end
 
   def handle_event("delete", %{"id" => id}, socket) do
@@ -107,25 +49,47 @@ defmodule ItsmWeb.CrewLive.Index do
     current_user = socket.assigns.current_user
 
     case Crews.delete_crew(crew, current_user) do
-      {:ok, _} ->
-        # {:noreply, stream_delete(socket, :crews, crew)}
+      {:ok, crew} ->
         {:noreply,
          socket
          |> stream_delete(:crews, crew)
          |> put_flash(:info, gettext("Crew deleted successfully."))}
 
-      # 권한 없는 사용자가 삭제 시도할 때
-      {:error, :unauthorized} ->
+      {:error, step} ->
         {:noreply,
-         socket
-         |> put_flash(:error, gettext("Only the leader can delete this crew."))
-         |> push_navigate(to: ~p"/crews", replace: true)}
-
-      # 기타 오류 처리
-      {:error, _} ->
-        {:noreply,
-         socket
-         |> put_flash(:error, gettext("An unknown error occurred."))}
+         put_flash(socket, :error, LiveUtil.translate_error(step, :crew, "delete_crew"))}
     end
   end
+
+  def handle_info({ItsmWeb.CrewLive.FormComponent, {:saved, crew}}, socket) do
+    {:noreply, stream_insert(socket, :crews, crew)}
+  end
+
+  def handle_info({:crews, {event, %Crew{} = crew}}, socket)
+      when event in [:create_crew, :update_crew, :add_users, :leader_changed] do
+    %{current_user: user} = socket.assigns
+    crew = Crews.with_assoc(crew, [:leader, :users])
+
+    if(Enum.member?(crew.users, user) || user == crew.leader) do
+      {:noreply, stream_insert(socket, :crews, crew)}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_info({:crews, {:delete_crew, %Crew{} = crew}}, socket) do
+    {:noreply, stream_delete(socket, :crews, crew)}
+  end
+
+  def handle_info({:crews, {:delete_user, %Crew{} = crew, %User{} = deleted_user}}, socket) do
+    %{current_user: user} = socket.assigns
+
+    if(user == deleted_user) do
+      {:noreply, stream_delete(socket, :crews, crew)}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_info(_event, socket), do: {:noreply, socket}
 end
