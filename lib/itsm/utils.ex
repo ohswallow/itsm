@@ -1,4 +1,4 @@
-defmodule Itsm.Util do
+defmodule Itsm.Utils do
   @moduledoc """
   ITSM 개발에 필요한 BIZ모듈에서 사용할 Util메소드 정의 합니다.
   """

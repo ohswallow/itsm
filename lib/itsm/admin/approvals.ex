@@ -12,7 +12,7 @@ defmodule Itsm.Admin.Approvals do
 
   def change_approval(%Approval{} = approval, attrs \\ %{}) do
     Approval.changeset(approval, attrs)
-    |> Itsm.Util.maybe_put_change(:inserted_at, attrs[:inserted_at])
+    |> Itsm.Utils.maybe_put_change(:inserted_at, attrs[:inserted_at])
   end
 
   defdelegate create_approval(attrs \\ %{}), to: Itsm.Approvals
@@ -20,7 +20,7 @@ defmodule Itsm.Admin.Approvals do
   def update_approval(%Approval{} = approval, attrs) do
     approval
     |> Approval.admin_changeset(attrs)
-    |> Itsm.Util.maybe_put_change(:inserted_at, attrs[:inserted_at])
+    |> Itsm.Utils.maybe_put_change(:inserted_at, attrs[:inserted_at])
     |> Repo.update()
   end
 

@@ -2,7 +2,7 @@ defmodule ItsmWeb.CrewLive.FormComponent do
   use ItsmWeb, :live_component
 
   alias Itsm.Crews
-  alias ItsmWeb.LiveUtil
+  alias ItsmWeb.LiveUtils
 
   def update(%{crew: crew} = assigns, socket) do
     {:ok,
@@ -63,7 +63,7 @@ defmodule ItsmWeb.CrewLive.FormComponent do
       {:error, step} ->
         {:noreply,
          socket
-         |> put_flash(:error, LiveUtil.translate_error(step, :crew, "update_crew"))
+         |> put_flash(:error, LiveUtils.translate_error(step, :crew, "update_crew"))
          |> push_patch(to: socket.assigns.patch)}
 
       {:error, _step, %Ecto.Changeset{} = changeset} ->

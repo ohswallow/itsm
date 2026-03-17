@@ -5,7 +5,7 @@ defmodule Itsm.Comments do
   alias Itsm.Comments.Comment
   alias Itsm.Accounts.User
   alias Itsm.Requests
-  alias Itsm.Util
+  alias Itsm.Utils
 
   # 결과 처리
   def broadcast_result({:ok, %{comment: comment}}, topic_id) do
@@ -20,7 +20,7 @@ defmodule Itsm.Comments do
   def list_comments(resource) do
     Comment
     # "Request"
-    |> where([c], c.resource_type == ^Util.resource_name(resource))
+    |> where([c], c.resource_type == ^Utils.resource_name(resource))
     # ID 매칭
     |> where([c], c.resource_id == ^resource.id)
     |> order_by([c], asc: c.inserted_at)
@@ -32,7 +32,7 @@ defmodule Itsm.Comments do
   def changeset_comment(resource, %User{} = user, attrs \\ %{}) do
     %Comment{
       user: user,
-      resource_type: Util.resource_name(resource),
+      resource_type: Utils.resource_name(resource),
       resource_id: resource.id
     }
     |> Comment.changeset(attrs)

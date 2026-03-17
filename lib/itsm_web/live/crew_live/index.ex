@@ -4,7 +4,7 @@ defmodule ItsmWeb.CrewLive.Index do
   alias Itsm.Crews
   alias Itsm.Crews.Crew
   alias Itsm.Accounts.User
-  alias ItsmWeb.LiveUtil
+  alias ItsmWeb.LiveUtils
 
   # 공통 컴포넌트 임포트
   import ItsmWeb.CrewLive.TableComponents
@@ -57,7 +57,7 @@ defmodule ItsmWeb.CrewLive.Index do
 
       {:error, step} ->
         {:noreply,
-         put_flash(socket, :error, LiveUtil.translate_error(step, :crew, "delete_crew"))}
+         put_flash(socket, :error, LiveUtils.translate_error(step, :crew, "delete_crew"))}
     end
   end
 

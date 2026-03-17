@@ -2,7 +2,7 @@ defmodule Itsm.Attachments do
   import Ecto.Query, warn: false
 
   alias Itsm.Repo
-  alias Itsm.Util
+  alias Itsm.Utils
   alias Itsm.Attachments.Attachment
 
   def get_attachment!(id) do
@@ -20,7 +20,7 @@ defmodule Itsm.Attachments do
     attachments = attachments_callback.()
 
     Enum.reduce_while(attachments, {:ok, []}, fn attrs, {:ok, acc} ->
-      %Attachment{resource_type: Util.resource_name(resource), resource_id: resource.id}
+      %Attachment{resource_type: Utils.resource_name(resource), resource_id: resource.id}
       |> Attachment.changeset(attrs)
       |> repo.insert()
       |> case do
