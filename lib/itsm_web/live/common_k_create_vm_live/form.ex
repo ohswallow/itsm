@@ -8,14 +8,14 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   alias Itsm.Service.Request
   alias Itsm.Team
   alias Itsm.Crews
-  alias ItsmWeb.LiveUtil
+  alias ItsmWeb.LiveUtils
 
   def mount(params, _session, socket) do
     crew_options = Accounts.crew_ids_names(socket.assigns.current_user)
 
     {:ok,
      socket
-     |> LiveUtil.allow_uploads()
+     |> LiveUtils.allow_uploads()
      |> assign(:crew_options, crew_options)
      |> apply_action(socket.assigns.live_action, params)}
   end
@@ -149,7 +149,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     case Service.create_request(
            user,
            category,
-           fn -> LiveUtil.consume_attachments(socket) end,
+           fn -> LiveUtils.consume_attachments(socket) end,
            request_params
          ) do
       {:ok, request} ->
@@ -167,7 +167,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
       {:error, step, _changeset, _so_far_changeset} ->
         changeset =
           socket.assigns.form.source
-          |> Ecto.Changeset.add_error(:base, LiveUtil.translate_step_error(step))
+          |> Ecto.Changeset.add_error(:base, LiveUtils.translate_step_error(step))
           |> Map.put(:action, :insert)
 
         {:noreply,

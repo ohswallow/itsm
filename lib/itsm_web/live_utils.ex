@@ -1,4 +1,4 @@
-defmodule ItsmWeb.LiveUtil do
+defmodule ItsmWeb.LiveUtils do
   @moduledoc """
   ITSM 개발에 필요한 LiveView에서 사용할 Util메소드 정의 합니다.
   """

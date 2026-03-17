@@ -3,7 +3,7 @@ defmodule ItsmWeb.CrewLive.Show do
   use ItsmWeb, :live_view
 
   alias Itsm.Crews
-  alias ItsmWeb.LiveUtil
+  alias ItsmWeb.LiveUtils
 
   def mount(params, _session, socket) do
     back_path = params["return_to"] || ~p"/crews"
@@ -52,7 +52,7 @@ defmodule ItsmWeb.CrewLive.Show do
         {:noreply, put_flash(socket, :info, msg)}
 
       {:error, step} ->
-        {:noreply, put_flash(socket, :error, LiveUtil.translate_error(step, :crew))}
+        {:noreply, put_flash(socket, :error, LiveUtils.translate_error(step, :crew))}
     end
   end
 
@@ -142,7 +142,7 @@ defmodule ItsmWeb.CrewLive.Show do
         {:noreply, put_flash(socket, :info, "Members added successfully")}
 
       {:error, step} ->
-        {:noreply, put_flash(socket, :error, LiveUtil.translate_error(step, :crew))}
+        {:noreply, put_flash(socket, :error, LiveUtils.translate_error(step, :crew))}
     end
   end
 
@@ -154,7 +154,7 @@ defmodule ItsmWeb.CrewLive.Show do
         {:noreply, put_flash(socket, :info, "Leader changed successfully")}
 
       {:error, step} ->
-        {:noreply, put_flash(socket, :error, LiveUtil.translate_error(step, :crew))}
+        {:noreply, put_flash(socket, :error, LiveUtils.translate_error(step, :crew))}
     end
   end
 end

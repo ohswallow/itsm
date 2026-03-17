@@ -8,7 +8,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   alias Itsm.Comments
   alias Itsm.Comments.Comment
   alias Itsm.Requests
-  alias ItsmWeb.LiveUtil
+  alias ItsmWeb.LiveUtils
   alias Itsm.Workflow
   alias Itsm.Service
   alias ItsmWeb.CustomComponents
@@ -17,7 +17,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
     {:ok,
      socket
      |> assign(:form, to_form(Comments.change_comment(%Comment{})))
-     |> LiveUtil.allow_uploads()}
+     |> LiveUtils.allow_uploads()}
   end
 
   def handle_params(%{"id" => id}, _uri, socket) do
@@ -374,7 +374,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
     case Service.create_comment(
            request,
            current_user,
-           fn -> LiveUtil.consume_attachments(socket) end,
+           fn -> LiveUtils.consume_attachments(socket) end,
            comment_params
          ) do
       {:ok, _comment} ->
