@@ -23,18 +23,19 @@ defmodule ItsmWeb.Admin.CommentLive.Index do
     {:noreply, stream_delete(socket, :comments, comment)}
   end
 
-  @impl true
-  def handle_info({ItsmWeb.Admin.CommentLive.FormComponent, {:saved, comment}}, socket) do
-    {:noreply, stream_insert(socket, :comments, comment)}
-  end
-
   defp apply_action(socket, :index, params, url) do
-    results =
-      Paging.search_and_pagination(params, url, Comment, [:comment, {:user, :display_name}])
+    value =
+      Paging.search_and_pagination(
+        params,
+        url,
+        Comment,
+        [:comment, {:user, :display_name}],
+        user: :display_name
+      )
 
     socket
-    |> assign(:results, results)
-    |> stream(:comments, results.entries, reset: true)
+    |> assign(:results, value.results)
+    |> stream(:comments, value.entries, reset: true)
     |> assign(:page_title, "Listing Comments")
     |> assign(:comment, nil)
   end

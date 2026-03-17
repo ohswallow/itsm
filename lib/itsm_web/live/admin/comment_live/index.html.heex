@@ -1,23 +1,19 @@
 <.header>
   Listing Comments
 </.header>
-<.itsm_table_container results={@results}>
+<.itsm_table_container results={assigns[:results]}>
   <.table
     id="comments"
     rows={@streams.comments}
     row_click={fn {_id, comment} -> JS.navigate(~p"/admin/comments/#{comment}") end}
   >
     <:col :let={{_id, comment}} label={gettext("Resource")}>{comment.resource_type}</:col>
-
     <:col :let={{_id, comment}} label={gettext("Comment")}>{comment.comment}</:col>
-
     <:col :let={{_id, comment}} label={gettext("User")}>{comment.user.display_name}</:col>
-
     <:action :let={{_id, comment}}>
       <div class="sr-only"><.link navigate={~p"/admin/comments/#{comment}"}>Show</.link></div>
       <.link patch={~p"/admin/comments/#{comment}/edit"}>Edit</.link>
     </:action>
-
     <:action :let={{id, comment}}>
       <.link
         phx-click={JS.push("delete", value: %{id: comment.id}) |> hide("##{id}")}
@@ -28,11 +24,12 @@
     </:action>
   </.table>
 </.itsm_table_container>
+
 <.modal
-  :if={@live_action == :edit}
+  :if={@live_action in [:new, :edit]}
   id="comment-modal"
   show
-  on_cancel={JS.patch(~p"/admin/comments?#{@results.params}")}
+  on_cancel={JS.patch(~p"/admin/comments?#{assigns[:results][:params] || %{}}")}
 >
   <.live_component
     module={ItsmWeb.Admin.CommentLive.FormComponent}
@@ -40,6 +37,6 @@
     title={@page_title}
     action={@live_action}
     comment={@comment}
-    patch={~p"/admin/comments?#{@results.params}"}
+    patch={~p"/admin/comments?#{assigns[:results][:params] || %{}}"}
   />
 </.modal>

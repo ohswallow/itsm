@@ -13,7 +13,7 @@ defmodule ItsmWeb.Admin.ApprovalLive.Show do
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:approval, Approvals.get_approval!(id))}
+     |> assign(:approval, Approvals.get_approval!(id) |> Approvals.preload_category())}
   end
 
   defp page_title(:show), do: "Show Approval"

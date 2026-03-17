@@ -5,16 +5,13 @@ defmodule ItsmWeb.Admin.CategoryLive.FormComponent do
 
   @impl true
   def update(%{category: category} = assigns, socket) do
-    assignee_crews_options =
-      Itsm.Crews.list_crews() |> Enum.map(fn crew -> {crew.name, crew.id} end)
-
     {:ok,
      socket
      |> assign(assigns)
      |> assign_new(:form, fn ->
        to_form(Categories.change_category(category))
      end)
-     |> assign_new(:assignee_crews_options, fn -> assignee_crews_options end)}
+     |> assign_new_options()}
   end
 
   @impl true
@@ -89,11 +86,14 @@ defmodule ItsmWeb.Admin.CategoryLive.FormComponent do
     save_category(socket, socket.assigns.action, category_params)
   end
 
+  defp assign_new_options(socket) do
+    socket
+    |> assign_new(:assignee_crews_options, fn -> Itsm.Admin.Crews.get_crew_options() end)
+  end
+
   defp save_category(socket, :edit, category_params) do
     case Categories.update_category(socket.assigns.category, category_params) do
-      {:ok, category} ->
-        notify_parent({:saved, category})
-
+      {:ok, _category} ->
         {:noreply,
          socket
          |> put_flash(:info, "Category updated successfully")
@@ -106,9 +106,7 @@ defmodule ItsmWeb.Admin.CategoryLive.FormComponent do
 
   defp save_category(socket, :new, category_params) do
     case Categories.create_category(category_params) do
-      {:ok, category} ->
-        notify_parent({:saved, category})
-
+      {:ok, _category} ->
         {:noreply,
          socket
          |> put_flash(:info, "Category created successfully")
@@ -118,6 +116,4 @@ defmodule ItsmWeb.Admin.CategoryLive.FormComponent do
         {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
-
-  defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end

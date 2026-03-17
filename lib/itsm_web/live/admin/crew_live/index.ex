@@ -23,13 +23,8 @@ defmodule ItsmWeb.Admin.CrewLive.Index do
     {:noreply, stream_delete(socket, :crews, crew)}
   end
 
-  @impl true
-  def handle_info({ItsmWeb.Admin.CrewLive.FormComponent, {:saved, crew}}, socket) do
-    {:noreply, stream_insert(socket, :crews, crew)}
-  end
-
   defp apply_action(socket, :index, params, url) do
-    results =
+    value =
       Paging.search_and_pagination(params, url, Crew, [
         :name,
         :description,
@@ -37,8 +32,8 @@ defmodule ItsmWeb.Admin.CrewLive.Index do
       ])
 
     socket
-    |> assign(:results, results)
-    |> stream(:crews, results.entries, reset: true)
+    |> assign(:results, value.results)
+    |> stream(:crews, value.entries, reset: true)
     |> assign(:page_title, "Listing Crews")
     |> assign(:crew, nil)
   end

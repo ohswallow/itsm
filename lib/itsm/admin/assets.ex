@@ -6,13 +6,9 @@ defmodule Itsm.Admin.Assets do
 
   def get_asset!(id), do: Repo.get!(Asset, id)
 
-  def list_assets do
-    Repo.all(Asset)
-  end
-
   def change_asset(%Asset{} = asset, attrs \\ %{}) do
     Asset.changeset(asset, attrs)
-    |> Itsm.Utils.maybe_put_change(:inserted_at, attrs[:inserted_at])
+    |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
   end
 
   defdelegate create_asset(attrs \\ %{}), to: Itsm.Assets
@@ -20,7 +16,7 @@ defmodule Itsm.Admin.Assets do
   def update_asset(%Asset{} = asset, attrs) do
     asset
     |> Asset.changeset(attrs)
-    |> Itsm.Utils.maybe_put_change(:inserted_at, attrs[:inserted_at])
+    |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
     |> Repo.update()
   end
 

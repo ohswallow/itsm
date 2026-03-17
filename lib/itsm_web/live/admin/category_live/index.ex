@@ -7,7 +7,7 @@ defmodule ItsmWeb.Admin.CategoryLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :categories, [])}
+    {:ok, socket |> stream(:categories, []) |> assign_new_options()}
   end
 
   @impl true
@@ -23,13 +23,14 @@ defmodule ItsmWeb.Admin.CategoryLive.Index do
     {:noreply, stream_delete(socket, :categories, category)}
   end
 
-  @impl true
-  def handle_info({ItsmWeb.Admin.CategoryLive.FormComponent, {:saved, category}}, socket) do
-    {:noreply, stream_insert(socket, :categories, category)}
+  defp assign_new_options(socket) do
+    socket
+    |> assign_new(:affiliate_options, fn -> Itsm.CommonCodes.get_select_options("계열사") end)
+    |> assign_new(:group_options, fn -> Itsm.CommonCodes.get_select_options("지역_유형") end)
   end
 
   defp apply_action(socket, :index, params, url) do
-    results =
+    value =
       Paging.search_and_pagination(params, url, Category, [
         :name,
         :description,
@@ -40,8 +41,8 @@ defmodule ItsmWeb.Admin.CategoryLive.Index do
       ])
 
     socket
-    |> assign(:results, results)
-    |> stream(:categories, results.entries, reset: true)
+    |> assign(:results, value.results)
+    |> stream(:categories, value.entries, reset: true)
     |> assign(:page_title, "Listing Categories")
     |> assign(:category, nil)
   end

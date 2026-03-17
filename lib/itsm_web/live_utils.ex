@@ -65,4 +65,17 @@ defmodule ItsmWeb.LiveUtils do
        }}
     end)
   end
+
+  def titleize(term) do
+    term
+    |> to_string()
+    |> String.split(~r/[-_ ]/)
+    |> Enum.map_join(" ", &String.capitalize/1)
+  end
+
+  def find_label(options, target) do
+    Enum.find_value(options, "알 수 없음", fn {label, value} ->
+      if value == target, do: label
+    end)
+  end
 end

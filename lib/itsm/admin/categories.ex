@@ -5,11 +5,9 @@ defmodule Itsm.Admin.Categories do
 
   defdelegate get_category!(id), to: Itsm.Categories
 
-  def list_categories, do: Repo.all(Category)
-
   def change_category(%Category{} = category, attrs \\ %{}) do
     Category.changeset(category, attrs)
-    |> Itsm.Utils.maybe_put_change(:inserted_at, attrs[:inserted_at])
+    |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
   end
 
   def create_category(attrs \\ %{}) do
@@ -21,11 +19,17 @@ defmodule Itsm.Admin.Categories do
   def update_category(%Category{} = category, attrs) do
     category
     |> Category.changeset(attrs)
-    |> Itsm.Utils.maybe_put_change(:inserted_at, attrs[:inserted_at])
+    |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
     |> Repo.update()
   end
 
   def delete_category(%Category{} = category) do
     Repo.delete(category)
+  end
+
+  def get_category_options do
+    Category
+    |> select([c], {c.name, c.id})
+    |> Repo.all()
   end
 end

@@ -13,7 +13,7 @@ defmodule Itsm.Paging do
         do: default_columns,
         else: parse_columns(params["search_columns"])
 
-    joined_query = build_query_base(query_base, search_columns)
+    {joined_query, modules_map} = build_query_base(query_base, search_columns)
 
     query =
       if search != "" do
@@ -21,13 +21,33 @@ defmodule Itsm.Paging do
           where:
             ^Enum.reduce(search_columns, false, fn col_info, acc ->
               {b_name, field_name} = get_last_binding_and_field(col_info)
+              module = Map.get(modules_map, b_name)
 
-              case b_name do
-                :main ->
-                  dynamic([p], ilike(field(p, ^field_name), ^"%#{search}%") or ^acc)
+              if module do
+                type = module.__schema__(:type, field_name)
+                search_pattern = "%#{search}%"
 
-                _ ->
-                  dynamic([{^b_name, b}], ilike(field(b, ^field_name), ^"%#{search}%") or ^acc)
+                search_int =
+                  case Integer.parse(search) do
+                    {num, _} -> num
+                    :error -> nil
+                  end
+
+                cond do
+                  type in [:string, :binary] ->
+                    dynamic([{^b_name, x}], ilike(field(x, ^field_name), ^search_pattern) or ^acc)
+
+                  type in [:integer, :id, :decimal] and not is_nil(search_int) ->
+                    dynamic([{^b_name, x}], field(x, ^field_name) == ^search_int or ^acc)
+
+                  true ->
+                    dynamic(
+                      [{^b_name, x}],
+                      ilike(type(field(x, ^field_name), :string), ^search_pattern) or ^acc
+                    )
+                end
+              else
+                acc
               end
             end)
       else
@@ -37,11 +57,13 @@ defmodule Itsm.Paging do
     total_count = Repo.aggregate(query, :count, :id)
     total_pages = if total_count == 0, do: 1, else: ceil(total_count / page_size)
 
+    optimized_preloads = build_optimized_preloads(query_base, preloads)
+
     entries =
       query
       |> limit(^page_size)
       |> offset(^offset_val)
-      |> preload(^preloads)
+      |> preload(^optimized_preloads)
       |> Repo.all()
 
     formatted_columns =
@@ -64,34 +86,38 @@ defmodule Itsm.Paging do
 
     %{
       entries: entries,
-      total_pages: total_pages,
-      total_count: total_count,
-      columns_options: build_options(default_columns),
-      current_path: URI.parse(url).path,
-      params: params
+      results: %{
+        total_pages: total_pages,
+        total_count: total_count,
+        columns_options: build_options(default_columns),
+        current_path: URI.parse(url).path,
+        params: params
+      }
     }
   end
 
-  def build_query_base(query_base, search_columns) do
+  defp build_query_base(query_base, search_columns) do
+    initial_state = {from(m in query_base, as: :main), %{main: query_base}}
+
     search_columns
     |> List.wrap()
-    |> Enum.reduce(query_base, fn
-      col_info, query when is_tuple(col_info) ->
-        ensure_join(query, col_info)
+    |> Enum.reduce(initial_state, fn
+      col_info, {query, modules} when is_tuple(col_info) ->
+        ensure_join(query, modules, col_info)
 
-      _col, query ->
-        query
+      _col, acc ->
+        acc
     end)
   end
 
-  def build_options(default_columns) do
+  defp build_options(default_columns) do
     [{"전체", ""}] ++
       Enum.map(default_columns, fn col ->
         {flatten_label(col), flatten_value(col)}
       end)
   end
 
-  def parse_columns(columns) do
+  defp parse_columns(columns) do
     columns
     |> List.wrap()
     |> Enum.reject(&(&1 in ["", nil]))
@@ -129,31 +155,65 @@ defmodule Itsm.Paging do
     {:main, field}
   end
 
-  defp ensure_join(query, assoc_name) when is_atom(assoc_name) do
-    if has_named_binding?(query, assoc_name) do
-      query
-    else
-      join(query, :left, [p], a in assoc(p, ^assoc_name), as: ^assoc_name)
-    end
+  defp ensure_join(query, modules, assoc_name) when is_atom(assoc_name) do
+    do_ensure_join(query, modules, :main, assoc_name)
   end
 
-  defp ensure_join(query, {parent, child}) do
-    query = ensure_join(query, parent)
+  defp ensure_join(query, modules, {parent, child}) do
+    {query, modules} = ensure_join(query, modules, parent)
 
     case child do
       {child_assoc, next_step} ->
-        query =
-          if has_named_binding?(query, child_assoc) do
-            query
-          else
-            join(query, :left, [{^parent, p}], c in assoc(p, ^child_assoc), as: ^child_assoc)
-          end
-
-        ensure_join(query, {child_assoc, next_step})
+        {query, modules} = do_ensure_join(query, modules, parent, child_assoc)
+        ensure_join(query, modules, {child_assoc, next_step})
 
       field when is_atom(field) ->
-        query
+        {query, modules}
     end
+  end
+
+  defp do_ensure_join(query, modules, parent_name, assoc_name) do
+    if has_named_binding?(query, assoc_name) do
+      {query, modules}
+    else
+      parent_mod = Map.fetch!(modules, parent_name)
+      %{related: child_mod} = parent_mod.__schema__(:association, assoc_name)
+
+      new_query =
+        join(query, :left, [{^parent_name, p}], a in assoc(p, ^assoc_name), as: ^assoc_name)
+
+      new_modules = Map.put(modules, assoc_name, child_mod)
+
+      {new_query, new_modules}
+    end
+  end
+
+  defp build_optimized_preloads(schema, preloads) do
+    Enum.map(preloads, fn
+      assoc when is_atom(assoc) ->
+        assoc
+
+      {assoc, content} ->
+        target_schema = schema.__schema__(:association, assoc).queryable
+        {nested_preloads, fields} = Enum.split_with(List.wrap(content), &is_tuple/1)
+        optimized_nested = build_optimized_preloads(target_schema, nested_preloads)
+        required_keys = get_required_keys(nested_preloads, target_schema)
+        final_fields = Enum.uniq(required_keys ++ fields)
+
+        query = from(s in target_schema, select: ^final_fields)
+        query = if optimized_nested == [], do: query, else: preload(query, ^optimized_nested)
+
+        {assoc, query}
+    end)
+  end
+
+  defp get_required_keys(nested_preloads, target_schema) do
+    [
+      :id
+      | Enum.map(nested_preloads, &target_schema.__schema__(:association, elem(&1, 0)).owner_key)
+    ]
+    |> List.flatten()
+    |> Enum.reject(&is_nil/1)
   end
 
   defp flatten_value(col) when col in ["", nil, [], [""]], do: [""]
@@ -171,7 +231,9 @@ defmodule Itsm.Paging do
   defp flatten_label(col), do: translate_label(col)
 
   defp translate_label(atom) when is_atom(atom) do
-    label = atom |> Atom.to_string() |> String.replace("_", " ") |> String.capitalize()
+    label =
+      atom |> Atom.to_string() |> String.split("_") |> Enum.map_join(" ", &String.capitalize/1)
+
     Gettext.gettext(ItsmWeb.Gettext, label)
   end
 

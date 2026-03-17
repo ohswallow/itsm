@@ -23,13 +23,8 @@ defmodule ItsmWeb.Admin.RequestLive.Index do
     {:noreply, stream_delete(socket, :requests, request)}
   end
 
-  @impl true
-  def handle_info({ItsmWeb.Admin.RequestLive.FormComponent, {:saved, request}}, socket) do
-    {:noreply, stream_insert(socket, :requests, request)}
-  end
-
   defp apply_action(socket, :index, params, url) do
-    results =
+    value =
       Paging.search_and_pagination(
         params,
         url,
@@ -40,12 +35,12 @@ defmodule ItsmWeb.Admin.RequestLive.Index do
           :env,
           :requestor_name
         ],
-        [:category]
+        category: [:request_name, :name]
       )
 
     socket
-    |> assign(:results, results)
-    |> stream(:requests, results.entries, reset: true)
+    |> assign(:results, value.results)
+    |> stream(:requests, value.entries, reset: true)
     |> assign(:page_title, "Listing Requests")
     |> assign(:request, nil)
   end

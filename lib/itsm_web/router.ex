@@ -187,6 +187,13 @@ defmodule ItsmWeb.Router do
 
       live "/common_codes/:id", Admin.CommonCodeLive.Show, :show
       live "/common_codes/:id/show/edit", Admin.CommonCodeLive.Show, :edit
+
+      live "/assets", Admin.AssetLive.Index, :index
+      live "/assets/new", Admin.AssetLive.Index, :new
+      live "/assets/:id/edit", Admin.AssetLive.Index, :edit
+
+      live "/assets/:id", Admin.AssetLive.Show, :show
+      live "/assets/:id/show/edit", Admin.AssetLive.Show, :edit
     end
   end
 
