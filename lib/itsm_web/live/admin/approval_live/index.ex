@@ -23,13 +23,8 @@ defmodule ItsmWeb.Admin.ApprovalLive.Index do
     {:noreply, stream_delete(socket, :approvals, approval)}
   end
 
-  @impl true
-  def handle_info({ItsmWeb.Admin.ApprovalLive.FormComponent, {:saved, approval}}, socket) do
-    {:noreply, stream_insert(socket, :approvals, approval)}
-  end
-
   defp apply_action(socket, :index, params, url) do
-    results =
+    value =
       Paging.search_and_pagination(
         params,
         url,
@@ -39,12 +34,12 @@ defmodule ItsmWeb.Admin.ApprovalLive.Index do
           :action,
           :approver_name
         ],
-        request: :category
+        request: [category: :name]
       )
 
     socket
-    |> assign(:results, results)
-    |> stream(:approvals, results.entries, reset: true)
+    |> assign(:results, value.results)
+    |> stream(:approvals, value.entries, reset: true)
     |> assign(:page_title, "Listing Approvals")
     |> assign(:approval, nil)
   end

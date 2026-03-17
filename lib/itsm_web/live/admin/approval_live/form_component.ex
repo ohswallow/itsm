@@ -10,7 +10,8 @@ defmodule ItsmWeb.Admin.ApprovalLive.FormComponent do
      |> assign(assigns)
      |> assign_new(:form, fn ->
        to_form(Approvals.change_approval(approval))
-     end)}
+     end)
+     |> assign_new_options()}
   end
 
   @impl true
@@ -40,7 +41,7 @@ defmodule ItsmWeb.Admin.ApprovalLive.FormComponent do
           field={@form[:approver_id]}
           type="select"
           label={gettext("Approver")}
-          options={Itsm.Admin.Accounts.get_select_options()}
+          options={@approver_options}
         />
         <.input field={@form[:comment]} type="text" label={gettext("Comment")} />
         <.itsm_calendar
@@ -50,7 +51,9 @@ defmodule ItsmWeb.Admin.ApprovalLive.FormComponent do
           show_time
           default_selected_date_time={@form[:inserted_at].value}
         />
-        <:actions><.button phx-disable-with="Saving...">Save Approval</.button></:actions>
+        <:actions>
+          <.button phx-disable-with="Saving...">Save Approval</.button>
+        </:actions>
       </.simple_form>
     </div>
     """
@@ -67,11 +70,14 @@ defmodule ItsmWeb.Admin.ApprovalLive.FormComponent do
     save_approval(socket, socket.assigns.action, approval_params)
   end
 
+  defp assign_new_options(socket) do
+    socket
+    |> assign_new(:approver_options, fn -> Itsm.Admin.Accounts.get_select_options() end)
+  end
+
   defp save_approval(socket, :edit, approval_params) do
     case Approvals.update_approval(socket.assigns.approval, approval_params) do
-      {:ok, approval} ->
-        notify_parent({:saved, approval})
-
+      {:ok, _approval} ->
         {:noreply,
          socket
          |> put_flash(:info, "Approval updated successfully")
@@ -81,6 +87,4 @@ defmodule ItsmWeb.Admin.ApprovalLive.FormComponent do
         {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
-
-  defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end

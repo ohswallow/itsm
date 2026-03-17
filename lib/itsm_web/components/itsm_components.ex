@@ -57,8 +57,6 @@ defmodule ItsmWeb.ItsmComponents do
   attr :label, :string, default: nil
   attr :start_col_class, :any, default: nil
   attr :days, :list, default: [], doc: "[%{disabled: boolean, date: Date, day: integer}]"
-  attr :min, :any, default: nil
-  attr :max, :any, default: nil
   attr :view_date, :any, default: nil
   attr :selected_date_time, :any, default: nil
   attr :show_time, :boolean, default: false
@@ -112,8 +110,6 @@ defmodule ItsmWeb.ItsmComponents do
             phx-update="ignore"
             readonly
             value={@selected_date_time}
-            min={@min}
-            max={@max}
           />
           <div
             {@rests[:selected_date_time]}
@@ -208,7 +204,7 @@ defmodule ItsmWeb.ItsmComponents do
             data-disabled={date.disabled || nil}
             class={[
               index == 0 && @start_col_class,
-              "p-2 text-sm rounded-lg transition-all"
+              "p-2 text-sm rounded-lg transition-all cursor-pointer hover:bg-gray-100"
             ]}
             phx-update="ignore"
           >
@@ -231,7 +227,6 @@ defmodule ItsmWeb.ItsmComponents do
               min="0"
               max="23"
               phx-target={@target}
-              phx-debounce="300"
               phx-update="ignore"
               class="w-24 bg-transparent text-center font-mono text-lg focus:outline-none focus:text-blue-600"
             /> <span class="text-gray-400 font-bold">:</span>
@@ -245,7 +240,6 @@ defmodule ItsmWeb.ItsmComponents do
               min="0"
               max="59"
               phx-target={@target}
-              phx-debounce="300"
               phx-update="ignore"
               class="w-24 bg-transparent text-center font-mono text-lg focus:outline-none focus:text-blue-600"
             />
@@ -299,7 +293,7 @@ defmodule ItsmWeb.ItsmComponents do
             multiple
             size="1"
             phx-hook="InputSelect.selectAll"
-            value={@results.params.search_columns || [""]}
+            value={@results.params.search_columns}
           />
         </div>
 

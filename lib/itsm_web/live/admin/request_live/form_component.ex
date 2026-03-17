@@ -10,7 +10,8 @@ defmodule ItsmWeb.Admin.RequestLive.FormComponent do
      |> assign(assigns)
      |> assign_new(:form, fn ->
        to_form(Requests.change_request(request))
-     end)}
+     end)
+     |> assign_new_options()}
   end
 
   @impl true
@@ -43,7 +44,7 @@ defmodule ItsmWeb.Admin.RequestLive.FormComponent do
           type="select"
           label={gettext("Category")}
           prompt="Choose a value"
-          options={Itsm.Admin.Categories.list_categories() |> Enum.map(&{&1.name, &1.id})}
+          options={@category_options}
         />
         <.itsm_calendar
           :if={@action == :edit}
@@ -69,11 +70,16 @@ defmodule ItsmWeb.Admin.RequestLive.FormComponent do
     save_request(socket, socket.assigns.action, request_params)
   end
 
+  defp assign_new_options(socket) do
+    socket
+    |> assign_new(:category_options, fn ->
+      Itsm.Admin.Categories.get_category_options()
+    end)
+  end
+
   defp save_request(socket, :edit, request_params) do
     case Requests.update_request(socket.assigns.request, request_params) do
-      {:ok, request} ->
-        notify_parent({:saved, request})
-
+      {:ok, _request} ->
         {:noreply,
          socket
          |> put_flash(:info, "Request updated successfully")
@@ -86,9 +92,7 @@ defmodule ItsmWeb.Admin.RequestLive.FormComponent do
 
   defp save_request(socket, :new, request_params) do
     case Requests.create_request(socket.assigns.current_user, request_params) do
-      {:ok, request} ->
-        notify_parent({:saved, request})
-
+      {:ok, _request} ->
         {:noreply,
          socket
          |> put_flash(:info, "Request created successfully")
@@ -98,6 +102,4 @@ defmodule ItsmWeb.Admin.RequestLive.FormComponent do
         {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
-
-  defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end

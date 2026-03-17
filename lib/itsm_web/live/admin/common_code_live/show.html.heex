@@ -9,28 +9,25 @@
 </.header>
 
 <.list>
-  <:item title={gettext("Group code")}>{@common_code.group_code}</:item>
+  <:item title={gettext("Group Code")}>{@common_code.group_code}</:item>
   <:item title={gettext("Code")}>{@common_code.code}</:item>
   <:item title={gettext("Label")}>{@common_code.label}</:item>
   <:item title={gettext("Description")}>{@common_code.description}</:item>
-  <:item title={gettext("Sort order")}>{@common_code.sort_order}</:item>
-  <:item title={gettext("Is active")}>{@common_code.is_active}</:item>
-  <:item title={gettext("Inserted at")}>
+  <:item title={gettext("Sort Order")}>{@common_code.sort_order}</:item>
+  <:item title={gettext("Is Active")}>{@common_code.is_active}</:item>
+  <:item title={gettext("Inserted At")}>
     <span
       id={"common_code-inserted-at-#{@common_code.id}"}
       phx-hook="LocalTime.ToLocale"
       utc-value={@common_code.inserted_at}
-    >
-    </span>
+    />
   </:item>
-
-  <:item title={gettext("Updated at")}>
+  <:item title={gettext("Updated At")}>
     <span
       id={"common_code-updated-at-#{@common_code.id}"}
       phx-hook="LocalTime.ToLocale"
       utc-value={@common_code.updated_at}
-    >
-    </span>
+    />
   </:item>
 </.list>
 

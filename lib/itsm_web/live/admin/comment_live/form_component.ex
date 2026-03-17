@@ -56,9 +56,7 @@ defmodule ItsmWeb.Admin.CommentLive.FormComponent do
 
   defp save_comment(socket, :edit, comment_params) do
     case Comments.update_comment(socket.assigns.comment, comment_params) do
-      {:ok, comment} ->
-        notify_parent({:saved, comment})
-
+      {:ok, _comment} ->
         {:noreply,
          socket
          |> put_flash(:info, "Comment updated successfully")
@@ -68,6 +66,4 @@ defmodule ItsmWeb.Admin.CommentLive.FormComponent do
         {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
-
-  defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end

@@ -6,7 +6,7 @@
     </.link>
   </:actions>
 </.header>
-<.itsm_table_container results={@results}>
+<.itsm_table_container results={assigns[:results]}>
   <.table
     id="common_codes_table"
     rows={@streams.common_codes}
@@ -41,7 +41,7 @@
   :if={@live_action in [:new, :edit]}
   id="codes-modal"
   show
-  on_cancel={JS.patch(~p"/admin/common_codes?#{@results.params}")}
+  on_cancel={JS.patch(~p"/admin/common_codes?#{assigns[:results][:params] || %{}}")}
 >
   <.live_component
     module={ItsmWeb.Admin.CommonCodeLive.FormComponent}
@@ -49,6 +49,6 @@
     title={@page_title}
     action={@live_action}
     common_code={@common_code}
-    patch={~p"/admin/common_codes?#{@results.params}"}
+    patch={~p"/admin/common_codes?#{assigns[:results][:params] || %{}}"}
   />
 </.modal>

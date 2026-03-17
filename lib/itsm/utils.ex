@@ -10,6 +10,19 @@ defmodule Itsm.Utils do
 
   def maybe_put_change(changeset, _field, nil), do: changeset
 
-  def maybe_put_change(changeset, field, value),
-    do: Ecto.Changeset.put_change(changeset, field, value)
+  def maybe_put_change(changeset, field, value) when is_binary(value) do
+    parse_and_put(changeset, field, value, DateTime.from_iso8601(value))
+  end
+
+  def maybe_put_change(changeset, field, value) do
+    Ecto.Changeset.put_change(changeset, field, value)
+  end
+
+  defp parse_and_put(changeset, field, _value, {:ok, dt, _offset}) do
+    Ecto.Changeset.put_change(changeset, field, DateTime.truncate(dt, :second))
+  end
+
+  defp parse_and_put(changeset, field, value, {:error, _reason}) do
+    Ecto.Changeset.put_change(changeset, field, value)
+  end
 end

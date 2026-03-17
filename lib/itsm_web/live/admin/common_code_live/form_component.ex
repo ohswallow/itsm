@@ -63,9 +63,7 @@ defmodule ItsmWeb.Admin.CommonCodeLive.FormComponent do
 
   defp save_common_code(socket, :edit, common_code_params) do
     case CommonCodes.update_common_code(socket.assigns.common_code, common_code_params) do
-      {:ok, common_code} ->
-        notify_parent({:saved, common_code})
-
+      {:ok, _common_code} ->
         {:noreply,
          socket
          |> put_flash(:info, "Common Code updated successfully")
@@ -78,9 +76,7 @@ defmodule ItsmWeb.Admin.CommonCodeLive.FormComponent do
 
   defp save_common_code(socket, :new, common_code_params) do
     case CommonCodes.create_common_code(common_code_params) do
-      {:ok, common_code} ->
-        notify_parent({:saved, common_code})
-
+      {:ok, _common_code} ->
         {:noreply,
          socket
          |> put_flash(:info, "Common Code created successfully")
@@ -90,6 +86,4 @@ defmodule ItsmWeb.Admin.CommonCodeLive.FormComponent do
         {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
-
-  defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end

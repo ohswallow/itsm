@@ -4,6 +4,17 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
   alias Itsm.Admin.Assets
 
   @impl true
+  def update(%{asset: asset} = assigns, socket) do
+    {:ok,
+     socket
+     |> assign(assigns)
+     |> assign_new(:form, fn ->
+       to_form(Assets.change_asset(asset))
+     end)
+     |> assign_new_options()}
+  end
+
+  @impl true
   def render(assigns) do
     ~H"""
     <div>
@@ -79,17 +90,6 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
   end
 
   @impl true
-  def update(%{asset: asset} = assigns, socket) do
-    {:ok,
-     socket
-     |> initialize_options()
-     |> assign(assigns)
-     |> assign_new(:form, fn ->
-       to_form(Assets.change_asset(asset))
-     end)}
-  end
-
-  @impl true
   def handle_event("validate", %{"asset" => asset_params}, socket) do
     changeset = Assets.change_asset(socket.assigns.asset, asset_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
@@ -99,22 +99,19 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
     save_asset(socket, socket.assigns.action, asset_params)
   end
 
-  defp initialize_options(socket) do
-    assign(socket,
-      affiliate_options: Itsm.CommonCodes.get_select_options("계열사"),
-      category_options: Itsm.CommonCodes.get_select_options("카테고리"),
-      region_type_options: Itsm.CommonCodes.get_select_options("지역_유형"),
-      infra_type_options: Itsm.CommonCodes.get_select_options("인프라_유형"),
-      env_options: Itsm.CommonCodes.get_select_options("운영_구분"),
-      location_options: Itsm.CommonCodes.get_select_options("장소")
-    )
+  defp assign_new_options(socket) do
+    socket
+    |> assign_new(:affiliate_options, fn -> Itsm.CommonCodes.get_select_options("계열사") end)
+    |> assign_new(:category_options, fn -> Itsm.CommonCodes.get_select_options("카테고리") end)
+    |> assign_new(:region_type_options, fn -> Itsm.CommonCodes.get_select_options("지역_유형") end)
+    |> assign_new(:infra_type_options, fn -> Itsm.CommonCodes.get_select_options("인프라_유형") end)
+    |> assign_new(:env_options, fn -> Itsm.CommonCodes.get_select_options("운영_구분") end)
+    |> assign_new(:location_options, fn -> Itsm.CommonCodes.get_select_options("장소") end)
   end
 
   defp save_asset(socket, :edit, asset_params) do
     case Assets.update_asset(socket.assigns.asset, asset_params) do
-      {:ok, asset} ->
-        notify_parent({:saved, asset})
-
+      {:ok, _asset} ->
         {:noreply,
          socket
          |> put_flash(:info, "Asset updated successfully")
@@ -127,9 +124,7 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
 
   defp save_asset(socket, :new, asset_params) do
     case Assets.create_asset(asset_params) do
-      {:ok, asset} ->
-        notify_parent({:saved, asset})
-
+      {:ok, _asset} ->
         {:noreply,
          socket
          |> put_flash(:info, "Asset created successfully")
@@ -139,6 +134,4 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
         {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
-
-  defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end

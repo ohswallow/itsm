@@ -1,47 +1,49 @@
 <.header>
   Listing Assets
   <:actions>
-    <.link patch={~p"/assets/new"}>
+    <.link patch={~p"/admin/assets/new"}>
       <.button>New Asset</.button>
     </.link>
   </:actions>
 </.header>
 
-<.table
-  id="assets"
-  rows={@streams.assets}
-  row_click={fn {_id, asset} -> JS.navigate(~p"/assets/#{asset}") end}
->
-  <:col :let={{_id, asset}} label={gettext("Name")}>{asset.name}</:col>
-  <:col :let={{_id, asset}} label={gettext("Description")}>{asset.description}</:col>
-  <:col :let={{_id, asset}} label={gettext("Affiliate")}>{asset.affiliate}</:col>
-  <:col :let={{_id, asset}} label={gettext("Category")}>{asset.category}</:col>
-  <:col :let={{_id, asset}} label={gettext("Region type")}>{asset.region_type}</:col>
-  <:col :let={{_id, asset}} label={gettext("Infra type")}>{asset.infra_type}</:col>
-  <:col :let={{_id, asset}} label={gettext("Environment")}>{asset.env}</:col>
-  <:col :let={{_id, asset}} label={gettext("Location")}>{asset.location}</:col>
-  <:col :let={{_id, asset}} label={gettext("Is dmz zone")}>{asset.is_dmz_zone}</:col>
-  <:action :let={{_id, asset}}>
-    <div class="sr-only">
-      <.link navigate={~p"/assets/#{asset}"}>Show</.link>
-    </div>
-    <.link patch={~p"/assets/#{asset}/edit"}>Edit</.link>
-  </:action>
-  <:action :let={{id, asset}}>
-    <.link
-      phx-click={JS.push("delete", value: %{id: asset.id}) |> hide("##{id}")}
-      data-confirm="Are you sure?"
-    >
-      Delete
-    </.link>
-  </:action>
-</.table>
+<.itsm_table_container results={assigns[:results]}>
+  <.table
+    id="assets"
+    rows={@streams.assets}
+    row_click={fn {_id, asset} -> JS.navigate(~p"/admin/assets/#{asset}") end}
+  >
+    <:col :let={{_id, asset}} label={gettext("Name")}>{asset.name}</:col>
+    <:col :let={{_id, asset}} label={gettext("Description")}>{asset.description}</:col>
+    <:col :let={{_id, asset}} label={gettext("Affiliate")}>{asset.affiliate}</:col>
+    <:col :let={{_id, asset}} label={gettext("Category")}>{asset.category}</:col>
+    <:col :let={{_id, asset}} label={gettext("Region type")}>{asset.region_type}</:col>
+    <:col :let={{_id, asset}} label={gettext("Infra type")}>{asset.infra_type}</:col>
+    <:col :let={{_id, asset}} label={gettext("Environment")}>{asset.env}</:col>
+    <:col :let={{_id, asset}} label={gettext("Location")}>{asset.location}</:col>
+    <:col :let={{_id, asset}} label={gettext("Is dmz zone")}>{asset.is_dmz_zone}</:col>
+    <:action :let={{_id, asset}}>
+      <div class="sr-only">
+        <.link navigate={~p"/admin/assets/#{asset}"}>Show</.link>
+      </div>
+      <.link patch={~p"/admin/assets/#{asset}/edit"}>Edit</.link>
+    </:action>
+    <:action :let={{id, asset}}>
+      <.link
+        phx-click={JS.push("delete", value: %{id: asset.id}) |> hide("##{id}")}
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
+  </.table>
+</.itsm_table_container>
 
 <.modal
   :if={@live_action in [:new, :edit]}
   id="asset-modal"
   show
-  on_cancel={JS.patch(~p"/assets")}
+  on_cancel={JS.patch(~p"/admin/assets?#{assigns[:results][:params] || %{}}")}
 >
   <.live_component
     module={ItsmWeb.AssetLive.FormComponent}
@@ -49,6 +51,6 @@
     title={@page_title}
     action={@live_action}
     asset={@asset}
-    patch={~p"/assets"}
+    patch={~p"/admin/assets?#{assigns[:results][:params] || %{}}"}
   />
 </.modal>

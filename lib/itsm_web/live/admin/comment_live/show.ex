@@ -13,7 +13,7 @@ defmodule ItsmWeb.Admin.CommentLive.Show do
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:comment, Comments.get_comment!(id))}
+     |> assign(:comment, Comments.get_comment!(id) |> Comments.preload_user())}
   end
 
   defp page_title(:show), do: "Show Comment"

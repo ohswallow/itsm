@@ -23,18 +23,13 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Index do
     {:noreply, stream_delete(socket, :common_codes, common_code)}
   end
 
-  @impl true
-  def handle_info({ItsmWeb.Admin.CommonCodeLive.FormComponent, {:saved, common_code}}, socket) do
-    {:noreply, stream_insert(socket, :common_codes, common_code)}
-  end
-
   defp apply_action(socket, :index, params, url) do
-    results =
-      Paging.search_and_pagination(params, url, CommonCode, [:label, :code])
+    value =
+      Paging.search_and_pagination(params, url, CommonCode, [:group_code, :label, :code])
 
     socket
-    |> assign(:results, results)
-    |> stream(:common_codes, results.entries, reset: true)
+    |> assign(:results, value.results)
+    |> stream(:common_codes, value.entries, reset: true)
     |> assign(:page_title, "Listing Common codes")
     |> assign(:common_code, nil)
   end

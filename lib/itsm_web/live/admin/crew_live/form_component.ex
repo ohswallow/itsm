@@ -21,7 +21,7 @@ defmodule ItsmWeb.Admin.CrewLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage crew records in your database.</:subtitle>
       </.header>
-      
+
       <.simple_form
         for={@form}
         id="crew-form"
@@ -57,9 +57,7 @@ defmodule ItsmWeb.Admin.CrewLive.FormComponent do
 
   defp save_crew(socket, :edit, crew_params) do
     case Crews.update_crew(socket.assigns.crew, crew_params) do
-      {:ok, crew} ->
-        notify_parent({:saved, crew})
-
+      {:ok, _crew} ->
         {:noreply,
          socket
          |> put_flash(:info, "Crew updated successfully")
@@ -74,9 +72,7 @@ defmodule ItsmWeb.Admin.CrewLive.FormComponent do
     current_user = socket.assigns.current_user
 
     case Crews.create_crew(current_user, crew_params) do
-      {:ok, crew} ->
-        notify_parent({:saved, crew})
-
+      {:ok, _crew} ->
         {:noreply,
          socket
          |> put_flash(:info, "Crew created successfully")
@@ -86,6 +82,4 @@ defmodule ItsmWeb.Admin.CrewLive.FormComponent do
         {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
-
-  defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end

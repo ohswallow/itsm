@@ -1,7 +1,6 @@
 <.header>
   Request {@request.id}
   <:subtitle>This is a request record from your database.</:subtitle>
-
   <:actions>
     <.link patch={~p"/admin/requests/#{@request}/show/edit"} phx-click={JS.push_focus()}>
       <.button>Edit request</.button>
@@ -11,25 +10,20 @@
 
 <.list>
   <:item title={gettext("Title")}>{@request.title}</:item>
-
   <:item title={gettext("Description")}>
     <div class="w-[90px] truncate">{@request.description}</div>
   </:item>
-
   <:item title={gettext("Environment")}>{@request.env}</:item>
-
   <:item title={gettext("Due Date")}>
-    <div
-      id={"due-date-" <> to_string(@request.id)}
+    <span
+      id={"due-date-#{@request.id}"}
       phx-hook="LocalTime.ToLocale"
       utc-value={@request.due_date}
     />
   </:item>
-
   <:item title={gettext("Request Type")}>
     {@request.category.request_name}
   </:item>
-
   <:item title={gettext("Request Name")}>{@request.category.name}</:item>
 </.list>
 
