@@ -7,6 +7,10 @@ defmodule ItsmWeb.Admin.CategoryLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    if(connected?(socket)) do
+      Itsm.Utils.subscribes(:categories)
+    end
+
     {:ok, socket |> stream(:categories, []) |> assign_new_options()}
   end
 
@@ -22,6 +26,14 @@ defmodule ItsmWeb.Admin.CategoryLive.Index do
 
     {:noreply, stream_delete(socket, :categories, category)}
   end
+
+  @impl true
+  def handle_info({:pubsub, {event, item}}, socket) do
+    handle_pubsub(event, item, socket)
+  end
+
+  @impl true
+  def handle_info(_event, socket), do: {:noreply, socket}
 
   defp assign_new_options(socket) do
     socket
@@ -57,5 +69,26 @@ defmodule ItsmWeb.Admin.CategoryLive.Index do
     socket
     |> assign(:page_title, "Edit Category")
     |> assign(:category, Categories.get_category!(id))
+  end
+
+  defp handle_pubsub(event, _category, socket)
+       when event in [:create_category, :update_category] do
+    {:noreply,
+     socket
+     |> put_flash(
+       :info,
+       if(event == :create_category,
+         do: gettext("Created") <> " " <> gettext("Category"),
+         else: gettext("Updated") <> " " <> gettext("Category")
+       )
+     )
+     |> push_patch(to: ~p"/admin/categories?#{socket.assigns[:results][:params] || %{}}")}
+  end
+
+  defp handle_pubsub(:delete_category, category, socket) do
+    {:noreply,
+     socket
+     |> put_flash(:info, gettext("Deleted") <> " " <> gettext("Category"))
+     |> stream_delete(:categories, category)}
   end
 end

@@ -7,6 +7,10 @@ defmodule ItsmWeb.Admin.RequestLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    if(connected?(socket)) do
+      Itsm.Utils.subscribes(:requests)
+    end
+
     {:ok, stream(socket, :requests, [])}
   end
 
@@ -22,6 +26,14 @@ defmodule ItsmWeb.Admin.RequestLive.Index do
 
     {:noreply, stream_delete(socket, :requests, request)}
   end
+
+  @impl true
+  def handle_info({:pubsub, {event, item}}, socket) do
+    handle_pubsub(event, item, socket)
+  end
+
+  @impl true
+  def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
     value =
@@ -55,5 +67,26 @@ defmodule ItsmWeb.Admin.RequestLive.Index do
     socket
     |> assign(:page_title, "Edit Request")
     |> assign(:request, Requests.get_request!(id))
+  end
+
+  defp handle_pubsub(event, _request, socket)
+       when event in [:create_request, :update_request] do
+    {:noreply,
+     socket
+     |> put_flash(
+       :info,
+       if(event == :create_request,
+         do: gettext("Created") <> " " <> gettext("Request"),
+         else: gettext("Updated") <> " " <> gettext("Request")
+       )
+     )
+     |> push_patch(to: ~p"/admin/requests?#{socket.assigns[:results][:params] || %{}}")}
+  end
+
+  defp handle_pubsub(:delete_request, request, socket) do
+    {:noreply,
+     socket
+     |> put_flash(:info, gettext("Deleted") <> " " <> gettext("Request"))
+     |> stream_delete(:requests, request)}
   end
 end

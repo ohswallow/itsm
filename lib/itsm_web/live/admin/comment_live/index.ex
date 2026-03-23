@@ -7,6 +7,10 @@ defmodule ItsmWeb.Admin.CommentLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    if(connected?(socket)) do
+      Itsm.Utils.subscribes(:comments)
+    end
+
     {:ok, stream(socket, :comments, [])}
   end
 
@@ -22,6 +26,14 @@ defmodule ItsmWeb.Admin.CommentLive.Index do
 
     {:noreply, stream_delete(socket, :comments, comment)}
   end
+
+  @impl true
+  def handle_info({:pubsub, {event, item}}, socket) do
+    handle_pubsub(event, item, socket)
+  end
+
+  @impl true
+  def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
     value =
@@ -50,5 +62,26 @@ defmodule ItsmWeb.Admin.CommentLive.Index do
     socket
     |> assign(:page_title, "Edit Comment")
     |> assign(:comment, Comments.get_comment!(id))
+  end
+
+  defp handle_pubsub(event, _comment, socket)
+       when event in [:create_comment, :update_comment] do
+    {:noreply,
+     socket
+     |> put_flash(
+       :info,
+       if(event == :create_comment,
+         do: gettext("Created") <> " " <> gettext("Comment"),
+         else: gettext("Updated") <> " " <> gettext("Comment")
+       )
+     )
+     |> push_patch(to: ~p"/admin/comments?#{socket.assigns[:results][:params] || %{}}")}
+  end
+
+  defp handle_pubsub(:delete_comment, comment, socket) do
+    {:noreply,
+     socket
+     |> put_flash(:info, gettext("Deleted") <> " " <> gettext("Comment"))
+     |> stream_delete(:comments, comment)}
   end
 end

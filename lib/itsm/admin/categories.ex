@@ -14,6 +14,14 @@ defmodule Itsm.Admin.Categories do
     %Category{}
     |> Category.changeset(attrs)
     |> Repo.insert()
+    |> case do
+      {:ok, category} ->
+        Itsm.Utils.broadcasts(:category, {:create_Category, category})
+        {:ok, category}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   def update_category(%Category{} = category, attrs) do
@@ -21,10 +29,28 @@ defmodule Itsm.Admin.Categories do
     |> Category.changeset(attrs)
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
     |> Repo.update()
+    |> case do
+      {:ok, category} ->
+        Itsm.Utils.broadcast(:category, {:update_category, category})
+        Itsm.Utils.broadcasts(:categories, {:update_category, category})
+        {:ok, category}
+
+      {:error, _} = error ->
+        error
+    end
   end
 
   def delete_category(%Category{} = category) do
     Repo.delete(category)
+    |> case do
+      {:ok, category} ->
+        Itsm.Utils.broadcast(:category, {:delete_category, category})
+        Itsm.Utils.broadcasts(:categories, {:delete_category, category})
+        {:ok, category}
+
+      {:error, _} = error ->
+        error
+    end
   end
 
   def get_category_options do

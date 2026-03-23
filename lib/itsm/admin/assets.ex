@@ -18,9 +18,27 @@ defmodule Itsm.Admin.Assets do
     |> Asset.changeset(attrs)
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
     |> Repo.update()
+    |> case do
+      {:ok, asset} ->
+        Itsm.Utils.broadcast(:asset, {:update_asset, asset})
+        Itsm.Utils.broadcasts(:assets, {:update_asset, asset})
+        {:ok, asset}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   def delete_asset(%Asset{} = asset) do
     Repo.delete(asset)
+    |> case do
+      {:ok, asset} ->
+        Itsm.Utils.broadcast(:asset, {:update_asset, asset})
+        Itsm.Utils.broadcasts(:assets, {:update_asset, asset})
+        {:ok, asset}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 end

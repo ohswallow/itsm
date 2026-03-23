@@ -255,3 +255,6 @@ msgstr "작업명"
 
 msgid "Requests"
 msgstr "요청목록"
+
+msgid "Common Code"
+msgstr "공통 코드"

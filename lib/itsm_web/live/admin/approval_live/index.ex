@@ -7,6 +7,10 @@ defmodule ItsmWeb.Admin.ApprovalLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    if(connected?(socket)) do
+      Itsm.Utils.subscribes(:approvals)
+    end
+
     {:ok, stream(socket, :approvals, [])}
   end
 
@@ -22,6 +26,14 @@ defmodule ItsmWeb.Admin.ApprovalLive.Index do
 
     {:noreply, stream_delete(socket, :approvals, approval)}
   end
+
+  @impl true
+  def handle_info({:pubsub, {event, item}}, socket) do
+    handle_pubsub(event, item, socket)
+  end
+
+  @impl true
+  def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
     value =
@@ -54,5 +66,26 @@ defmodule ItsmWeb.Admin.ApprovalLive.Index do
     socket
     |> assign(:page_title, "Edit Approval")
     |> assign(:approval, Approvals.get_approval!(id))
+  end
+
+  defp handle_pubsub(event, _approval, socket)
+       when event in [:create_approval, :update_approval] do
+    {:noreply,
+     socket
+     |> put_flash(
+       :info,
+       if(event == :create_approval,
+         do: gettext("Created") <> " " <> gettext("Approval"),
+         else: gettext("Updated") <> " " <> gettext("Approval")
+       )
+     )
+     |> push_patch(to: ~p"/admin/approvals?#{socket.assigns[:results][:params] || %{}}")}
+  end
+
+  defp handle_pubsub(:delete_approval, approval, socket) do
+    {:noreply,
+     socket
+     |> put_flash(:info, gettext("Deleted") <> " " <> gettext("Approval"))
+     |> stream_delete(:approvals, approval)}
   end
 end

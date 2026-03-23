@@ -11,6 +11,15 @@
     |> <%= inspect schema.alias %>.changeset(attrs)
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
     |> Repo.update()
+    |> case do
+      {:ok, <%= schema.singular %>} ->
+       Itsm.Utils.broadcast(:<%= schema.singular %>, {:update_<%= schema.singular %>, <%= schema.singular %>})
+       Itsm.Utils.broadcasts(:<%= schema.plural %>, {:update_<%= schema.singular %>, <%= schema.singular %>})
+       {:ok, <%= schema.singular %>}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   defdelegate delete_<%= schema.singular %>(<%= schema.singular %>), to: Itsm.<%= inspect context.alias %>

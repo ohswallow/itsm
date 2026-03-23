@@ -17,10 +17,28 @@ defmodule Itsm.Admin.Comments do
     |> Comment.changeset(attrs)
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
     |> Repo.update()
+    |> case do
+      {:ok, comment} ->
+        Itsm.Utils.broadcast(:comment, {:update_comment, comment})
+        Itsm.Utils.broadcasts(:comments, {:update_comment, comment})
+        {:ok, comment}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   def delete_comment(%Comment{} = comment) do
     Repo.delete(comment)
+    |> case do
+      {:ok, comment} ->
+        Itsm.Utils.broadcast(:comment, {:delete_comment, comment})
+        Itsm.Utils.broadcasts(:comments, {:delete_comment, comment})
+        {:ok, comment}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   def preload_user(%Comment{} = comment) do

@@ -7,6 +7,10 @@ defmodule ItsmWeb.Admin.CrewLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    if(connected?(socket)) do
+      Itsm.Utils.subscribes(:crews)
+    end
+
     {:ok, stream(socket, :crews, [])}
   end
 
@@ -22,6 +26,14 @@ defmodule ItsmWeb.Admin.CrewLive.Index do
 
     {:noreply, stream_delete(socket, :crews, crew)}
   end
+
+  @impl true
+  def handle_info({:pubsub, {event, item}}, socket) do
+    handle_pubsub(event, item, socket)
+  end
+
+  @impl true
+  def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
     value =
@@ -48,5 +60,26 @@ defmodule ItsmWeb.Admin.CrewLive.Index do
     socket
     |> assign(:page_title, "Edit Crew")
     |> assign(:crew, Crews.get_crew!(id))
+  end
+
+  defp handle_pubsub(event, _crew, socket)
+       when event in [:create_crew, :update_crew] do
+    {:noreply,
+     socket
+     |> put_flash(
+       :info,
+       if(event == :create_crew,
+         do: gettext("Created") <> " " <> gettext("Crew"),
+         else: gettext("Updated") <> " " <> gettext("Crew")
+       )
+     )
+     |> push_patch(to: ~p"/admin/crews?#{socket.assigns[:results][:params] || %{}}")}
+  end
+
+  defp handle_pubsub(:delete_crew, crew, socket) do
+    {:noreply,
+     socket
+     |> put_flash(:info, gettext("Deleted") <> " " <> gettext("Crew"))
+     |> stream_delete(:crews, crew)}
   end
 end

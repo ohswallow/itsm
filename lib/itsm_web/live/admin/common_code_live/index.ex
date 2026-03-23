@@ -7,6 +7,10 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    if(connected?(socket)) do
+      Itsm.Utils.subscribes(:common_codes)
+    end
+
     {:ok, stream(socket, :common_codes, [])}
   end
 
@@ -22,6 +26,14 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Index do
 
     {:noreply, stream_delete(socket, :common_codes, common_code)}
   end
+
+  @impl true
+  def handle_info({:pubsub, {event, item}}, socket) do
+    handle_pubsub(event, item, socket)
+  end
+
+  @impl true
+  def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
     value =
@@ -42,7 +54,28 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Index do
 
   defp apply_action(socket, :edit, %{"id" => id}, _url) do
     socket
-    |> assign(:page_title, "Edit  Common Code")
+    |> assign(:page_title, "Edit Common Code")
     |> assign(:common_code, CommonCodes.get_common_code!(id))
+  end
+
+  defp handle_pubsub(event, _common_code, socket)
+       when event in [:create_common_code, :update_common_code] do
+    {:noreply,
+     socket
+     |> put_flash(
+       :info,
+       if(event == :create_common_code,
+         do: gettext("Created") <> " " <> gettext("Common Code"),
+         else: gettext("Updated") <> " " <> gettext("Common Code")
+       )
+     )
+     |> push_patch(to: ~p"/admin/common_codes?#{socket.assigns[:results][:params] || %{}}")}
+  end
+
+  defp handle_pubsub(:delete_common_code, common_code, socket) do
+    {:noreply,
+     socket
+     |> put_flash(:info, gettext("Deleted") <> " " <> gettext("Common Code"))
+     |> stream_delete(:common_codes, common_code)}
   end
 end

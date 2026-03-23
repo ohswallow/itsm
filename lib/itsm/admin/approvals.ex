@@ -10,17 +10,33 @@ defmodule Itsm.Admin.Approvals do
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
   end
 
-  defdelegate create_approval(attrs \\ %{}), to: Itsm.Approvals
-
   def update_approval(%Approval{} = approval, attrs) do
     approval
     |> Approval.changeset(attrs)
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
     |> Repo.update()
+    |> case do
+      {:ok, approval} ->
+        Itsm.Utils.broadcast(:approval, {:update_approval, approval})
+        Itsm.Utils.broadcasts(:approvals, {:update_approval, approval})
+        {:ok, approval}
+
+      {:error, _} = error ->
+        error
+    end
   end
 
   def delete_approval(%Approval{} = approval) do
     Repo.delete(approval)
+    |> case do
+      {:ok, approval} ->
+        Itsm.Utils.broadcast(:approval, {:delete_approval, approval})
+        Itsm.Utils.broadcasts(:approvals, {:delete_approval, approval})
+        {:ok, approval}
+
+      {:error, _} = error ->
+        error
+    end
   end
 
   def preload_category(%Approval{} = approval) do

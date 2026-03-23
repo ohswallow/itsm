@@ -98,6 +98,14 @@ defmodule Itsm.Assets do
     %Asset{}
     |> Asset.changeset(attrs)
     |> Repo.insert()
+    |> case do
+      {:ok, asset} ->
+        Itsm.Utils.broadcasts(:assets, {:update_asset, asset})
+        {:ok, asset}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   @doc """
