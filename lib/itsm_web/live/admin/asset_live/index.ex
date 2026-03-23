@@ -7,6 +7,10 @@ defmodule ItsmWeb.Admin.AssetLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    if(connected?(socket)) do
+      Itsm.Utils.subscribes(:assets)
+    end
+
     {:ok, stream(socket, :assets, [])}
   end
 
@@ -22,6 +26,14 @@ defmodule ItsmWeb.Admin.AssetLive.Index do
 
     {:noreply, stream_delete(socket, :assets, asset)}
   end
+
+  @impl true
+  def handle_info({:pubsub, {event, item}}, socket) do
+    handle_pubsub(event, item, socket)
+  end
+
+  @impl true
+  def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
     value =
@@ -54,5 +66,26 @@ defmodule ItsmWeb.Admin.AssetLive.Index do
     socket
     |> assign(:page_title, "Edit Asset")
     |> assign(:asset, Assets.get_asset!(id))
+  end
+
+  defp handle_pubsub(event, _asset, socket)
+       when event in [:create_asset, :update_asset] do
+    {:noreply,
+     socket
+     |> put_flash(
+       :info,
+       if(event == :create_asset,
+         do: gettext("Created") <> " " <> gettext("Asset"),
+         else: gettext("Updated") <> " " <> gettext("Asset")
+       )
+     )
+     |> push_patch(to: ~p"/admin/assets?#{socket.assigns[:results][:params] || %{}}")}
+  end
+
+  defp handle_pubsub(:delete_asset, asset, socket) do
+    {:noreply,
+     socket
+     |> put_flash(:info, gettext("Deleted") <> " " <> gettext("Asset"))
+     |> stream_delete(:assets, asset)}
   end
 end

@@ -29,12 +29,12 @@ defmodule ItsmWeb.Admin.CommonCodeLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={@form[:group_code]} type="text" label={gettext("Group code")} />
+        <.input field={@form[:group_code]} type="text" label={gettext("Group Code")} />
         <.input field={@form[:code]} type="text" label={gettext("Code")} />
         <.input field={@form[:label]} type="text" label={gettext("Label")} />
         <.input field={@form[:description]} type="text" label={gettext("Description")} />
-        <.input field={@form[:sort_order]} type="number" label={gettext("Sort order")} />
-        <.input field={@form[:is_active]} type="checkbox" label={gettext("Is active")} />
+        <.input field={@form[:sort_order]} type="number" label={gettext("Sort Order")} />
+        <.input field={@form[:is_active]} type="checkbox" label={gettext("Is Active")} />
         <.itsm_calendar
           :if={@action == :edit}
           field={@form[:inserted_at]}
@@ -64,10 +64,7 @@ defmodule ItsmWeb.Admin.CommonCodeLive.FormComponent do
   defp save_common_code(socket, :edit, common_code_params) do
     case CommonCodes.update_common_code(socket.assigns.common_code, common_code_params) do
       {:ok, _common_code} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Common Code updated successfully")
-         |> push_patch(to: socket.assigns.patch)}
+        {:noreply, socket}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -77,10 +74,7 @@ defmodule ItsmWeb.Admin.CommonCodeLive.FormComponent do
   defp save_common_code(socket, :new, common_code_params) do
     case CommonCodes.create_common_code(common_code_params) do
       {:ok, _common_code} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Common Code created successfully")
-         |> push_patch(to: socket.assigns.patch)}
+        {:noreply, socket}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}

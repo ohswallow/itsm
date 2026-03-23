@@ -25,4 +25,20 @@ defmodule Itsm.Utils do
   defp parse_and_put(changeset, field, value, {:error, _reason}) do
     Ecto.Changeset.put_change(changeset, field, value)
   end
+
+  def broadcast(domain, {_event, item} = message) do
+    Phoenix.PubSub.broadcast(Itsm.PubSub, "#{domain}:#{item.id}", {:pubsub, message})
+  end
+
+  def broadcasts(domain, message) do
+    Phoenix.PubSub.broadcast(Itsm.PubSub, "#{domain}", {:pubsub, message})
+  end
+
+  def subscribe(domain, id) do
+    Phoenix.PubSub.subscribe(Itsm.PubSub, "#{domain}:#{id}")
+  end
+
+  def subscribes(domain) do
+    Phoenix.PubSub.subscribe(Itsm.PubSub, "#{domain}")
+  end
 end

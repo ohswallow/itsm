@@ -94,10 +94,7 @@ defmodule ItsmWeb.Admin.CategoryLive.FormComponent do
   defp save_category(socket, :edit, category_params) do
     case Categories.update_category(socket.assigns.category, category_params) do
       {:ok, _category} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Category updated successfully")
-         |> push_patch(to: socket.assigns.patch)}
+        {:noreply, socket}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -107,10 +104,7 @@ defmodule ItsmWeb.Admin.CategoryLive.FormComponent do
   defp save_category(socket, :new, category_params) do
     case Categories.create_category(category_params) do
       {:ok, _category} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Category created successfully")
-         |> push_patch(to: socket.assigns.patch)}
+        {:noreply, socket}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}

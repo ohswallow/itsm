@@ -57,10 +57,7 @@ defmodule ItsmWeb.Admin.CommentLive.FormComponent do
   defp save_comment(socket, :edit, comment_params) do
     case Comments.update_comment(socket.assigns.comment, comment_params) do
       {:ok, _comment} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Comment updated successfully")
-         |> push_patch(to: socket.assigns.patch)}
+        {:noreply, socket}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}

@@ -78,10 +78,7 @@ defmodule ItsmWeb.Admin.ApprovalLive.FormComponent do
   defp save_approval(socket, :edit, approval_params) do
     case Approvals.update_approval(socket.assigns.approval, approval_params) do
       {:ok, _approval} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Approval updated successfully")
-         |> push_patch(to: socket.assigns.patch)}
+        {:noreply, socket}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}

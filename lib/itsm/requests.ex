@@ -70,8 +70,13 @@ defmodule Itsm.Requests do
     |> Ecto.Changeset.put_change(:requestor_name, user.display_name)
     |> Repo.insert()
     |> case do
-      {:ok, request} -> {:ok, Repo.preload(request, :category)}
-      {:error, _} = error -> error
+      {:ok, request} ->
+        request = Repo.preload(request, :category)
+        Itsm.Utils.broadcasts(:requests, {:update_request, request})
+        {:ok, request}
+
+      {:error, _} = error ->
+        error
     end
   end
 
@@ -86,7 +91,8 @@ defmodule Itsm.Requests do
     |> case do
       {:ok, request} ->
         request = Repo.preload(request, :category)
-        broadcast_request(request.id, {:request_updated, request})
+        Itsm.Utils.broadcast(:request, {:update_request, request})
+        Itsm.Utils.broadcasts(:requests, {:update_request, request})
         {:ok, request}
 
       {:error, _} = error ->

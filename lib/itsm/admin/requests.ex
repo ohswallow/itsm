@@ -17,8 +17,8 @@ defmodule Itsm.Admin.Requests do
     |> Repo.update()
     |> case do
       {:ok, request} ->
-        request = Repo.preload(request, :category)
-        Itsm.Requests.broadcast_request(request.id, {:request_updated, request})
+        Itsm.Utils.broadcast(:request, {:update_request, request})
+        Itsm.Utils.broadcasts(:requests, {:update_request, request})
         {:ok, request}
 
       {:error, _} = error ->
@@ -28,5 +28,14 @@ defmodule Itsm.Admin.Requests do
 
   def delete_request(%Request{} = request) do
     Repo.delete(request)
+    |> case do
+      {:ok, request} ->
+        Itsm.Utils.broadcast(:request, {:update_request, request})
+        Itsm.Utils.broadcasts(:requests, {:update_request, request})
+        {:ok, request}
+
+      {:error, _} = error ->
+        error
+    end
   end
 end

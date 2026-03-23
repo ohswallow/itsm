@@ -22,10 +22,10 @@ defmodule Itsm.Admin.Crews do
     |> Repo.update()
     |> case do
       {:ok, crew} ->
-        # Preload 및 Broadcast
         crew = Repo.preload(crew, [:leader, :users])
-        broadcast_crew(crew.id, {:update_crew, crew})
-        broadcast_crews({:update_crew, crew})
+        Itsm.Utils.broadcast(:crew, {:update_crew, crew})
+        Itsm.Utils.broadcasts(:crews, {:update_crew, crew})
+
         {:ok, crew}
 
       {:error, _} = error ->
@@ -37,7 +37,8 @@ defmodule Itsm.Admin.Crews do
     Repo.delete(crew)
     |> case do
       {:ok, deleted_crew} ->
-        broadcast_crews({:delete_crew, deleted_crew})
+        Itsm.Utils.broadcast(:crew, {:update_crew, crew})
+        Itsm.Utils.broadcasts(:crews, {:update_crew, crew})
         {:ok, deleted_crew}
 
       {:error, _} = error ->

@@ -49,14 +49,14 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
         <.input
           field={@form[:region_type]}
           type="select"
-          label={gettext("Region type")}
+          label={gettext("Region Type")}
           prompt="Choose a value"
           options={@region_type_options}
         />
         <.input
           field={@form[:infra_type]}
           type="select"
-          label={gettext("Infra type")}
+          label={gettext("Infra Type")}
           prompt="Choose a value"
           options={@infra_type_options}
         />
@@ -74,7 +74,7 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
           prompt="Choose a value"
           options={@location_options}
         />
-        <.input field={@form[:is_dmz_zone]} type="checkbox" label={gettext("Is dmz zone")} />
+        <.input field={@form[:is_dmz_zone]} type="checkbox" label={gettext("Is Dmz Zone")} />
         <.itsm_calendar
           field={@form[:inserted_at]}
           label={gettext("Inserted At")}
@@ -112,10 +112,7 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
   defp save_asset(socket, :edit, asset_params) do
     case Assets.update_asset(socket.assigns.asset, asset_params) do
       {:ok, _asset} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Asset updated successfully")
-         |> push_patch(to: socket.assigns.patch)}
+        {:noreply, socket}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -125,10 +122,7 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
   defp save_asset(socket, :new, asset_params) do
     case Assets.create_asset(asset_params) do
       {:ok, _asset} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Asset created successfully")
-         |> push_patch(to: socket.assigns.patch)}
+        {:noreply, socket}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
