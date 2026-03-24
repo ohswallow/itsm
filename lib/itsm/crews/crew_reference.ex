@@ -1,10 +1,10 @@
-defmodule Itsm.Crews.Reference do
+defmodule Itsm.Crews.CrewReference do
   use Ecto.Schema
   import Ecto.Changeset
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
-  schema "references" do
+  schema "crew_references" do
     field :resource_type, :string
     field :resource_id, :binary_id
 
@@ -14,8 +14,8 @@ defmodule Itsm.Crews.Reference do
   end
 
   @doc false
-  def changeset(reference, attrs) do
-    reference
+  def changeset(crew_reference, attrs) do
+    crew_reference
     |> cast(attrs, [:resource_id, :resource_type, :crew_id])
     |> validate_required([:resource_id, :resource_type, :crew_id])
   end
