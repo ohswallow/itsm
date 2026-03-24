@@ -6,7 +6,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   alias Itsm.Categories
   alias Itsm.Requests
   alias Itsm.Service.Request
-  alias Itsm.Team
   alias Itsm.Crews
   alias ItsmWeb.LiveUtils
 
@@ -36,7 +35,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
 
     # 기존 referenced crews를 옵션 맵으로 로드 (label 유지를 위해)
     referenced_crews_options =
-      Team.list_reference("Request", id)
+      Crews.list_crew_reference("Request", id)
       |> Enum.map(fn ref ->
         crew = Crews.get_crew!(ref.crew_id)
         %{label: crew.name, tag_label: crew.name, value: crew.id}
@@ -129,7 +128,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     case Requests.update_request(user, request, request_params) do
       {:ok, updated_request} ->
         # reference 동기화 (기존 삭제 → 새로 생성)
-        Team.sync_references("Request", updated_request.id, crews_id)
+        Crews.sync_crew_references("Request", updated_request.id, crews_id)
 
         {:noreply,
          socket
@@ -154,7 +153,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
          ) do
       {:ok, request} ->
         # reference 생성
-        Team.sync_references("Request", request.id, crews_id)
+        Crews.sync_crew_references("Request", request.id, crews_id)
 
         {:noreply,
          socket
