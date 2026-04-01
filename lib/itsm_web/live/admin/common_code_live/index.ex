@@ -7,9 +7,7 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    if(connected?(socket)) do
-      Itsm.Utils.subscribes(:common_codes)
-    end
+    if connected?(socket), do: Itsm.Utils.subscribes(CommonCode)
 
     {:ok, stream(socket, :common_codes, [])}
   end
@@ -20,16 +18,15 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Index do
   end
 
   @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    common_code = CommonCodes.get_common_code!(id)
-    {:ok, _} = CommonCodes.delete_common_code(common_code)
+  def handle_event("delete", %{"id" => _id} = common_code_params, socket) do
+    {:ok, common_code} = CommonCodes.delete_common_code(common_code_params)
 
     {:noreply, stream_delete(socket, :common_codes, common_code)}
   end
 
   @impl true
-  def handle_info({:pubsub, {event, item}}, socket) do
-    handle_pubsub(event, item, socket)
+  def handle_info({:pubsub, {user, event, item}}, socket) do
+    handle_pubsub(user, event, item, socket)
   end
 
   @impl true
@@ -58,24 +55,14 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Index do
     |> assign(:common_code, CommonCodes.get_common_code!(id))
   end
 
-  defp handle_pubsub(event, _common_code, socket)
-       when event in [:create_common_code, :update_common_code] do
-    {:noreply,
-     socket
-     |> put_flash(
-       :info,
-       if(event == :create_common_code,
-         do: gettext("Created") <> " " <> gettext("Common Code"),
-         else: gettext("Updated") <> " " <> gettext("Common Code")
-       )
-     )
-     |> push_patch(to: ~p"/admin/common_codes?#{socket.assigns[:results][:params] || %{}}")}
-  end
+  defp handle_pubsub(user, event, item, socket) do
+    opts = [
+      context_key: :common_code,
+      resource_name: gettext("Common Code"),
+      stream_name: :common_codes,
+      push_patch: [to: ~p"/admin/common_codes?#{socket.assigns[:results][:params] || %{}}"]
+    ]
 
-  defp handle_pubsub(:delete_common_code, common_code, socket) do
-    {:noreply,
-     socket
-     |> put_flash(:info, gettext("Deleted") <> " " <> gettext("Common Code"))
-     |> stream_delete(:common_codes, common_code)}
+    {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(user, event, item, opts)}
   end
 end

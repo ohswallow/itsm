@@ -216,9 +216,12 @@ defmodule Itsm.Paging do
     |> Enum.reject(&is_nil/1)
   end
 
+  defp flatten_value([head | _tail]), do: flatten_value(head)
   defp flatten_value(col) when col in ["", nil, [], [""]], do: [""]
   defp flatten_value({binding, rest}), do: "#{binding}.#{flatten_value(rest)}"
   defp flatten_value(col) when is_atom(col), do: Atom.to_string(col)
+
+  defp flatten_label([head | _tail]), do: flatten_label(head)
 
   defp flatten_label({binding, rest}) do
     case {translate_label(binding), flatten_label(rest)} do

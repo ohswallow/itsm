@@ -67,6 +67,10 @@ defmodule ItsmWeb.CrewLive.Show do
     end
   end
 
+  def handle_event(_event, _params, socket) do
+    {:noreply, socket}
+  end
+
   # 리더 변경시 각 버튼의 권한이 달라지므로 전체 stream 전체 reset 처리
   def handle_info({:crew, {:leader_changed, %{id: crew_id}}}, socket) do
     crew =

@@ -17,25 +17,27 @@ defmodule Itsm.Admin.Approvals do
     |> Repo.update()
     |> case do
       {:ok, approval} ->
-        Itsm.Utils.broadcast(:approval, {:update_approval, approval})
-        Itsm.Utils.broadcasts(:approvals, {:update_approval, approval})
+        event = :update_approval
+        Itsm.Utils.broadcast(Approval, {attrs["current_user"], event, approval})
+        Itsm.Utils.broadcasts(Approval, {attrs["current_user"], event, approval})
         {:ok, approval}
 
-      {:error, _} = error ->
-        error
+      {:error, changeset} ->
+        {:error, changeset}
     end
   end
 
-  def delete_approval(%Approval{} = approval) do
-    Repo.delete(approval)
+  def delete_approval(%{"id" => id} = attrs) do
+    Repo.delete(get_approval!(id))
     |> case do
       {:ok, approval} ->
-        Itsm.Utils.broadcast(:approval, {:delete_approval, approval})
-        Itsm.Utils.broadcasts(:approvals, {:delete_approval, approval})
+        event = :delete_approval
+        Itsm.Utils.broadcast(Approval, {attrs["current_user"], event, approval})
+        Itsm.Utils.broadcasts(Approval, {attrs["current_user"], event, approval})
         {:ok, approval}
 
-      {:error, _} = error ->
-        error
+      {:error, changeset} ->
+        {:error, changeset}
     end
   end
 

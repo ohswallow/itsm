@@ -5,6 +5,16 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
   alias Itsm.Accounts
 
   @impl true
+  def update(%{conflict: {event, user}} = _assigns, socket) do
+    msg = if String.contains?(to_string(event), "delete"), do: "삭제", else: "수정"
+
+    {:ok,
+     socket
+     |> assign(:conflict, true)
+     |> assign(:conflict_msg, "#{user.display_name}님이 데이터를 #{msg}했습니다.")}
+  end
+
+  @impl true
   def update(%{delegation: delegation} = assigns, socket) do
     # 새 delegation이면 start_date를 오늘로 기본 설정
     delegation =
@@ -17,9 +27,11 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
     {:ok,
      socket
      |> assign(assigns)
+     |> assign(:conflict, false)
      |> assign_new(:form, fn ->
        to_form(Delegations.change_delegation(delegation))
-     end)}
+     end)
+     |> assign_new_options()}
   end
 
   @impl true
@@ -32,6 +44,17 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
           {gettext("Use this form to manage delegation records in your database.")}
         </:subtitle>
       </.header>
+
+      <div
+        :if={@conflict}
+        class="p-4 mb-4 bg-red-50 border border-red-200 text-red-800 rounded animate-pulse"
+      >
+        <div class="flex items-center gap-2 font-bold">
+          <span>⚠️ 충돌 발생!</span>
+        </div>
+        <p class="mt-1 text-sm">{@conflict_msg}</p>
+        <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
+      </div>
 
       <.simple_form
         for={@form}
@@ -90,17 +113,17 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
           type="select"
           label={gettext("Reason")}
           prompt="Choose a value"
-          options={Itsm.CommonCodes.get_select_options("사유")}
+          options={@reason_options}
         />
-        <:actions><.button phx-disable-with="Saving...">Save Delegation</.button></:actions>
+        <:actions>
+          <.button :if={!@conflict} phx-disable-with="Saving...">Save Delegation</.button>
+        </:actions>
       </.simple_form>
     </div>
     """
   end
 
   def handle_event("live_select_change", %{"text" => keyword, "id" => live_select_id}, socket) do
-    IO.inspect(keyword, label: "Searching for")
-
     %{current_user: current_user} = socket.assigns
 
     # 본인 선택이 가능한 화면에서 호출 시
@@ -119,14 +142,16 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
       |> Delegations.change_delegation(delegation_params)
       |> Map.put(:action, :validate)
 
-    IO.inspect(changeset.changes, label: "validate event - changeset changes")
-
     {:noreply, assign(socket, form: to_form(changeset))}
   end
 
   def handle_event("save", %{"delegation" => delegation_params}, socket) do
-    IO.inspect(delegation_params, label: "Saving delegation with params")
     save_delegation(socket, socket.assigns.action, delegation_params)
+  end
+
+  defp assign_new_options(socket) do
+    socket
+    |> assign_new(:reason_options, fn -> Itsm.CommonCodes.get_select_options("사유") end)
   end
 
   defp save_delegation(socket, :new, delegation_params) do
@@ -136,19 +161,28 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
     delegator = Accounts.get_user!(delegator_id)
     delegatee = Accounts.get_user!(delegatee_id)
 
-    case Delegations.create_delegation(current_user, delegator, delegatee, delegation_params) do
-      {:ok, delegation} ->
-        notify_parent({:saved, delegation})
+    correct_delegation_params =
+      Map.new(delegation_params, fn {k, v} ->
+        if k == "start_date" || k == "end_date" do
+          {:ok, dt, _} = DateTime.from_iso8601(v)
+          new_val = dt |> DateTime.add(9, :hour) |> DateTime.to_iso8601()
+          {k, new_val}
+        else
+          {k, v}
+        end
+      end)
 
-        {:noreply,
-         socket
-         |> put_flash(:info, "Delegation created successfully")
-         |> push_patch(to: socket.assigns.patch)}
+    case Delegations.create_delegation(
+           current_user,
+           delegator,
+           delegatee,
+           correct_delegation_params
+         ) do
+      {:ok, _delegation} ->
+        {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
-
-  defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end

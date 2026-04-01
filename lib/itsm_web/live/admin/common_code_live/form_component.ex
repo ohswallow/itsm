@@ -4,10 +4,21 @@ defmodule ItsmWeb.Admin.CommonCodeLive.FormComponent do
   alias Itsm.Admin.CommonCodes
 
   @impl true
+  def update(%{conflict: {event, user}} = _assigns, socket) do
+    msg = if String.contains?(to_string(event), "delete"), do: "삭제", else: "수정"
+
+    {:ok,
+     socket
+     |> assign(:conflict, true)
+     |> assign(:conflict_msg, "#{user.display_name}님이 데이터를 #{msg}했습니다.")}
+  end
+
+  @impl true
   def update(%{common_code: common_code} = assigns, socket) do
     {:ok,
      socket
      |> assign(assigns)
+     |> assign(:conflict, false)
      |> assign_new(:form, fn ->
        to_form(CommonCodes.change_common_code(common_code))
      end)}
@@ -21,6 +32,17 @@ defmodule ItsmWeb.Admin.CommonCodeLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage codes records in your database.</:subtitle>
       </.header>
+
+      <div
+        :if={@conflict}
+        class="p-4 mb-4 bg-red-50 border border-red-200 text-red-800 rounded animate-pulse"
+      >
+        <div class="flex items-center gap-2 font-bold">
+          <span>⚠️ 충돌 발생!</span>
+        </div>
+        <p class="mt-1 text-sm">{@conflict_msg}</p>
+        <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
+      </div>
 
       <.simple_form
         for={@form}
@@ -43,7 +65,7 @@ defmodule ItsmWeb.Admin.CommonCodeLive.FormComponent do
           default_selected_date_time={@form[:inserted_at].value}
         />
         <:actions>
-          <.button phx-disable-with="Saving...">Save Codes</.button>
+          <.button :if={!@conflict} phx-disable-with="Saving...">Save Codes</.button>
         </:actions>
       </.simple_form>
     </div>
@@ -64,7 +86,7 @@ defmodule ItsmWeb.Admin.CommonCodeLive.FormComponent do
   defp save_common_code(socket, :edit, common_code_params) do
     case CommonCodes.update_common_code(socket.assigns.common_code, common_code_params) do
       {:ok, _common_code} ->
-        {:noreply, socket}
+        {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -74,7 +96,7 @@ defmodule ItsmWeb.Admin.CommonCodeLive.FormComponent do
   defp save_common_code(socket, :new, common_code_params) do
     case CommonCodes.create_common_code(common_code_params) do
       {:ok, _common_code} ->
-        {:noreply, socket}
+        {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}

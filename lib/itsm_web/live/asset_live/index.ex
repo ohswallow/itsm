@@ -6,15 +6,35 @@ defmodule ItsmWeb.AssetLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Assets.subscribe_assets_list()
+    if connected?(socket), do: Itsm.Utils.subscribes(Asset)
 
-    {:ok, stream(socket, :assets, Assets.list_assets())}
+    {:ok, stream(socket, :assets, [])}
   end
 
   @impl true
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
+
+  @impl true
+  def handle_event("delete", %{"id" => _id} = asset_params, socket) do
+    {:ok, asset} = Assets.delete_asset(asset_params)
+
+    {:noreply, stream_delete(socket, :assets, asset)}
+  end
+
+  @impl true
+  def handle_info({ItsmWeb.AssetLive.FormComponent, {:saved, asset}}, socket) do
+    {:noreply, stream_insert(socket, :assets, asset)}
+  end
+
+  @impl true
+  def handle_info({:pubsub, {user, event, item}}, socket) do
+    handle_pubsub(user, event, item, socket)
+  end
+
+  @impl true
+  def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
@@ -31,35 +51,17 @@ defmodule ItsmWeb.AssetLive.Index do
   defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, "Listing Assets")
-    |> assign(:asset, nil)
+    |> stream(:assets, Assets.list_assets())
   end
 
-  # @impl true
-  # def handle_info({ItsmWeb.AssetLive.FormComponent, {:saved, asset}}, socket) do
-  #   {:noreply, stream_insert(socket, :assets, asset)}
-  # end
+  defp handle_pubsub(user, event, item, socket) do
+    opts = [
+      context_key: :asset,
+      resource_name: gettext("Asset"),
+      stream_name: :assets,
+      push_patch: [to: ~p"/assets"]
+    ]
 
-  # @impl true
-  # def handle_event("delete", %{"id" => id}, socket) do
-  #   asset = Assets.get_asset!(id)
-  #   {:ok, _} = Assets.delete_asset(asset)
-
-  #   {:noreply, stream_delete(socket, :assets, asset)}
-  # end
-
-  @impl true
-  def handle_info({Assets, [:asset, :created], asset}, socket) do
-    # 새 자산이 생성되면 스트림의 맨 위(at: 0)에 꽂아 넣습니다.
-    {:noreply, stream_insert(socket, :assets, asset, at: 0)}
-  end
-
-  def handle_info({Assets, [:asset, :updated], asset}, socket) do
-    # 자산이 수정되면 스트림에서 해당 항목을 교체합니다.
-    {:noreply, stream_insert(socket, :assets, asset)}
-  end
-
-  def handle_info({Assets, [:asset, :deleted], asset}, socket) do
-    # 자산이 삭제되면 스트림에서 뺍니다.
-    {:noreply, stream_delete(socket, :assets, asset)}
+    {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(user, event, item, opts)}
   end
 end

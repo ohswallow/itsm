@@ -12,9 +12,10 @@ defmodule ItsmWeb.RouterUtils do
           route.path
           |> String.split("/")
           |> List.last()
-          |> String.replace("-", " ")
-          |> String.replace("_", " ")
-          |> String.capitalize()
+          |> String.replace(~r/[-_]/, " ")
+          |> String.split()
+          |> Enum.map(&String.capitalize/1)
+          |> Enum.join(" ")
 
       %{name: name, path: route.path}
     end)

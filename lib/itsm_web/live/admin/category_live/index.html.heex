@@ -28,10 +28,11 @@
       <div class="sr-only"><.link navigate={~p"/admin/categories/#{category}"}>Show</.link></div>
       <.link patch={~p"/admin/categories/#{category}/edit"}>Edit</.link>
     </:action>
-
-    <:action :let={{id, category}}>
+    <:action :let={{_id, category}}>
       <.link
-        phx-click={JS.push("delete", value: %{id: category.id}) |> hide("##{id}")}
+        id={"#{category.id}"}
+        phx-click={JS.push("delete", value: %{id: category.id})}
+        class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
         data-confirm="Are you sure?"
       >
         Delete
@@ -51,6 +52,7 @@
     title={@page_title}
     action={@live_action}
     category={@category}
+    current_user={@current_user}
     patch={~p"/admin/categories?#{assigns[:results][:params] || %{}}"}
   />
 </.modal>

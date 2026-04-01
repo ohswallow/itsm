@@ -52,5 +52,13 @@ defmodule Itsm.Team do
     %Reference{}
     |> Reference.changeset(attrs)
     |> Repo.insert()
+    |> case do
+      {:ok, reference} ->
+        Itsm.Utils.broadcasts(Reference, {attrs["current_user"], :create_reference, reference})
+        {:ok, reference}
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
 end

@@ -3,9 +3,6 @@ defmodule Itsm.Admin.Crews do
   alias Itsm.Repo
   alias Itsm.Crews.Crew
 
-  defdelegate broadcast_crew(crew_id, event), to: Itsm.Crews
-  defdelegate broadcast_crews(event), to: Itsm.Crews
-
   defdelegate get_crew!(id), to: Itsm.Crews
 
   def change_crew(%Crew{} = crew, attrs \\ %{}) do
@@ -22,27 +19,28 @@ defmodule Itsm.Admin.Crews do
     |> Repo.update()
     |> case do
       {:ok, crew} ->
-        crew = Repo.preload(crew, [:leader, :users])
-        Itsm.Utils.broadcast(:crew, {:update_crew, crew})
-        Itsm.Utils.broadcasts(:crews, {:update_crew, crew})
-
+        crew = Repo.preload(crew, [:leader])
+        event = :update_crew
+        Itsm.Utils.broadcast(Crew, {attrs["current_user"], event, crew})
+        Itsm.Utils.broadcasts(Crew, {attrs["current_user"], event, crew})
         {:ok, crew}
 
-      {:error, _} = error ->
-        error
+      {:error, changeset} ->
+        {:error, changeset}
     end
   end
 
-  def delete_crew(%Crew{} = crew) do
-    Repo.delete(crew)
+  def delete_crew(%{"id" => id} = attrs) do
+    Repo.delete(get_crew!(id))
     |> case do
-      {:ok, deleted_crew} ->
-        Itsm.Utils.broadcast(:crew, {:update_crew, crew})
-        Itsm.Utils.broadcasts(:crews, {:update_crew, crew})
-        {:ok, deleted_crew}
+      {:ok, crew} ->
+        event = :delete_crew
+        Itsm.Utils.broadcast(Crew, {attrs["current_user"], event, crew})
+        Itsm.Utils.broadcasts(Crew, {attrs["current_user"], event, crew})
+        {:ok, crew}
 
-      {:error, _} = error ->
-        error
+      {:error, changeset} ->
+        {:error, changeset}
     end
   end
 

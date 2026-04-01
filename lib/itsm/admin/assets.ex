@@ -20,8 +20,9 @@ defmodule Itsm.Admin.Assets do
     |> Repo.update()
     |> case do
       {:ok, asset} ->
-        Itsm.Utils.broadcast(:asset, {:update_asset, asset})
-        Itsm.Utils.broadcasts(:assets, {:update_asset, asset})
+        event = :update_asset
+        Itsm.Utils.broadcast(Asset, {attrs["current_user"], event, asset})
+        Itsm.Utils.broadcasts(Asset, {attrs["current_user"], event, asset})
         {:ok, asset}
 
       {:error, changeset} ->
@@ -29,12 +30,13 @@ defmodule Itsm.Admin.Assets do
     end
   end
 
-  def delete_asset(%Asset{} = asset) do
-    Repo.delete(asset)
+  def delete_asset(%{"id" => id} = attrs) do
+    Repo.delete(get_asset!(id))
     |> case do
       {:ok, asset} ->
-        Itsm.Utils.broadcast(:asset, {:update_asset, asset})
-        Itsm.Utils.broadcasts(:assets, {:update_asset, asset})
+        event = :delete_asset
+        Itsm.Utils.broadcast(Asset, {attrs["current_user"], event, asset})
+        Itsm.Utils.broadcasts(Asset, {attrs["current_user"], event, asset})
         {:ok, asset}
 
       {:error, changeset} ->

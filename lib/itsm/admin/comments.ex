@@ -19,8 +19,9 @@ defmodule Itsm.Admin.Comments do
     |> Repo.update()
     |> case do
       {:ok, comment} ->
-        Itsm.Utils.broadcast(:comment, {:update_comment, comment})
-        Itsm.Utils.broadcasts(:comments, {:update_comment, comment})
+        event = :update_comment
+        Itsm.Utils.broadcast(Comment, {attrs["current_user"], event, comment})
+        Itsm.Utils.broadcasts(Comment, {attrs["current_user"], event, comment})
         {:ok, comment}
 
       {:error, changeset} ->
@@ -28,12 +29,13 @@ defmodule Itsm.Admin.Comments do
     end
   end
 
-  def delete_comment(%Comment{} = comment) do
-    Repo.delete(comment)
+  def delete_comment(%{"id" => id} = attrs) do
+    Repo.delete(get_comment!(id))
     |> case do
       {:ok, comment} ->
-        Itsm.Utils.broadcast(:comment, {:delete_comment, comment})
-        Itsm.Utils.broadcasts(:comments, {:delete_comment, comment})
+        event = :delete_comment
+        Itsm.Utils.broadcast(Comment, {attrs["current_user"], event, comment})
+        Itsm.Utils.broadcasts(Comment, {attrs["current_user"], event, comment})
         {:ok, comment}
 
       {:error, changeset} ->

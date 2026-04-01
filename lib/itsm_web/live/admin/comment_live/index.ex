@@ -7,9 +7,7 @@ defmodule ItsmWeb.Admin.CommentLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    if(connected?(socket)) do
-      Itsm.Utils.subscribes(:comments)
-    end
+    if connected?(socket), do: Itsm.Utils.subscribes(Comment)
 
     {:ok, stream(socket, :comments, [])}
   end
@@ -20,16 +18,15 @@ defmodule ItsmWeb.Admin.CommentLive.Index do
   end
 
   @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    comment = Comments.get_comment!(id)
-    {:ok, _} = Comments.delete_comment(comment)
+  def handle_event("delete", %{"id" => _id} = comment_params, socket) do
+    {:ok, comment} = Comments.delete_comment(comment_params)
 
     {:noreply, stream_delete(socket, :comments, comment)}
   end
 
   @impl true
-  def handle_info({:pubsub, {event, item}}, socket) do
-    handle_pubsub(event, item, socket)
+  def handle_info({:pubsub, {user, event, item}}, socket) do
+    handle_pubsub(user, event, item, socket)
   end
 
   @impl true
@@ -64,24 +61,14 @@ defmodule ItsmWeb.Admin.CommentLive.Index do
     |> assign(:comment, Comments.get_comment!(id))
   end
 
-  defp handle_pubsub(event, _comment, socket)
-       when event in [:create_comment, :update_comment] do
-    {:noreply,
-     socket
-     |> put_flash(
-       :info,
-       if(event == :create_comment,
-         do: gettext("Created") <> " " <> gettext("Comment"),
-         else: gettext("Updated") <> " " <> gettext("Comment")
-       )
-     )
-     |> push_patch(to: ~p"/admin/comments?#{socket.assigns[:results][:params] || %{}}")}
-  end
+  defp handle_pubsub(user, event, item, socket) do
+    opts = [
+      context_key: :comment,
+      resource_name: gettext("Comment"),
+      stream_name: :comments,
+      push_patch: [to: ~p"/admin/comments?#{socket.assigns[:results][:params] || %{}}"]
+    ]
 
-  defp handle_pubsub(:delete_comment, comment, socket) do
-    {:noreply,
-     socket
-     |> put_flash(:info, gettext("Deleted") <> " " <> gettext("Comment"))
-     |> stream_delete(:comments, comment)}
+    {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(user, event, item, opts)}
   end
 end

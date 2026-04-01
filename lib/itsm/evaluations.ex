@@ -53,6 +53,14 @@ defmodule Itsm.Evaluations do
     %Evaluation{}
     |> Evaluation.changeset(attrs)
     |> Repo.insert()
+    |> case do
+      {:ok, evaluation} ->
+        Itsm.Utils.broadcasts(Evaluation, {attrs["current_user"], :create_evaluation, evaluation})
+        {:ok, evaluation}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   @doc """
@@ -71,6 +79,15 @@ defmodule Itsm.Evaluations do
     evaluation
     |> Evaluation.changeset(attrs)
     |> Repo.update()
+    |> case do
+      {:ok, evaluation} ->
+        Itsm.Utils.broadcast(Evaluation, {attrs["current_user"], :update_evaluation, evaluation})
+        Itsm.Utils.broadcasts(Evaluation, {attrs["current_user"], :update_evaluation, evaluation})
+        {:ok, evaluation}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   @doc """
@@ -85,8 +102,17 @@ defmodule Itsm.Evaluations do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_evaluation(%Evaluation{} = evaluation) do
-    Repo.delete(evaluation)
+  def delete_evaluation(%{"id" => id} = attrs) do
+    Repo.delete(get_evaluation!(id))
+    |> case do
+      {:ok, evaluation} ->
+        Itsm.Utils.broadcast(Evaluation, {attrs["current_user"], :delete_evaluation, evaluation})
+        Itsm.Utils.broadcasts(Evaluation, {attrs["current_user"], :delete_evaluation, evaluation})
+        {:ok, evaluation}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   @doc """

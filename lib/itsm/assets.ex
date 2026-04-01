@@ -100,7 +100,8 @@ defmodule Itsm.Assets do
     |> Repo.insert()
     |> case do
       {:ok, asset} ->
-        Itsm.Utils.broadcasts(:assets, {:update_asset, asset})
+        Itsm.Utils.broadcast(Asset, {attrs["current_user"], :create_asset, asset})
+        Itsm.Utils.broadcasts(Asset, {attrs["current_user"], :create_asset, asset})
         {:ok, asset}
 
       {:error, changeset} ->
@@ -125,8 +126,13 @@ defmodule Itsm.Assets do
     |> Asset.changeset(attrs)
     |> Repo.update()
     |> case do
-      {:ok, updated_asset} -> broadcast_asset(updated_asset, [:asset, :updated])
-      error -> error
+      {:ok, asset} ->
+        Itsm.Utils.broadcast(Asset, {attrs["current_user"], :update_asset, asset})
+        Itsm.Utils.broadcasts(Asset, {attrs["current_user"], :update_asset, asset})
+        {:ok, asset}
+
+      {:error, changeset} ->
+        {:error, changeset}
     end
   end
 
@@ -142,11 +148,16 @@ defmodule Itsm.Assets do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_asset(%Asset{} = asset) do
-    Repo.delete(asset)
+  def delete_asset(%{"id" => id} = attrs) do
+    Repo.delete(get_asset!(id))
     |> case do
-      {:ok, deleted_asset} -> broadcast_asset(deleted_asset, [:asset, :deleted])
-      error -> error
+      {:ok, asset} ->
+        Itsm.Utils.broadcast(Asset, {attrs["current_user"], :delete_asset, asset})
+        Itsm.Utils.broadcasts(Asset, {attrs["current_user"], :delete_asset, asset})
+        {:ok, asset}
+
+      {:error, changeset} ->
+        {:error, changeset}
     end
   end
 
@@ -227,5 +238,9 @@ defmodule Itsm.Assets do
       {:error, reason} ->
         {:error, reason}
     end
+  end
+
+  def with_assoc(%Asset{} = asset, preloads) do
+    Repo.preload(asset, preloads)
   end
 end

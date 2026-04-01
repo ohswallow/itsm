@@ -14,9 +14,11 @@
       <div class="sr-only"><.link navigate={~p"/admin/crews/#{crew}"}>Show</.link></div>
       <.link patch={~p"/admin/crews/#{crew}/edit"}>Edit</.link>
     </:action>
-    <:action :let={{id, crew}}>
+    <:action :let={{_id, crew}}>
       <.link
-        phx-click={JS.push("delete", value: %{id: crew.id}) |> hide("##{id}")}
+        id={crew.id}
+        phx-click={JS.push("delete", value: %{id: crew.id})}
+        class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
         data-confirm="Are you sure?"
       >
         Delete

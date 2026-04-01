@@ -82,6 +82,19 @@ defmodule Itsm.Crews do
     |> Repo.all()
   end
 
+  def options_excluding_user(%User{id: user_id}) do
+    user_crew_ids =
+      CrewsUsers
+      |> where([m], m.user_id == ^user_id)
+      |> select([m], m.crew_id)
+
+    Crew
+    |> where([c], c.id not in subquery(user_crew_ids))
+    |> distinct(true)
+    |> select([c], {fragment("? || ' ' || coalesce(?, '')", c.name, c.description), c.id})
+    |> Repo.all()
+  end
+
   def change_crew(%Crew{} = crew, attrs \\ %{}) do
     Crew.changeset(crew, attrs)
   end
@@ -92,7 +105,6 @@ defmodule Itsm.Crews do
     |> case do
       {:ok, crew} ->
         crew = Repo.preload(crew, [:leader, :users])
-        broadcast_crews({:create_crew, crew})
         {:ok, crew}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -112,8 +124,8 @@ defmodule Itsm.Crews do
     |> Repo.update()
     |> case do
       {:ok, crew} ->
-        broadcast_crew(crew, {:add_users, add_users})
-        broadcast_crews({:add_users, crew})
+        Itsm.Utils.broadcast(Crew, {:add_users, add_users})
+        Itsm.Utils.broadcasts(Crew, {:add_users, crew})
         {:ok, crew}
 
       {:error, %Ecto.Changeset{} = _changeset} ->
@@ -127,8 +139,8 @@ defmodule Itsm.Crews do
     with :ok <- ensure_leader(crew, user),
          :ok <- ensure_crew(crew, user),
          {:ok, crew} <- Repo.update(changeset) do
-      broadcast_crew(crew, {:leader_changed, crew})
-      broadcast_crews({:leader_changed, crew})
+      Itsm.Utils.broadcast(Crew, {:leader_changed, crew})
+      Itsm.Utils.broadcasts(Crew, {:leader_changed, crew})
       {:ok, crew}
     else
       {:error, %Ecto.Changeset{} = _changeset} ->
@@ -145,8 +157,6 @@ defmodule Itsm.Crews do
 
     with :ok <- ensure_leader(crew, user),
          {:ok, crew} <- Repo.update(changeset) do
-      broadcast_crew(crew, {:update_crew, crew})
-      broadcast_crews({:update_crew, crew})
       {:ok, crew}
     else
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -162,7 +172,6 @@ defmodule Itsm.Crews do
 
     with :ok <- ensure_leader(crew, user),
          {:ok, crew} <- Repo.delete(crew) do
-      broadcast_crews({:delete_crew, crew})
       {:ok, crew}
     else
       {:error, %Ecto.Changeset{} = _changeset} ->
@@ -178,8 +187,6 @@ defmodule Itsm.Crews do
 
     with :ok <- ensure_delete_auth(crew, target_user, user),
          {:ok, _} <- Repo.delete(crews_users) do
-      broadcast_crew(crew, {:delete_user, target_user})
-      broadcast_crews({:delete_user, crew, target_user})
       {:ok, crew}
     else
       {:error, %Ecto.Changeset{} = _changeset} ->

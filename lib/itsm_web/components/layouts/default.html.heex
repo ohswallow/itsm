@@ -6,8 +6,8 @@
           <img src={~p"/images/itsm_banner.svg"} alt="KB ITSM" class="h-12 w-auto" />
         </a>
       </div>
-      
-      <div class="hidden lg:flex items-center gap-5">
+
+      <div class="flex items-center gap-5">
         <nav class="flex gap-5">
           <.link
             navigate={~p"/categories"}
@@ -62,9 +62,9 @@
             {gettext("Admin")} {gettext("Console")}
           </.link>
         </nav>
-        
+
         <div class="h-4 w-px bg-gray-300"></div>
-        
+
         <div class="flex items-center gap-4">
           <% is_ko = Gettext.get_locale(ItsmWeb.Gettext) == "ko" %>
           <div class="flex items-center gap-2">
@@ -91,9 +91,9 @@
               EN
             </span>
           </div>
-          
+
           <div class="h-4 w-px bg-gray-300 mx-1"></div>
-          
+
           <div
             :if={@current_user}
             class="flex items-center gap-3 text-sm font-medium"

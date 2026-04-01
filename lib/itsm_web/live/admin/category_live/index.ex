@@ -1,15 +1,13 @@
 defmodule ItsmWeb.Admin.CategoryLive.Index do
   use ItsmWeb, :live_view
 
-  alias Itsm.Service.Category
   alias Itsm.Admin.Categories
+  alias Itsm.Service.Category
   alias Itsm.Paging
 
   @impl true
   def mount(_params, _session, socket) do
-    if(connected?(socket)) do
-      Itsm.Utils.subscribes(:categories)
-    end
+    if connected?(socket), do: Itsm.Utils.subscribes(Category)
 
     {:ok, socket |> stream(:categories, []) |> assign_new_options()}
   end
@@ -20,16 +18,15 @@ defmodule ItsmWeb.Admin.CategoryLive.Index do
   end
 
   @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    category = Categories.get_category!(id)
-    {:ok, _} = Categories.delete_category(category)
+  def handle_event("delete", %{"id" => _id} = category_params, socket) do
+    {:ok, category} = Categories.delete_category(category_params)
 
     {:noreply, stream_delete(socket, :categories, category)}
   end
 
   @impl true
-  def handle_info({:pubsub, {event, item}}, socket) do
-    handle_pubsub(event, item, socket)
+  def handle_info({:pubsub, {user, event, item}}, socket) do
+    handle_pubsub(user, event, item, socket)
   end
 
   @impl true
@@ -71,24 +68,14 @@ defmodule ItsmWeb.Admin.CategoryLive.Index do
     |> assign(:category, Categories.get_category!(id))
   end
 
-  defp handle_pubsub(event, _category, socket)
-       when event in [:create_category, :update_category] do
-    {:noreply,
-     socket
-     |> put_flash(
-       :info,
-       if(event == :create_category,
-         do: gettext("Created") <> " " <> gettext("Category"),
-         else: gettext("Updated") <> " " <> gettext("Category")
-       )
-     )
-     |> push_patch(to: ~p"/admin/categories?#{socket.assigns[:results][:params] || %{}}")}
-  end
+  defp handle_pubsub(user, event, item, socket) do
+    opts = [
+      context_key: :category,
+      resource_name: gettext("Category"),
+      stream_name: :categories,
+      push_patch: [to: ~p"/admin/categories?#{socket.assigns[:results][:params] || %{}}"]
+    ]
 
-  defp handle_pubsub(:delete_category, category, socket) do
-    {:noreply,
-     socket
-     |> put_flash(:info, gettext("Deleted") <> " " <> gettext("Category"))
-     |> stream_delete(:categories, category)}
+    {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(user, event, item, opts)}
   end
 end

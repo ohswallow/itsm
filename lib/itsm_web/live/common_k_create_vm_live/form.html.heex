@@ -1,5 +1,16 @@
 <.header>{@page_title}</.header>
 
+<div
+  :if={@conflict}
+  class="p-4 mb-4 bg-red-50 border border-red-200 text-red-800 rounded animate-pulse"
+>
+  <div class="flex items-center gap-2 font-bold">
+    <span>⚠️ 충돌 발생!</span>
+  </div>
+  <p class="mt-1 text-sm">{@conflict_msg}</p>
+  <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
+</div>
+
 <.form
   for={@form}
   id="request-form"
@@ -34,7 +45,7 @@
     type="select"
     label={gettext("Environment")}
     prompt="Choose an environment"
-    options={Itsm.CommonCodes.get_select_options("운영_구분")}
+    options={@env_options}
     phx-debounce="blur"
     class="form-select"
   />
@@ -43,6 +54,7 @@
     label={gettext("Due Date")}
     min={DateTime.utc_now()}
     show_time
+    default_selected_date_time={@form[:due_date].value}
   />
   <div class="mb-6">
     <h2 class="text-lg font-semibold text-zinc-700">VM 생성 요청</h2>
@@ -68,49 +80,46 @@
             field={common_k_create_vm_f[:hostname]}
             label={gettext("Hostname")}
             type="text"
-            phx-debounce="blur"
           />
           <.input
             field={common_k_create_vm_f[:service_name]}
             label={gettext("Service Name")}
             type="text"
-            phx-debounce="blur"
           />
           <.input
             field={common_k_create_vm_f[:os_image]}
             label="OS 종류"
             type="select"
             prompt="Choose a value"
-            options={Itsm.CommonCodes.get_select_options("운영체제")}
-            phx-debounce="blur"
+            options={@group_code_options}
           />
           <.input
             field={common_k_create_vm_f[:os_version]}
             type="select"
             label="OS 버전"
             prompt="Choose a value"
-            options={Itsm.CommonCodes.get_select_options(common_k_create_vm_f[:os_image].value)}
-            phx-debounce="blur"
+            options={
+              if common_k_create_vm_f[:os_image].value in [nil, ""],
+                do: [],
+                else: Map.get(@os_version_options, common_k_create_vm_f[:os_image].value)
+            }
           />
           <.input
             field={common_k_create_vm_f[:cpu]}
             label="CPU (vCore)"
             type="number"
-            phx-debounce="blur"
           />
           <.input
             field={common_k_create_vm_f[:memory]}
             label="Memory (GB)"
             type="number"
-            phx-debounce="blur"
           />
           <.input
             field={common_k_create_vm_f[:location]}
             type="select"
             label={gettext("Location")}
             prompt="Choose a value"
-            options={Itsm.CommonCodes.get_select_options("장소")}
-            phx-debounce="blur"
+            options={@location_options}
           />
           <.input
             field={common_k_create_vm_f[:is_dmz_zone]}
@@ -143,7 +152,8 @@
     <div class="flex flex-col items-center justify-center pt-5 pb-6">
       <.icon name="hero-arrow-up-tray" class="w-8 h-8 mb-4 text-gray-500" />
       <p class="mb-2 text-sm text-gray-500">
-        <span class="font-semibold">Click to upload</span> or drag and drop
+        <spaxn class="font-semibold">Click to upload</spaxn>
+        or drag and drop
       </p>
 
       <p class="text-xs text-gray-500">
@@ -221,7 +231,7 @@
   <% end %>
 
   <div class="flex">
-    <.button phx-disable-with="Saving...">Save Request</.button>
+    <.button :if={!@conflict} phx-disable-with="Saving...">Save Request</.button>
     <.loading_spinner class="hidden phx-submit-loading:inline-block ml-4 mb-5" />
   </div>
 </.form>

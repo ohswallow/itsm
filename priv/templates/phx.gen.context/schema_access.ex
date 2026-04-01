@@ -13,8 +13,8 @@
     |> Repo.update()
     |> case do
       {:ok, <%= schema.singular %>} ->
-       Itsm.Utils.broadcast(:<%= schema.singular %>, {:update_<%= schema.singular %>, <%= schema.singular %>})
-       Itsm.Utils.broadcasts(:<%= schema.plural %>, {:update_<%= schema.singular %>, <%= schema.singular %>})
+       Itsm.Utils.broadcast(<%= inspect schema.alias %>, {attrs["current_user"], :update_<%= schema.singular %>, <%= schema.singular %>})
+       Itsm.Utils.broadcasts(<%= inspect schema.alias %>, {attrs["current_user"], :update_<%= schema.singular %>, <%= schema.singular %>})
        {:ok, <%= schema.singular %>}
 
       {:error, changeset} ->
@@ -22,7 +22,7 @@
     end
   end
 
-  defdelegate delete_<%= schema.singular %>(<%= schema.singular %>), to: Itsm.<%= inspect context.alias %>
+  defdelegate delete_<%= schema.singular %>(%{"id" => _id}), to: Itsm.<%= inspect context.alias %>
 
   def change_<%= schema.singular %>(%<%= inspect schema.alias %>{} = <%= schema.singular %>, attrs \\ %{}) do
     <%= inspect schema.alias %>.changeset(<%= schema.singular %>, attrs)

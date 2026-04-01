@@ -16,9 +16,11 @@
       <div class="sr-only"><.link navigate={~p"/admin/approvals/#{approval}"}>Show</.link></div>
       <.link patch={~p"/admin/approvals/#{approval}/edit"}>Edit</.link>
     </:action>
-    <:action :let={{id, approval}}>
+    <:action :let={{_id, approval}}>
       <.link
-        phx-click={JS.push("delete", value: %{id: approval.id}) |> hide("##{id}")}
+        id={approval.id}
+        phx-click={JS.push("delete", value: %{id: approval.id})}
+        class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
         data-confirm="Are you sure?"
       >
         Delete

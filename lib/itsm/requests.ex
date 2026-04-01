@@ -7,18 +7,6 @@ defmodule Itsm.Requests do
   alias Itsm.Accounts.User
 
   # ==================================================
-  # PubSub
-  # ==================================================
-
-  def subscribe_request(request_id) do
-    Phoenix.PubSub.subscribe(Itsm.PubSub, "request:#{request_id}")
-  end
-
-  def broadcast_request(request_id, message) do
-    Phoenix.PubSub.broadcast(Itsm.PubSub, "request:#{request_id}", message)
-  end
-
-  # ==================================================
   # 조회
   # ==================================================
 
@@ -44,11 +32,11 @@ defmodule Itsm.Requests do
   # Changeset
   # ==================================================
 
-  def change_request(%Request{} = request, request_params \\ %{}) do
-    Request.changeset(request, request_params)
+  def change_request(%Request{} = request, attrs \\ %{}) do
+    Request.changeset(request, attrs)
   end
 
-  def change_request(%User{} = user, %Category{} = category, request_params) do
+  def change_request(%User{} = user, %Category{} = category, attrs) do
     %Request{
       requestor: user,
       requestor_name: user.display_name,
@@ -56,23 +44,23 @@ defmodule Itsm.Requests do
       category: category,
       status: :validation
     }
-    |> Request.changeset(request_params)
+    |> Request.changeset(attrs)
   end
 
   # ==================================================
   # CUD
   # ==================================================
 
-  def create_request(%User{} = user, request_params \\ %{}) do
+  def create_request(%User{} = user, attrs \\ %{}) do
     user
     |> Ecto.build_assoc(:requests)
-    |> Request.changeset(request_params)
+    |> Request.changeset(attrs)
     |> Ecto.Changeset.put_change(:requestor_name, user.display_name)
     |> Repo.insert()
     |> case do
       {:ok, request} ->
         request = Repo.preload(request, :category)
-        Itsm.Utils.broadcasts(:requests, {:update_request, request})
+        Itsm.Utils.broadcasts(Request, {attrs["current_user"], :create_request, request})
         {:ok, request}
 
       {:error, _} = error ->
@@ -83,16 +71,16 @@ defmodule Itsm.Requests do
   def update_request(
         %User{id: user_id},
         %Request{requestor_id: user_id} = request,
-        request_params
+        attrs
       ) do
     request
-    |> Request.changeset(request_params)
+    |> Request.changeset(attrs)
     |> Repo.update()
     |> case do
       {:ok, request} ->
         request = Repo.preload(request, :category)
-        Itsm.Utils.broadcast(:request, {:update_request, request})
-        Itsm.Utils.broadcasts(:requests, {:update_request, request})
+        Itsm.Utils.broadcast(Request, {attrs["current_user"], :update_request, request})
+        Itsm.Utils.broadcasts(Request, {attrs["current_user"], :update_request, request})
         {:ok, request}
 
       {:error, _} = error ->
@@ -100,7 +88,20 @@ defmodule Itsm.Requests do
     end
   end
 
-  def delete_request(%Request{} = request) do
-    Repo.delete(request)
+  def delete_request(
+        %User{id: user_id},
+        %Request{requestor_id: user_id},
+        %{"id" => id} = attrs
+      ) do
+    Repo.delete(get_request!(id))
+    |> case do
+      {:ok, request} ->
+        Itsm.Utils.broadcast(Request, {attrs["current_user"], :delete_request, request})
+        Itsm.Utils.broadcasts(Request, {attrs["current_user"], :delete_request, request})
+        {:ok, request}
+
+      {:error, _} = error ->
+        error
+    end
   end
 end

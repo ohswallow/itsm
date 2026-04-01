@@ -53,6 +53,18 @@ defmodule Itsm.OsInstances do
     %OsInstance{}
     |> OsInstance.changeset(attrs)
     |> Repo.insert()
+    |> case do
+      {:ok, os_istance} ->
+        Itsm.Utils.broadcasts(
+          OsInstance,
+          {attrs["current_user"], :create_os_instance, os_istance}
+        )
+
+        {:ok, os_istance}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   @doc """
@@ -71,6 +83,23 @@ defmodule Itsm.OsInstances do
     os_instance
     |> OsInstance.changeset(attrs)
     |> Repo.update()
+    |> case do
+      {:ok, os_istance} ->
+        Itsm.Utils.broadcast(
+          OsInstance,
+          {attrs["current_user"], :update_os_instance, os_istance}
+        )
+
+        Itsm.Utils.broadcasts(
+          OsInstance,
+          {attrs["current_user"], :update_os_instance, os_istance}
+        )
+
+        {:ok, os_istance}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   @doc """
@@ -85,8 +114,25 @@ defmodule Itsm.OsInstances do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_os_instance(%OsInstance{} = os_instance) do
-    Repo.delete(os_instance)
+  def delete_os_instance(%{"id" => id}, attrs) do
+    Repo.delete(get_os_instance!(id))
+    |> case do
+      {:ok, os_istance} ->
+        Itsm.Utils.broadcast(
+          OsInstance,
+          {attrs["current_user"], :delete_os_instance, os_istance}
+        )
+
+        Itsm.Utils.broadcasts(
+          OsInstance,
+          {attrs["current_user"], :delete_os_instance, os_istance}
+        )
+
+        {:ok, os_istance}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   @doc """

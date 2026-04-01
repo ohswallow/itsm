@@ -2,6 +2,7 @@ defmodule ItsmWeb.Admin.RequestLive.Show do
   use ItsmWeb, :live_view
 
   alias Itsm.Admin.Requests
+  alias Itsm.Service.Request
 
   @impl true
   def mount(_params, _session, socket) do
@@ -11,8 +12,8 @@ defmodule ItsmWeb.Admin.RequestLive.Show do
   @impl true
   def handle_params(%{"id" => id}, _, socket) do
     if(connected?(socket)) do
-      Itsm.Utils.subscribe(:request, id)
-      Itsm.Utils.subscribes(:requests)
+      Itsm.Utils.subscribe(Request, id)
+      Itsm.Utils.subscribes(Request)
     end
 
     {:noreply,
@@ -22,8 +23,8 @@ defmodule ItsmWeb.Admin.RequestLive.Show do
   end
 
   @impl true
-  def handle_info({:pubsub, {event, item}}, socket) do
-    handle_pubsub(event, item, socket)
+  def handle_info({:pubsub, {user, event, item}}, socket) do
+    handle_pubsub(user, event, item, socket)
   end
 
   @impl true
@@ -33,25 +34,26 @@ defmodule ItsmWeb.Admin.RequestLive.Show do
   defp page_title(:edit), do: "Edit Request"
 
   defp handle_pubsub(
-         :update_request,
-         %{id: id} = request,
+         user,
+         event,
+         %{id: id} = item,
          %{assigns: %{request: %{id: id}}} = socket
        ) do
+    opts =
+      [context_key: :request, resource_name: gettext("Request")]
+      |> Keyword.merge(push_event_action(event))
+
     {:noreply,
      socket
-     |> assign(:request, request)
-     |> put_flash(:info, gettext("Updated") <> " " <> gettext("Request"))
-     |> push_patch(to: ~p"/admin/requests/#{request}")}
+     |> ItsmWeb.LiveUtils.handle_standard_pubsub(user, event, item, opts)}
   end
 
-  defp handle_pubsub(:delete_request, %{id: id}, %{assigns: %{request: %{id: id}}} = socket) do
-    {:noreply,
-     socket
-     |> put_flash(:info, gettext("Deleted") <> " " <> gettext("Request"))
-     |> push_navigate(to: ~p"/admin/requests")}
-  end
-
-  defp handle_pubsub(_event, _item, socket) do
+  defp handle_pubsub(_user, _event, _item, socket) do
     {:noreply, socket}
   end
+
+  defp push_event_action(:delete_request),
+    do: [push_navigate: [to: ~p"/admin/requests"]]
+
+  defp push_event_action(_), do: []
 end

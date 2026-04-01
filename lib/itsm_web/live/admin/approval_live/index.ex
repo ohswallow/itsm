@@ -7,9 +7,7 @@ defmodule ItsmWeb.Admin.ApprovalLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    if(connected?(socket)) do
-      Itsm.Utils.subscribes(:approvals)
-    end
+    if connected?(socket), do: Itsm.Utils.subscribes(Approval)
 
     {:ok, stream(socket, :approvals, [])}
   end
@@ -20,16 +18,15 @@ defmodule ItsmWeb.Admin.ApprovalLive.Index do
   end
 
   @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    approval = Approvals.get_approval!(id)
-    {:ok, _} = Approvals.delete_approval(approval)
+  def handle_event("delete", %{"id" => _id} = approval_params, socket) do
+    {:ok, approval} = Approvals.delete_approval(approval_params)
 
     {:noreply, stream_delete(socket, :approvals, approval)}
   end
 
   @impl true
-  def handle_info({:pubsub, {event, item}}, socket) do
-    handle_pubsub(event, item, socket)
+  def handle_info({:pubsub, {user, event, item}}, socket) do
+    handle_pubsub(user, event, item, socket)
   end
 
   @impl true
@@ -68,24 +65,14 @@ defmodule ItsmWeb.Admin.ApprovalLive.Index do
     |> assign(:approval, Approvals.get_approval!(id))
   end
 
-  defp handle_pubsub(event, _approval, socket)
-       when event in [:create_approval, :update_approval] do
-    {:noreply,
-     socket
-     |> put_flash(
-       :info,
-       if(event == :create_approval,
-         do: gettext("Created") <> " " <> gettext("Approval"),
-         else: gettext("Updated") <> " " <> gettext("Approval")
-       )
-     )
-     |> push_patch(to: ~p"/admin/approvals?#{socket.assigns[:results][:params] || %{}}")}
-  end
+  defp handle_pubsub(user, event, item, socket) do
+    opts = [
+      context_key: :approval,
+      resource_name: gettext("Approval"),
+      stream_name: :approvals,
+      push_patch: [to: ~p"/admin/approvals?#{socket.assigns[:results][:params] || %{}}"]
+    ]
 
-  defp handle_pubsub(:delete_approval, approval, socket) do
-    {:noreply,
-     socket
-     |> put_flash(:info, gettext("Deleted") <> " " <> gettext("Approval"))
-     |> stream_delete(:approvals, approval)}
+    {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(user, event, item, opts)}
   end
 end
