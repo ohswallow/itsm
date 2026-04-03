@@ -1,7 +1,7 @@
 defmodule Itsm.Crews do
   import Ecto.Query, warn: false
   alias Itsm.Repo
-  alias Itsm.Crews.{Crew, CrewsUsers}
+  alias Itsm.Crews.{Crew, CrewsUsers, CrewReference}
   alias Itsm.Accounts.User
 
   @doc """
@@ -36,6 +36,12 @@ defmodule Itsm.Crews do
   def list_crews do
     Repo.all(Crew)
     |> Repo.preload(:leader)
+  end
+
+  def list_crew_reference(resource_type, resource_id) do
+    CrewReference
+    |> where([r], r.resource_type == ^resource_type and r.resource_id == ^resource_id)
+    |> Repo.all()
   end
 
   def filter_crews(params) do
@@ -112,6 +118,24 @@ defmodule Itsm.Crews do
     end
   end
 
+  def sync_crew_references(resource_type, resource_id, crews_id) when is_list(crews_id) do
+    # 1. 기존 reference 삭제
+    delete_crew_references(resource_type, resource_id)
+
+    # 2. 새 reference 생성
+    Enum.each(crews_id, fn crew_id ->
+      create_crew_reference(%{
+        resource_type: resource_type,
+        resource_id: resource_id,
+        crew_id: crew_id
+      })
+    end)
+
+    :ok
+  end
+
+  def sync_references(_resource_type, _resource_id, _), do: :ok
+
   def add_users(%Crew{} = crew, add_users) when is_list(add_users) do
     crew = Repo.preload(crew, :users)
 
@@ -165,6 +189,12 @@ defmodule Itsm.Crews do
       error ->
         error
     end
+  end
+
+  def create_crew_reference(attrs) do
+    %CrewReference{}
+    |> CrewReference.changeset(attrs)
+    |> Repo.insert()
   end
 
   def delete_crew(%Crew{} = crew, %User{} = user) do
@@ -233,4 +263,10 @@ defmodule Itsm.Crews do
        do: :ok
 
   defp ensure_delete_auth(_crew, _target_user, _user), do: {:error, :unauthorized}
+
+  defp delete_crew_references(resource_type, resource_id) do
+    CrewReference
+    |> where([r], r.resource_type == ^resource_type and r.resource_id == ^resource_id)
+    |> Repo.delete_all()
+  end
 end

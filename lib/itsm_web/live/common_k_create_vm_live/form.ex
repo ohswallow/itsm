@@ -6,29 +6,29 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   alias Itsm.Categories
   alias Itsm.Requests
   alias Itsm.Service.Request
-  alias Itsm.Team
   alias Itsm.Crews
   alias ItsmWeb.LiveUtils
 
-  def mount(params, _session, socket) do
-    crew_options = Accounts.crew_ids_names(socket.assigns.current_user)
-
+  def mount(_params, _session, socket) do
     {:ok,
      socket
      |> LiveUtils.allow_uploads()
-     |> assign(:crew_options, crew_options)
      |> assign(:conflict, false)
-     |> assign_new_options()
-     |> apply_action(socket.assigns.live_action, params)}
+     |> assign(:form, to_form(Requests.change_request(%Request{})))
+     |> assign_new_options()}
   end
 
-  def handle_params(%{"id" => id}, uri, socket) do
+  def handle_params(%{"id" => id} = params, _uri, socket) do
     if(connected?(socket)) do
       Itsm.Utils.subscribe(Request, id)
       Itsm.Utils.subscribes(Request)
     end
 
-    {:noreply, assign(socket, :current_path, URI.parse(uri).path)}
+    {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
+  end
+
+  def handle_params(_params, uri, socket) do
+    {:noreply}
   end
 
   # ✅ 파일 업로드 취소 이벤트 (HTML의 phx-click="cancel" 처리)
@@ -97,15 +97,16 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
 
   defp assign_new_options(socket) do
     socket
+    |> assign_new(:crew_options, fn -> Accounts.crew_ids_names(socket.assigns.current_user) end)
     |> assign_new(:env_options, fn -> Itsm.CommonCodes.get_select_options("운영_구분") end)
     |> assign_new(:group_code_options, fn -> Itsm.CommonCodes.get_select_options("운영체제") end)
+    |> assign_new(:location_options, fn -> Itsm.CommonCodes.get_select_options("장소") end)
     |> assign_new(:os_version_options, fn ->
       %{
         "리눅스" => Itsm.CommonCodes.get_select_options("리눅스"),
         "윈도우" => Itsm.CommonCodes.get_select_options("윈도우")
       }
     end)
-    |> assign_new(:location_options, fn -> Itsm.CommonCodes.get_select_options("장소") end)
   end
 
   defp apply_action(socket, :new, %{"id" => category_id}) do
@@ -124,7 +125,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
 
     # 기존 referenced crews를 옵션 맵으로 로드 (label 유지를 위해)
     referenced_crews_options =
-      Team.list_reference("Request", id)
+      Crews.list_crew_reference("Request", id)
       |> Enum.map(fn ref ->
         crew = Crews.get_crew!(ref.crew_id)
         %{label: crew.name, tag_label: crew.name, value: crew.id}
@@ -140,10 +141,18 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   defp apply_action(socket, :copy, %{"id" => id}) do
     request = Requests.get_request!(id)
 
+    referenced_crews_options =
+      Crews.list_crew_reference("Request", id)
+      |> Enum.map(fn ref ->
+        crew = Crews.get_crew!(ref.crew_id)
+        %{label: crew.name, tag_label: crew.name, value: crew.id}
+      end)
+
     socket
     |> assign(:page_title, "New Request")
     |> assign(:request, request)
-    |> assign(:referenced_crews_options, [])
+    |> assign(:referenced_crews_options, referenced_crews_options)
+    |> assign(:form, to_form(Requests.change_request(request)))
   end
 
   defp save_request(socket, :edit, request_params) do
@@ -153,7 +162,8 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
 
     case Requests.update_request(user, request, request_params) do
       {:ok, updated_request} ->
-        Team.sync_references("Request", updated_request.id, crews_id)
+        # reference 동기화 (기존 삭제 → 새로 생성)
+        Crews.sync_crew_references("Request", updated_request.id, crews_id)
 
         {:noreply,
          socket
@@ -179,7 +189,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
          ) do
       {:ok, request} ->
         # reference 생성
-        Team.sync_references("Request", request.id, crews_id)
+        Crews.sync_crew_references("Request", request.id, crews_id)
 
         {:noreply,
          socket
@@ -207,7 +217,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
 
   defp handle_pubsub(user, event, item, socket) do
     opts = [context_key: :request]
-    IO.inspect(label: "test1")
     {:noreply, socket |> check_conflict(user, event, item, opts)}
   end
 

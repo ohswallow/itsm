@@ -236,4 +236,4 @@
   </div>
 </.form>
 
-<.back navigate={~p"/categories"}>Back</.back>
+<.back navigate={if @live_action == :new, do: ~p"/categories", else: ~p"/requests"}>Back</.back>
