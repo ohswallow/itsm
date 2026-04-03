@@ -4,19 +4,23 @@ defmodule Itsm.Comments do
 
   alias Itsm.Comments.Comment
   alias Itsm.Accounts.User
-  alias Itsm.Requests
   alias Itsm.Utils
 
   # 결과 처리
-  def broadcast_result({:ok, %{comment: comment}}, topic_id) do
-    Itsm.Utils.broadcasts(:comments, {:create_comment, comment})
+  def broadcast_result({:ok, %{comment: comment}}, action_user, resource) do
+    Itsm.Utils.broadcasts(Comment, {action_user, :create_comment, comment})
     comment = Repo.preload(comment, :attachments)
     # PubSub 방송 (토픽 ID로 전파)
-    Requests.broadcast_request(topic_id, {:comment_created, comment})
+    # Requests.broadcast_request(topic_id, {:comment_created, comment})
+    Itsm.Utils.broadcast(
+      resource,
+      {action_user, :create_comment, {resource, comment}}
+    )
+
     {:ok, comment}
   end
 
-  def broadcast_result({:error, _, failed, _}, _), do: {:error, failed}
+  def broadcast_result({:error, _, failed, _}, _, _), do: {:error, failed}
 
   def list_comments(resource) do
     Comment
@@ -52,8 +56,9 @@ defmodule Itsm.Comments do
         preloaded_comment = Repo.preload(comment, [:user, :attachments])
 
         # 🌟 2. 여기서 직접 PubSub 방송을 쏩니다! (기존 로직 활용)
-        Requests.broadcast_request(resource.id, {:comment_created, preloaded_comment})
-        Itsm.Utils.broadcasts(:comments, {:create_comment, comment})
+        # Requests.broadcast_request(resource.id, {:comment_created, preloaded_comment})
+        Itsm.Utils.broadcast(Request, {attrs["current_user"], :create_comment, preloaded_comment})
+        Itsm.Utils.broadcasts(Comment, {attrs["current_user"], :create_comment, comment})
 
         {:ok, preloaded_comment}
 

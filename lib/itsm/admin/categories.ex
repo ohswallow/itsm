@@ -16,7 +16,9 @@ defmodule Itsm.Admin.Categories do
     |> Repo.insert()
     |> case do
       {:ok, category} ->
-        Itsm.Utils.broadcasts(:category, {:create_Category, category})
+        event = :create_category
+        Itsm.Utils.broadcast(Category, {attrs["current_user"], event, category})
+        Itsm.Utils.broadcasts(Category, {attrs["current_user"], event, category})
         {:ok, category}
 
       {:error, changeset} ->
@@ -31,25 +33,27 @@ defmodule Itsm.Admin.Categories do
     |> Repo.update()
     |> case do
       {:ok, category} ->
-        Itsm.Utils.broadcast(:category, {:update_category, category})
-        Itsm.Utils.broadcasts(:categories, {:update_category, category})
+        event = :update_category
+        Itsm.Utils.broadcast(Category, {attrs["current_user"], event, category})
+        Itsm.Utils.broadcasts(Category, {attrs["current_user"], event, category})
         {:ok, category}
 
-      {:error, _} = error ->
-        error
+      {:error, changeset} ->
+        {:error, changeset}
     end
   end
 
-  def delete_category(%Category{} = category) do
-    Repo.delete(category)
+  def delete_category(%{"id" => id} = attrs) do
+    Repo.delete(get_category!(id))
     |> case do
       {:ok, category} ->
-        Itsm.Utils.broadcast(:category, {:delete_category, category})
-        Itsm.Utils.broadcasts(:categories, {:delete_category, category})
+        event = :delete_category
+        Itsm.Utils.broadcast(Category, {attrs["current_user"], event, category})
+        Itsm.Utils.broadcasts(Category, {attrs["current_user"], event, category})
         {:ok, category}
 
-      {:error, _} = error ->
-        error
+      {:error, changeset} ->
+        {:error, changeset}
     end
   end
 

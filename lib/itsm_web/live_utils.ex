@@ -78,4 +78,91 @@ defmodule ItsmWeb.LiveUtils do
       if value == target, do: label
     end)
   end
+
+  def handle_standard_pubsub(socket, user, event, item, opts) do
+    [action_type | _] = event |> Atom.to_string() |> String.split("_")
+
+    socket
+    |> put_flash_by_event(user, action_type, opts)
+    |> apply_action_type(action_type, item, opts)
+    |> send_update_by_conflict(user, event, item, opts)
+  end
+
+  defp put_flash_by_event(socket, user, action_type, opts) do
+    message = opts[:flash_message] || build_message(user, action_type, opts[:resource_name])
+    Phoenix.LiveView.put_flash(socket, :info, message)
+  end
+
+  defp apply_action_type(%{assigns: %{live_action: :index}} = socket, "delete", item, opts),
+    do: maybe_stream_delete(socket, opts[:stream_name], item)
+
+  defp apply_action_type(%{assigns: %{live_action: :show}} = socket, "update", item, opts),
+    do: maybe_assign_resource(socket, opts[:context_key], item)
+
+  defp apply_action_type(%{assigns: %{live_action: :edit}} = socket, _event, _item, _opts),
+    do: socket
+
+  defp apply_action_type(%{assigns: %{live_action: :new}} = socket, _event, _item, _opts),
+    do: socket
+
+  defp apply_action_type(socket, _action_type, _item, opts) do
+    cond do
+      path = opts[:push_patch] -> Phoenix.LiveView.push_patch(socket, path)
+      path = opts[:push_navigate] -> Phoenix.LiveView.push_navigate(socket, path)
+      true -> socket
+    end
+  end
+
+  defp send_update_by_conflict(socket, user, event, item, opts) do
+    resource = socket.assigns[opts[:context_key]]
+    current_id = if resource, do: to_string(resource.id), else: nil
+
+    if current_id == to_string(item.id) and socket.assigns.live_action == :edit do
+      form_module = get_form_module(socket, opts)
+      Phoenix.LiveView.send_update(form_module, id: item.id, conflict: {event, user})
+    end
+
+    socket
+  end
+
+  defp build_message(user, "create", name),
+    do: "#{user.display_name} #{gettext("Created")} #{name}"
+
+  defp build_message(user, "update", name),
+    do: "#{user.display_name} #{gettext("Updated")} #{name}"
+
+  defp build_message(user, "delete", name),
+    do: "#{user.display_name} #{gettext("Deleted")} #{name}"
+
+  defp build_message(user, _, name), do: "#{user.display_name} #{gettext("Processed")} #{name}"
+
+  defp get_form_module(socket, opts) do
+    case opts[:form_module] do
+      nil ->
+        socket.view
+        |> Module.split()
+        |> List.replace_at(-1, "FormComponent")
+        |> Module.concat()
+
+      module ->
+        module
+    end
+  end
+
+  defp maybe_stream_delete(socket, name, item)
+       when is_atom(name) and not is_nil(name) do
+    Phoenix.LiveView.stream_delete(socket, name, item)
+  end
+
+  defp maybe_stream_delete(socket, _, _), do: socket
+
+  defp maybe_assign_resource(socket, context_key, item) do
+    current_resource = socket.assigns[context_key]
+
+    if current_resource && to_string(current_resource.id) == to_string(item.id) do
+      Phoenix.Component.assign(socket, context_key, item)
+    else
+      socket
+    end
+  end
 end

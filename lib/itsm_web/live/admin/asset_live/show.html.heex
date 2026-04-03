@@ -43,11 +43,12 @@
   on_cancel={JS.patch(~p"/admin/assets/#{@asset}")}
 >
   <.live_component
-    module={ItsmWeb.AssetLive.FormComponent}
+    module={ItsmWeb.Admin.AssetLive.FormComponent}
     id={@asset.id}
     title={@page_title}
     action={@live_action}
     asset={@asset}
+    current_user={@current_user}
     patch={~p"/admin/assets/#{@asset}"}
   />
 </.modal>

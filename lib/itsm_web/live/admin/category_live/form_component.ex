@@ -4,10 +4,21 @@ defmodule ItsmWeb.Admin.CategoryLive.FormComponent do
   alias Itsm.Admin.Categories
 
   @impl true
+  def update(%{conflict: {event, user}} = _assigns, socket) do
+    msg = if String.contains?(to_string(event), "delete"), do: "삭제", else: "수정"
+
+    {:ok,
+     socket
+     |> assign(:conflict, true)
+     |> assign(:conflict_msg, "#{user.display_name}님이 데이터를 #{msg}했습니다.")}
+  end
+
+  @impl true
   def update(%{category: category} = assigns, socket) do
     {:ok,
      socket
      |> assign(assigns)
+     |> assign(:conflict, false)
      |> assign_new(:form, fn ->
        to_form(Categories.change_category(category))
      end)
@@ -23,6 +34,17 @@ defmodule ItsmWeb.Admin.CategoryLive.FormComponent do
         <:subtitle>Use this form to manage category records in your database.</:subtitle>
       </.header>
 
+      <div
+        :if={@conflict}
+        class="p-4 mb-4 bg-red-50 border border-red-200 text-red-800 rounded animate-pulse"
+      >
+        <div class="flex items-center gap-2 font-bold">
+          <span>⚠️ 충돌 발생!</span>
+        </div>
+        <p class="mt-1 text-sm">{@conflict_msg}</p>
+        <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
+      </div>
+
       <.simple_form
         for={@form}
         id="category-form"
@@ -37,14 +59,14 @@ defmodule ItsmWeb.Admin.CategoryLive.FormComponent do
           type="select"
           label={gettext("Affiliate")}
           prompt="Choose a value"
-          options={Itsm.CommonCodes.get_select_options("계열사")}
+          options={@affiliate_options}
         /> <.input field={@form[:request_name]} type="text" label={gettext("Request name")} />
         <.input
           field={@form[:group]}
           type="select"
           label={gettext("Group")}
           prompt="Choose a value"
-          options={Itsm.CommonCodes.get_select_options("지역_유형")}
+          options={@region_type_options}
         />
         <.input field={@form[:category]} type="text" label={gettext("Category")} />
         <.input
@@ -68,7 +90,7 @@ defmodule ItsmWeb.Admin.CategoryLive.FormComponent do
           default_selected_date_time={@form[:inserted_at].value}
         />
         <:actions>
-          <.button phx-disable-with="Saving...">Save Category</.button>
+          <.button :if={!@conflict} phx-disable-with="Saving...">Save Category</.button>
         </:actions>
       </.simple_form>
     </div>
@@ -89,12 +111,14 @@ defmodule ItsmWeb.Admin.CategoryLive.FormComponent do
   defp assign_new_options(socket) do
     socket
     |> assign_new(:assignee_crews_options, fn -> Itsm.Admin.Crews.get_crew_options() end)
+    |> assign_new(:affiliate_options, fn -> Itsm.CommonCodes.get_select_options("계열사") end)
+    |> assign_new(:region_type_options, fn -> Itsm.CommonCodes.get_select_options("지역_유형") end)
   end
 
   defp save_category(socket, :edit, category_params) do
     case Categories.update_category(socket.assigns.category, category_params) do
       {:ok, _category} ->
-        {:noreply, socket}
+        {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -104,7 +128,7 @@ defmodule ItsmWeb.Admin.CategoryLive.FormComponent do
   defp save_category(socket, :new, category_params) do
     case Categories.create_category(category_params) do
       {:ok, _category} ->
-        {:noreply, socket}
+        {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}

@@ -2,12 +2,24 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
   use ItsmWeb, :live_component
 
   alias Itsm.Admin.Assets
+  alias Itsm.Assets.Asset
+
+  @impl true
+  def update(%{conflict: {event, user}} = _assigns, socket) do
+    msg = if String.contains?(to_string(event), "delete"), do: "삭제", else: "수정"
+
+    {:ok,
+     socket
+     |> assign(:conflict, true)
+     |> assign(:conflict_msg, "#{user.display_name}님이 데이터를 #{msg}했습니다.")}
+  end
 
   @impl true
   def update(%{asset: asset} = assigns, socket) do
     {:ok,
      socket
      |> assign(assigns)
+     |> assign(:conflict, false)
      |> assign_new(:form, fn ->
        to_form(Assets.change_asset(asset))
      end)
@@ -22,6 +34,17 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage asset records in your database.</:subtitle>
       </.header>
+
+      <div
+        :if={@conflict}
+        class="p-4 mb-4 bg-red-50 border border-red-200 text-red-800 rounded animate-pulse"
+      >
+        <div class="flex items-center gap-2 font-bold">
+          <span>⚠️ 충돌 발생!</span>
+        </div>
+        <p class="mt-1 text-sm">{@conflict_msg}</p>
+        <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
+      </div>
 
       <.simple_form
         for={@form}
@@ -76,30 +99,52 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
         />
         <.input field={@form[:is_dmz_zone]} type="checkbox" label={gettext("Is Dmz Zone")} />
         <.itsm_calendar
+          :if={@action == :edit}
           field={@form[:inserted_at]}
           label={gettext("Inserted At")}
           show_time
           default_selected_date_time={@form[:inserted_at].value}
         />
+
+        <.input
+          field={@form[:service_crew_id]}
+          type="select"
+          label={gettext("service_crew")}
+          prompt="Choose a value"
+          options={@crew_options}
+        />
+        <.input
+          field={@form[:system_crew_id]}
+          type="select"
+          label={gettext("system_crew")}
+          prompt="Choose a value"
+          options={@crew_options}
+        />
+
         <:actions>
-          <.button phx-disable-with="Saving...">Save Asset</.button>
+          <.button :if={!@conflict} phx-disable-with="Saving...">Save Asset</.button>
         </:actions>
       </.simple_form>
     </div>
     """
   end
 
-  @impl true
-  def handle_event("validate", %{"asset" => asset_params}, socket) do
-    changeset = Assets.change_asset(socket.assigns.asset, asset_params)
-    {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
+  def handle_event("validate", %{"asset" => request_params}, socket) do
+    changeset = Assets.change_asset(%Asset{}, request_params)
+
+    {:noreply,
+     socket
+     |> assign(form: to_form(changeset, action: :validate))}
   end
 
+  @impl true
   def handle_event("save", %{"asset" => asset_params}, socket) do
     save_asset(socket, socket.assigns.action, asset_params)
   end
 
   defp assign_new_options(socket) do
+    crew_options = Itsm.Crews.options_excluding_user(socket.assigns[:current_user])
+
     socket
     |> assign_new(:affiliate_options, fn -> Itsm.CommonCodes.get_select_options("계열사") end)
     |> assign_new(:category_options, fn -> Itsm.CommonCodes.get_select_options("카테고리") end)
@@ -107,12 +152,13 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
     |> assign_new(:infra_type_options, fn -> Itsm.CommonCodes.get_select_options("인프라_유형") end)
     |> assign_new(:env_options, fn -> Itsm.CommonCodes.get_select_options("운영_구분") end)
     |> assign_new(:location_options, fn -> Itsm.CommonCodes.get_select_options("장소") end)
+    |> assign(:crew_options, crew_options)
   end
 
   defp save_asset(socket, :edit, asset_params) do
     case Assets.update_asset(socket.assigns.asset, asset_params) do
       {:ok, _asset} ->
-        {:noreply, socket}
+        {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -122,7 +168,7 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
   defp save_asset(socket, :new, asset_params) do
     case Assets.create_asset(asset_params) do
       {:ok, _asset} ->
-        {:noreply, socket}
+        {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}

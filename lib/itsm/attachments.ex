@@ -14,9 +14,21 @@ defmodule Itsm.Attachments do
     %Attachment{}
     |> Attachment.changeset(attrs)
     |> Repo.insert()
+    |> case do
+      {:ok, attachment} ->
+        Itsm.Utils.broadcasts(
+          Attachment,
+          {attrs["curremt_user"], :create_attachments, attachment}
+        )
+
+        {:ok, attachment}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
-  def create_attachments(repo, resource, attachments_callback) do
+  def create_attachments(repo, resource, attachments_callback, attachments_attrs) do
     attachments = attachments_callback.()
 
     Enum.reduce_while(attachments, {:ok, []}, fn attrs, {:ok, acc} ->
@@ -25,6 +37,11 @@ defmodule Itsm.Attachments do
       |> repo.insert()
       |> case do
         {:ok, attachment} ->
+          Itsm.Utils.broadcasts(
+            Attachment,
+            {attachments_attrs["curremt_user"], :create_attachments, attachment}
+          )
+
           {:cont, {:ok, [attachment | acc]}}
 
         {:error, reason} ->

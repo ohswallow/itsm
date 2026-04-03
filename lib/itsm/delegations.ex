@@ -104,7 +104,15 @@ defmodule Itsm.Delegations do
     |> validate_delegator_overlap()
     |> validate_delegatee_overlap()
     |> Repo.insert()
-    |> broadcast_result()
+    |> case do
+      {:ok, delegation} ->
+        Itsm.Utils.broadcasts(Delegation, {attrs["current_user"], :create_delegation, delegation})
+
+        {:ok, delegation}
+
+      {:error, delegation} ->
+        {:error, delegation}
+    end
   end
 
   # --------------------------------------------------------
@@ -173,14 +181,6 @@ defmodule Itsm.Delegations do
     Repo.exists?(query)
   end
 
-  # 결과 처리 및 브로드캐스트 헬퍼 함수
-  defp broadcast_result({:ok, delegation}) do
-    broadcast_delegation_list({:delegation_created, delegation})
-    {:ok, delegation}
-  end
-
-  defp broadcast_result({:error, _} = error), do: error
-
   @doc """
   Updates a delegation.
 
@@ -201,21 +201,29 @@ defmodule Itsm.Delegations do
   #   |> Repo.update()
   # end
 
-  def delete_delegation(%Delegation{} = delegation, %User{} = current_user) do
-    # 등록자 본인이거나, 관리자(admin)라면 삭제 허용
-    if delegation.created_by_id == current_user.id or current_user.role == "admin" do
-      # Repo.delete(delegation)
+  def delete_delegation(%{"id" => id} = attrs) do
+    delegation = get_delegation!(id)
+
+    if delegation.created_by_id == attrs["current_user"].id or
+         attrs["current_user"].role == "admin" do
       delegation
       |> Repo.delete()
       |> case do
         {:ok, delegation} ->
-          # 성공 시 브로드캐스트 실행
-          broadcast_delegation_list({:delegation_deleted, delegation})
+          Itsm.Utils.broadcast(
+            Delegation,
+            {attrs["current_user"], :delete_delegation, delegation}
+          )
+
+          Itsm.Utils.broadcasts(
+            Delegation,
+            {attrs["current_user"], :delete_delegation, delegation}
+          )
+
           {:ok, delegation}
 
-        # 실패 시 에러 그대로 반환 (브로드캐스트 안 함)
-        {:error, _} = error ->
-          error
+        {:error, delegation} ->
+          {:error, delegation}
       end
     else
       # 아닐경우 권한 오류 반환

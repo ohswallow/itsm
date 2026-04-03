@@ -7,9 +7,7 @@ defmodule ItsmWeb.Admin.RequestLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    if(connected?(socket)) do
-      Itsm.Utils.subscribes(:requests)
-    end
+    if connected?(socket), do: Itsm.Utils.subscribes(Request)
 
     {:ok, stream(socket, :requests, [])}
   end
@@ -20,16 +18,15 @@ defmodule ItsmWeb.Admin.RequestLive.Index do
   end
 
   @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    request = Requests.get_request!(id)
-    {:ok, _} = Requests.delete_request(request)
+  def handle_event("delete", %{"id" => _id} = request_params, socket) do
+    {:ok, request} = Requests.delete_request(request_params)
 
     {:noreply, stream_delete(socket, :requests, request)}
   end
 
   @impl true
-  def handle_info({:pubsub, {event, item}}, socket) do
-    handle_pubsub(event, item, socket)
+  def handle_info({:pubsub, {user, event, item}}, socket) do
+    handle_pubsub(user, event, item, socket)
   end
 
   @impl true
@@ -69,24 +66,14 @@ defmodule ItsmWeb.Admin.RequestLive.Index do
     |> assign(:request, Requests.get_request!(id))
   end
 
-  defp handle_pubsub(event, _request, socket)
-       when event in [:create_request, :update_request] do
-    {:noreply,
-     socket
-     |> put_flash(
-       :info,
-       if(event == :create_request,
-         do: gettext("Created") <> " " <> gettext("Request"),
-         else: gettext("Updated") <> " " <> gettext("Request")
-       )
-     )
-     |> push_patch(to: ~p"/admin/requests?#{socket.assigns[:results][:params] || %{}}")}
-  end
+  defp handle_pubsub(user, event, item, socket) do
+    opts = [
+      context_key: :request,
+      resource_name: gettext("Request"),
+      stream_name: :requests,
+      push_patch: [to: ~p"/admin/requests?#{socket.assigns[:results][:params] || %{}}"]
+    ]
 
-  defp handle_pubsub(:delete_request, request, socket) do
-    {:noreply,
-     socket
-     |> put_flash(:info, gettext("Deleted") <> " " <> gettext("Request"))
-     |> stream_delete(:requests, request)}
+    {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(user, event, item, opts)}
   end
 end

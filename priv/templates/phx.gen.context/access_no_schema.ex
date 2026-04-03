@@ -10,7 +10,7 @@
     |> Repo.insert()
     |> case do
       {:ok, <%= schema.singular %>} ->
-       Itsm.Utils.broadcasts(:<%= schema.plural %>, {:create_<%= schema.singular %>, <%= schema.singular %>})
+       Itsm.Utils.broadcasts(<%= inspect schema.alias %>, {attrs["current_user"], :create_<%= schema.singular %>, <%= schema.singular %>})
        {:ok, <%= schema.singular %>}
 
       {:error, changeset} ->
@@ -24,8 +24,8 @@
     |> Repo.update()
     |> case do
       {:ok, <%= schema.singular %>} ->
-       Itsm.Utils.broadcast(:<%= schema.singular %>, {:update_<%= schema.singular %>, <%= schema.singular %>})
-       Itsm.Utils.broadcasts(:<%= schema.plural %>, {:update_<%= schema.singular %>, <%= schema.singular %>})
+       Itsm.Utils.broadcast(<%= inspect schema.alias %>, {attrs["current_user"], :update_<%= schema.singular %>, <%= schema.singular %>})
+       Itsm.Utils.broadcasts(<%= inspect schema.alias %>, {attrs["current_user"], :update_<%= schema.singular %>, <%= schema.singular %>})
        {:ok, <%= schema.singular %>}
 
       {:error, changeset} ->
@@ -33,16 +33,16 @@
     end
   end
 
-  def delete_<%= schema.singular %>(%<%= inspect schema.alias %>{} = <%= schema.singular %>) do
-    Repo.delete(<%= schema.singular %>)
+  def delete_<%= schema.singular %>(%{"id" => id} = attrs) do
+    Repo.delete(get_<%= schema.singular %>!(id))
     |> case do
-      {:ok, <%= schema.singular %>} ->
-       Itsm.Utils.broadcast(:<%= schema.singular %>, {:update_<%= schema.singular %>, <%= schema.singular %>})
-       Itsm.Utils.broadcasts(:<%= schema.plural %>, {:update_<%= schema.singular %>, <%= schema.singular %>})
-       {:ok, <%= schema.singular %>}
+       {:ok, <%= schema.singular %>} ->
+        Itsm.Utils.broadcast(<%= inspect schema.alias %>, {attrs["current_user"], :delete_<%= schema.singular %>, <%= schema.singular %>})
+        Itsm.Utils.broadcasts(<%= inspect schema.alias %>, {attrs["current_user"], :delete_<%= schema.singular %>, <%= schema.singular %>})
+        {:ok, <%= schema.singular %>}
 
-      {:error, _} = error ->
-        error
+      {:error, changeset} ->
+        {:error, changeset}
     end
   end
 

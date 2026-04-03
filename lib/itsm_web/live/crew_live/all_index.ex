@@ -5,6 +5,7 @@ defmodule ItsmWeb.CrewLive.AllIndex do
 
   # 공통 컴포넌트 임포트
   import ItsmWeb.CrewLive.TableComponents
+  import ItsmWeb.CrewLive.Components
 
   def mount(_params, _session, socket) do
     if(connected?(socket)) do
@@ -43,58 +44,13 @@ defmodule ItsmWeb.CrewLive.AllIndex do
     {:noreply, socket}
   end
 
-  def handle_info({:crews, {:delete_crew, crew}}, socket) do
-    {:noreply, stream_delete(socket, :crews, crew)}
-  end
-
-  def handle_info({:crews, {event, _crew}}, socket) when event in [:create_crew, :update_crew] do
-    %{filter_params: params} = socket.assigns
-
-    {:noreply, push_patch(socket, to: ~p"/crews/all?#{params}")}
+  def handle_info({:pubsub, {user, event, item}}, socket) do
+    handle_pubsub(user, event, item, socket)
   end
 
   def handle_info(_event, socket), do: {:noreply, socket}
 
-  def filter_form(assigns) do
-    ~H"""
-    <div class="filter-section">
-      <.form
-        for={@form}
-        class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end"
-        id="filter-form"
-        phx-change="filter"
-      >
-        <div class="md:col-span-5">
-          <.input
-            field={@form[:keyword]}
-            placeholder="Search..."
-            autocomplete="off"
-            phx-debounce="300"
-          />
-        </div>
-        
-        <div class="md:col-span-3">
-          <.input
-            type="select"
-            field={@form[:organization_code]}
-            prompt="계열사"
-            options={@org_options}
-          />
-        </div>
-        
-        <div class="md:col-span-2 flex justify-end pb-1">
-          <.link
-            patch={~p"/crews/all"}
-            class="btn-secondary py-2 px-4 text-sm group flex items-center w-full justify-center"
-          >
-            <.icon
-              name="hero-arrow-path"
-              class="mr-2 h-4 w-4 group-hover:rotate-180 transition-transform duration-500"
-            /> <span>초기화</span>
-          </.link>
-        </div>
-      </.form>
-    </div>
-    """
+  defp handle_pubsub(_user, _event, _item, socket) do
+    {:noreply, socket}
   end
 end

@@ -2,6 +2,7 @@ defmodule ItsmWeb.Admin.CommentLive.Show do
   use ItsmWeb, :live_view
 
   alias Itsm.Admin.Comments
+  alias Itsm.Comments.Comment
 
   @impl true
   def mount(_params, _session, socket) do
@@ -11,8 +12,8 @@ defmodule ItsmWeb.Admin.CommentLive.Show do
   @impl true
   def handle_params(%{"id" => id}, _, socket) do
     if(connected?(socket)) do
-      Itsm.Utils.subscribe(:comment, id)
-      Itsm.Utils.subscribes(:comments)
+      Itsm.Utils.subscribe(Comment, id)
+      Itsm.Utils.subscribes(Comment)
     end
 
     {:noreply,
@@ -22,8 +23,8 @@ defmodule ItsmWeb.Admin.CommentLive.Show do
   end
 
   @impl true
-  def handle_info({:pubsub, {event, item}}, socket) do
-    handle_pubsub(event, item, socket)
+  def handle_info({:pubsub, {user, event, item}}, socket) do
+    handle_pubsub(user, event, item, socket)
   end
 
   @impl true
@@ -33,25 +34,26 @@ defmodule ItsmWeb.Admin.CommentLive.Show do
   defp page_title(:edit), do: "Edit Comment"
 
   defp handle_pubsub(
-         :update_comment,
-         %{id: id} = comment,
+         user,
+         event,
+         %{id: id} = item,
          %{assigns: %{comment: %{id: id}}} = socket
        ) do
+    opts =
+      [context_key: :comment, resource_name: gettext("Comment")]
+      |> Keyword.merge(push_event_action(event))
+
     {:noreply,
      socket
-     |> assign(:comment, comment)
-     |> put_flash(:info, gettext("Updated") <> " " <> gettext("Comment"))
-     |> push_patch(to: ~p"/admin/comments/#{comment}")}
+     |> ItsmWeb.LiveUtils.handle_standard_pubsub(user, event, item, opts)}
   end
 
-  defp handle_pubsub(:delete_comment, %{id: id}, %{assigns: %{comment: %{id: id}}} = socket) do
-    {:noreply,
-     socket
-     |> put_flash(:info, gettext("Deleted") <> " " <> gettext("Comment"))
-     |> push_navigate(to: ~p"/admin/comments")}
-  end
-
-  defp handle_pubsub(_event, _item, socket) do
+  defp handle_pubsub(_user, _event, _item, socket) do
     {:noreply, socket}
   end
+
+  defp push_event_action(:delete_comment),
+    do: [push_navigate: [to: ~p"/admin/comments"]]
+
+  defp push_event_action(_), do: []
 end

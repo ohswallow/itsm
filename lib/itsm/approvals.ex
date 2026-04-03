@@ -7,7 +7,6 @@ defmodule Itsm.Approvals do
   alias Itsm.Service.Request
   alias Itsm.Crews.CrewsUsers
   alias Itsm.Workflow
-  alias Itsm.Requests
   alias Itsm.Finalization
 
   # ==================================================
@@ -90,7 +89,8 @@ defmodule Itsm.Approvals do
                  status: request.status,
                  action: action,
                  approver_id: approver.id,
-                 approver_name: approver.display_name
+                 approver_name: approver.display_name,
+                 current_user: approver
                }) do
           preloaded_request =
             Repo.preload(updated_request, [
@@ -116,7 +116,8 @@ defmodule Itsm.Approvals do
         end
 
         broadcast_approvals_list({:request_updated, preloaded_request})
-        Requests.broadcast_request(preloaded_request.id, {:request_updated, preloaded_request})
+        Itsm.Utils.broadcast(Request, {:request_updated, preloaded_request})
+        # Requests.broadcast_request(preloaded_request.id, {:request_updated, preloaded_request})
         result
 
       error ->
@@ -127,7 +128,7 @@ defmodule Itsm.Approvals do
   # ==================================================
   # CUD
   # ==================================================
-  def create_approval(repo, %Request{} = request, %User{} = user) do
+  def create_approval(repo, %Request{} = request, %User{} = user, attrs) do
     %Approval{
       approver: user,
       approver_name: user.display_name,
@@ -136,11 +137,27 @@ defmodule Itsm.Approvals do
     }
     |> Approval.changeset(%{approver_id: user.id, request_id: request.id})
     |> repo.insert()
+    |> case do
+      {:ok, approval} ->
+        Itsm.Utils.broadcasts(Approval, {attrs["current_user"], :create_approval, approval})
+        {:ok, approval}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
-  def create_approval(approval_params \\ %{}) do
+  def create_approval(attrs \\ %{}) do
     %Approval{}
-    |> Approval.changeset(approval_params)
+    |> Approval.changeset(attrs)
     |> Repo.insert()
+    |> case do
+      {:ok, approval} ->
+        Itsm.Utils.broadcasts(Approval, {attrs["current_user"], :create_approval, approval})
+        {:ok, approval}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 end

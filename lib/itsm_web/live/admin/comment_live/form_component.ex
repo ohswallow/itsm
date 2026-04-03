@@ -4,10 +4,21 @@ defmodule ItsmWeb.Admin.CommentLive.FormComponent do
   alias Itsm.Admin.Comments
 
   @impl true
+  def update(%{conflict: {event, user}} = _assigns, socket) do
+    msg = if String.contains?(to_string(event), "delete"), do: "삭제", else: "수정"
+
+    {:ok,
+     socket
+     |> assign(:conflict, true)
+     |> assign(:conflict_msg, "#{user.display_name}님이 데이터를 #{msg}했습니다.")}
+  end
+
+  @impl true
   def update(%{comment: comment} = assigns, socket) do
     {:ok,
      socket
      |> assign(assigns)
+     |> assign(:conflict, false)
      |> assign_new(:form, fn ->
        to_form(Comments.change_comment(comment))
      end)}
@@ -21,6 +32,17 @@ defmodule ItsmWeb.Admin.CommentLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage comment records in your database.</:subtitle>
       </.header>
+
+      <div
+        :if={@conflict}
+        class="p-4 mb-4 bg-red-50 border border-red-200 text-red-800 rounded animate-pulse"
+      >
+        <div class="flex items-center gap-2 font-bold">
+          <span>⚠️ 충돌 발생!</span>
+        </div>
+        <p class="mt-1 text-sm">{@conflict_msg}</p>
+        <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
+      </div>
 
       <.simple_form
         for={@form}
@@ -37,7 +59,9 @@ defmodule ItsmWeb.Admin.CommentLive.FormComponent do
           show_time
           default_selected_date_time={@form[:inserted_at].value}
         />
-        <:actions><.button phx-disable-with="Saving...">Save Comment</.button></:actions>
+        <:actions>
+          <.button :if={!@conflict} phx-disable-with="Saving...">Save Comment</.button>
+        </:actions>
       </.simple_form>
     </div>
     """
@@ -57,7 +81,7 @@ defmodule ItsmWeb.Admin.CommentLive.FormComponent do
   defp save_comment(socket, :edit, comment_params) do
     case Comments.update_comment(socket.assigns.comment, comment_params) do
       {:ok, _comment} ->
-        {:noreply, socket}
+        {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}

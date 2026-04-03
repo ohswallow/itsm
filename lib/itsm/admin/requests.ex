@@ -17,25 +17,27 @@ defmodule Itsm.Admin.Requests do
     |> Repo.update()
     |> case do
       {:ok, request} ->
-        Itsm.Utils.broadcast(:request, {:update_request, request})
-        Itsm.Utils.broadcasts(:requests, {:update_request, request})
+        event = :update_request
+        Itsm.Utils.broadcast(Request, {attrs["current_user"], event, request})
+        Itsm.Utils.broadcasts(Request, {attrs["current_user"], event, request})
         {:ok, request}
 
-      {:error, _} = error ->
-        error
+      {:error, changeset} ->
+        {:error, changeset}
     end
   end
 
-  def delete_request(%Request{} = request) do
-    Repo.delete(request)
+  def delete_request(%{"id" => id} = attrs) do
+    Repo.delete(get_request!(id))
     |> case do
       {:ok, request} ->
-        Itsm.Utils.broadcast(:request, {:update_request, request})
-        Itsm.Utils.broadcasts(:requests, {:update_request, request})
+        event = :delete_request
+        Itsm.Utils.broadcast(Request, {attrs["current_user"], event, request})
+        Itsm.Utils.broadcasts(Request, {attrs["current_user"], event, request})
         {:ok, request}
 
-      {:error, _} = error ->
-        error
+      {:error, changeset} ->
+        {:error, changeset}
     end
   end
 end

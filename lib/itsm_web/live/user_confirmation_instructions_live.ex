@@ -48,4 +48,8 @@ defmodule ItsmWeb.UserConfirmationInstructionsLive do
      |> put_flash(:info, info)
      |> redirect(to: ~p"/")}
   end
+
+  def handle_event(_event, _params, socket) do
+    {:noreply, socket}
+  end
 end

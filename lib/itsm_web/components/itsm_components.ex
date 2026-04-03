@@ -35,6 +35,7 @@ defmodule ItsmWeb.ItsmComponents do
     ~H"""
     <.live_component
       module={ItsmWeb.CalendarComponent}
+      {assigns}
       id={assigns[:id] || (assigns[:field] && assigns[:field].id) || "calendar-static-id"}
       label={@label}
       field={@field}
@@ -46,7 +47,6 @@ defmodule ItsmWeb.ItsmComponents do
       disabled_dates={@disabled_dates}
       errors={@errors}
       rests={@rests}
-      rest={assigns[:rest] || %{}}
     />
     """
   end
@@ -252,16 +252,16 @@ defmodule ItsmWeb.ItsmComponents do
 
   attr :id, :string, default: "table-static-id"
   attr :results, :map, required: true
-  attr :rest, :map, default: %{}
+  attr :rest, :global
   slot :inner_block, required: true
 
   def itsm_table_container(assigns) do
     ~H"""
     <.live_component
       module={ItsmWeb.TableContainerComponent}
+      {assigns}
       id={assigns[:id] || (assigns[:field] && assigns[:field].id) || "table-static-id"}
       results={@results}
-      rest={assigns[:rest] || %{}}
     >
       {render_slot(@inner_block)}
     </.live_component>
@@ -270,7 +270,7 @@ defmodule ItsmWeb.ItsmComponents do
 
   attr :id, :string, default: "table-static-id"
   attr :results, :map, required: true
-  attr :rest, :map, default: %{}
+  attr :rest, :global
   slot :inner_block, required: true
   attr :target, :any, default: nil
 

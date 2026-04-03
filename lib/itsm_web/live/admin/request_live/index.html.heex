@@ -23,9 +23,11 @@
       <div class="sr-only"><.link navigate={~p"/admin/requests/#{request}"}>Show</.link></div>
       <.link patch={~p"/admin/requests/#{request.id}/edit"}>Edit</.link>
     </:action>
-    <:action :let={{id, request}}>
+    <:action :let={{_id, request}}>
       <.link
-        phx-click={JS.push("delete", value: %{id: request.id}) |> hide("##{id}")}
+        id={request.id}
+        phx-click={JS.push("delete", value: %{id: request.id})}
+        class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
         data-confirm="Are you sure?"
       >
         Delete
@@ -46,6 +48,7 @@
     title={@page_title}
     action={@live_action}
     request={@request}
+    current_user={@current_user}
     patch={~p"/admin/requests?#{assigns[:results][:params] || %{}}"}
   />
 </.modal>

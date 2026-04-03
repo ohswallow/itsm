@@ -23,9 +23,11 @@
       </div>
       <.link patch={~p"<%= schema.route_prefix %>/#{<%= schema.singular %>}/edit"}>Edit</.link>
     </:action>
-    <:action :let={{id, <%= schema.singular %>}}>
+    <:action :let={{_id, <%= schema.singular %>}}>
       <.link
-        phx-click={JS.push("delete", value: %{id: <%= schema.singular %>.id}) |> hide("##{id}")}
+        id={<%= schema.singular %>.id}
+        phx-click={JS.push("delete", value: %{id: <%= schema.singular %>.id})}
+        class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
         data-confirm="Are you sure?"
       >
         Delete
@@ -41,6 +43,7 @@
     title={@page_title}
     action={@live_action}
     <%= schema.singular %>={@<%= schema.singular %>}
+    current_user={@current_user}
     patch={~p"<%= schema.route_prefix %>?#{assigns[:results][:params] || %{}}"}
   />
 </.modal>

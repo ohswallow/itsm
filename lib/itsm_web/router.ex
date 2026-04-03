@@ -88,13 +88,13 @@ defmodule ItsmWeb.Router do
       live "/crews/:id", CrewLive.Show, :show
 
       # 카테고리(SR 유형) 목록
-      live "/categories", CategoryLive.List
+      live "/categories", CategoryLive.Index
 
-      live "/approvals", ApprovalLive.List, :index
-      # live "/approvals/:request_id/new-comment", ApprovalLive.List, :new_comment
-      live "/approvals/:request_id/approve", ApprovalLive.List, :approve
-      live "/approvals/:request_id/reject", ApprovalLive.List, :reject
-      live "/approvals/:request_id/feedback", ApprovalLive.List, :feedback
+      live "/approvals", ApprovalLive.Index, :index
+      # live "/approvals/:request_id/new-comment", ApprovalLive.Index, :new_comment
+      live "/approvals/:request_id/approve", ApprovalLive.Index, :approve
+      live "/approvals/:request_id/reject", ApprovalLive.Index, :reject
+      live "/approvals/:request_id/feedback", ApprovalLive.Index, :feedback
 
       # Request 목록
       live "/requests", RequestLive.Index, :index

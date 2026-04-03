@@ -16,7 +16,8 @@ defmodule Itsm.Admin.CommonCodes do
     |> Repo.insert()
     |> case do
       {:ok, common_code} ->
-        Itsm.Utils.broadcasts(:common_code, {:create_common_code, common_code})
+        event = :create_common_code
+        Itsm.Utils.broadcasts(CommonCode, {attrs["current_user"], event, common_code})
         {:ok, common_code}
 
       {:error, changeset} ->
@@ -31,8 +32,9 @@ defmodule Itsm.Admin.CommonCodes do
     |> Repo.update()
     |> case do
       {:ok, common_code} ->
-        Itsm.Utils.broadcast(:common_code, {:update_common_code, common_code})
-        Itsm.Utils.broadcasts(:common_codes, {:update_common_code, common_code})
+        event = :update_common_code
+        Itsm.Utils.broadcast(CommonCode, {attrs["current_user"], event, common_code})
+        Itsm.Utils.broadcasts(CommonCode, {attrs["current_user"], event, common_code})
         {:ok, common_code}
 
       {:error, changeset} ->
@@ -40,12 +42,13 @@ defmodule Itsm.Admin.CommonCodes do
     end
   end
 
-  def delete_common_code(%CommonCode{} = common_code) do
-    Repo.delete(common_code)
+  def delete_common_code(%{"id" => id} = attrs) do
+    Repo.delete(get_common_code!(id))
     |> case do
       {:ok, common_code} ->
-        Itsm.Utils.broadcast(:common_code, {:delete_common_code, common_code})
-        Itsm.Utils.broadcasts(:common_codes, {:delete_common_code, common_code})
+        event = :delete_common_code
+        Itsm.Utils.broadcast(CommonCode, {attrs["current_user"], event, common_code})
+        Itsm.Utils.broadcasts(CommonCode, {attrs["current_user"], event, common_code})
         {:ok, common_code}
 
       {:error, changeset} ->

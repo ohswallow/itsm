@@ -141,18 +141,18 @@ aaaaa =
   %Crew{}
   |> Crew.changeset(%{
     name: "AAAAA",
-    description: "K리전 공동존 가상머신 처리팀",
-    leader_id: alex.id
+    description: "K리전 공동존 가상머신 처리팀"
   })
+  |> Crew.leader_changeset(alex)
   |> Repo.insert!()
 
 bbbbb =
   %Crew{}
   |> Crew.changeset(%{
     name: "BBBBB",
-    description: "K리전 은행존 가상머신 처리팀",
-    leader_id: mary.id
+    description: "K리전 은행존 가상머신 처리팀"
   })
+  |> Crew.leader_changeset(mary)
   |> Repo.insert!()
 
 %CrewsUsers{

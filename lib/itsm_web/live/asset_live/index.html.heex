@@ -27,9 +27,11 @@
     </div>
     <.link patch={~p"/assets/#{asset}/edit"}>Edit</.link>
   </:action>
-  <:action :let={{id, asset}}>
+  <:action :let={{_id, asset}}>
     <.link
-      phx-click={JS.push("delete", value: %{id: asset.id}) |> hide("##{id}")}
+      id={asset.id}
+      phx-click={JS.push("delete", value: %{id: asset.id})}
+      class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
       data-confirm="Are you sure?"
     >
       Delete
@@ -49,6 +51,7 @@
     title={@page_title}
     action={@live_action}
     asset={@asset}
+    current_user={@current_user}
     patch={~p"/assets"}
   />
 </.modal>

@@ -26,9 +26,11 @@
       </div>
       <.link patch={~p"/admin/common_codes/#{common_code}/edit"}>Edit</.link>
     </:action>
-    <:action :let={{id, common_code}}>
+    <:action :let={{_id, common_code}}>
       <.link
-        phx-click={JS.push("delete", value: %{id: common_code.id}) |> hide("##{id}")}
+        id={common_code.id}
+        phx-click={JS.push("delete", value: %{id: common_code.id})}
+        class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
         data-confirm="Are you sure?"
       >
         Delete
@@ -49,6 +51,7 @@
     title={@page_title}
     action={@live_action}
     common_code={@common_code}
+    current_user={@current_user}
     patch={~p"/admin/common_codes?#{assigns[:results][:params] || %{}}"}
   />
 </.modal>
