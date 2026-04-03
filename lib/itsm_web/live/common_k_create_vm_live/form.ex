@@ -27,8 +27,8 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
   end
 
-  def handle_params(_params, uri, socket) do
-    {:noreply}
+  def handle_params(_params, _uri, socket) do
+    {:noreply, socket}
   end
 
   # ✅ 파일 업로드 취소 이벤트 (HTML의 phx-click="cancel" 처리)
