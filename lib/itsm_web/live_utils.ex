@@ -165,4 +165,25 @@ defmodule ItsmWeb.LiveUtils do
       socket
     end
   end
+
+  def live_select_params(attrs, fields, :single) when is_list(fields) do
+    Enum.reduce(fields, attrs, fn field, acc ->
+      process_empty_selection(acc, field, nil)
+    end)
+  end
+
+  def live_select_params(attrs, fields, :tags) when is_list(fields) do
+    Enum.reduce(fields, attrs, fn field, acc ->
+      process_empty_selection(acc, field, [])
+    end)
+  end
+
+  defp process_empty_selection(acc, field, default_value) do
+    empty_key = "#{field}_empty_selection"
+
+    case {Map.has_key?(acc, field), Map.has_key?(acc, empty_key)} do
+      {false, true} -> Map.put(acc, field, default_value)
+      _ -> acc
+    end
+  end
 end

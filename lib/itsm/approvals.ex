@@ -135,7 +135,6 @@ defmodule Itsm.Approvals do
       request: request,
       status: :request
     }
-    |> Approval.changeset(%{approver_id: user.id, request_id: request.id})
     |> repo.insert()
     |> case do
       {:ok, approval} ->

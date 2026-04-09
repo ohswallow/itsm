@@ -79,14 +79,15 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
 
     send_update(LiveSelect.Component,
       id: live_select_id,
-      options: Crews.live_select_by_name_user_name(text, user)
+      options: Crews.search_live_select_crews(text, user)
     )
 
     {:noreply, socket}
   end
 
-  def handle_event("save", %{"request" => request_params}, socket) do
-    save_request(socket, socket.assigns.live_action, request_params)
+  def handle_event("save", %{"request" => params}, socket) do
+    params = LiveUtils.live_select_params(params, ["referenced_crews"], :tags)
+    save_request(socket, socket.assigns.live_action, params)
   end
 
   def handle_info({:pubsub, {user, event, item}}, socket) do
@@ -124,12 +125,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     request = Requests.get_request!(id)
 
     # 기존 referenced crews를 옵션 맵으로 로드 (label 유지를 위해)
-    referenced_crews_options =
-      Crews.list_crew_reference("Request", id)
-      |> Enum.map(fn ref ->
-        crew = Crews.get_crew!(ref.crew_id)
-        %{label: crew.name, tag_label: crew.name, value: crew.id}
-      end)
+    referenced_crews_options = Crews.list_live_select_crews(request)
 
     socket
     |> assign(:page_title, "Edit Request")
@@ -141,12 +137,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   defp apply_action(socket, :copy, %{"id" => id}) do
     request = Requests.get_request!(id)
 
-    referenced_crews_options =
-      Crews.list_crew_reference("Request", id)
-      |> Enum.map(fn ref ->
-        crew = Crews.get_crew!(ref.crew_id)
-        %{label: crew.name, tag_label: crew.name, value: crew.id}
-      end)
+    referenced_crews_options = Crews.list_live_select_crews(request)
 
     socket
     |> assign(:page_title, "New Request")
@@ -155,15 +146,13 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     |> assign(:form, to_form(Requests.change_request(request)))
   end
 
-  defp save_request(socket, :edit, request_params) do
+  defp save_request(socket, :edit, params) do
     %{current_user: user, request: request} = socket.assigns
 
-    crews_id = Map.get(request_params, "referenced_crews", [])
-
-    case Requests.update_request(user, request, request_params) do
+    case Requests.update_request(user, request, params) do
       {:ok, updated_request} ->
         # reference 동기화 (기존 삭제 → 새로 생성)
-        Crews.sync_crew_references("Request", updated_request.id, crews_id)
+        Crews.sync_crew_references("Request", updated_request.id, params["referenced_crews"])
 
         {:noreply,
          socket
@@ -175,22 +164,19 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     end
   end
 
-  defp save_request(socket, :new, request_params) do
+  defp save_request(socket, :new, params) do
     %{current_user: user, category: category} = socket.assigns
 
-    # LiveSelect tags 값 추출
-    crews_id = Map.get(request_params, "referenced_crews", [])
+    crews = Crews.get_crews(params["referenced_crews"])
 
     case Service.create_request(
            user,
            category,
+           crews,
            fn -> LiveUtils.consume_attachments(socket) end,
-           request_params
+           params
          ) do
       {:ok, request} ->
-        # reference 생성
-        Crews.sync_crew_references("Request", request.id, crews_id)
-
         {:noreply,
          socket
          |> put_flash(:info, "Request created successfully")
@@ -202,8 +188,9 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
       {:error, step, _changeset, _so_far_changeset} ->
         changeset =
           socket.assigns.form.source
+          |> Map.update!(:errors, &Enum.reject(&1, fn {k, _} -> k == :base end))
           |> Ecto.Changeset.add_error(:base, LiveUtils.translate_step_error(step))
-          |> Map.put(:action, :insert)
+          |> Map.put(:action, :validate)
 
         {:noreply,
          socket
