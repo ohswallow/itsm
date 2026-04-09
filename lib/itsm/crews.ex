@@ -10,6 +10,12 @@ defmodule Itsm.Crews do
   """
   def get_crew!(id), do: Repo.get!(Crew, id)
 
+  def get_crews(ids) when is_list(ids) do
+    Crew
+    |> where([u], u.id in ^ids)
+    |> Repo.all()
+  end
+
   def with_assoc(%Crew{} = crew, preloads) do
     Repo.preload(crew, preloads)
   end
@@ -44,10 +50,10 @@ defmodule Itsm.Crews do
     List.delete(crew.users, crew.leader)
   end
 
-  def live_select_by_name_user_name(name, %User{id: user_id}) do
+  def search_live_select_crews(name, %User{} = exclude_user) do
     user_crew_ids =
       CrewsUsers
-      |> where([m], m.user_id == ^user_id)
+      |> where([m], m.user_id == ^exclude_user.id)
       |> select([m], m.crew_id)
 
     Crew
@@ -82,6 +88,15 @@ defmodule Itsm.Crews do
     |> Repo.all()
   end
 
+  def list_live_select_crews(%_{id: resource_id} = resource) do
+    CrewReference
+    |> join(:inner, [r], c in assoc(r, :crew))
+    |> where([r], r.resource_type == ^Utils.resource_name(resource))
+    |> where([r], r.resource_id == ^resource_id)
+    |> select([r, c], %{label: c.name, tag_label: c.name, value: c.id})
+    |> Repo.all()
+  end
+
   def change_crew(%Crew{} = crew, attrs \\ %{}) do
     Crew.changeset(crew, attrs)
   end
@@ -98,6 +113,34 @@ defmodule Itsm.Crews do
       {:error, %Ecto.Changeset{} = changeset} ->
         {:error, :create_crew, changeset}
     end
+  end
+
+  def create_crew_reference(attrs) do
+    %CrewReference{}
+    |> CrewReference.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def create_crew_reference(repo, %_{id: resource_id} = module, %Crew{} = crew) do
+    %CrewReference{
+      resource_type: Utils.resource_name(module),
+      resource_id: resource_id,
+      crew: crew
+    }
+    |> repo.insert()
+  end
+
+  def create_crew_references(repo, %_{} = resource, crews) when is_list(crews) do
+    Enum.reduce_while(crews, {:ok, []}, fn crew, {:ok, acc} ->
+      create_crew_reference(repo, resource, crew)
+      |> case do
+        {:ok, crew_reference} ->
+          {:cont, {:ok, [crew_reference | acc]}}
+
+        {:error, reason} ->
+          {:halt, {:error, reason}}
+      end
+    end)
   end
 
   def sync_crew_references(resource_type, resource_id, crews_id) when is_list(crews_id) do
@@ -173,12 +216,6 @@ defmodule Itsm.Crews do
       error ->
         error
     end
-  end
-
-  def create_crew_reference(attrs) do
-    %CrewReference{}
-    |> CrewReference.changeset(attrs)
-    |> Repo.insert()
   end
 
   def delete_crew(%Crew{} = crew, %User{} = action_user) do

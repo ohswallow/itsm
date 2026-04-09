@@ -28,6 +28,10 @@ defmodule Itsm.Requests do
     |> Repo.preload(:category)
   end
 
+  def with_assoc(%Request{} = request, preloads) when is_list(preloads) do
+    Repo.preload(request, preloads)
+  end
+
   # ==================================================
   # Changeset
   # ==================================================

@@ -138,20 +138,18 @@ mary =
 |> Repo.insert!()
 
 aaaaa =
-  %Crew{}
-  |> Crew.changeset(%{
+  %Crew{
     name: "AAAAA",
     description: "K리전 공동존 가상머신 처리팀"
-  })
+  }
   |> Crew.leader_changeset(alex)
   |> Repo.insert!()
 
 bbbbb =
-  %Crew{}
-  |> Crew.changeset(%{
+  %Crew{
     name: "BBBBB",
     description: "K리전 은행존 가상머신 처리팀"
-  })
+  }
   |> Crew.leader_changeset(mary)
   |> Repo.insert!()
 

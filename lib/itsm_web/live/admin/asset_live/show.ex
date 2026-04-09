@@ -28,7 +28,7 @@ defmodule ItsmWeb.Admin.AssetLive.Show do
 
     send_update(LiveSelect.Component,
       id: live_select_id,
-      options: Itsm.Crews.live_select_by_name_user_name(text, user)
+      options: Itsm.Crews.search_live_select_crews(text, user)
     )
 
     {:noreply, socket}

@@ -13,20 +13,26 @@ defmodule Itsm.Service do
   alias Itsm.Service.Request
   alias Itsm.Approvals
   alias Itsm.Comments
+  alias Itsm.Crews
 
   def create_request(
         %User{} = user,
         %Category{} = category,
+        crews,
         handle_attachments,
-        request_params \\ %{}
-      ) do
+        attrs \\ %{}
+      )
+      when is_list(crews) and is_function(handle_attachments) do
     Multi.new()
-    |> Multi.insert(:request, Requests.change_request(user, category, request_params))
+    |> Multi.insert(:request, Requests.change_request(user, category, attrs))
     |> Multi.run(:approval, fn repo, %{request: request} ->
-      Approvals.create_approval(repo, request, user, request_params)
+      Approvals.create_approval(repo, request, user, attrs)
     end)
     |> Multi.run(:attachment, fn repo, %{request: request} ->
-      Attachments.create_attachments(repo, request, handle_attachments, request_params)
+      Attachments.create_attachments(repo, request, handle_attachments, attrs)
+    end)
+    |> Multi.run(:crew_reference, fn repo, %{request: request} ->
+      Crews.create_crew_references(repo, request, crews)
     end)
     |> Repo.transaction()
     |> case do
