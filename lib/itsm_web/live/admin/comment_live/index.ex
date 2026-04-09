@@ -5,31 +5,26 @@ defmodule ItsmWeb.Admin.CommentLive.Index do
   alias Itsm.Comments.Comment
   alias Itsm.Paging
 
-  @impl true
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Comment)
+    if connected?(socket), do: Itsm.Utils.subscribes(Comments)
 
     {:ok, stream(socket, :comments, [])}
   end
 
-  @impl true
   def handle_params(params, url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params, url)}
   end
 
-  @impl true
   def handle_event("delete", %{"id" => _id} = comment_params, socket) do
     {:ok, comment} = Comments.delete_comment(comment_params)
 
     {:noreply, stream_delete(socket, :comments, comment)}
   end
 
-  @impl true
-  def handle_info({:pubsub, {user, event, item}}, socket) do
-    handle_pubsub(user, event, item, socket)
+  def handle_info({:pubsub, {action_user, event, item}}, socket) do
+    handle_pubsub(action_user, event, item, socket)
   end
 
-  @impl true
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
@@ -61,7 +56,7 @@ defmodule ItsmWeb.Admin.CommentLive.Index do
     |> assign(:comment, Comments.get_comment!(id))
   end
 
-  defp handle_pubsub(user, event, item, socket) do
+  defp handle_pubsub(action_user, event, item, socket) do
     opts = [
       context_key: :comment,
       resource_name: gettext("Comment"),
@@ -69,6 +64,6 @@ defmodule ItsmWeb.Admin.CommentLive.Index do
       push_patch: [to: ~p"/admin/comments?#{socket.assigns[:results][:params] || %{}}"]
     ]
 
-    {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(user, event, item, opts)}
+    {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}
   end
 end

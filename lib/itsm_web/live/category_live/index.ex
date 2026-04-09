@@ -4,30 +4,24 @@ defmodule ItsmWeb.CategoryLive.Index do
   import ItsmWeb.CategoryLive.Components
 
   alias Itsm.Categories
-  alias Itsm.Service.Category
+  alias Itsm.CommonCodes
 
-  @impl true
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Category)
+    if connected?(socket), do: Itsm.Utils.subscribes(Categories)
 
     {:ok, socket}
   end
 
-  @impl true
   def handle_params(params, _uri, socket) do
     {:noreply,
      socket
      |> stream(:categories, Categories.filter_categories(params), reset: true)
      |> assign(:current_params, params)
      |> assign(:filtered_category_groups, Categories.get_category_groups(params))
-     |> assign(
-       :group_select_options,
-       [{"그룹", ""}] ++ Itsm.CommonCodes.get_select_options("지역_유형")
-     )
+     |> assign(:group_select_options, [{"그룹", ""}] ++ CommonCodes.get_select_options("지역_유형"))
      |> assign(:form, to_form(params))}
   end
 
-  @impl true
   def handle_event("filter", params, socket) do
     params =
       params
@@ -39,15 +33,13 @@ defmodule ItsmWeb.CategoryLive.Index do
     {:noreply, socket}
   end
 
-  @impl true
-  def handle_info({:pusbusb, user, event, item}, socket) do
-    handle_pubsub(user, event, item, socket)
+  def handle_info({:pusbusb, {action_user, event, item}}, socket) do
+    handle_pubsub(action_user, event, item, socket)
   end
 
-  @impl true
   def handle_info(_event, socket), do: {:noreply, socket}
 
-  defp handle_pubsub(user, event, item, socket) do
+  defp handle_pubsub(action_user, event, item, socket) do
     opts = [
       context_key: :category,
       resource_name: gettext("Category"),
@@ -55,6 +47,6 @@ defmodule ItsmWeb.CategoryLive.Index do
       push_patch: [to: ~p"/categories?#{socket.assigns[:current_params] || %{}}"]
     ]
 
-    {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(user, event, item, opts)}
+    {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}
   end
 end

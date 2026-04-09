@@ -6,27 +6,22 @@ defmodule ItsmWeb.ApprovalLive.Index do
   alias Phoenix.LiveView.JS
   alias Itsm.Requests
   alias Itsm.Approvals
-  alias Itsm.Service.Approval
   alias Itsm.Workflow
 
-  @impl true
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Approval)
+    if connected?(socket), do: Itsm.Utils.subscribes(Approvals)
 
     {:ok, stream(socket, :requests, [])}
   end
 
-  @impl true
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  @impl true
-  def handle_info({:pubsub, {user, event, item}}, socket) do
-    handle_pubsub(user, event, item, socket)
+  def handle_info({:pubsub, {action_user, event, item}}, socket) do
+    handle_pubsub(action_user, event, item, socket)
   end
 
-  @impl true
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :approve, %{"request_id" => id}) do
@@ -57,7 +52,7 @@ defmodule ItsmWeb.ApprovalLive.Index do
     )
   end
 
-  defp handle_pubsub(user, event, item, socket) do
+  defp handle_pubsub(action_user, event, item, socket) do
     opts = [
       context_key: :request,
       resource_name: gettext("Approval"),
@@ -67,6 +62,6 @@ defmodule ItsmWeb.ApprovalLive.Index do
 
     {:noreply,
      socket
-     |> ItsmWeb.LiveUtils.handle_standard_pubsub(user, event, item, opts)}
+     |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}
   end
 end

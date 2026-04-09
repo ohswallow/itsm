@@ -17,7 +17,7 @@ defmodule Itsm.Admin.CommonCodes do
     |> case do
       {:ok, common_code} ->
         event = :create_common_code
-        Itsm.Utils.broadcasts(CommonCode, {attrs["current_user"], event, common_code})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, common_code})
         {:ok, common_code}
 
       {:error, changeset} ->
@@ -33,8 +33,8 @@ defmodule Itsm.Admin.CommonCodes do
     |> case do
       {:ok, common_code} ->
         event = :update_common_code
-        Itsm.Utils.broadcast(CommonCode, {attrs["current_user"], event, common_code})
-        Itsm.Utils.broadcasts(CommonCode, {attrs["current_user"], event, common_code})
+        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, common_code})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, common_code})
         {:ok, common_code}
 
       {:error, changeset} ->
@@ -47,8 +47,8 @@ defmodule Itsm.Admin.CommonCodes do
     |> case do
       {:ok, common_code} ->
         event = :delete_common_code
-        Itsm.Utils.broadcast(CommonCode, {attrs["current_user"], event, common_code})
-        Itsm.Utils.broadcasts(CommonCode, {attrs["current_user"], event, common_code})
+        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, common_code})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, common_code})
         {:ok, common_code}
 
       {:error, changeset} ->
@@ -56,5 +56,7 @@ defmodule Itsm.Admin.CommonCodes do
     end
   end
 
-  defdelegate get_select_options(group_code), to: Itsm.CommonCodes
+  defdelegate get_select_options(group_code), to: Itsm.CommonCodeCache
+
+  defdelegate get_label(group_code, code), to: Itsm.CommonCodeCache
 end

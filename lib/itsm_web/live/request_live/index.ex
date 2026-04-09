@@ -4,19 +4,16 @@ defmodule ItsmWeb.RequestLive.Index do
   alias Itsm.Requests
   alias Itsm.Service.Request
 
-  @impl true
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Request)
+    if connected?(socket), do: Itsm.Utils.subscribes(Requests)
 
     {:ok, stream(socket, :requests, [])}
   end
 
-  @impl true
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  @impl true
   def handle_event("delete", %{"id" => _id} = request_params, socket) do
     %{current_user: user, request: request} = socket.assigns
 
@@ -25,12 +22,10 @@ defmodule ItsmWeb.RequestLive.Index do
     {:noreply, stream_delete(socket, :requests, request)}
   end
 
-  @impl true
-  def handle_info({:pubsub, {user, event, item}}, socket) do
-    handle_pubsub(user, event, item, socket)
+  def handle_info({:pubsub, {action_user, event, item}}, socket) do
+    handle_pubsub(action_user, event, item, socket)
   end
 
-  @impl true
   def handle_info(_event, socket) do
     {:noreply, socket}
   end
@@ -53,7 +48,7 @@ defmodule ItsmWeb.RequestLive.Index do
     |> assign(:request, Requests.get_request!(id))
   end
 
-  defp handle_pubsub(user, event, item, socket) do
+  defp handle_pubsub(action_user, event, item, socket) do
     opts = [
       context_key: :request,
       resource_name: gettext("Request"),
@@ -63,6 +58,6 @@ defmodule ItsmWeb.RequestLive.Index do
 
     {:noreply,
      socket
-     |> ItsmWeb.LiveUtils.handle_standard_pubsub(user, event, item, opts)}
+     |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}
   end
 end

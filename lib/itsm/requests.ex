@@ -28,6 +28,10 @@ defmodule Itsm.Requests do
     |> Repo.preload(:category)
   end
 
+  def with_assoc(%Request{} = request, preloads) when is_list(preloads) do
+    Repo.preload(request, preloads)
+  end
+
   # ==================================================
   # Changeset
   # ==================================================
@@ -60,7 +64,7 @@ defmodule Itsm.Requests do
     |> case do
       {:ok, request} ->
         request = Repo.preload(request, :category)
-        Itsm.Utils.broadcasts(Request, {attrs["current_user"], :create_request, request})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :create_request, request})
         {:ok, request}
 
       {:error, _} = error ->
@@ -79,8 +83,8 @@ defmodule Itsm.Requests do
     |> case do
       {:ok, request} ->
         request = Repo.preload(request, :category)
-        Itsm.Utils.broadcast(Request, {attrs["current_user"], :update_request, request})
-        Itsm.Utils.broadcasts(Request, {attrs["current_user"], :update_request, request})
+        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :update_request, request})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :update_request, request})
         {:ok, request}
 
       {:error, _} = error ->
@@ -96,8 +100,8 @@ defmodule Itsm.Requests do
     Repo.delete(get_request!(id))
     |> case do
       {:ok, request} ->
-        Itsm.Utils.broadcast(Request, {attrs["current_user"], :delete_request, request})
-        Itsm.Utils.broadcasts(Request, {attrs["current_user"], :delete_request, request})
+        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :delete_request, request})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :delete_request, request})
         {:ok, request}
 
       {:error, _} = error ->

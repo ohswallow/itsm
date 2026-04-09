@@ -116,7 +116,7 @@ defmodule Itsm.Approvals do
         end
 
         broadcast_approvals_list({:request_updated, preloaded_request})
-        Itsm.Utils.broadcast(Request, {:request_updated, preloaded_request})
+        Itsm.Utils.broadcast(__MODULE__, {:request_updated, preloaded_request})
         # Requests.broadcast_request(preloaded_request.id, {:request_updated, preloaded_request})
         result
 
@@ -135,11 +135,10 @@ defmodule Itsm.Approvals do
       request: request,
       status: :request
     }
-    |> Approval.changeset(%{approver_id: user.id, request_id: request.id})
     |> repo.insert()
     |> case do
       {:ok, approval} ->
-        Itsm.Utils.broadcasts(Approval, {attrs["current_user"], :create_approval, approval})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :create_approval, approval})
         {:ok, approval}
 
       {:error, changeset} ->
@@ -153,7 +152,7 @@ defmodule Itsm.Approvals do
     |> Repo.insert()
     |> case do
       {:ok, approval} ->
-        Itsm.Utils.broadcasts(Approval, {attrs["current_user"], :create_approval, approval})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :create_approval, approval})
         {:ok, approval}
 
       {:error, changeset} ->

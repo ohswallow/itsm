@@ -18,8 +18,8 @@ defmodule Itsm.Admin.Requests do
     |> case do
       {:ok, request} ->
         event = :update_request
-        Itsm.Utils.broadcast(Request, {attrs["current_user"], event, request})
-        Itsm.Utils.broadcasts(Request, {attrs["current_user"], event, request})
+        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, request})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, request})
         {:ok, request}
 
       {:error, changeset} ->
@@ -32,8 +32,8 @@ defmodule Itsm.Admin.Requests do
     |> case do
       {:ok, request} ->
         event = :delete_request
-        Itsm.Utils.broadcast(Request, {attrs["current_user"], event, request})
-        Itsm.Utils.broadcasts(Request, {attrs["current_user"], event, request})
+        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, request})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, request})
         {:ok, request}
 
       {:error, changeset} ->

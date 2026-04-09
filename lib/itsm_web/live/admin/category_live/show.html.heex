@@ -11,10 +11,16 @@
 <.list>
   <:item title={gettext("Name")}>{@category.name}</:item>
   <:item title={gettext("Description")}>{@category.description}</:item>
-  <:item title={gettext("Affiliate")}>{@category.affiliate}</:item>
+  <:item title={gettext("Affiliate")}>
+    <.common_code_label group="계열사" code={@category.affiliate} />
+  </:item>
   <:item title={gettext("Request Name")}>{@category.request_name}</:item>
-  <:item title={gettext("Group")}>{@category.group}</:item>
-  <:item title={gettext("Category")}>{@category.category}</:item>
+  <:item title={gettext("Group")}>
+    <.common_code_label group="그룹" code={@category.group} />
+  </:item>
+  <:item title={gettext("Category")}>
+    <.common_code_label group="카테고리" code={@category.category} />
+  </:item>
   <:item title={gettext("Duration")}>{@category.duration}</:item>
   <:item title={gettext("Active")}>{@category.active}</:item>
   <:item title={gettext("Inserted At")}>

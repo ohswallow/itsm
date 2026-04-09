@@ -5,6 +5,7 @@ defmodule ItsmWeb.CrewLive.Index do
   alias Itsm.Crews.Crew
   alias Itsm.Accounts.User
   alias ItsmWeb.LiveUtils
+  alias Itsm.Utils
 
   # 공통 컴포넌트 임포트
   import ItsmWeb.CrewLive.TableComponents
@@ -12,9 +13,7 @@ defmodule ItsmWeb.CrewLive.Index do
   def mount(_params, _session, socket) do
     %{current_user: user} = socket.assigns
 
-    if connected?(socket) do
-      Crews.subscribe_crews()
-    end
+    if connected?(socket), do: Utils.subscribes(Crews)
 
     {:ok, stream(socket, :crews, Crews.list_my_crews(user))}
   end
@@ -65,31 +64,67 @@ defmodule ItsmWeb.CrewLive.Index do
     {:noreply, stream_insert(socket, :crews, crew)}
   end
 
-  def handle_info({:crews, {event, %Crew{} = crew}}, socket)
-      when event in [:create_crew, :update_crew, :add_users, :leader_changed] do
-    %{current_user: user} = socket.assigns
-    crew = Crews.with_assoc(crew, [:leader, :users])
-
-    if(Enum.member?(crew.users, user) || user == crew.leader) do
-      {:noreply, stream_insert(socket, :crews, crew)}
-    else
-      {:noreply, socket}
-    end
-  end
-
-  def handle_info({:crews, {:delete_crew, %Crew{} = crew}}, socket) do
-    {:noreply, stream_delete(socket, :crews, crew)}
-  end
-
-  def handle_info({:crews, {:delete_user, %Crew{} = crew, %User{} = deleted_user}}, socket) do
-    %{current_user: user} = socket.assigns
-
-    if(user == deleted_user) do
-      {:noreply, stream_delete(socket, :crews, crew)}
-    else
-      {:noreply, socket}
-    end
+  def handle_info({:pubsub, {action_user, event, item}}, socket) do
+    handle_pubsub(action_user, event, item, socket)
   end
 
   def handle_info(_event, socket), do: {:noreply, socket}
+
+  defp handle_pubsub(action_user, event, {:crews, %Crew{} = crew}, socket)
+       when event in [:update_crew, :add_users, :switch_leader] do
+    %{current_user: user} = socket.assigns
+    crew = Crews.with_assoc(crew, [:leader, :users])
+
+    if(Enum.any?(crew.users, &(&1.id == user.id)) || user == crew.leader) do
+      {:noreply,
+       stream_insert(socket, :crews, crew)
+       |> put_flash(
+         :info,
+         gettext("%{crew_name} added/updated by %{action_user}.",
+           crew_name: crew.name,
+           action_user: action_user.display_name
+         )
+       )}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  defp handle_pubsub(action_user, :delete_crew, {:crews, %Crew{} = crew}, socket) do
+    {:noreply,
+     stream_delete(socket, :crews, crew)
+     |> put_flash(
+       :info,
+       gettext("%{crew_name} deleted by %{action_user}.",
+         crew_name: crew.name,
+         action_user: action_user.display_name
+       )
+     )}
+  end
+
+  defp handle_pubsub(
+         action_user,
+         :delete_user,
+         {:crews, %Crew{} = crew, %User{} = deleted_user},
+         socket
+       ) do
+    %{current_user: user} = socket.assigns
+
+    if(user == deleted_user) do
+      {:noreply,
+       stream_delete(socket, :crews, crew)
+       |> put_flash(
+         :info,
+         gettext("You have been removed from the crew by %{action_user}.",
+           action_user: action_user.display_name
+         )
+       )}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  defp handle_pubsub(_action_user, _event, _item, socket) do
+    {:noreply, socket}
+  end
 end

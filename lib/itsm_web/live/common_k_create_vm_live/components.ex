@@ -31,7 +31,9 @@ defmodule ItsmWeb.CommonKCreateVmLive.Components do
 
       <:item title={gettext("Description")}>{@request.description}</:item>
 
-      <:item title={gettext("Environment")}>{@request.env}</:item>
+      <:item title={gettext("Environment")}>
+        <.common_code_label group="운영_구분" code={@request.env} />
+      </:item>
 
       <:item title={gettext("Status")}>{Workflow.status_label(:service_request, @request)}</:item>
 

@@ -56,7 +56,7 @@ defmodule Itsm.OsInstances do
     |> case do
       {:ok, os_istance} ->
         Itsm.Utils.broadcasts(
-          OsInstance,
+          __MODULE__,
           {attrs["current_user"], :create_os_instance, os_istance}
         )
 
@@ -86,12 +86,12 @@ defmodule Itsm.OsInstances do
     |> case do
       {:ok, os_istance} ->
         Itsm.Utils.broadcast(
-          OsInstance,
+          __MODULE__,
           {attrs["current_user"], :update_os_instance, os_istance}
         )
 
         Itsm.Utils.broadcasts(
-          OsInstance,
+          __MODULE__,
           {attrs["current_user"], :update_os_instance, os_istance}
         )
 
@@ -119,12 +119,12 @@ defmodule Itsm.OsInstances do
     |> case do
       {:ok, os_istance} ->
         Itsm.Utils.broadcast(
-          OsInstance,
+          __MODULE__,
           {attrs["current_user"], :delete_os_instance, os_istance}
         )
 
         Itsm.Utils.broadcasts(
-          OsInstance,
+          __MODULE__,
           {attrs["current_user"], :delete_os_instance, os_istance}
         )
 

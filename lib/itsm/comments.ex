@@ -1,5 +1,6 @@
 defmodule Itsm.Comments do
   import Ecto.Query, warn: false
+  alias Itsm.Requests
   alias Itsm.Repo
 
   alias Itsm.Comments.Comment
@@ -7,15 +8,9 @@ defmodule Itsm.Comments do
   alias Itsm.Utils
 
   # 결과 처리
-  def broadcast_result({:ok, %{comment: comment}}, action_user, resource) do
-    Itsm.Utils.broadcasts(Comment, {action_user, :create_comment, comment})
-    comment = Repo.preload(comment, :attachments)
-    # PubSub 방송 (토픽 ID로 전파)
-    # Requests.broadcast_request(topic_id, {:comment_created, comment})
-    Itsm.Utils.broadcast(
-      resource,
-      {action_user, :create_comment, {resource, comment}}
-    )
+  def broadcast_result({:ok, %{comment: comment}}, action_user) do
+    Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_comment, comment})
+    Itsm.Utils.broadcast(Requests, {action_user, :create_comment, comment})
 
     {:ok, comment}
   end
@@ -57,13 +52,21 @@ defmodule Itsm.Comments do
 
         # 🌟 2. 여기서 직접 PubSub 방송을 쏩니다! (기존 로직 활용)
         # Requests.broadcast_request(resource.id, {:comment_created, preloaded_comment})
-        Itsm.Utils.broadcast(Request, {attrs["current_user"], :create_comment, preloaded_comment})
-        Itsm.Utils.broadcasts(Comment, {attrs["current_user"], :create_comment, comment})
+        Itsm.Utils.broadcast(
+          Requests,
+          {attrs["current_user"], :create_comment, preloaded_comment}
+        )
+
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :create_comment, comment})
 
         {:ok, preloaded_comment}
 
       {:error, changeset} ->
         {:error, changeset}
     end
+  end
+
+  def with_assoc(%Comment{} = comment, preloads) do
+    Repo.preload(comment, preloads)
   end
 end

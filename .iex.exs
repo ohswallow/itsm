@@ -5,7 +5,7 @@ alias Itsm.Service.{Request, CommonKCreateVm}
 alias Itsm.Categories
 alias Itsm.Service.Category
 alias Itsm.Crews
-alias Itsm.Crews.{Crew, CrewsUsers, Reference}
+alias Itsm.Crews.{Crew, CrewsUsers, CrewReference}
 alias Itsm.Attachments
 alias Itsm.Attachments.Attachment
 

@@ -4,36 +4,30 @@ defmodule ItsmWeb.EvaluationLive.Index do
   alias Itsm.Evaluations
   alias Itsm.Evaluations.Evaluation
 
-  @impl true
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Evaluation)
+    if connected?(socket), do: Itsm.Utils.subscribes(Evaluations)
 
     {:ok, stream(socket, :evaluations, [])}
   end
 
-  @impl true
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  @impl true
   def handle_event("delete", %{"id" => _id} = evaluation_params, socket) do
     {:ok, evaluation} = Evaluations.delete_evaluation(evaluation_params)
 
     {:noreply, stream_delete(socket, :evaluations, evaluation)}
   end
 
-  @impl true
   def handle_info({ItsmWeb.EvaluationLive.FormComponent, {:saved, evaluation}}, socket) do
     {:noreply, stream_insert(socket, :evaluations, evaluation)}
   end
 
-  @impl true
-  def handle_info({:pubsub, {user, event, item}}, socket) do
-    handle_pubsub(user, event, item, socket)
+  def handle_info({:pubsub, {action_user, event, item}}, socket) do
+    handle_pubsub(action_user, event, item, socket)
   end
 
-  @impl true
   def handle_info(_event, socket) do
     {:noreply, socket}
   end
@@ -56,7 +50,7 @@ defmodule ItsmWeb.EvaluationLive.Index do
     |> stream(:evaluation, Evaluations.list_evaluations(), reset: true)
   end
 
-  defp handle_pubsub(user, event, item, socket) do
+  defp handle_pubsub(action_user, event, item, socket) do
     opts = [
       context_key: :evaluation,
       resource_name: gettext("Evaluation"),
@@ -66,6 +60,6 @@ defmodule ItsmWeb.EvaluationLive.Index do
 
     {:noreply,
      socket
-     |> ItsmWeb.LiveUtils.handle_standard_pubsub(user, event, item, opts)}
+     |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}
   end
 end

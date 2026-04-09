@@ -3,7 +3,6 @@ defmodule <%= inspect context.web_module %>.<%= inspect Module.concat(schema.web
 
   alias <%= inspect context.module %>
 
-  @impl true
   def update(%{conflict: {event, user}} = _assigns, socket) do
     msg = if String.contains?(to_string(event), "delete"), do: "삭제", else: "수정"
 
@@ -13,7 +12,6 @@ defmodule <%= inspect context.web_module %>.<%= inspect Module.concat(schema.web
      |> assign(:conflict_msg, "#{user.display_name}님이 데이터를 #{msg}했습니다.")}
   end
 
-  @impl true
   def update(%{<%= schema.singular %>: <%= schema.singular %>} = assigns, socket) do
     {:ok,
      socket
@@ -24,7 +22,6 @@ defmodule <%= inspect context.web_module %>.<%= inspect Module.concat(schema.web
      end)}
   end
 
-  @impl true
   def render(assigns) do
     ~H"""
     <div>
@@ -67,13 +64,11 @@ defmodule <%= inspect context.web_module %>.<%= inspect Module.concat(schema.web
     """
   end
 
-  @impl true
   def handle_event("validate", %{"<%= schema.singular %>" => <%= schema.singular %>_params}, socket) do
     changeset = <%= inspect context.alias %>.change_<%= schema.singular %>(socket.assigns.<%= schema.singular %>, <%= schema.singular %>_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
-  @impl true
   def handle_event("save", %{"<%= schema.singular %>" => <%= schema.singular %>_params}, socket) do
     save_<%= schema.singular %>(socket, socket.assigns.action, <%= schema.singular %>_params)
   end

@@ -17,8 +17,8 @@ defmodule Itsm.Admin.Categories do
     |> case do
       {:ok, category} ->
         event = :create_category
-        Itsm.Utils.broadcast(Category, {attrs["current_user"], event, category})
-        Itsm.Utils.broadcasts(Category, {attrs["current_user"], event, category})
+        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, category})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, category})
         {:ok, category}
 
       {:error, changeset} ->
@@ -34,8 +34,8 @@ defmodule Itsm.Admin.Categories do
     |> case do
       {:ok, category} ->
         event = :update_category
-        Itsm.Utils.broadcast(Category, {attrs["current_user"], event, category})
-        Itsm.Utils.broadcasts(Category, {attrs["current_user"], event, category})
+        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, category})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, category})
         {:ok, category}
 
       {:error, changeset} ->
@@ -48,8 +48,8 @@ defmodule Itsm.Admin.Categories do
     |> case do
       {:ok, category} ->
         event = :delete_category
-        Itsm.Utils.broadcast(Category, {attrs["current_user"], event, category})
-        Itsm.Utils.broadcasts(Category, {attrs["current_user"], event, category})
+        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, category})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, category})
         {:ok, category}
 
       {:error, changeset} ->

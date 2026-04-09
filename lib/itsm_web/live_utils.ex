@@ -79,17 +79,19 @@ defmodule ItsmWeb.LiveUtils do
     end)
   end
 
-  def handle_standard_pubsub(socket, user, event, item, opts) do
+  def handle_standard_pubsub(socket, action_user, event, item, opts) do
     [action_type | _] = event |> Atom.to_string() |> String.split("_")
 
     socket
-    |> put_flash_by_event(user, action_type, opts)
+    |> put_flash_by_event(action_user, action_type, opts)
     |> apply_action_type(action_type, item, opts)
-    |> send_update_by_conflict(user, event, item, opts)
+    |> send_update_by_conflict(action_user, event, item, opts)
   end
 
-  defp put_flash_by_event(socket, user, action_type, opts) do
-    message = opts[:flash_message] || build_message(user, action_type, opts[:resource_name])
+  defp put_flash_by_event(socket, action_user, action_type, opts) do
+    message =
+      opts[:flash_message] || build_message(action_user, action_type, opts[:resource_name])
+
     Phoenix.LiveView.put_flash(socket, :info, message)
   end
 
@@ -113,28 +115,29 @@ defmodule ItsmWeb.LiveUtils do
     end
   end
 
-  defp send_update_by_conflict(socket, user, event, item, opts) do
+  defp send_update_by_conflict(socket, action_user, event, item, opts) do
     resource = socket.assigns[opts[:context_key]]
     current_id = if resource, do: to_string(resource.id), else: nil
 
     if current_id == to_string(item.id) and socket.assigns.live_action == :edit do
       form_module = get_form_module(socket, opts)
-      Phoenix.LiveView.send_update(form_module, id: item.id, conflict: {event, user})
+      Phoenix.LiveView.send_update(form_module, id: item.id, conflict: {event, action_user})
     end
 
     socket
   end
 
-  defp build_message(user, "create", name),
-    do: "#{user.display_name} #{gettext("Created")} #{name}"
+  defp build_message(action_user, "create", name),
+    do: "#{action_user.display_name} #{gettext("Created")} #{name}"
 
-  defp build_message(user, "update", name),
-    do: "#{user.display_name} #{gettext("Updated")} #{name}"
+  defp build_message(action_user, "update", name),
+    do: "#{action_user.display_name} #{gettext("Updated")} #{name}"
 
-  defp build_message(user, "delete", name),
-    do: "#{user.display_name} #{gettext("Deleted")} #{name}"
+  defp build_message(action_user, "delete", name),
+    do: "#{action_user.display_name} #{gettext("Deleted")} #{name}"
 
-  defp build_message(user, _, name), do: "#{user.display_name} #{gettext("Processed")} #{name}"
+  defp build_message(action_user, _, name),
+    do: "#{action_user.display_name} #{gettext("Processed")} #{name}"
 
   defp get_form_module(socket, opts) do
     case opts[:form_module] do
@@ -163,6 +166,27 @@ defmodule ItsmWeb.LiveUtils do
       Phoenix.Component.assign(socket, context_key, item)
     else
       socket
+    end
+  end
+
+  def live_select_params(attrs, fields, :single) when is_list(fields) do
+    Enum.reduce(fields, attrs, fn field, acc ->
+      process_empty_selection(acc, field, nil)
+    end)
+  end
+
+  def live_select_params(attrs, fields, :tags) when is_list(fields) do
+    Enum.reduce(fields, attrs, fn field, acc ->
+      process_empty_selection(acc, field, [])
+    end)
+  end
+
+  defp process_empty_selection(acc, field, default_value) do
+    empty_key = "#{field}_empty_selection"
+
+    case {Map.has_key?(acc, field), Map.has_key?(acc, empty_key)} do
+      {false, true} -> Map.put(acc, field, default_value)
+      _ -> acc
     end
   end
 end

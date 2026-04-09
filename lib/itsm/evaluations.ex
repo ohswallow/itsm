@@ -55,7 +55,7 @@ defmodule Itsm.Evaluations do
     |> Repo.insert()
     |> case do
       {:ok, evaluation} ->
-        Itsm.Utils.broadcasts(Evaluation, {attrs["current_user"], :create_evaluation, evaluation})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :create_evaluation, evaluation})
         {:ok, evaluation}
 
       {:error, changeset} ->
@@ -81,8 +81,8 @@ defmodule Itsm.Evaluations do
     |> Repo.update()
     |> case do
       {:ok, evaluation} ->
-        Itsm.Utils.broadcast(Evaluation, {attrs["current_user"], :update_evaluation, evaluation})
-        Itsm.Utils.broadcasts(Evaluation, {attrs["current_user"], :update_evaluation, evaluation})
+        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :update_evaluation, evaluation})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :update_evaluation, evaluation})
         {:ok, evaluation}
 
       {:error, changeset} ->
@@ -106,8 +106,8 @@ defmodule Itsm.Evaluations do
     Repo.delete(get_evaluation!(id))
     |> case do
       {:ok, evaluation} ->
-        Itsm.Utils.broadcast(Evaluation, {attrs["current_user"], :delete_evaluation, evaluation})
-        Itsm.Utils.broadcasts(Evaluation, {attrs["current_user"], :delete_evaluation, evaluation})
+        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :delete_evaluation, evaluation})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :delete_evaluation, evaluation})
         {:ok, evaluation}
 
       {:error, changeset} ->

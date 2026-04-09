@@ -11,24 +11,9 @@ defmodule Itsm.CommonCodes do
     |> Repo.all()
   end
 
-  def get_select_options(group_code) when is_nil(group_code) or group_code == "", do: []
+  defdelegate get_select_options(group_code), to: Itsm.CommonCodeCache
 
-  def get_select_options(group_code) do
-    CommonCode
-    |> with_type(group_code)
-    |> where([c], c.is_active == true)
-    |> order_by([c], asc: c.sort_order)
-    |> select([c], {c.label, c.code})
-    |> Repo.all()
-  end
-
-  def get_label(group_code, code) do
-    CommonCode
-    |> where([c], c.code == ^code)
-    |> with_type(group_code)
-    |> select([c], c.label)
-    |> Repo.one()
-  end
+  defdelegate get_label(group_code, code), to: Itsm.CommonCodeCache
 
   defp with_type(query, group_code) when group_code in [nil, ""], do: query
 

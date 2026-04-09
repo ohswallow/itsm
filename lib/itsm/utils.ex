@@ -26,6 +26,11 @@ defmodule Itsm.Utils do
     Ecto.Changeset.put_change(changeset, field, value)
   end
 
+  def broadcast(domain, %{id: id}, message) do
+    topic = "#{get_topic(domain)}:#{id}"
+    Phoenix.PubSub.broadcast_from(Itsm.PubSub, self(), topic, {:pubsub, message})
+  end
+
   def broadcast(domain, message) do
     topic = "#{get_topic(domain)}:#{extract_id(message)}"
     Phoenix.PubSub.broadcast_from(Itsm.PubSub, self(), topic, {:pubsub, message})

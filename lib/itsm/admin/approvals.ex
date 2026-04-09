@@ -18,8 +18,8 @@ defmodule Itsm.Admin.Approvals do
     |> case do
       {:ok, approval} ->
         event = :update_approval
-        Itsm.Utils.broadcast(Approval, {attrs["current_user"], event, approval})
-        Itsm.Utils.broadcasts(Approval, {attrs["current_user"], event, approval})
+        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, approval})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, approval})
         {:ok, approval}
 
       {:error, changeset} ->
@@ -32,8 +32,8 @@ defmodule Itsm.Admin.Approvals do
     |> case do
       {:ok, approval} ->
         event = :delete_approval
-        Itsm.Utils.broadcast(Approval, {attrs["current_user"], event, approval})
-        Itsm.Utils.broadcasts(Approval, {attrs["current_user"], event, approval})
+        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, approval})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, approval})
         {:ok, approval}
 
       {:error, changeset} ->

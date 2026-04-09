@@ -2,18 +2,15 @@ defmodule ItsmWeb.Admin.ApprovalLive.Show do
   use ItsmWeb, :live_view
 
   alias Itsm.Admin.Approvals
-  alias Itsm.Service.Approval
 
-  @impl true
   def mount(_params, _session, socket) do
     {:ok, socket}
   end
 
-  @impl true
   def handle_params(%{"id" => id}, _, socket) do
     if(connected?(socket)) do
-      Itsm.Utils.subscribe(Approval, id)
-      Itsm.Utils.subscribes(Approval)
+      Itsm.Utils.subscribe(Approvals, id)
+      Itsm.Utils.subscribes(Approvals)
     end
 
     {:noreply,
@@ -22,19 +19,17 @@ defmodule ItsmWeb.Admin.ApprovalLive.Show do
      |> assign(:approval, Approvals.get_approval!(id) |> Approvals.preload_category())}
   end
 
-  @impl true
-  def handle_info({:pubsub, {user, event, item}}, socket) do
-    handle_pubsub(user, event, item, socket)
+  def handle_info({:pubsub, {action_user, event, item}}, socket) do
+    handle_pubsub(action_user, event, item, socket)
   end
 
-  @impl true
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp page_title(:show), do: "Show Approval"
   defp page_title(:edit), do: "Edit Approval"
 
   defp handle_pubsub(
-         user,
+         action_user,
          event,
          %{id: id} = item,
          %{assigns: %{approval: %{id: id}}} = socket
@@ -45,7 +40,7 @@ defmodule ItsmWeb.Admin.ApprovalLive.Show do
 
     {:noreply,
      socket
-     |> ItsmWeb.LiveUtils.handle_standard_pubsub(user, event, item, opts)}
+     |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}
   end
 
   defp handle_pubsub(_user, _event, _item, socket) do

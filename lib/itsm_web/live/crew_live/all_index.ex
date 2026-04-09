@@ -2,15 +2,14 @@ defmodule ItsmWeb.CrewLive.AllIndex do
   use ItsmWeb, :live_view
 
   alias Itsm.Crews
+  alias Itsm.Utils
 
   # 공통 컴포넌트 임포트
   import ItsmWeb.CrewLive.TableComponents
   import ItsmWeb.CrewLive.Components
 
   def mount(_params, _session, socket) do
-    if(connected?(socket)) do
-      Crews.subscribe_crews()
-    end
+    if connected?(socket), do: Utils.subscribes(Crews)
 
     {:ok, socket |> assign(:org_options, Itsm.CommonCodes.get_select_options("계열사"))}
   end
@@ -44,13 +43,20 @@ defmodule ItsmWeb.CrewLive.AllIndex do
     {:noreply, socket}
   end
 
-  def handle_info({:pubsub, {user, event, item}}, socket) do
-    handle_pubsub(user, event, item, socket)
+  def handle_info({:pubsub, {action_user, event, item}}, socket) do
+    handle_pubsub(action_user, event, item, socket)
   end
 
   def handle_info(_event, socket), do: {:noreply, socket}
 
-  defp handle_pubsub(_user, _event, _item, socket) do
+  defp handle_pubsub(_action_user, event, {:crews, _crew}, socket)
+       when event in [:create_crew, :update_crew, :delete_crew] do
+    %{filter_params: params} = socket.assigns
+
+    {:noreply, push_patch(socket, to: ~p"/crews/all?#{params}")}
+  end
+
+  defp handle_pubsub(_action_user, _event, _item, socket) do
     {:noreply, socket}
   end
 end

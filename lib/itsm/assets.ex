@@ -100,8 +100,8 @@ defmodule Itsm.Assets do
     |> Repo.insert()
     |> case do
       {:ok, asset} ->
-        Itsm.Utils.broadcast(Asset, {attrs["current_user"], :create_asset, asset})
-        Itsm.Utils.broadcasts(Asset, {attrs["current_user"], :create_asset, asset})
+        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :create_asset, asset})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :create_asset, asset})
         {:ok, asset}
 
       {:error, changeset} ->
@@ -127,8 +127,8 @@ defmodule Itsm.Assets do
     |> Repo.update()
     |> case do
       {:ok, asset} ->
-        Itsm.Utils.broadcast(Asset, {attrs["current_user"], :update_asset, asset})
-        Itsm.Utils.broadcasts(Asset, {attrs["current_user"], :update_asset, asset})
+        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :update_asset, asset})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :update_asset, asset})
         {:ok, asset}
 
       {:error, changeset} ->
@@ -152,8 +152,8 @@ defmodule Itsm.Assets do
     Repo.delete(get_asset!(id))
     |> case do
       {:ok, asset} ->
-        Itsm.Utils.broadcast(Asset, {attrs["current_user"], :delete_asset, asset})
-        Itsm.Utils.broadcasts(Asset, {attrs["current_user"], :delete_asset, asset})
+        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :delete_asset, asset})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :delete_asset, asset})
         {:ok, asset}
 
       {:error, changeset} ->

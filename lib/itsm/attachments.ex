@@ -17,7 +17,7 @@ defmodule Itsm.Attachments do
     |> case do
       {:ok, attachment} ->
         Itsm.Utils.broadcasts(
-          Attachment,
+          __MODULE__,
           {attrs["curremt_user"], :create_attachments, attachment}
         )
 
@@ -38,7 +38,7 @@ defmodule Itsm.Attachments do
       |> case do
         {:ok, attachment} ->
           Itsm.Utils.broadcasts(
-            Attachment,
+            __MODULE__,
             {attachments_attrs["curremt_user"], :create_attachments, attachment}
           )
 

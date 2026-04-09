@@ -11,12 +11,24 @@
 <.list>
   <:item title={gettext("Name")}>{@asset.name}</:item>
   <:item title={gettext("Description")}>{@asset.description}</:item>
-  <:item title={gettext("Affiliate")}>{@asset.affiliate}</:item>
-  <:item title={gettext("Category")}>{@asset.category}</:item>
-  <:item title={gettext("Region Type")}>{@asset.region_type}</:item>
-  <:item title={gettext("Infra Type")}>{@asset.infra_type}</:item>
-  <:item title={gettext("Environment")}>{@asset.env}</:item>
-  <:item title={gettext("Location")}>{@asset.location}</:item>
+  <:item title={gettext("Affiliate")}>
+    <.common_code_label group="계열사" code={@asset.affiliate} />
+  </:item>
+  <:item title={gettext("Category")}>
+    <.common_code_label group="카테고리" code={@asset.category} />
+  </:item>
+  <:item title={gettext("Region Type")}>
+    <.common_code_label group="지역_유형" code={@asset.region_type} />
+  </:item>
+  <:item title={gettext("Infra Type")}>
+    <.common_code_label group="인프라_유형" code={@asset.infra_type} />
+  </:item>
+  <:item title={gettext("Environment")}>
+    <.common_code_label group="운영_구분" code={@asset.env} />
+  </:item>
+  <:item title={gettext("Location")}>
+    <.common_code_label group="장소" code={@asset.location} />
+  </:item>
   <:item title={gettext("Is Dmz Zone")}>{@asset.is_dmz_zone}</:item>
   <:item title={gettext("Inserted At")}>
     <span
