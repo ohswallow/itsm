@@ -2,18 +2,15 @@ defmodule ItsmWeb.Admin.AssetLive.Show do
   use ItsmWeb, :live_view
 
   alias Itsm.Admin.Assets
-  alias Itsm.Assets.Asset
 
-  @impl true
   def mount(_params, _session, socket) do
     {:ok, socket}
   end
 
-  @impl true
   def handle_params(%{"id" => id}, _, socket) do
     if(connected?(socket)) do
-      Itsm.Utils.subscribe(Asset, id)
-      Itsm.Utils.subscribes(Asset)
+      Itsm.Utils.subscribe(Assets, id)
+      Itsm.Utils.subscribes(Assets)
     end
 
     {:noreply,
@@ -22,7 +19,6 @@ defmodule ItsmWeb.Admin.AssetLive.Show do
      |> assign(:asset, Assets.get_asset!(id))}
   end
 
-  @impl true
   def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
     %{current_user: user} = socket.assigns
 
@@ -34,19 +30,17 @@ defmodule ItsmWeb.Admin.AssetLive.Show do
     {:noreply, socket}
   end
 
-  @impl true
-  def handle_info({:pubsub, {user, event, item}}, socket) do
-    handle_pubsub(user, event, item, socket)
+  def handle_info({:pubsub, {action_user, event, item}}, socket) do
+    handle_pubsub(action_user, event, item, socket)
   end
 
-  @impl true
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp page_title(:show), do: "Show Asset"
   defp page_title(:edit), do: "Edit Asset"
 
   defp handle_pubsub(
-         user,
+         action_user,
          event,
          %{id: id} = item,
          %{assigns: %{asset: %{id: id}}} = socket
@@ -57,7 +51,7 @@ defmodule ItsmWeb.Admin.AssetLive.Show do
 
     {:noreply,
      socket
-     |> ItsmWeb.LiveUtils.handle_standard_pubsub(user, event, item, opts)}
+     |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}
   end
 
   defp handle_pubsub(_user, _event, _item, socket) do

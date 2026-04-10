@@ -68,6 +68,32 @@ window.addEventListener("phx:page-loading-stop", (_info) => {
   }
 });
 
+window.addEventListener("phx:common_code_all_reloaded", (e) => {
+  const allData = e.detail;
+  const allElements = document.querySelectorAll("[data-common-code]");
+
+  allElements.forEach(el => {
+    const key = el.getAttribute("data-common-code");
+    if (allData[key]) {
+      const newLabel = allData[key];
+
+      if (el.innerText !== newLabel) {
+        el.innerText = newLabel;
+        el.classList.add("bg-yellow-200", "transition-all", "duration-0");
+
+        setTimeout(() => {
+          el.classList.replace("duration-0", "duration-1000");
+          el.classList.remove("bg-yellow-200");
+        }, 1000);
+
+        setTimeout(() => {
+          el.classList.remove("transition-all", "duration-1000");
+        }, 1200);
+      }
+    }
+  });
+});
+
 // connect if there are any LiveViews on the page
 liveSocket.connect();
 

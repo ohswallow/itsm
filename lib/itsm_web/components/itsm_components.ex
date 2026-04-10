@@ -411,6 +411,17 @@ defmodule ItsmWeb.ItsmComponents do
     """
   end
 
+  attr :group, :string
+  attr :code, :string
+
+  def common_code_label(assigns) do
+    ~H"""
+    <span data-common-code={"#{@group}:#{@code}"}>
+      {Itsm.CommonCodes.get_label(@group, @code)}
+    </span>
+    """
+  end
+
   @doc """
   Renders a time element that displays a localized time using a LiveView hook.
   yyyy.mm.dd hh:mm

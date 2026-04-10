@@ -11,7 +11,6 @@ defmodule ItsmWeb.CalendarComponent do
     7 => "col-start-7"
   }
 
-  @impl true
   def update(assigns, socket) do
     errors =
       if Phoenix.Component.used_input?(assigns[:field]), do: assigns[:field].errors, else: []
@@ -24,7 +23,6 @@ defmodule ItsmWeb.CalendarComponent do
      |> update_calendar_grid()}
   end
 
-  @impl true
   def handle_event("shift", %{"unit" => unit, "amount" => amount}, socket) do
     new_date =
       socket.assigns.view_date
@@ -35,7 +33,6 @@ defmodule ItsmWeb.CalendarComponent do
     {:noreply, socket |> assign(view_date: new_date) |> update_calendar_grid()}
   end
 
-  @impl true
   def handle_event("selected_date_time", %{"datetime" => datetime}, socket) do
     {:noreply,
      socket

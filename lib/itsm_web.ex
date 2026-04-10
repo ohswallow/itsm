@@ -65,7 +65,7 @@ defmodule ItsmWeb do
     quote do
       use Phoenix.LiveComponent
 
-      use ItsmWeb.LiveHelpers
+      use ItsmWeb.LiveHelpers, only_common: true
 
       unquote(html_helpers())
     end

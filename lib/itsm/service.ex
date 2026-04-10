@@ -10,7 +10,6 @@ defmodule Itsm.Service do
   alias Itsm.Accounts.User
   alias Itsm.Attachments
   alias Itsm.Requests
-  alias Itsm.Service.Request
   alias Itsm.Approvals
   alias Itsm.Comments
   alias Itsm.Crews
@@ -39,7 +38,7 @@ defmodule Itsm.Service do
       {:ok, %{request: request}} ->
         request = Repo.preload(request, [:category, :attachments])
         Approvals.broadcast_approvals_list({:request_created, request})
-        Itsm.Utils.broadcasts(Request, {user, :created_request, request})
+        Itsm.Utils.broadcasts(Requests, {user, :created_request, request})
         {:ok, request}
 
       error ->
@@ -47,13 +46,27 @@ defmodule Itsm.Service do
     end
   end
 
-  def create_comment(resource, %User{} = user, handle_attachments, attrs \\ %{}) do
+  def create_comment(
+        resource,
+        %User{} = user,
+        handle_attachments,
+        attrs \\ %{}
+      ) do
     Multi.new()
     |> Multi.insert(:comment, Comments.changeset_comment(resource, user, attrs))
     |> Multi.run(:attachments, fn repo, %{comment: comment} ->
       Attachments.create_attachments(repo, comment, handle_attachments, attrs)
     end)
     |> Repo.transaction()
-    |> Comments.broadcast_result(attrs["current_user"], resource)
+    |> case do
+      {:ok, %{comment: comment, attachments: attachments}} ->
+        Itsm.Utils.broadcasts(Comments, {user, :create_comment, comment})
+        Itsm.Utils.broadcast(Requests, resource, {user, :create_comment, comment})
+        Itsm.Utils.broadcasts(Attachments, {user, :create_attachments, attachments})
+        {:ok, comment}
+
+      {:error, _} = error ->
+        error
+    end
   end
 end

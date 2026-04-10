@@ -5,19 +5,16 @@ defmodule ItsmWeb.DelegationLive.Index do
   alias Itsm.Delegations.Delegation
   alias Itsm.Accounts.User
 
-  @impl true
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Delegation)
+    if connected?(socket), do: Itsm.Utils.subscribes(Delegations)
 
     {:ok, stream(socket, :delegations, [])}
   end
 
-  @impl true
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  @impl true
   def handle_event("delete", %{"id" => _id} = delegation_params, socket) do
     case Delegations.delete_delegation(delegation_params) do
       {:ok, delegation} ->
@@ -38,17 +35,14 @@ defmodule ItsmWeb.DelegationLive.Index do
   end
 
   # Delegation이 저장되었을 때 스트림에 추가
-  @impl true
   def handle_info({ItsmWeb.DelegationLive.FormComponent, {:saved, delegation}}, socket) do
     {:noreply, stream_insert(socket, :delegations, delegation)}
   end
 
-  @impl true
-  def handle_info({:pubsub, {user, event, item}}, socket) do
-    handle_pubsub(user, event, item, socket)
+  def handle_info({:pubsub, {action_user, event, item}}, socket) do
+    handle_pubsub(action_user, event, item, socket)
   end
 
-  @impl true
   def handle_info(_event, socket) do
     {:noreply, socket}
   end
@@ -79,7 +73,7 @@ defmodule ItsmWeb.DelegationLive.Index do
   # 3. 그 외에는 모두 false (버튼 숨김)
   defp can_delete?(_user, _delegation), do: false
 
-  defp handle_pubsub(user, event, item, socket) do
+  defp handle_pubsub(action_user, event, item, socket) do
     opts = [
       context_key: :delegation,
       resource_name: gettext("Delegation"),
@@ -87,6 +81,6 @@ defmodule ItsmWeb.DelegationLive.Index do
       push_patch: [to: ~p"/delegations"]
     ]
 
-    {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(user, event, item, opts)}
+    {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}
   end
 end

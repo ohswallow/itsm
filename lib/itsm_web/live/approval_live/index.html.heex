@@ -44,7 +44,9 @@
     <div class="w-[90px] truncate">{request.title}</div>
   </:col>
 
-  <:col :let={{_id, request}} label={gettext("Environment")}>{request.env}</:col>
+  <:col :let={{_id, request}} label={gettext("Environment")}>
+    <.common_code_label group="운영_구분" code={request.env} />
+  </:col>
 
   <:col :let={{id, request}} label={gettext("Due Date")}>
     <span id={"due_date_#{id}"} phx-hook="LocalTime.ToLocale" utc-value={request.due_date}></span>

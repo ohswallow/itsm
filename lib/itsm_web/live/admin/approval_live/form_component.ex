@@ -3,7 +3,6 @@ defmodule ItsmWeb.Admin.ApprovalLive.FormComponent do
 
   alias Itsm.Admin.Approvals
 
-  @impl true
   def update(%{conflict: {event, user}} = _assigns, socket) do
     msg = if String.contains?(to_string(event), "delete"), do: "삭제", else: "수정"
 
@@ -13,7 +12,6 @@ defmodule ItsmWeb.Admin.ApprovalLive.FormComponent do
      |> assign(:conflict_msg, "#{user.display_name}님이 데이터를 #{msg}했습니다.")}
   end
 
-  @impl true
   def update(%{approval: approval} = assigns, socket) do
     {:ok,
      socket
@@ -25,7 +23,6 @@ defmodule ItsmWeb.Admin.ApprovalLive.FormComponent do
      |> assign_new_options()}
   end
 
-  @impl true
   def render(assigns) do
     ~H"""
     <div>
@@ -81,13 +78,11 @@ defmodule ItsmWeb.Admin.ApprovalLive.FormComponent do
     """
   end
 
-  @impl true
   def handle_event("validate", %{"approval" => approval_params}, socket) do
     changeset = Approvals.change_approval(socket.assigns.approval, approval_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
-  @impl true
   def handle_event("save", %{"approval" => approval_params}, socket) do
     save_approval(socket, socket.assigns.action, approval_params)
   end

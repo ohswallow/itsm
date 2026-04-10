@@ -5,31 +5,26 @@ defmodule ItsmWeb.Admin.CrewLive.Index do
   alias Itsm.Crews.Crew
   alias Itsm.Paging
 
-  @impl true
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Crew)
+    if connected?(socket), do: Itsm.Utils.subscribes(Crews)
 
     {:ok, stream(socket, :crews, [])}
   end
 
-  @impl true
   def handle_params(params, url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params, url)}
   end
 
-  @impl true
   def handle_event("delete", %{"id" => _id} = crew_params, socket) do
     {:ok, crew} = Crews.delete_crew(crew_params)
 
     {:noreply, stream_delete(socket, :crews, crew)}
   end
 
-  @impl true
-  def handle_info({:pubsub, {user, event, item}}, socket) do
-    handle_pubsub(user, event, item, socket)
+  def handle_info({:pubsub, {action_user, event, item}}, socket) do
+    handle_pubsub(action_user, event, item, socket)
   end
 
-  @impl true
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
@@ -59,7 +54,7 @@ defmodule ItsmWeb.Admin.CrewLive.Index do
     |> assign(:crew, Crews.get_crew!(id))
   end
 
-  defp handle_pubsub(user, event, item, socket) do
+  defp handle_pubsub(action_user, event, item, socket) do
     opts = [
       context_key: :crew,
       resource_name: gettext("Crew"),
@@ -67,6 +62,6 @@ defmodule ItsmWeb.Admin.CrewLive.Index do
       push_patch: [to: ~p"/admin/crews?#{socket.assigns[:results][:params] || %{}}"]
     ]
 
-    {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(user, event, item, opts)}
+    {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}
   end
 end

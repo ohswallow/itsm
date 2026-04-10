@@ -106,7 +106,7 @@ defmodule Itsm.Delegations do
     |> Repo.insert()
     |> case do
       {:ok, delegation} ->
-        Itsm.Utils.broadcasts(Delegation, {attrs["current_user"], :create_delegation, delegation})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :create_delegation, delegation})
 
         {:ok, delegation}
 
@@ -211,12 +211,12 @@ defmodule Itsm.Delegations do
       |> case do
         {:ok, delegation} ->
           Itsm.Utils.broadcast(
-            Delegation,
+            __MODULE__,
             {attrs["current_user"], :delete_delegation, delegation}
           )
 
           Itsm.Utils.broadcasts(
-            Delegation,
+            __MODULE__,
             {attrs["current_user"], :delete_delegation, delegation}
           )
 

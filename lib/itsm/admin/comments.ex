@@ -1,5 +1,6 @@
 defmodule Itsm.Admin.Comments do
   import Ecto.Query, warn: false
+  alias Itsm.Admin.Requests
   alias Itsm.Repo
   alias Itsm.Comments.Comment
 
@@ -20,8 +21,10 @@ defmodule Itsm.Admin.Comments do
     |> case do
       {:ok, comment} ->
         event = :update_comment
-        Itsm.Utils.broadcast(Comment, {attrs["current_user"], event, comment})
-        Itsm.Utils.broadcasts(Comment, {attrs["current_user"], event, comment})
+        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, comment})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, comment})
+        Itsm.Utils.broadcast(Requests, {attrs["current_user"], event, comment})
+        Itsm.Utils.broadcasts(Requests, {attrs["current_user"], event, comment})
         {:ok, comment}
 
       {:error, changeset} ->
@@ -34,8 +37,10 @@ defmodule Itsm.Admin.Comments do
     |> case do
       {:ok, comment} ->
         event = :delete_comment
-        Itsm.Utils.broadcast(Comment, {attrs["current_user"], event, comment})
-        Itsm.Utils.broadcasts(Comment, {attrs["current_user"], event, comment})
+        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, comment})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, comment})
+        Itsm.Utils.broadcast(Requests, {attrs["current_user"], event, comment})
+        Itsm.Utils.broadcasts(Requests, {attrs["current_user"], event, comment})
         {:ok, comment}
 
       {:error, changeset} ->
@@ -43,7 +48,5 @@ defmodule Itsm.Admin.Comments do
     end
   end
 
-  def preload_user(%Comment{} = comment) do
-    comment |> Repo.preload([:user])
-  end
+  defdelegate with_assoc(comment, preloads), to: Itsm.Comments
 end

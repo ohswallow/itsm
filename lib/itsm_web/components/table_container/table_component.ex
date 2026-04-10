@@ -1,12 +1,10 @@
 defmodule ItsmWeb.TableContainerComponent do
   use ItsmWeb, :live_component
 
-  @impl true
   def update(assigns, socket) do
     {:ok, socket |> assign(assigns) |> init_default_value()}
   end
 
-  @impl true
   def handle_event("update-filters", params, socket) do
     query_params = %{
       "search" => params["search"],

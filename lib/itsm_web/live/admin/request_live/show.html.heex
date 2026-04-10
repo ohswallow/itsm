@@ -13,7 +13,9 @@
   <:item title={gettext("Description")}>
     <div class="w-[90px] truncate">{@request.description}</div>
   </:item>
-  <:item title={gettext("Environment")}>{@request.env}</:item>
+  <:item title={gettext("Environment")}>
+    <.common_code_label group="운영_구분" code={@request.env} />
+  </:item>
   <:item title={gettext("Due Date")}>
     <span
       id={"due-date-#{@request.id}"}

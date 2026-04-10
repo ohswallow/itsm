@@ -4,38 +4,34 @@ defmodule ItsmWeb.Admin.CategoryLive.Index do
   alias Itsm.Admin.Categories
   alias Itsm.Service.Category
   alias Itsm.Paging
+  alias Itsm.Admin.CommonCodes
 
-  @impl true
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Category)
+    if connected?(socket), do: Itsm.Utils.subscribes(Categories)
 
     {:ok, socket |> stream(:categories, []) |> assign_new_options()}
   end
 
-  @impl true
   def handle_params(params, url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params, url)}
   end
 
-  @impl true
   def handle_event("delete", %{"id" => _id} = category_params, socket) do
     {:ok, category} = Categories.delete_category(category_params)
 
     {:noreply, stream_delete(socket, :categories, category)}
   end
 
-  @impl true
-  def handle_info({:pubsub, {user, event, item}}, socket) do
-    handle_pubsub(user, event, item, socket)
+  def handle_info({:pubsub, {action_user, event, item}}, socket) do
+    handle_pubsub(action_user, event, item, socket)
   end
 
-  @impl true
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp assign_new_options(socket) do
     socket
-    |> assign_new(:affiliate_options, fn -> Itsm.CommonCodes.get_select_options("계열사") end)
-    |> assign_new(:group_options, fn -> Itsm.CommonCodes.get_select_options("지역_유형") end)
+    |> assign_new(:affiliate_options, fn -> CommonCodes.get_select_options("계열사") end)
+    |> assign_new(:group_options, fn -> CommonCodes.get_select_options("지역_유형") end)
   end
 
   defp apply_action(socket, :index, params, url) do
@@ -68,7 +64,7 @@ defmodule ItsmWeb.Admin.CategoryLive.Index do
     |> assign(:category, Categories.get_category!(id))
   end
 
-  defp handle_pubsub(user, event, item, socket) do
+  defp handle_pubsub(action_user, event, item, socket) do
     opts = [
       context_key: :category,
       resource_name: gettext("Category"),
@@ -76,6 +72,6 @@ defmodule ItsmWeb.Admin.CategoryLive.Index do
       push_patch: [to: ~p"/admin/categories?#{socket.assigns[:results][:params] || %{}}"]
     ]
 
-    {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(user, event, item, opts)}
+    {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}
   end
 end

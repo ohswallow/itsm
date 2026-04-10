@@ -3,8 +3,8 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
 
   alias Itsm.Delegations
   alias Itsm.Accounts
+  alias Itsm.CommonCodes
 
-  @impl true
   def update(%{conflict: {event, user}} = _assigns, socket) do
     msg = if String.contains?(to_string(event), "delete"), do: "삭제", else: "수정"
 
@@ -14,7 +14,6 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
      |> assign(:conflict_msg, "#{user.display_name}님이 데이터를 #{msg}했습니다.")}
   end
 
-  @impl true
   def update(%{delegation: delegation} = assigns, socket) do
     # 새 delegation이면 start_date를 오늘로 기본 설정
     delegation =
@@ -34,7 +33,6 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
      |> assign_new_options()}
   end
 
-  @impl true
   def render(assigns) do
     ~H"""
     <div>
@@ -135,7 +133,6 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
     {:noreply, socket}
   end
 
-  @impl true
   def handle_event("validate", %{"delegation" => delegation_params}, socket) do
     changeset =
       socket.assigns.delegation
@@ -151,7 +148,7 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
 
   defp assign_new_options(socket) do
     socket
-    |> assign_new(:reason_options, fn -> Itsm.CommonCodes.get_select_options("사유") end)
+    |> assign_new(:reason_options, fn -> CommonCodes.get_select_options("사유") end)
   end
 
   defp save_delegation(socket, :new, delegation_params) do

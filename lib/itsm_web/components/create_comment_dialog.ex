@@ -4,7 +4,6 @@ defmodule ItsmWeb.CreateCommentDialog do
   alias Itsm.Comments.Comment
   alias Itsm.Approvals
 
-  @impl true
   def update(assigns, socket) do
     {:ok,
      socket
@@ -14,7 +13,6 @@ defmodule ItsmWeb.CreateCommentDialog do
      end)}
   end
 
-  @impl true
   def render(assigns) do
     ~H"""
     <div>
@@ -22,7 +20,7 @@ defmodule ItsmWeb.CreateCommentDialog do
         {@title} Request
         <:subtitle>Add a comment for this approval</:subtitle>
       </.header>
-      
+
       <.simple_form
         for={@form}
         id="approval-comment-form"
@@ -37,7 +35,6 @@ defmodule ItsmWeb.CreateCommentDialog do
     """
   end
 
-  @impl true
   def handle_event("validate", %{"comment" => comment_params}, socket) do
     changeset = Comments.change_comment(%Comment{}, comment_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}

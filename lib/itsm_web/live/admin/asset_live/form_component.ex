@@ -3,8 +3,8 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
 
   alias Itsm.Admin.Assets
   alias Itsm.Assets.Asset
+  alias Itsm.Admin.CommonCodes
 
-  @impl true
   def update(%{conflict: {event, user}} = _assigns, socket) do
     msg = if String.contains?(to_string(event), "delete"), do: "삭제", else: "수정"
 
@@ -14,7 +14,6 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
      |> assign(:conflict_msg, "#{user.display_name}님이 데이터를 #{msg}했습니다.")}
   end
 
-  @impl true
   def update(%{asset: asset} = assigns, socket) do
     {:ok,
      socket
@@ -26,7 +25,6 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
      |> assign_new_options()}
   end
 
-  @impl true
   def render(assigns) do
     ~H"""
     <div>
@@ -137,22 +135,21 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
      |> assign(form: to_form(changeset, action: :validate))}
   end
 
-  @impl true
   def handle_event("save", %{"asset" => asset_params}, socket) do
     save_asset(socket, socket.assigns.action, asset_params)
   end
 
   defp assign_new_options(socket) do
-    crew_options = Itsm.Crews.options_excluding_user(socket.assigns[:current_user])
-
     socket
-    |> assign_new(:affiliate_options, fn -> Itsm.CommonCodes.get_select_options("계열사") end)
-    |> assign_new(:category_options, fn -> Itsm.CommonCodes.get_select_options("카테고리") end)
-    |> assign_new(:region_type_options, fn -> Itsm.CommonCodes.get_select_options("지역_유형") end)
-    |> assign_new(:infra_type_options, fn -> Itsm.CommonCodes.get_select_options("인프라_유형") end)
-    |> assign_new(:env_options, fn -> Itsm.CommonCodes.get_select_options("운영_구분") end)
-    |> assign_new(:location_options, fn -> Itsm.CommonCodes.get_select_options("장소") end)
-    |> assign(:crew_options, crew_options)
+    |> assign_new(:affiliate_options, fn -> CommonCodes.get_select_options("계열사") end)
+    |> assign_new(:category_options, fn -> CommonCodes.get_select_options("카테고리") end)
+    |> assign_new(:region_type_options, fn -> CommonCodes.get_select_options("지역_유형") end)
+    |> assign_new(:infra_type_options, fn -> CommonCodes.get_select_options("인프라_유형") end)
+    |> assign_new(:env_options, fn -> CommonCodes.get_select_options("운영_구분") end)
+    |> assign_new(:location_options, fn -> CommonCodes.get_select_options("장소") end)
+    |> assign_new(:crew_options, fn ->
+      Itsm.Crews.options_excluding_user(socket.assigns[:current_user])
+    end)
   end
 
   defp save_asset(socket, :edit, asset_params) do

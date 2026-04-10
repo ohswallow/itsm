@@ -11,7 +11,9 @@
     <:col :let={{_id, request}} label={gettext("Description")}>
       <div class="w-[90px] truncate">{request.description}</div>
     </:col>
-    <:col :let={{_id, request}} label={gettext("Environment")}>{request.env}</:col>
+    <:col :let={{_id, request}} label={gettext("Environment")}>
+      <.common_code_label group="운영_구분" code={request.env} />
+    </:col>
     <:col :let={{id, request}} label={gettext("Due Date")}>
       <div id={"due_date_#{id}"} phx-hook="LocalTime.ToLocale" utc-value={request.due_date} />
     </:col>

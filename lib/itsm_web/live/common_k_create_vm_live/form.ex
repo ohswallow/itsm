@@ -8,6 +8,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   alias Itsm.Service.Request
   alias Itsm.Crews
   alias ItsmWeb.LiveUtils
+  alias Itsm.CommonCodes
 
   def mount(_params, _session, socket) do
     {:ok,
@@ -20,8 +21,8 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
 
   def handle_params(%{"id" => id} = params, _uri, socket) do
     if(connected?(socket)) do
-      Itsm.Utils.subscribe(Request, id)
-      Itsm.Utils.subscribes(Request)
+      Itsm.Utils.subscribe(Requests, id)
+      Itsm.Utils.subscribes(Requests)
     end
 
     {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
@@ -90,8 +91,8 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     save_request(socket, socket.assigns.live_action, params)
   end
 
-  def handle_info({:pubsub, {user, event, item}}, socket) do
-    handle_pubsub(user, event, item, socket)
+  def handle_info({:pubsub, {action_user, event, item}}, socket) do
+    handle_pubsub(action_user, event, item, socket)
   end
 
   def handle_info(_event, socket), do: {:noreply, socket}
@@ -99,13 +100,13 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   defp assign_new_options(socket) do
     socket
     |> assign_new(:crew_options, fn -> Accounts.crew_ids_names(socket.assigns.current_user) end)
-    |> assign_new(:env_options, fn -> Itsm.CommonCodes.get_select_options("운영_구분") end)
-    |> assign_new(:group_code_options, fn -> Itsm.CommonCodes.get_select_options("운영체제") end)
-    |> assign_new(:location_options, fn -> Itsm.CommonCodes.get_select_options("장소") end)
+    |> assign_new(:env_options, fn -> CommonCodes.get_select_options("운영_구분") end)
+    |> assign_new(:group_code_options, fn -> CommonCodes.get_select_options("운영체제") end)
+    |> assign_new(:location_options, fn -> CommonCodes.get_select_options("장소") end)
     |> assign_new(:os_version_options, fn ->
       %{
-        "리눅스" => Itsm.CommonCodes.get_select_options("리눅스"),
-        "윈도우" => Itsm.CommonCodes.get_select_options("윈도우")
+        "리눅스" => CommonCodes.get_select_options("리눅스"),
+        "윈도우" => CommonCodes.get_select_options("윈도우")
       }
     end)
   end
@@ -202,12 +203,12 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   defp format_file_size(bytes) when bytes < 1024 * 1024, do: "#{round(bytes / 1024)} KB"
   defp format_file_size(bytes), do: "#{round(bytes / (1024 * 1024))} MB"
 
-  defp handle_pubsub(user, event, item, socket) do
+  defp handle_pubsub(action_user, event, item, socket) do
     opts = [context_key: :request]
-    {:noreply, socket |> check_conflict(user, event, item, opts)}
+    {:noreply, socket |> check_conflict(action_user, event, item, opts)}
   end
 
-  defp check_conflict(socket, user, event, item, opts) do
+  defp check_conflict(socket, action_user, event, item, opts) do
     resource = socket.assigns[opts[:context_key]]
     current_id = if resource, do: to_string(resource.id), else: nil
 
@@ -216,7 +217,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
 
       socket
       |> assign(:conflict, true)
-      |> assign(:conflict_msg, "#{user.display_name}님이 데이터를 #{msg}했습니다.")
+      |> assign(:conflict_msg, "#{action_user.display_name}님이 데이터를 #{msg}했습니다.")
     else
       socket
     end

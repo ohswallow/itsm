@@ -15,12 +15,24 @@
   >
     <:col :let={{_id, asset}} label={gettext("Name")}>{asset.name}</:col>
     <:col :let={{_id, asset}} label={gettext("Description")}>{asset.description}</:col>
-    <:col :let={{_id, asset}} label={gettext("Affiliate")}>{asset.affiliate}</:col>
-    <:col :let={{_id, asset}} label={gettext("Category")}>{asset.category}</:col>
-    <:col :let={{_id, asset}} label={gettext("Region Type")}>{asset.region_type}</:col>
-    <:col :let={{_id, asset}} label={gettext("Infra Type")}>{asset.infra_type}</:col>
-    <:col :let={{_id, asset}} label={gettext("Environment")}>{asset.env}</:col>
-    <:col :let={{_id, asset}} label={gettext("Location")}>{asset.location}</:col>
+    <:col :let={{_id, asset}} label={gettext("Affiliate")}>
+      <.common_code_label group="계열사" code={asset.affiliate} />
+    </:col>
+    <:col :let={{_id, asset}} label={gettext("Category")}>
+      <.common_code_label group="카테고리" code={asset.category} />
+    </:col>
+    <:col :let={{_id, asset}} label={gettext("Region Type")}>
+      <.common_code_label group="지역_유형" code={asset.region_type} />
+    </:col>
+    <:col :let={{_id, asset}} label={gettext("Infra Type")}>
+      <.common_code_label group="인프라_유형" code={asset.infra_type} />
+    </:col>
+    <:col :let={{_id, asset}} label={gettext("Environment")}>
+      <.common_code_label group="운영_구분" code={asset.env} />
+    </:col>
+    <:col :let={{_id, asset}} label={gettext("Location")}>
+      <.common_code_label group="장소" code={asset.location} />
+    </:col>
     <:col :let={{_id, asset}} label={gettext("Is Dmz Zone")}>{asset.is_dmz_zone}</:col>
     <:col :let={{_id, asset}} label={gettext("Service Crew")}>{asset.service_crew.name}</:col>
     <:col :let={{_id, asset}} label={gettext("System Crew")}>{asset.system_crew.name}</:col>
