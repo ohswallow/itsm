@@ -22,6 +22,14 @@ defmodule Itsm.Application do
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
+
+    :telemetry.attach(
+      "audit-logger",
+      [:itsm, :repo, :query],
+      &Itsm.AuditLogger.handle_event/4,
+      nil
+    )
+
     opts = [strategy: :one_for_one, name: Itsm.Supervisor]
     Supervisor.start_link(children, opts)
   end
