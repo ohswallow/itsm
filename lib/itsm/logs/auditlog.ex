@@ -6,8 +6,6 @@ defmodule Itsm.Logs.AuditLog do
     field :table_name, :string
     field :target_id, :string
     field :action, :string
-    field :target, :string
-    field :result, :map
     field :user_id, :string
     field :query_time_ms, :float
 
@@ -16,7 +14,7 @@ defmodule Itsm.Logs.AuditLog do
 
   def changeset(audit_log, attrs) do
     audit_log
-    |> cast(attrs, [:table_name, :target_id, :action, :target, :result, :user_id, :query_time_ms])
+    |> cast(attrs, [:table_name, :target_id, :action, :user_id, :query_time_ms])
     |> validate_required([:table_name, :target_id, :user_id])
   end
 end

@@ -20,8 +20,6 @@ defmodule Itsm.Repo.Migrations.CreateLogTables do
       add :table_name, :string, null: false
       add :target_id, :string, null: false
       add :action, :string, null: false
-      add :target, :text
-      add :result, :jsonb
       add :user_id, :string, null: false
       add :query_time_ms, :float
 
@@ -32,7 +30,7 @@ defmodule Itsm.Repo.Migrations.CreateLogTables do
       )
     end
 
-    create index(:access_logs, [:user_id, :inserted_at])
+    create index(:access_logs, [:inserted_at, :user_id])
     create index(:audit_logs, [:table_name, :target_id])
     create index(:audit_logs, [:user_id])
   end

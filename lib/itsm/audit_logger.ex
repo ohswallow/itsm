@@ -6,77 +6,23 @@ defmodule Itsm.AuditLogger do
     query = metadata.query
     source = metadata[:source]
 
-    unless source in ["audit_logs", "access_logs"] do
-      cond do
-        String.starts_with?(query, ["INSERT", "UPDATE", "DELETE"]) ->
-          query_time_ms = measurements.query_time / 1_000_000.0
-          rounded_time = Float.round(query_time_ms, 3)
-          cleaned_params = sanitize_params(metadata.params)
+    unless source in ["audit_logs", "access_logs"] or extract_action(query) in ["READ"] do
+      params = %{
+        table_name: source,
+        target_id: metadata |> extract_id() |> ensure_string_id(),
+        action: extract_action(query),
+        query_time_ms: Float.round(measurements.query_time / 1_000_000.0, 3),
+        user_id: Process.get(:current_user_id)
+      }
 
-          full_query = query |> interpolate_query(cleaned_params)
-
-          params = %{
-            table_name: source,
-            target_id: metadata |> extract_id() |> ensure_string_id(),
-            action: extract_action(query),
-            target: full_query,
-            result: %{params: cleaned_params},
-            query_time_ms: rounded_time,
-            user_id: Process.get(:current_user_id)
-          }
-
-          Task.start(fn -> save_audit_log(params) end)
-
-        true ->
-          :ok
-      end
+      Task.Supervisor.start_child(Itsm.TaskSupervisor, __MODULE__, :save_audit_log, [params])
     end
   end
 
-  defp sanitize_params(params) when is_list(params) do
-    Enum.map(params, fn
-      val when is_binary(val) and byte_size(val) == 16 ->
-        Ecto.UUID.cast!(val)
-
-      val when is_binary(val) ->
-        if String.printable?(val) do
-          val
-        else
-          "base64:" <> Base.encode64(val)
-        end
-
-      val when is_struct(val, DateTime) or is_struct(val, NaiveDateTime) ->
-        DateTime.to_iso8601(val)
-
-      val ->
-        val
-    end)
-  end
-
-  defp interpolate_query(query, params) do
-    params
-    |> Enum.with_index(1)
-    |> Enum.sort_by(fn {_, index} -> index end, :desc)
-    |> Enum.reduce(query, fn {val, index}, acc ->
-      formatted_val =
-        case val do
-          v when is_binary(v) ->
-            "'#{v}'"
-
-          %DateTime{} = v ->
-            "'#{DateTime.to_iso8601(v)}'"
-
-          v when is_map(v) or is_list(v) ->
-            "'#{String.replace(inspect(v), "'", "''")}'"
-
-          v ->
-            "#{v}"
-        end
-
-      String.replace(acc, "$#{index}", formatted_val)
-    end)
-    |> String.replace("\\\"", "\"")
-    |> String.replace(~r/,(?!\s)/, ", ")
+  def save_audit_log(params) do
+    %AuditLog{}
+    |> AuditLog.changeset(params)
+    |> Repo.insert()
   end
 
   defp extract_id(metadata) do
@@ -130,11 +76,5 @@ defmodule Itsm.AuditLogger do
       "DELETE" <> _ -> "DELETE"
       _ -> "UNKNOWN"
     end
-  end
-
-  defp save_audit_log(params) do
-    %AuditLog{}
-    |> AuditLog.changeset(params)
-    |> Repo.insert()
   end
 end

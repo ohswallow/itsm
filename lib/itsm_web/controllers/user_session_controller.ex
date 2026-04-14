@@ -25,13 +25,13 @@ defmodule ItsmWeb.UserSessionController do
     if user = Accounts.get_user_by_email_and_password(email, password) do
       conn
       |> put_current_user_id()
-      |> AccessLogger.maybe_log_access(user, :login_success)
+      |> AccessLogger.maybe_log_access(nil, user, :login_success)
       |> put_flash(:info, info)
       |> UserAuth.log_in_user(user, user_params)
     else
       # In order to prevent user enumeration attacks, don't disclose whether the email is registered.
       conn
-      |> AccessLogger.maybe_log_access(%{email: email}, :login_fail)
+      |> AccessLogger.maybe_log_access(nil, %{email: email}, :login_fail)
       |> put_flash(:error, "Invalid email or password")
       |> put_flash(:email, String.slice(email, 0, 160))
       |> redirect(to: ~p"/users/log_in")
@@ -41,7 +41,7 @@ defmodule ItsmWeb.UserSessionController do
   def delete(conn, _params) do
     conn
     |> put_current_user_id()
-    |> AccessLogger.maybe_log_access(conn.assigns[:current_user], :log_out)
+    |> AccessLogger.maybe_log_access(nil, conn.assigns[:current_user], :log_out)
     |> put_flash(:info, "Logged out successfully.")
     |> UserAuth.log_out_user()
   end

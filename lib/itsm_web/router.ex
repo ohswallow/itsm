@@ -74,7 +74,8 @@ defmodule ItsmWeb.Router do
     live_session :require_authenticated_user,
       on_mount: [
         {ItsmWeb.UserAuth, :ensure_authenticated},
-        {ItsmWeb.UserAuth, :set_locale}
+        {ItsmWeb.UserAuth, :set_locale},
+        {ItsmWeb.UserAuth, :log_menu_access}
       ],
       layout: {ItsmWeb.Layouts, :default} do
       live "/users/settings", UserSettingsLive, :edit
@@ -143,7 +144,8 @@ defmodule ItsmWeb.Router do
     live_session :require_admin_user,
       on_mount: [
         {ItsmWeb.UserAuth, :ensure_is_admin_authenticated},
-        {ItsmWeb.UserAuth, :set_locale}
+        {ItsmWeb.UserAuth, :set_locale},
+        {ItsmWeb.UserAuth, :log_menu_access}
       ],
       layout: {ItsmWeb.Layouts, :admin} do
       live "/", Admin.CategoryLive.Index, :index
@@ -205,7 +207,6 @@ defmodule ItsmWeb.Router do
     live_session :current_user,
       on_mount: [
         {ItsmWeb.UserAuth, :mount_current_user},
-        # 추가된 부분
         {ItsmWeb.UserAuth, :set_locale}
       ],
       layout: {ItsmWeb.Layouts, :default} do
