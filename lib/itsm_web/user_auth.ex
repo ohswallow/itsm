@@ -208,11 +208,39 @@ defmodule ItsmWeb.UserAuth do
     end
   end
 
+  def on_mount(:log_menu_access, _params, session, socket) do
+    if Phoenix.LiveView.connected?(socket) do
+      {:cont,
+       socket
+       |> Phoenix.LiveView.attach_hook(
+         :log_after_routing,
+         :handle_params,
+         &handle_path_logging(&1, &2, &3, session)
+       )}
+    else
+      {:cont, socket}
+    end
+  end
+
+  defp handle_path_logging(_params, url, socket, session) do
+    path = URI.parse(url).path || "/"
+
+    {:cont,
+     socket
+     |> Phoenix.Component.assign(:path, path)
+     |> tap(fn s ->
+       Itsm.AccessLogger.maybe_log_access(s, session, s.assigns[:current_user], :menu_view)
+     end)}
+  end
+
   defp mount_current_user(socket, session) do
-    Phoenix.Component.assign_new(socket, :current_user, fn ->
-      if user_token = session["user_token"] do
-        Accounts.get_user_by_session_token(user_token)
-      end
+    socket
+    |> Phoenix.Component.assign_new(:current_user, fn ->
+      if user_token = session["user_token"], do: Accounts.get_user_by_session_token(user_token)
+    end)
+    |> then(fn %{assigns: %{current_user: user}} = socket ->
+      if user, do: Process.put(:current_user_id, user.id)
+      socket
     end)
   end
 

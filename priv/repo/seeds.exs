@@ -19,6 +19,7 @@ alias Itsm.Common.CommonCode
 
 # alias Itsm.Service.Approval
 # alias Itsm.Service.Request
+Process.put(:current_user_id, "seeds")
 
 mike =
   %User{}

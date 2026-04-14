@@ -17,11 +17,20 @@ defmodule Itsm.Application do
       # {Itsm.Worker, arg},
       # Start to serve requests, typically the last entry
       ItsmWeb.Endpoint,
-      Itsm.CommonCodeCache
+      Itsm.CommonCodeCache,
+      {Task.Supervisor, name: Itsm.TaskSupervisor}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
+
+    :telemetry.attach(
+      "audit-logger",
+      [:itsm, :repo, :query],
+      &Itsm.AuditLogger.handle_event/4,
+      nil
+    )
+
     opts = [strategy: :one_for_one, name: Itsm.Supervisor]
     Supervisor.start_link(children, opts)
   end
