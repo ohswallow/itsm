@@ -75,7 +75,8 @@ defmodule ItsmWeb.Router do
       on_mount: [
         {ItsmWeb.UserAuth, :ensure_authenticated},
         {ItsmWeb.UserAuth, :set_locale},
-        {ItsmWeb.UserAuth, :log_menu_access}
+        {ItsmWeb.UserAuth, :log_menu_access},
+        {ItsmWeb.PathProvider, :set_current_path_on_assigns}
       ],
       layout: {ItsmWeb.Layouts, :default} do
       live "/users/settings", UserSettingsLive, :edit
@@ -145,7 +146,8 @@ defmodule ItsmWeb.Router do
       on_mount: [
         {ItsmWeb.UserAuth, :ensure_is_admin_authenticated},
         {ItsmWeb.UserAuth, :set_locale},
-        {ItsmWeb.UserAuth, :log_menu_access}
+        {ItsmWeb.UserAuth, :log_menu_access},
+        {ItsmWeb.PathProvider, :set_current_path_on_assigns}
       ],
       layout: {ItsmWeb.Layouts, :admin} do
       live "/", Admin.CategoryLive.Index, :index
