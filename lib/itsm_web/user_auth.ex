@@ -224,20 +224,11 @@ defmodule ItsmWeb.UserAuth do
        |> Phoenix.LiveView.attach_hook(
          :log_after_routing,
          :handle_params,
-         fn _params, url, socket -> handle_path_logging(url, socket) end
+         fn _params, _url, socket -> {:cont, Itsm.AccessLogger.save_use_supervisor(socket)} end
        )}
     else
       {:cont, socket}
     end
-  end
-
-  defp handle_path_logging(url, socket) do
-    path = URI.parse(url).path || "/"
-
-    {:cont,
-     socket
-     |> Phoenix.Component.assign(:path, path)
-     |> Itsm.AccessLogger.save_use_supervisor()}
   end
 
   defp mount_current_user(socket, session) do

@@ -22,7 +22,7 @@ defmodule Itsm.AccessLogger do
       Itsm.TaskSupervisor,
       __MODULE__,
       :save_access_log,
-      [Map.put(access_log, :path, access_log[:path] || socket.assigns[:path] || "/")]
+      [Map.put(access_log, :path, access_log[:path] || socket.assigns[:current_path] || "/")]
     )
 
     socket
@@ -33,7 +33,7 @@ defmodule Itsm.AccessLogger do
       Itsm.TaskSupervisor,
       __MODULE__,
       :save_access_log,
-      [Map.put(socket.assigns[:access_log] || %{}, :path, socket.assigns[:path] || "/")]
+      [Map.put(socket.assigns[:access_log] || %{}, :path, socket.assigns[:current_path] || "/")]
     )
 
     socket
