@@ -23,10 +23,20 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
       Itsm.Utils.subscribes(Requests)
     end
 
+    request =
+      Requests.get_request!(id)
+      |> Requests.with_assoc([
+        :category,
+        :attachments,
+        requestor_crew: [:users],
+        assignee_crew: [:users],
+        crew_references: [crew: [:users]]
+      ])
+
     {:noreply,
      socket
      |> assign(:page_title, "Show Request")
-     |> assign(:request, Requests.get_request!(id))
+     |> assign(:request, request)
      |> assign(:selected_attachment, nil)
      |> stream(:comments, Comments.list_comments(Requests.get_request!(id)), reset: true)}
   end

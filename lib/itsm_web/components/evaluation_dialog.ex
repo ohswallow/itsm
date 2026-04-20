@@ -21,7 +21,7 @@ defmodule ItsmWeb.EvaluationDialog do
         {@title}
         <:subtitle>Use this form to manage evaluation records in your database.</:subtitle>
       </.header>
-
+      
       <.simple_form
         for={@form}
         id="evaluation-form"
@@ -43,10 +43,8 @@ defmodule ItsmWeb.EvaluationDialog do
           >
           </div>
         </fieldset>
-        <.input field={@form[:comment]} type="textarea" label="Comment" phx-hook="MaintainHeight" />
-        <:actions>
-          <.button :if={!@conflict} phx-disable-with="Saving...">Save Evaluation</.button>
-        </:actions>
+         <.input field={@form[:comment]} type="textarea" label="Comment" phx-hook="MaintainHeight" />
+        <:actions><.button phx-disable-with="Saving...">Save Evaluation</.button></:actions>
       </.simple_form>
     </div>
     """

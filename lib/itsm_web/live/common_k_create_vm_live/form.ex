@@ -37,41 +37,11 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     {:noreply, cancel_upload(socket, :attachment, ref)}
   end
 
-  def handle_event("validate", %{"request" => request_params}, socket) do
-    # LiveSelect tags 값을 옵션 맵으로 동기화 (label 유지를 위해)
-    referenced_crews_options =
-      cond do
-        # 태그가 있으면 → 옵션 맵 동기화
-        is_list(request_params["referenced_crews"]) ->
-          crews_id = request_params["referenced_crews"]
-          existing = socket.assigns.referenced_crews_options
-          existing_map = Map.new(existing, fn opt -> {opt.value, opt} end)
-
-          Enum.map(crews_id, fn id ->
-            case Map.get(existing_map, id) do
-              nil ->
-                crew = Crews.get_crew!(id)
-                %{label: crew.name, tag_label: crew.name, value: id}
-
-              opt ->
-                opt
-            end
-          end)
-
-        # 모든 태그 삭제됨 → 빈 리스트
-        Map.has_key?(request_params, "referenced_crews_empty_selection") ->
-          []
-
-        # 그 외 (다른 필드 변경) → 기존 유지
-        true ->
-          socket.assigns.referenced_crews_options
-      end
-
-    changeset = Requests.change_request(%Request{}, request_params)
+  def handle_event("validate", %{"request" => params}, socket) do
+    changeset = Requests.change_request(%Request{}, params)
 
     {:noreply,
      socket
-     |> assign(:referenced_crews_options, referenced_crews_options)
      |> assign(form: to_form(changeset, action: :validate))}
   end
 
@@ -118,50 +88,48 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     |> assign(:page_title, "New Request")
     |> assign(:category, category)
     |> assign(:request, %Request{})
-    |> assign(:referenced_crews_options, [])
     |> assign(:form, to_form(Requests.change_request(%Request{})))
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
-    request = Requests.get_request!(id)
-
-    # 기존 referenced crews를 옵션 맵으로 로드 (label 유지를 위해)
-    referenced_crews_options = Crews.list_live_select_crews(request)
+    request =
+      Requests.get_request!(id)
+      |> Requests.with_assoc(crew_references: [crew: [:users]])
+      |> Requests.assign_referenced_crews()
 
     socket
     |> assign(:page_title, "Edit Request")
     |> assign(:request, request)
-    |> assign(:referenced_crews_options, referenced_crews_options)
     |> assign(:form, to_form(Requests.change_request(request)))
   end
 
   defp apply_action(socket, :copy, %{"id" => id}) do
     request = Requests.get_request!(id)
 
-    referenced_crews_options = Crews.list_live_select_crews(request)
-
     socket
     |> assign(:page_title, "New Request")
     |> assign(:request, request)
-    |> assign(:referenced_crews_options, referenced_crews_options)
     |> assign(:form, to_form(Requests.change_request(request)))
   end
 
   defp save_request(socket, :edit, params) do
-    %{current_user: user, request: request} = socket.assigns
+    %{request: request} = socket.assigns
 
-    case Requests.update_request(user, request, params) do
-      {:ok, updated_request} ->
-        # reference 동기화 (기존 삭제 → 새로 생성)
-        Crews.sync_crew_references("Request", updated_request.id, params["referenced_crews"])
-
+    case Service.update_request(request, params) do
+      {:ok, request} ->
         {:noreply,
          socket
          |> put_flash(:info, "Request updated successfully")
          |> push_navigate(to: ~p"/common_k_create_vm/#{request}")}
 
-      {:error, %Ecto.Changeset{} = changeset} ->
+      {:error, :request, %Ecto.Changeset{} = changeset, _so_far_changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
+
+      {:error, step, _changeset, _so_far_changeset} ->
+        socket.assigns.form.source
+        |> Map.update!(:errors, &Enum.reject(&1, fn {k, _} -> k == :base end))
+        |> Ecto.Changeset.add_error(:base, LiveUtils.translate_error(step))
+        |> Map.put(:action, :validate)
     end
   end
 
@@ -190,13 +158,18 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
         changeset =
           socket.assigns.form.source
           |> Map.update!(:errors, &Enum.reject(&1, fn {k, _} -> k == :base end))
-          |> Ecto.Changeset.add_error(:base, LiveUtils.translate_step_error(step))
+          |> Ecto.Changeset.add_error(:base, LiveUtils.translate_error(step))
           |> Map.put(:action, :validate)
 
         {:noreply,
          socket
          |> assign(:form, to_form(changeset))}
     end
+  end
+
+  defp referenced_crews_value_mapper(value) do
+    %{name: name} = Crews.get_crew!(value)
+    %{label: name, value: value}
   end
 
   defp format_file_size(bytes) when bytes < 1024, do: "#{bytes} B"
