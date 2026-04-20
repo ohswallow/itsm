@@ -123,6 +123,30 @@
         --tw-ring-color: #0067AC;
     }
 
+    /* 사이드바 배경색 (국민은행 관리자 페이지 특유의 어두운 그레이/네이비 조합) */
+    .bg-kb-sidebar { @apply bg-[#2D3136]; }
+
+    /* 메뉴 활성화 상태 커스텀 */
+    .nav-active-item {
+        @apply bg-kb-yellow text-kb-dark-gray shadow-md;
+    }
+
+    /* 부드러운 호버 효과 */
+    .nav-hover-item {
+        @apply hover:bg-gray-700 hover:text-white transition-all duration-200;
+    }
+
+}
+
+/* 스크롤바 커스텀: 사이드바 내부 스크롤을 깔끔하게 */
+.no-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+.no-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.no-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-gray-600 rounded-full;
 }
 
 /* ==========================================================================
@@ -455,7 +479,6 @@
     .filter-link-btn {
         @apply btn-secondary !py-2 !px-4 text-sm flex items-center w-full justify-center
     }
-
 }
 
 
