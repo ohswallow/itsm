@@ -16,7 +16,7 @@ defmodule ItsmWeb.Admin.RequestLive.Show do
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:request, Requests.get_request!(id))}
+     |> assign(:request, Requests.get_request!(id) |> Requests.with_assoc(:category))}
   end
 
   def handle_info({:pubsub, {action_user, event, item}}, socket) do

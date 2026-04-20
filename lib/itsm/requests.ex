@@ -9,17 +9,9 @@ defmodule Itsm.Requests do
   # ==================================================
   # 조회
   # ==================================================
-
   def get_request!(id) do
     Request
     |> Repo.get!(id)
-    |> Repo.preload([
-      :category,
-      :attachments,
-      assignee_crew: [:users],
-      requestor_crew: [:users],
-      references: [crew: [:users]]
-    ])
   end
 
   def list_requests do
@@ -28,8 +20,12 @@ defmodule Itsm.Requests do
     |> Repo.preload(:category)
   end
 
-  def with_assoc(%Request{} = request, preloads) when is_list(preloads) do
+  def with_assoc(%Request{} = request, preloads) do
     Repo.preload(request, preloads)
+  end
+
+  def assign_referenced_crews(%Request{crew_references: crew_refs} = request) do
+    %{request | referenced_crews: Enum.map(crew_refs, & &1.crew_id)}
   end
 
   # ==================================================
@@ -65,26 +61,6 @@ defmodule Itsm.Requests do
       {:ok, request} ->
         request = Repo.preload(request, :category)
         Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :create_request, request})
-        {:ok, request}
-
-      {:error, _} = error ->
-        error
-    end
-  end
-
-  def update_request(
-        %User{id: user_id},
-        %Request{requestor_id: user_id} = request,
-        attrs
-      ) do
-    request
-    |> Request.changeset(attrs)
-    |> Repo.update()
-    |> case do
-      {:ok, request} ->
-        request = Repo.preload(request, :category)
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :update_request, request})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :update_request, request})
         {:ok, request}
 
       {:error, _} = error ->

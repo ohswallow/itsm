@@ -25,12 +25,6 @@ defmodule Itsm.Crews do
     |> Repo.preload(:leader)
   end
 
-  def list_crew_reference(resource_type, resource_id) do
-    CrewReference
-    |> where([r], r.resource_type == ^resource_type and r.resource_id == ^resource_id)
-    |> Repo.all()
-  end
-
   def filter_crews(params) do
     Crew
     |> join(:inner, [c], l in assoc(c, :leader))
@@ -97,6 +91,12 @@ defmodule Itsm.Crews do
     |> Repo.all()
   end
 
+  def list_crew_reference(repo, %_{id: id} = resource) do
+    CrewReference
+    |> where([r], r.resource_type == ^Utils.resource_name(resource) and r.resource_id == ^id)
+    |> repo.all()
+  end
+
   def change_crew(%Crew{} = crew, attrs \\ %{}) do
     Crew.changeset(crew, attrs)
   end
@@ -115,24 +115,14 @@ defmodule Itsm.Crews do
     end
   end
 
-  def create_crew_reference(attrs) do
-    %CrewReference{}
-    |> CrewReference.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  def create_crew_reference(repo, %_{id: resource_id} = module, %Crew{} = crew) do
-    %CrewReference{
-      resource_type: Utils.resource_name(module),
-      resource_id: resource_id,
-      crew: crew
-    }
-    |> repo.insert()
-  end
-
-  def create_crew_references(repo, %_{} = resource, crews) when is_list(crews) do
+  def create_crew_references(repo, %_{id: id} = resource, crews) when is_list(crews) do
     Enum.reduce_while(crews, {:ok, []}, fn crew, {:ok, acc} ->
-      create_crew_reference(repo, resource, crew)
+      %CrewReference{
+        resource_type: Utils.resource_name(resource),
+        resource_id: id,
+        crew: crew
+      }
+      |> repo.insert()
       |> case do
         {:ok, crew_reference} ->
           {:cont, {:ok, [crew_reference | acc]}}
@@ -142,24 +132,6 @@ defmodule Itsm.Crews do
       end
     end)
   end
-
-  def sync_crew_references(resource_type, resource_id, crews_id) when is_list(crews_id) do
-    # 1. 기존 reference 삭제
-    delete_crew_references(resource_type, resource_id)
-
-    # 2. 새 reference 생성
-    Enum.each(crews_id, fn crew_id ->
-      create_crew_reference(%{
-        resource_type: resource_type,
-        resource_id: resource_id,
-        crew_id: crew_id
-      })
-    end)
-
-    :ok
-  end
-
-  def sync_references(_resource_type, _resource_id, _), do: :ok
 
   def add_users(%Crew{} = crew, add_users, %User{} = action_user) when is_list(add_users) do
     crew = Repo.preload(crew, :users)
@@ -290,10 +262,4 @@ defmodule Itsm.Crews do
        do: :ok
 
   defp ensure_delete_auth(_crew, _target_user, _user), do: {:error, :unauthorized}
-
-  defp delete_crew_references(resource_type, resource_id) do
-    CrewReference
-    |> where([r], r.resource_type == ^resource_type and r.resource_id == ^resource_id)
-    |> Repo.delete_all()
-  end
 end

@@ -5,13 +5,11 @@ defmodule ItsmWeb.LiveUtils do
   require Logger
   alias Phoenix.LiveView
 
-  def translate_step_error(:approval), do: "Approval creation failed"
-  def translate_step_error(:attachment), do: "Attachment upload failed"
-
   def translate_error(reason, scope \\ nil, opt \\ nil)
 
   def translate_error(:approval, _scope, _opt), do: gettext("Approval creation failed.")
   def translate_error(:attachment, _scope, _opt), do: gettext("Attachment upload failed.")
+  def translate_error(:k_vms_required, _scope, _opt), do: gettext("minimum 1 VM must be inputed")
 
   def translate_error(:not_leader, :crew, opt) do
     case opt do

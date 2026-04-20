@@ -11,6 +11,8 @@ defmodule Itsm.Admin.Requests do
 
   defdelegate create_request(user, attrs \\ %{}), to: Itsm.Requests
 
+  defdelegate with_assoc(request, preloads), to: Itsm.Requests
+
   def update_request(%Request{} = request, attrs) do
     request
     |> Request.changeset(attrs)
