@@ -49,9 +49,11 @@ defmodule Itsm.Service.Request do
       where: [resource_type: "Request"],
       on_replace: :delete
 
-    has_many :references, Itsm.Crews.CrewReference,
+    has_many :crew_references, Itsm.Crews.CrewReference,
       foreign_key: :resource_id,
       where: [resource_type: "Request"]
+
+    field :referenced_crews, {:array, :binary_id}, virtual: true
 
     timestamps(type: :utc_datetime)
   end
