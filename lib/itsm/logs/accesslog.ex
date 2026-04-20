@@ -15,6 +15,5 @@ defmodule Itsm.Logs.AccessLog do
   def changeset(access_log, attrs) do
     access_log
     |> cast(attrs, [:user_id, :ip_address, :path, :action, :metadata])
-    |> validate_required([:user_id, :path, :action])
   end
 end

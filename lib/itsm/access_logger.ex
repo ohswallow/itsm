@@ -3,20 +3,40 @@ defmodule Itsm.AccessLogger do
   alias Itsm.Logs.AccessLog
 
   def maybe_log_access(conn_or_socket, session, user, action) do
-    log_access(conn_or_socket, session, get_log_subject(user), action)
+    access_log = log_access(conn_or_socket, session, get_log_subject(user), action)
+    save_use_supervisor(conn_or_socket, access_log)
   end
 
   def log_access(conn_or_socket, session, user_or_data, action) do
-    params = %{
+    %{
       user_id: extract_user_id(user_or_data),
       ip_address: extract_ip(conn_or_socket),
       path: extract_path(conn_or_socket),
       action: to_string(action),
       metadata: extract_metadata(conn_or_socket, session)
     }
+  end
 
-    Task.Supervisor.start_child(Itsm.TaskSupervisor, __MODULE__, :save_access_log, [params])
-    conn_or_socket
+  def save_use_supervisor(socket, access_log) do
+    Task.Supervisor.start_child(
+      Itsm.TaskSupervisor,
+      __MODULE__,
+      :save_access_log,
+      [Map.put(access_log, :path, access_log[:path] || socket.assigns[:path] || "/")]
+    )
+
+    socket
+  end
+
+  def save_use_supervisor(socket) do
+    Task.Supervisor.start_child(
+      Itsm.TaskSupervisor,
+      __MODULE__,
+      :save_access_log,
+      [Map.put(socket.assigns[:access_log] || %{}, :path, socket.assigns[:path] || "/")]
+    )
+
+    socket
   end
 
   def save_access_log(params) do
