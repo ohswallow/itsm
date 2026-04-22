@@ -1,7 +1,11 @@
+import  LocalTime  from './LocalTime';
+
 const Calendar = {};
 
 Calendar.DateGrid = {
   mounted() {
+    this.init();
+
     this.el.addEventListener("click", e => {
       const dateCell = e.target.closest("[data-date]");
       if (!dateCell || dateCell.hasAttribute("data-disabled")) return;
@@ -27,10 +31,33 @@ Calendar.DateGrid = {
       this.pushEventTo(this.el.getAttribute("phx-target"), "selected_date_time", { datetime: dt.toISOString() });
     });
   },
+  updated() {
+    this.init();
+  },
+
+  init() {
+    if (!this.el.querySelector(".today-active")) {
+      Calendar.setTodayDate(this.el);
+    }
+
+    const utcValue = this.el.getAttribute("utc-value");
+    const selectedDate = this.el.querySelector(".selected-date");
+    if (utcValue && !selectedDate) {
+      const rawDate = LocalTime.getValue(utcValue, "datetime");
+      const targetDate = new Date(rawDate);
+      const year = targetDate.getFullYear();
+      const month = String(targetDate.getMonth() + 1).padStart(2, "0");
+      const date = String(targetDate.getDate()).padStart(2, "0");
+      const targetDateString = `${year}-${month}-${date}`;
+      const targetElement = this.el.querySelector(`[data-date="${targetDateString}"]`);
+      targetElement?.classList.add(...Calendar.selectDateClass);
+    }
+  }
 };
 
 Calendar.Input = {
   mounted() {
+    LocalTime.renderElement(this.el);
     this.el.addEventListener("blur", e => {
       const [dt, ctx] = Calendar.getDtAndContext(this.el);
       if (e.target.value !== ctx.mInput.value || e.target.value !== ctx.hInput.value) {
@@ -58,12 +85,7 @@ Calendar.Toggle = {
     dateEls.forEach(el => Calendar.updateDateElementStatus(el));
 
     if (!popup.querySelector(".today-active")) {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-      const todayStr = `${year}-${month}-${day}`;
-      popup.querySelector(`[data-date="${todayStr}"]`)?.classList.add(...Calendar.todayDateClass);
+      Calendar.setTodayDate(popup);
     }
   }
 };
@@ -153,6 +175,15 @@ Calendar.updateTime =(input, dt) => {
   input.value = targetValue;
   input.setAttribute("utc-value", dt.toISOString());
   input.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+Calendar.setTodayDate = (e) => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  const todayStr = `${year}-${month}-${day}`;
+  e.querySelector(`[data-date="${todayStr}"]`)?.classList.add(...Calendar.todayDateClass);
 }
 
 Calendar.selectDateClass = ["bg-indigo-600", "text-white", "shadow-md", "selected-date"];
