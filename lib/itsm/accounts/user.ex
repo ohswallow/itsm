@@ -194,4 +194,28 @@ defmodule Itsm.Accounts.User do
       add_error(changeset, :current_password, "is not valid")
     end
   end
+
+  def changeset(user, attrs) do
+    user
+    |> cast(attrs, [
+      :email,
+      :password,
+      :employee_number,
+      :display_name,
+      :organization,
+      :organization_code,
+      :department,
+      :department_code,
+      :role
+    ])
+    |> validate_required([
+      :employee_number,
+      :display_name,
+      :organization,
+      :organization_code,
+      :department,
+      :department_code,
+      :role
+    ])
+  end
 end

@@ -3,14 +3,25 @@ defmodule Itsm.AuditLogger do
   alias Itsm.Logs.AuditLog
 
   def handle_event([:itsm, :repo, :query], measurements, metadata, _config) do
-    query = metadata.query
+    query = metadata[:query]
     source = metadata[:source]
 
-    unless source in ["audit_logs", "access_logs"] or extract_action(query) in ["READ"] do
+    is_success =
+      case metadata[:result] do
+        {:ok, _} -> true
+        {:error, _} -> false
+        _ -> false
+      end
+
+    action_type = extract_action(query)
+
+    unless source in ["audit_logs", "access_logs"] or (action_type == "READ" and is_success) do
+      action = if !is_success, do: "#{action_type}_FAILED", else: action_type
+
       params = %{
         table_name: source,
         target_id: metadata |> extract_id() |> ensure_string_id(),
-        action: extract_action(query),
+        action: action,
         query_time_ms: Float.round(measurements.query_time / 1_000_000.0, 3),
         user_id: Process.get(:current_user_id)
       }

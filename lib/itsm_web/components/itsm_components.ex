@@ -220,7 +220,7 @@ defmodule ItsmWeb.ItsmComponents do
             <input
               {@rests[:hour]}
               id={"#{@id}-selected_date_time-hour"}
-              name={"calendar_ui[#{@field.name}][hour]"}
+              name={"#{@field.form.name}[calendar_ui][#{@field.name}][hour]"}
               phx-hook="Calendar.Input"
               utc-value={@selected_date_time}
               type="number"
@@ -234,7 +234,7 @@ defmodule ItsmWeb.ItsmComponents do
             <input
               {@rests[:minute]}
               id={"#{@id}-selected_date_time-minute"}
-              name={"calendar_ui[#{@field.name}][minute]"}
+              name={"#{@field.form.name}[calendar_ui][#{@field.name}][minute]"}
               phx-hook="Calendar.Input"
               utc-value={@selected_date_time}
               type="number"

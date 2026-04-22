@@ -410,4 +410,52 @@ defmodule Itsm.Accounts do
     )
     |> Repo.all()
   end
+
+  def list_users, do: Repo.all(User)
+
+  def create_user(attrs \\ %{}) do
+    %User{}
+    |> User.changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, user} ->
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :create_user, user})
+        {:ok, user}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  def update_user(%User{} = user, attrs) do
+    user
+    |> User.changeset(attrs)
+    |> Repo.update()
+    |> case do
+      {:ok, user} ->
+        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :update_user, user})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :update_user, user})
+        {:ok, user}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  def delete_user(%{"id" => id} = attrs) do
+    Repo.delete(get_user!(id))
+    |> case do
+      {:ok, user} ->
+        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :delete_user, user})
+        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :delete_user, user})
+        {:ok, user}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  def change_user(%User{} = user, attrs \\ %{}) do
+    User.changeset(user, attrs)
+  end
 end

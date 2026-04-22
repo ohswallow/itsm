@@ -10,7 +10,7 @@
     |> Repo.insert()
     |> case do
       {:ok, <%= schema.singular %>} ->
-       Itsm.Utils.broadcasts(<%= inspect schema.alias %>, {attrs["current_user"], :create_<%= schema.singular %>, <%= schema.singular %>})
+       Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :create_<%= schema.singular %>, <%= schema.singular %>})
        {:ok, <%= schema.singular %>}
 
       {:error, changeset} ->
@@ -24,8 +24,8 @@
     |> Repo.update()
     |> case do
       {:ok, <%= schema.singular %>} ->
-       Itsm.Utils.broadcast(<%= inspect schema.alias %>, {attrs["current_user"], :update_<%= schema.singular %>, <%= schema.singular %>})
-       Itsm.Utils.broadcasts(<%= inspect schema.alias %>, {attrs["current_user"], :update_<%= schema.singular %>, <%= schema.singular %>})
+       Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :update_<%= schema.singular %>, <%= schema.singular %>})
+       Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :update_<%= schema.singular %>, <%= schema.singular %>})
        {:ok, <%= schema.singular %>}
 
       {:error, changeset} ->

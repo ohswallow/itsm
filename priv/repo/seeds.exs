@@ -645,3 +645,30 @@ bbbbb =
 
 %CommonCode{sort_order: 2, group_code: "역할", code: "감사자", label: "감사자", description: "감사자 권한입니다."}
 |> Repo.insert!()
+
+%CommonCode{
+  sort_order: 1,
+  group_code: "부서",
+  code: "883310",
+  label: "인프라시스템부",
+  description: "인프라시스템부 부서입니다."
+}
+|> Repo.insert!()
+
+%CommonCode{
+  sort_order: 2,
+  group_code: "부서",
+  code: "813219",
+  label: "정보보호부",
+  description: "정보보호부 부서입니다."
+}
+|> Repo.insert!()
+
+%CommonCode{
+  sort_order: 3,
+  group_code: "부서",
+  code: "813211",
+  label: "정보보호부",
+  description: "정보보호부 부서입니다."
+}
+|> Repo.insert!()

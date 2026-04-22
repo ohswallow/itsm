@@ -213,7 +213,7 @@ defmodule Mix.Tasks.Phx.Gen.Itsm.AdminHtml do
   field={@form[#{inspect(key)}]}
   label=#{label(key)}
   show_time
-  default_selected_date_time={@form[:inserted_at].value}
+  default_selected_date_time={@form[#{inspect(key)}].value}
 />)
 
       {key, :naive_datetime} ->

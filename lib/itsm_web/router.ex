@@ -152,6 +152,13 @@ defmodule ItsmWeb.Router do
       layout: {ItsmWeb.Layouts, :admin} do
       live "/", Admin.CategoryLive.Index, :index
 
+      live "/users", Admin.UserLive.Index, :index
+      live "/users/new", Admin.UserLive.Index, :new
+      live "/users/:id/edit", Admin.UserLive.Index, :edit
+
+      live "/users/:id", Admin.UserLive.Show, :show
+      live "/users/:id/show/edit", Admin.UserLive.Show, :edit
+
       live "/requests", Admin.RequestLive.Index, :index
       live "/requests/new", Admin.RequestLive.Index, :new
       live "/requests/:id/edit", Admin.RequestLive.Index, :edit
