@@ -44,7 +44,11 @@ defmodule ItsmWeb.LiveUtils do
     )
   end
 
-  def consume_attachments(%Phoenix.LiveView.Socket{} = socket, upload_key \\ :attachment) do
+  def build_attachment_consumer(%Phoenix.LiveView.Socket{} = socket, upload_key \\ :attachment) do
+    fn -> consume_attachments(socket, upload_key) end
+  end
+
+  defp consume_attachments(%Phoenix.LiveView.Socket{} = socket, upload_key) do
     dest_dir = Application.get_env(:itsm, :upload_path) || "C:\\uploads"
     File.mkdir_p!(dest_dir)
 

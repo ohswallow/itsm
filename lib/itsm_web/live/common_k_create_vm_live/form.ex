@@ -9,6 +9,9 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   alias Itsm.Crews
   alias ItsmWeb.LiveUtils
   alias Itsm.CommonCodes
+  alias Itsm.Attachments
+
+  import ItsmWeb.CommonKCreateVmLive.Components
 
   def mount(_params, _session, socket) do
     {:ok,
@@ -16,6 +19,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
      |> LiveUtils.allow_uploads()
      |> assign(:conflict, false)
      |> assign(:form, to_form(Requests.change_request(%Request{})))
+     |> assign(:selected_attachment, nil)
      |> assign_new_options()}
   end
 
@@ -61,6 +65,26 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     save_request(socket, socket.assigns.live_action, params)
   end
 
+  def handle_event("delete_attachment", %{"id" => id}, socket) do
+    %{current_user: current_user} = socket.assigns
+
+    case Attachments.delete_attachment(id, %{"current_user" => current_user}) do
+      {:ok, attachment} ->
+        {:noreply, stream_delete(socket, :attachments, attachment)}
+
+      {:error, _} ->
+        {:noreply, socket |> put_flash(:error, "Failed to delete attachment.")}
+    end
+  end
+
+  def handle_event("view_attachment", %{"id" => id, "filename" => filename}, socket) do
+    {:noreply, assign(socket, :selected_attachment, %{id: id, filename: filename})}
+  end
+
+  def handle_event("close_attachment", _, socket) do
+    {:noreply, assign(socket, :selected_attachment, nil)}
+  end
+
   def handle_info({:pubsub, {action_user, event, item}}, socket) do
     handle_pubsub(action_user, event, item, socket)
   end
@@ -97,10 +121,14 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
       |> Requests.with_assoc(crew_references: [crew: [:users]])
       |> Requests.assign_referenced_crews()
 
+    attachments = Attachments.get_list_attachments(request)
+
     socket
     |> assign(:page_title, "Edit Request")
     |> assign(:request, request)
     |> assign(:form, to_form(Requests.change_request(request)))
+    |> assign(:attachments_count, length(attachments))
+    |> stream(:attachments, attachments, reset: true)
   end
 
   defp apply_action(socket, :copy, %{"id" => id}) do
@@ -115,7 +143,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   defp save_request(socket, :edit, params) do
     %{request: request} = socket.assigns
 
-    case Service.update_request(request, params) do
+    case Service.update_request(request, LiveUtils.build_attachment_consumer(socket), params) do
       {:ok, request} ->
         {:noreply,
          socket
@@ -142,7 +170,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
            user,
            category,
            crews,
-           fn -> LiveUtils.consume_attachments(socket) end,
+           LiveUtils.build_attachment_consumer(socket),
            params
          ) do
       {:ok, request} ->

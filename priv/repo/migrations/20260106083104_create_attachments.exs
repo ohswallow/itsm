@@ -6,18 +6,15 @@ defmodule Itsm.Repo.Migrations.CreateAttachments do
       add :id, :binary_id, primary_key: true
       add :filename, :string
       add :local_path, :string
-      # add :content_type, :string
       add :file_type, :string
       add :byte_size, :integer
-
-      # Request와 연결 (삭제 시 파일 정보도 삭제되도록 on_delete: :delete_all)
-      # 다형성 컬럼으로 대체 ('26.01.06)
-      # add :request_id, references(:requests, type: :binary_id, on_delete: :delete_all)
+      add :status, :string, default: "active", null: false
 
       # 예: "Request", "Comment" 등
       add :resource_type, :string, null: false
       # 해당 테이블의 UUID
       add :resource_id, :binary_id, null: false
+      add :deleted_at, :utc_datetime
 
       timestamps(type: :utc_datetime)
     end

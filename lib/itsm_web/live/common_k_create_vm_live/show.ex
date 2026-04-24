@@ -9,6 +9,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   alias Itsm.Requests
   alias ItsmWeb.LiveUtils
   alias Itsm.Service
+  alias Itsm.Attachments
 
   def mount(_params, _session, socket) do
     {:ok,
@@ -21,23 +22,27 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
     if(connected?(socket)) do
       Itsm.Utils.subscribe(Requests, id)
       Itsm.Utils.subscribes(Requests)
+      Itsm.Utils.subscribes(Attachments)
     end
 
     request =
       Requests.get_request!(id)
       |> Requests.with_assoc([
         :category,
-        :attachments,
         requestor_crew: [:users],
         assignee_crew: [:users],
         crew_references: [crew: [:users]]
       ])
+
+    attachments = Attachments.get_list_attachments(request)
 
     {:noreply,
      socket
      |> assign(:page_title, "Show Request")
      |> assign(:request, request)
      |> assign(:selected_attachment, nil)
+     |> assign(:attachments_count, length(attachments))
+     |> stream(:attachments, attachments, reset: true)
      |> stream(:comments, Comments.list_comments(Requests.get_request!(id)), reset: true)}
   end
 
@@ -60,7 +65,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
     case Service.create_comment(
            request,
            current_user,
-           fn -> LiveUtils.consume_attachments(socket) end,
+           LiveUtils.build_attachment_consumer(socket),
            comment_params
          ) do
       {:ok, comment} ->
@@ -86,6 +91,15 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   end
 
   def handle_info(_event, socket), do: {:noreply, socket}
+
+  defp handle_pubsub(action_user, :delete_attachment = event, item, socket) do
+    opts = [resource_name: gettext("attachment"), stream_name: :attachments]
+
+    {:noreply,
+     socket
+     |> assign(:live_action, :index)
+     |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}
+  end
 
   defp handle_pubsub(
          action_user,

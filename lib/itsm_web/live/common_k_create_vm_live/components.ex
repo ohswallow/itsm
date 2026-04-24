@@ -1,5 +1,5 @@
 defmodule ItsmWeb.CommonKCreateVmLive.Components do
-  use ItsmWeb, :live_component
+  use ItsmWeb, :html
 
   alias Itsm.Workflow
   alias ItsmWeb.CustomComponents
@@ -122,38 +122,64 @@ defmodule ItsmWeb.CommonKCreateVmLive.Components do
     """
   end
 
+  attr :id, :string, required: true
+  attr :attachments_count, :integer, required: true
+  slot :inner_block, required: true
+
   def attachments_section(assigns) do
     ~H"""
     <div class="mt-8">
-      <h2 class="text-lg font-semibold text-zinc-700 mb-4">첨부파일 ({length(@attachments)})</h2>
+      <h2 class="text-lg font-semibold text-zinc-700 mb-4">첨부파일 ({@attachments_count})</h2>
       
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        <div
-          :for={attachment <- @attachments}
-          class="group relative border border-zinc-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-          phx-click="view_attachment"
-          phx-value-filename={attachment.filename}
-          phx-value-id={attachment.id}
-        >
-          <div class="aspect-square bg-zinc-100">
-            <img
-              src={~p"/attachments/download/#{attachment.id}"}
-              alt={attachment.filename}
-              class="w-full h-full object-cover"
-            />
-          </div>
+      <div id={@id} class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" phx-update="stream">
+        {render_slot(@inner_block)}
+      </div>
+    </div>
+    """
+  end
+
+  attr :id, :string, required: true
+  attr :attachment, :any, required: true, doc: "%Itsm.Attachments.attachment{}"
+  attr :live_action, :atom, default: :view
+
+  def attachment(assigns) do
+    ~H"""
+    <div id={@id} class="relative group">
+      <div
+        class="group relative border border-zinc-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+        phx-click="view_attachment"
+        phx-value-filename={@attachment.filename}
+        phx-value-id={@attachment.id}
+      >
+        <div class="aspect-square bg-zinc-100">
+          <img
+            src={~p"/attachments/download/#{@attachment.id}"}
+            alt={@attachment.filename}
+            class="w-full h-full object-cover"
+          />
+        </div>
+        
+        <div class="p-2 bg-white">
+          <p class="text-xs text-zinc-700 truncate">{@attachment.filename}</p>
           
-          <div class="p-2 bg-white">
-            <p class="text-xs text-zinc-700 truncate">{attachment.filename}</p>
-            
-            <p class="text-xs text-zinc-400">{format_file_size(attachment.byte_size)}</p>
-          </div>
-          
-          <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-            <.icon name="hero-magnifying-glass-plus" class="w-8 h-8 text-white" />
-          </div>
+          <p class="text-xs text-zinc-400">{format_file_size(@attachment.byte_size)}</p>
+        </div>
+        
+        <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          <.icon name="hero-magnifying-glass-plus" class="w-8 h-8 text-white" />
         </div>
       </div>
+      
+      <.button
+        :if={@live_action == :edit}
+        type="button"
+        class="top-2 right-2 p-1 bg-white/80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
+        phx-click="delete_attachment"
+        phx-value-id={@attachment.id}
+        data-confirm="정말로 이 첨부파일을 삭제하시겠습니까?"
+      >
+        <.icon name="hero-x-mark" class="w-6 h-6 text-red-600" />
+      </.button>
     </div>
     """
   end
