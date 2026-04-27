@@ -6,9 +6,17 @@
       vms={@request.common_k_create_vms}
     />
     <.attachments_section
-      :if={Enum.any?(@request.attachments)}
-      attachments={@request.attachments}
-    /> <.comments_section streams={@streams} />
+      :if={@attachments_count > 1}
+      id="attachments"
+      attachments_count={@attachments_count}
+    >
+      <.attachment
+        :for={{dom_id, attachment} <- @streams.attachments}
+        id={dom_id}
+        attachment={attachment}
+      />
+    </.attachments_section>
+     <.comments_section streams={@streams} />
     <.comment_form
       :if={@request.status not in [:closed, :rejected]}
       form={@form}

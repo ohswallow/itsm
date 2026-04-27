@@ -19,10 +19,10 @@ defmodule Itsm.Service do
         %User{} = user,
         %Category{} = category,
         crews,
-        handle_attachments,
+        consumer_fn,
         attrs \\ %{}
       )
-      when is_list(crews) and is_function(handle_attachments) do
+      when is_list(crews) and is_function(consumer_fn) do
     Multi.new()
     |> Multi.insert(:request, Requests.change_request(user, category, attrs))
     |> check_minimum_k_vms(attrs)
@@ -30,7 +30,7 @@ defmodule Itsm.Service do
       Approvals.create_approval(repo, request, user, attrs)
     end)
     |> Multi.run(:attachment, fn repo, %{request: request} ->
-      Attachments.create_attachments(repo, request, handle_attachments, attrs)
+      Attachments.create_attachments(repo, request, consumer_fn, attrs)
     end)
     |> Multi.run(:crew_reference, fn repo, %{request: request} ->
       Crews.create_crew_references(repo, request, crews)
@@ -50,10 +50,14 @@ defmodule Itsm.Service do
 
   def update_request(
         %Request{requestor_id: user_id} = request,
+        consumer_fn,
         %{"current_user" => %{id: user_id}} = attrs
       ) do
     Ecto.Multi.new()
     |> Ecto.Multi.update(:request, Request.changeset(request, attrs))
+    |> Multi.run(:attachment, fn repo, %{request: request} ->
+      Attachments.create_attachments(repo, request, consumer_fn, attrs)
+    end)
     |> sync_crew_references(request, attrs["referenced_crews"])
     |> Repo.transact()
     |> case do
@@ -71,13 +75,13 @@ defmodule Itsm.Service do
   def create_comment(
         resource,
         %User{} = user,
-        handle_attachments,
+        consumer_fn,
         attrs \\ %{}
       ) do
     Multi.new()
     |> Multi.insert(:comment, Comments.changeset_comment(resource, user, attrs))
     |> Multi.run(:attachments, fn repo, %{comment: comment} ->
-      Attachments.create_attachments(repo, comment, handle_attachments, attrs)
+      Attachments.create_attachments(repo, comment, consumer_fn, attrs)
     end)
     |> Repo.transact()
     |> case do
