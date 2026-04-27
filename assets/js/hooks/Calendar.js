@@ -27,7 +27,7 @@ Calendar.DateGrid = {
           Calendar.updateTime(ctx.mInput, dt);
         }
       }
-
+      Calendar.updateDateTime(ctx.sInput, dt);
       this.pushEventTo(this.el.getAttribute("phx-target"), "selected_date_time", { datetime: dt.toISOString() });
     });
   },

@@ -6,7 +6,7 @@
           <img src={~p"/images/itsm_banner.svg"} alt="KB ITSM" class="h-10 w-auto" />
         </a>
       </div>
-      
+
       <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
         <% current_path = assigns[:current_path] || ""
 
@@ -19,18 +19,20 @@
 
         # 헬퍼 함수: 현재 경로와 일치하면 active 스타일 반환
         get_link_class = fn path ->
-          if current_path == path or String.starts_with?(current_path, path <> "/"),
-            do: "#{struct_class} #{active_styles}",
-            else: "#{struct_class} #{inactive_styles}"
+          if current_path == path or String.starts_with?(current_path, path <> "/") or
+               (path == ~p"/boards" and String.starts_with?(current_path, "/posts")),
+             do: "#{struct_class} #{active_styles}",
+             else: "#{struct_class} #{inactive_styles}"
         end
 
         # 헬퍼 함수: 아이콘 색상 제어
         get_icon_class = fn path ->
-          if current_path == path or String.starts_with?(current_path, path <> "/"),
-            # 활성화 시 아이콘은 어두운 색
-            do: "w-5 h-5 mr-3 text-kb-dark-gray",
-            # 비활성화 시 노란색 -> 호버 시 흰색
-            else: "w-5 h-5 mr-3 text-kb-yellow group-hover:text-white"
+          if current_path == path or String.starts_with?(current_path, path <> "/") or
+               (path == ~p"/boards" and String.starts_with?(current_path, "/posts")),
+             # 활성화 시 아이콘은 어두운 색
+             do: "w-5 h-5 mr-3 text-kb-dark-gray",
+             # 비활성화 시 노란색 -> 호버 시 흰색
+             else: "w-5 h-5 mr-3 text-kb-yellow group-hover:text-white"
         end %>
         <.link navigate={~p"/categories"} class={get_link_class.(~p"/categories")}>
           <.icon name="hero-document-plus" class={get_icon_class.(~p"/categories")} /> {gettext(
@@ -48,7 +50,7 @@
           )}
         </.link>
         <div class="my-6 border-t border-gray-700/50"></div>
-        
+
         <.link navigate={~p"/delegations"} class={get_link_class.(~p"/delegations")}>
           <.icon name="hero-user-group" class={get_icon_class.(~p"/delegations")} /> {gettext(
             "Delegation"
@@ -62,11 +64,16 @@
             "Assets"
           )}
         </.link>
+        <.link navigate={~p"/boards"} class={get_link_class.(~p"/boards")}>
+          <.icon name="hero-list-bullet" class={get_icon_class.(~p"/boards")} /> {gettext(
+            "Boards"
+          )}
+        </.link>
         <div :if={@current_user && @current_user.role == "admin"} class="mt-8">
           <p class="px-4 text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">
             ADMIN SYSTEM
           </p>
-          
+
           <.link navigate={~p"/admin"} class={get_link_class.(~p"/admin")}>
             <.icon name="hero-shield-check" class={get_icon_class.(~p"/admin")} /> {gettext(
               "Admin Console"
@@ -74,7 +81,7 @@
           </.link>
         </div>
       </nav>
-      
+
       <div class="p-4 bg-[#24272b] border-t border-gray-700">
         <div class="flex items-center justify-between px-2 mb-4 bg-gray-800/50 rounded-full py-1.5 border border-gray-700">
           <% is_ko = Gettext.get_locale(ItsmWeb.Gettext) == "ko" %>
@@ -92,7 +99,7 @@
             EN
           </span>
         </div>
-        
+
         <div :if={@current_user} class="flex items-center justify-between px-2 pt-2">
           <div class="flex flex-col min-w-0">
             <span class="text-[10px] text-gray-500 font-bold uppercase">Authorized User</span>
@@ -100,7 +107,7 @@
               {@current_user.email}
             </span>
           </div>
-          
+
           <div class="flex gap-1">
             <.link
               href={~p"/users/settings"}
@@ -120,7 +127,7 @@
       </div>
     </div>
   </aside>
-  
+
   <main class="flex-1 p-8">
     <div class="max-w-6xl mx-auto"><.flash_group flash={@flash} /> {@inner_content}</div>
   </main>
