@@ -135,6 +135,26 @@
     .nav-hover-item {
         @apply hover:bg-gray-700 hover:text-white transition-all duration-200;
     }
+    /* KB 스타일의 슬림 스크롤바 */
+    .custom-scrollbar::-webkit-scrollbar {
+        height: 6px; /* 가로 스크롤 두께 */
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        @apply bg-kb-light-gray;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        @apply bg-gray-300 rounded-full;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        @apply bg-kb-yellow; /* 호버 시 KB 포인트 컬러 */
+    }
+
+    /* 텍스트 생략 유틸리티 강화 */
+    .truncate {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 
 }
 

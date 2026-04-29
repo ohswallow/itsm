@@ -463,43 +463,70 @@ defmodule ItsmWeb.CoreComponents do
       end
 
     ~H"""
-    <div class="table-wrapper card-base !p-0 overflow-hidden shadow-sm">
-      <table class="table-kb">
-        <thead>
-          <tr>
-            <th :for={col <- @col} class="text-left">{col[:label]}</th>
-            
-            <th :if={@action != []} class="text-right">설정</th>
-          </tr>
-        </thead>
-        
-        <tbody
-          id={@id}
-          phx-update={match?(%Phoenix.LiveView.LiveStream{}, @rows) && "stream"}
-        >
-          <tr :for={row <- @rows} id={@row_id && @row_id.(row)} class="group">
-            <td
-              :for={{col, i} <- Enum.with_index(@col)}
-              phx-click={@row_click && @row_click.(row)}
-              class={[@row_click && "cursor-pointer"]}
+    <div class="table-wrapper card-base !p-0 shadow-sm border-t-2 border-kb-yellow overflow-hidden">
+      <div class="w-full overflow-x-auto block custom-scrollbar">
+        <table class="table-kb min-w-max w-full table-auto border-collapse">
+          <thead>
+            <tr class="bg-kb-light-gray">
+              <th
+                :for={col <- @col}
+                class="p-3 font-bold text-kb-medium-gray border-b-2 border-kb-border-gray text-left border-r border-kb-border-gray/50 last:border-r-0"
+              >
+                <span class="px-2">{col[:label]}</span>
+              </th>
+              
+              <th
+                :if={@action != []}
+                class="p-3 text-center bg-kb-light-gray border-b-2 border-kb-border-gray sticky right-0 bg-kb-light-gray shadow-[-4px_0_4px_rgba(0,0,0,0.05)]"
+              >
+                <.icon
+                  name="hero-adjustments-horizontal"
+                  class="w-5 h-5 text-kb-medium-gray group-hover:rotate-90 transition-transform duration-300"
+                />
+              </th>
+            </tr>
+          </thead>
+          
+          <tbody
+            id={@id}
+            phx-update={match?(%Phoenix.LiveView.LiveStream{}, @rows) && "stream"}
+            class="bg-white"
+          >
+            <tr
+              :for={row <- @rows}
+              id={@row_id && @row_id.(row)}
+              class="group hover:bg-yellow-50/40 transition-colors"
             >
-              <div class="block">
-                <span class={[i == 0 && "font-bold text-kb-dark-gray"]}>
-                  {render_slot(col, @row_item.(row))}
-                </span>
-              </div>
-            </td>
-            
-            <td :if={@action != []} class="text-right whitespace-nowrap">
-              <div class="flex justify-end gap-3">
-                <span :for={action <- @action} class="btn-text">
-                  {render_slot(action, @row_item.(row))}
-                </span>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              <td
+                :for={{col, i} <- Enum.with_index(@col)}
+                phx-click={@row_click && @row_click.(row)}
+                class={[@row_click && "cursor-pointer"]}
+              >
+                <div class="block">
+                  <span class={[i == 0 && "font-bold text-kb-dark-gray"]}>
+                    {render_slot(col, @row_item.(row))}
+                  </span>
+                </div>
+              </td>
+              
+              <td
+                :if={@action != []}
+                class={[
+                  "sticky right-0 z-10 border-b border-kb-border-gray text-right whitespace-nowrap",
+                  "bg-white shadow-[-8px_0_10px_-5px_rgba(0,0,0,0.1)]",
+                  "group-hover:bg-[#FFF9E5]"
+                ]}
+              >
+                <div class="flex justify-end gap-3 px-2">
+                  <span :for={action <- @action} class="btn-text !text-xs">
+                    {render_slot(action, @row_item.(row))}
+                  </span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
     """
   end

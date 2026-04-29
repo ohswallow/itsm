@@ -92,6 +92,7 @@ defmodule ItsmWeb.ItsmComponents do
         >
           {@label}
         </d>
+        
         <div
           id={"datepicker-input-#{@id}"}
           class="flex items-center border rounded-lg px-3 py-2 cursor-pointer hover:border-indigo-500 bg-white"
@@ -121,11 +122,12 @@ defmodule ItsmWeb.ItsmComponents do
             format={if @show_time, do: "datetime", else: "date"}
           >
           </div>
-          <span class="text-gray-400">📅</span>
+           <span class="text-gray-400">📅</span>
         </div>
+        
         <.error :for={msg <- @errors}>{msg}</.error>
       </div>
-
+      
       <div
         {@rests[:popup]}
         id={"#{@id}-calendar-popup"}
@@ -155,9 +157,9 @@ defmodule ItsmWeb.ItsmComponents do
               ◀
             </button>
           </div>
-
+          
           <div class="font-bold text-lg">{"#{@view_date.year}년 #{@view_date.month}월"}</div>
-
+          
           <div class="flex gap-1">
             <button
               type="button"
@@ -181,7 +183,7 @@ defmodule ItsmWeb.ItsmComponents do
             </button>
           </div>
         </div>
-
+        
         <div
           {@rests[:grid]}
           id={"#{@id}-calendar-grid"}
@@ -195,7 +197,7 @@ defmodule ItsmWeb.ItsmComponents do
           <div :for={day_name <- ~w(일 월 화 수 목 금 토)} class="text-xs text-gray-400 pb-2">
             {day_name}
           </div>
-
+          
           <div
             :for={{date, index} <- Enum.with_index(@days)}
             {@rests[:date]}
@@ -211,7 +213,7 @@ defmodule ItsmWeb.ItsmComponents do
             {date.day}
           </div>
         </div>
-
+        
         <div
           :if={@show_time}
           class="flex items-center justify-center gap-2 mt-4 pt-4 border-t border-gray-100"
@@ -298,7 +300,7 @@ defmodule ItsmWeb.ItsmComponents do
             value={@results.params.search_columns}
           />
         </div>
-
+        
         <div class="md:col-span-6">
           <label class="form-label">검색</label>
           <.input
@@ -309,7 +311,7 @@ defmodule ItsmWeb.ItsmComponents do
             phx-debounce="300"
           />
         </div>
-
+        
         <div class="md:col-span-2 flex justify-end pb-1">
           <.link
             patch={@results.current_path}
@@ -329,6 +331,7 @@ defmodule ItsmWeb.ItsmComponents do
     <div class="grid grid-cols-3 items-center w-full mt-6">
       <div class="justify-self-start flex items-center">
         <div class="text-sm text-zinc-600">Total: {@results.total_count}</div>
+        
         <form phx-change="update-filters" phx-target={@target} class="ml-4">
           <input
             type="number"
@@ -339,6 +342,7 @@ defmodule ItsmWeb.ItsmComponents do
           />
         </form>
       </div>
+      
       <nav class="justify-self-center flex gap-2 items-center">
         <div class="pagination flex items-center">
           <.link
@@ -351,7 +355,6 @@ defmodule ItsmWeb.ItsmComponents do
           <span :if={@results.params.page <= 1} class="pagination-item pagination-item-disabled">
             &lt;
           </span>
-
           <div class="pagination flex items-center">
             <span
               :for={
@@ -375,7 +378,6 @@ defmodule ItsmWeb.ItsmComponents do
               >
                 ...
               </span>
-
               <.link
                 patch={"#{@results.current_path}?#{Plug.Conn.Query.encode(Map.put(@results.params, :page, page_num))}"}
                 class={[
@@ -393,7 +395,7 @@ defmodule ItsmWeb.ItsmComponents do
               </span>
             </span>
           </div>
-
+          
           <.link
             :if={@results.params.page < @results.total_pages}
             patch={"#{@results.current_path}?#{Plug.Conn.Query.encode(Map.put(@results.params, :page, @results.params.page + 1))}"}
@@ -418,9 +420,7 @@ defmodule ItsmWeb.ItsmComponents do
 
   def common_code_label(assigns) do
     ~H"""
-    <span data-common-code={"#{@group}:#{@code}"}>
-      {Itsm.CommonCodes.get_label(@group, @code)}
-    </span>
+    <span data-common-code={"#{@group}:#{@code}"}>{Itsm.CommonCodes.get_label(@group, @code)}</span>
     """
   end
 
@@ -494,27 +494,27 @@ defmodule ItsmWeb.ItsmComponents do
     ~H"""
     <div class={["lds-spinner", @class]}>
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
     </div>
     """
@@ -531,7 +531,7 @@ defmodule ItsmWeb.ItsmComponents do
     ~H"""
     <div phx-feedback-for={@field.name}>
       <.label for={@field.id}>{@label}</.label>
-
+      
       <LiveSelect.live_select
         field={@field}
         allow_clear={true}
@@ -572,5 +572,26 @@ defmodule ItsmWeb.ItsmComponents do
       %{} ->
         false
     end
+  end
+
+  attr :value, :string, required: true, doc: "복사할 전체 텍스트"
+  attr :label, :string, default: nil, doc: "툴팁 등에 표시할 이름 (예: ID, Email)"
+  attr :slice_range, :integer, default: 8
+
+  def copyable_text(assigns) do
+    assigns =
+      assign_new(assigns, :title, fn ->
+        if assigns[:label], do: "Click to copy #{assigns.label}", else: "Click to copy"
+      end)
+
+    ~H"""
+    <span
+      class="font-mono text-blue-600 cursor-pointer hover:text-blue-800 hover:underline"
+      title={@title}
+      phx-click={JS.dispatch("phx:copy", detail: %{text: @value})}
+    >
+      {String.slice(@value, 0, @slice_range)}
+    </span>
+    """
   end
 end

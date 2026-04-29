@@ -102,3 +102,45 @@ liveSocket.connect();
 // >> liveSocket.enableLatencySim(1000)  // enabled for duration of browser session
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket;
+
+// 전역 타이머 변수 (중복 클릭 방지용)
+let copyToastTimeout;
+
+window.addEventListener("phx:copy", (event) => {
+  if ("clipboard" in navigator) {
+    navigator.clipboard.writeText(event.detail.text).then(() => {
+      const toast = document.getElementById("copy-toast");
+      if (!toast) return;
+
+      // 이전 타이머가 있다면 초기화
+      if (copyToastTimeout) clearTimeout(copyToastTimeout);
+
+      // 1. 나타나기
+      toast.classList.remove("hidden"); // 일단 DOM에는 표시
+
+      // 브라우저가 hidden 제거를 렌더링한 후 애니메이션 클래스를 적용하기 위해 requestAnimationFrame 사용
+      requestAnimationFrame(() => {
+        // KB 스타일 애니메이션 시작 상태 제거
+        toast.classList.remove("translate-y-[-20px]", "opacity-0");
+        // 실제 노출 상태 클래스 추가 (필요시 스타일 추가 정의)
+        toast.classList.add("translate-y-0", "opacity-100");
+      });
+
+      // 2. 2.5초 후 사라지기 (금융권 알림은 조금 더 오래 보여주는 경향이 있음)
+      copyToastTimeout = setTimeout(() => {
+        // 사라지는 애니메이션 적용
+        toast.classList.add("opacity-0");
+        toast.classList.remove("opacity-100");
+
+        // 애니메이션이 끝난 후 hidden 처리 (duration-300 고려)
+        setTimeout(() => {
+            toast.classList.add("hidden", "translate-y-[-20px]");
+        }, 300);
+      }, 2500);
+
+    }).catch(err => {
+      console.error("KB Style Copy Toast Failed: ", err);
+      // 실패 시 로직 (예: 빨간색 토스트)을 여기에 추가할 수 있습니다.
+    });
+  }
+});

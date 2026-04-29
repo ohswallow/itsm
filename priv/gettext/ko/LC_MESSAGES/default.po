@@ -132,7 +132,7 @@ msgid "Only the creator can delete this delegation."
 msgstr "등록자만 이 위임을 삭제할 수 있습니다."
 
 msgid "Crew updated successfully"
-msgstr "Crew 변경이 성공하였습니다."
+msgstr "Crew 변경이 성공하였습니다"
 
 msgid "An unknown error occurred."
 msgstr "알 수 없는 오류가 발생했습니다."
@@ -141,7 +141,7 @@ msgid "New Delegation"
 msgstr "신규 대결"
 
 msgid "Listing Delegations"
-msgstr "대결 "
+msgstr "대결"
 
 msgid "Delete"
 msgstr "삭제"
@@ -260,7 +260,7 @@ msgid "Service Name"
 msgstr "서비스명"
 
 msgid "Is DMZ?"
-msgstr "DMZ 설치여부"
+msgstr "DMZ 설치여부?"
 
 msgid "Task Name"
 msgstr "작업명"
@@ -276,3 +276,24 @@ msgstr "한"
 
 msgid "EN"
 msgstr "영"
+
+msgid "Request Name"
+msgstr "요청명"
+
+msgid "Requestor Name"
+msgstr "요청자명"
+
+msgid "Reqeust Date"
+msgstr "요청일시"
+
+msgid "Status"
+msgstr "상태"
+
+msgid "Action Crew"
+msgstr "처리 Crew"
+
+msgid "Env"
+msgstr "환경"
+
+msgid "Listing Requests"
+msgstr "요청한 건"
