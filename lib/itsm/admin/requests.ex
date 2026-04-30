@@ -3,8 +3,6 @@ defmodule Itsm.Admin.Requests do
   alias Itsm.Repo
   alias Itsm.Service.Request
 
-  defdelegate list_requests, to: Itsm.Requests
-
   defdelegate get_request!(id), to: Itsm.Requests
 
   defdelegate change_request(request, attrs \\ %{}), to: Itsm.Requests

@@ -3,6 +3,7 @@ defmodule ItsmWeb.RequestLive.Index do
 
   alias Itsm.Requests
   alias Itsm.Service.Request
+  alias Itsm.Paging
 
   def mount(_params, _session, socket) do
     if connected?(socket), do: Itsm.Utils.subscribes(Requests)
@@ -10,12 +11,13 @@ defmodule ItsmWeb.RequestLive.Index do
     {:ok, stream(socket, :requests, [])}
   end
 
-  def handle_params(params, _url, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+  def handle_params(params, url, socket) do
+    {:noreply, apply_action(socket, socket.assigns.live_action, url, params)}
   end
 
-  def handle_event("delete", %{"id" => _id} = request_params, socket) do
-    %{current_user: user, request: request} = socket.assigns
+  def handle_event("delete", %{"id" => id} = request_params, socket) do
+    %{current_user: user} = socket.assigns
+    request = Requests.get_request!(id)
 
     {:ok, request} = Requests.delete_request(user, request, request_params)
 
@@ -30,19 +32,28 @@ defmodule ItsmWeb.RequestLive.Index do
     {:noreply, socket}
   end
 
-  defp apply_action(socket, :index, _params) do
+  defp apply_action(socket, :index, url, params) do
+    value =
+      Paging.search_and_pagination(
+        params,
+        url,
+        Request,
+        [
+          :title,
+          :description,
+          :env,
+          :requestor_name
+        ],
+        [:category, :requestor, :assignee_crew]
+      )
+
     socket
     |> assign(:page_title, "Listing Requests")
-    |> stream(:requests, Requests.list_requests(), reset: true)
+    |> assign(:results, value.results)
+    |> stream(:requests, value.entries, reset: true)
   end
 
-  defp apply_action(socket, :new, _params) do
-    socket
-    |> assign(:page_title, "New Requests")
-    |> assign(:request, %Request{})
-  end
-
-  defp apply_action(socket, :edit, %{"id" => id}) do
+  defp apply_action(socket, :edit, _url, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Requests")
     |> assign(:request, Requests.get_request!(id))

@@ -14,12 +14,6 @@ defmodule Itsm.Requests do
     |> Repo.get!(id)
   end
 
-  def list_requests do
-    Request
-    |> Repo.all()
-    |> Repo.preload(:category)
-  end
-
   def with_assoc(%Request{} = request, preloads) do
     Repo.preload(request, preloads)
   end
