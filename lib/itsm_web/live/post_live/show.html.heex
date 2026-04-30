@@ -1,0 +1,72 @@
+<.header>
+  {assigns[:board_name] || "Not Found"} Post {@post.id}
+  <:subtitle>This is a post record from your database.</:subtitle>
+  <:actions>
+    <.link
+      patch={~p"/posts/#{@post}/show/edit?board_id=#{assigns[:board_id] || ""}"}
+      phx-click={JS.push_focus()}
+    >
+      <.button>Edit post</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title={gettext("Board")}>{@post.board.name}</:item>
+  <:item title={gettext("Title")}>{@post.title}</:item>
+  <:item title={gettext("Content")}>{@post.content}</:item>
+  <:item
+    :for={
+      %{"label" => label, "name" => name, "type" => type} = field <-
+        @post.board.metadata["fields"]
+    }
+    :if={Map.get(field, "is_hidden") != true}
+    title={label}
+  >
+    <span
+      :if={type == "date"}
+      id={"#{name}_#{@post.id}"}
+      phx-hook="LocalTime.ToLocale"
+      utc-value={@post.metadata[name]}
+    />
+    <span :if={type != "date"}>
+      {@post.metadata[name]}
+    </span>
+  </:item>
+  <:item title={gettext("Author")}>{@post.author.display_name}</:item>
+  <:item title={gettext("Inserted At")}>
+    <span
+      id={"post-inserted-at_#{@post.id}"}
+      phx-hook="LocalTime.ToLocale"
+      utc-value={@post.inserted_at}
+    />
+  </:item>
+  <:item title={gettext("Updated At")}>
+    <span
+      id={"post-updated-at_#{@post.id}"}
+      phx-hook="LocalTime.ToLocale"
+      utc-value={@post.updated_at}
+    />
+  </:item>
+</.list>
+
+<.back navigate={~p"/posts?board_id=#{assigns[:board_id] || ""}"}>Back to posts</.back>
+
+<.modal
+  :if={@live_action == :edit}
+  id="post-modal"
+  show
+  on_cancel={JS.patch(~p"/posts/#{@post}?board_id=#{assigns[:board_id] || ""}")}
+>
+  <.live_component
+    module={ItsmWeb.PostLive.FormComponent}
+    id={@post.id}
+    title={@page_title}
+    action={@live_action}
+    post={@post}
+    current_user={@current_user}
+    patch={~p"/posts/#{@post}?board_id=#{assigns[:board_id] || ""}"}
+    board_id={assigns[:board_id]}
+    board_name={assigns[:board_name]}
+  />
+</.modal>

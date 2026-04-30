@@ -16,6 +16,7 @@ alias Itsm.Accounts.User
 alias Itsm.Crews.Crew
 alias Itsm.Crews.CrewsUsers
 alias Itsm.Common.CommonCode
+alias Itsm.Boards.Board
 
 # alias Itsm.Service.Approval
 # alias Itsm.Service.Request
@@ -670,5 +671,150 @@ bbbbb =
   code: "813211",
   label: "정보보호부",
   description: "정보보호부 부서입니다."
+}
+|> Repo.insert!()
+
+notice_board =
+  %CommonCode{
+    sort_order: 1,
+    group_code: "게시판",
+    code: "공지사항",
+    label: "공지사항",
+    description: "공지사항 게시판입니다."
+  }
+  |> Repo.insert!()
+
+qna_board =
+  %CommonCode{
+    sort_order: 2,
+    group_code: "게시판",
+    code: "QNA",
+    label: "QNA",
+    description: "QNA 게시판입니다."
+  }
+  |> Repo.insert!()
+
+faq_board =
+  %CommonCode{
+    sort_order: 3,
+    group_code: "게시판",
+    code: "FAQ",
+    label: "FAQ",
+    description: "FAQ 게시판입니다."
+  }
+  |> Repo.insert!()
+
+free_board =
+  %CommonCode{
+    sort_order: 3,
+    group_code: "게시판",
+    code: "자유게시판",
+    label: "자유게시판",
+    description: "자유게시판 입니다."
+  }
+  |> Repo.insert!()
+
+%Board{
+  name: notice_board.label,
+  slug: notice_board.code,
+  description: notice_board.description,
+  metadata: %{
+    "fields" => [
+      %{
+        "name" => "is_pinned",
+        "is_hidden" => true,
+        "type" => "checkbox",
+        "label" => "전체 공지 (상단 고정)"
+      },
+      %{"name" => "expire_at", "is_hidden" => false, "type" => "date", "label" => "공지 종료일"},
+      %{
+        "name" => "notice_type",
+        "is_hidden" => true,
+        "type" => "select",
+        "label" => "공지 유형",
+        "options" => ["일반", "긴급", "이벤트"]
+      }
+    ],
+    "required" => ["notice_type"]
+  }
+}
+|> Repo.insert!()
+
+%Board{
+  name: qna_board.label,
+  slug: qna_board.code,
+  description: qna_board.description,
+  metadata: %{
+    "fields" => [
+      %{"name" => "is_secret", "is_hidden" => true, "type" => "checkbox", "label" => "비밀글 설정"},
+      %{
+        "name" => "password",
+        "is_hidden" => true,
+        "type" => "password",
+        "label" => "비밀번호 (비회원용)"
+      },
+      %{
+        "name" => "status",
+        "is_hidden" => false,
+        "type" => "text",
+        "label" => "처리 상태",
+        "default" => "pending"
+      }
+    ],
+    "required" => ["is_secret"]
+  }
+}
+|> Repo.insert!()
+
+%Board{
+  name: faq_board.label,
+  slug: faq_board.code,
+  description: faq_board.description,
+  metadata: %{
+    "fields" => [
+      %{
+        "name" => "category",
+        "is_hidden" => false,
+        "type" => "select",
+        "label" => "분류",
+        "options" => ["계정", "결제", "이용방법", "기타"]
+      },
+      %{
+        "name" => "keywords",
+        "is_hidden" => false,
+        "type" => "text",
+        "label" => "검색 태그 (쉼표 구분)"
+      },
+      %{
+        "name" => "priority",
+        "is_hidden" => true,
+        "type" => "integer",
+        "label" => "노출 순서",
+        "default" => 0
+      }
+    ],
+    "required" => ["category"]
+  }
+}
+|> Repo.insert!()
+
+%Board{
+  name: free_board.label,
+  slug: free_board.code,
+  description: free_board.description,
+  metadata: %{
+    "fields" => [
+      %{"name" => "tags", "is_hidden" => false, "type" => "text", "label" => "태그"},
+      %{
+        "name" => "allow_comment",
+        "is_hidden" => true,
+        "type" => "checkbox",
+        "label" => "댓글 허용",
+        "default" => true
+      },
+      %{"name" => "source_url", "is_hidden" => false, "type" => "text", "label" => "출처 URL"}
+    ],
+    "required" => []
+  }
 }
 |> Repo.insert!()

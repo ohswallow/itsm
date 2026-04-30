@@ -1,0 +1,59 @@
+<.header>
+  Listing Posts
+  <:actions>
+    <.link patch={~p"/admin/posts/new"}>
+      <.button>New Post</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.itsm_table_container results={assigns[:results]}>
+  <.table
+    id="posts"
+    rows={@streams.posts}
+    row_click={fn {_id, post} -> JS.navigate(~p"/admin/posts/#{post}") end}
+  >
+    <:col :let={{_id, post}} label={gettext("Board")}>{post.board.name}</:col>
+    <:col :let={{_id, post}} label={gettext("Title")}>{post.title}</:col>
+    <:col :let={{_id, post}} label={gettext("Content")}>{post.content}</:col>
+    <:col :let={{_id, post}} label={gettext("Metadata")}>
+      {Jason.encode!(post.metadata, pretty: true)}
+    </:col>
+    <:col :let={{_id, post}} label={gettext("Author")}>
+      {post.author.display_name}
+    </:col>
+    <:action :let={{_id, post}}>
+      <div class="sr-only">
+        <.link navigate={~p"/admin/posts/#{post}"}>Show</.link>
+      </div>
+      <.link patch={~p"/admin/posts/#{post}/edit"}>Edit</.link>
+    </:action>
+    <:action :let={{_id, post}}>
+      <.link
+        id={post.id}
+        phx-click={JS.push("delete", value: %{id: post.id})}
+        class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
+  </.table>
+</.itsm_table_container>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="post-modal"
+  show
+  on_cancel={JS.patch(~p"/admin/posts?#{assigns[:results][:params] || %{}}")}
+>
+  <.live_component
+    module={ItsmWeb.Admin.PostLive.FormComponent}
+    id={@post.id || :new}
+    title={@page_title}
+    action={@live_action}
+    post={@post}
+    current_user={@current_user}
+    patch={~p"/admin/posts?#{assigns[:results][:params] || %{}}"}
+  />
+</.modal>

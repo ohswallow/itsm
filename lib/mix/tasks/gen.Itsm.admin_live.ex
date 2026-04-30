@@ -111,7 +111,33 @@ defmodule Mix.Tasks.Phx.Gen.Itsm.AdminLive do
 
     {%Context{} = context, %Schema{} = schema} = Gen.Context.build(args)
 
-    context = %{context | schema: %{context.schema | generate?: false, migration?: false}}
+    assocs_input =
+      context.schema.assocs
+      |> Enum.map(fn {name, field, _old_module, table} ->
+        new_table = if table === :users, do: :accounts, else: table
+
+        module_name =
+          new_table
+          |> to_string()
+          |> String.split("_")
+          |> Enum.map_join(&String.capitalize/1)
+
+        assoc_name =
+          table |> to_string() |> String.trim_trailing("s") |> Phoenix.Naming.camelize()
+
+        {name, field, "Itsm.Admin.#{module_name}", new_table, "Itsm.#{module_name}.#{assoc_name}"}
+      end)
+
+    schema = Map.put(schema, :assocs_input, assocs_input)
+
+    context = %{
+      context
+      | schema: %{
+          context.schema
+          | generate?: false,
+            migration?: false
+        }
+    }
 
     Gen.Context.prompt_for_code_injection(context)
 

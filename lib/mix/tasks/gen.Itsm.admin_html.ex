@@ -184,9 +184,18 @@ defmodule Mix.Tasks.Phx.Gen.Itsm.AdminHtml do
 
   @doc false
   def inputs(%Schema{} = schema) do
+    input_attrs = schema |> render_input_attrs()
+    input_assocs = schema |> render_input_assocs()
+
+    input_attrs ++ input_assocs
+  end
+
+  defp render_input_attrs(schema) do
     schema.attrs
-    |> Enum.reject(fn {_key, type} -> type == :map end)
     |> Enum.map(fn
+      {key, :map} ->
+        ~s(<.input field={@form[#{inspect(key)}]} type="textarea" label=#{label(key, " (JSON)")}   />)
+
       {key, :integer} ->
         ~s(<.input field={@form[#{inspect(key)}]} type="number" label=#{label(key)} />)
 
@@ -246,6 +255,21 @@ defmodule Mix.Tasks.Phx.Gen.Itsm.AdminHtml do
     end)
   end
 
+  defp render_input_assocs(schema) do
+    schema.assocs
+    |> Enum.map(fn {field, fk, _module, _table} ->
+      ~s"""
+      <.input
+        field={@form[#{inspect(fk)}]}
+        type="select"
+        label=#{label(field)}
+        prompt="선택해주세요"
+        options={@#{Atom.to_string(field) <> "_options"}}
+      />
+      """
+    end)
+  end
+
   defp default_options({:array, :string}),
     do: Enum.map([1, 2], &{"Option #{&1}", "option#{&1}"})
 
@@ -257,6 +281,11 @@ defmodule Mix.Tasks.Phx.Gen.Itsm.AdminHtml do
   defp label(key) do
     humanized = ItsmWeb.LiveUtils.titleize(key)
     "{gettext(\"#{humanized}\")}"
+  end
+
+  defp label(key, add) do
+    humanized = ItsmWeb.LiveUtils.titleize(key)
+    "{gettext(\"#{humanized}\") <> \"#{add}\"}"
   end
 
   @doc false

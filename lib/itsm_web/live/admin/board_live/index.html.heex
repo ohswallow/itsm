@@ -1,0 +1,67 @@
+<.header>
+  Listing Boards
+  <:actions>
+    <.link patch={~p"/admin/boards/new"}>
+      <.button>New Board</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.itsm_table_container results={assigns[:results]}>
+  <.table
+    id="boards"
+    rows={@streams.boards}
+    row_click={fn {_id, board} -> JS.navigate(~p"/admin/boards/#{board}") end}
+  >
+    <:col :let={{_id, board}} label={gettext("Name")}>{board.name}</:col>
+    <:col :let={{_id, board}} label={gettext("Slug")}>{board.slug}</:col>
+    <:col :let={{_id, board}} label={gettext("Description")}>{board.description}</:col>
+    <:col :let={{_id, board}} label={gettext("Metadata")}>
+      <div class="flex flex-wrap gap-1">
+        <span
+          :for={field <- board.metadata["fields"] || []}
+          class="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md text-xs"
+        >
+          {field["label"]}
+        </span>
+        <span :if={is_nil(board.metadata["fields"])} class="text-gray-400 italic">
+          기본 필드
+        </span>
+      </div>
+    </:col>
+
+    <:action :let={{_id, board}}>
+      <div class="sr-only">
+        <.link navigate={~p"/admin/boards/#{board}"}>Show</.link>
+      </div>
+      <.link patch={~p"/admin/boards/#{board}/edit"}>Edit</.link>
+    </:action>
+    <:action :let={{_id, board}}>
+      <.link
+        id={board.id}
+        phx-click={JS.push("delete", value: %{id: board.id})}
+        class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
+  </.table>
+</.itsm_table_container>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="board-modal"
+  show
+  on_cancel={JS.patch(~p"/admin/boards?#{assigns[:results][:params] || %{}}")}
+>
+  <.live_component
+    module={ItsmWeb.Admin.BoardLive.FormComponent}
+    id={@board.id || :new}
+    title={@page_title}
+    action={@live_action}
+    board={@board}
+    current_user={@current_user}
+    patch={~p"/admin/boards?#{assigns[:results][:params] || %{}}"}
+  />
+</.modal>
