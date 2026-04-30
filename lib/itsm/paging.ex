@@ -111,8 +111,14 @@ defmodule Itsm.Paging do
   end
 
   defp build_options(default_columns) do
+    flattened_items =
+      Enum.flat_map(default_columns, fn
+        item when is_list(item) -> item
+        item -> [item]
+      end)
+
     [{"전체", ""}] ++
-      Enum.map(default_columns, fn col ->
+      Enum.map(flattened_items, fn col ->
         {flatten_label(col), flatten_value(col)}
       end)
   end

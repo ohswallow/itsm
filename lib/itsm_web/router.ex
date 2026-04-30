@@ -135,7 +135,16 @@ defmodule ItsmWeb.Router do
 
       get "/attachments/download/:id", AttachmentController, :download
 
-      # 관리자 기능
+      live "/boards", BoardLive.Index, :index
+
+      live "/boards/:id", BoardLive.Show, :show
+
+      live "/posts", PostLive.Index, :index
+      live "/posts/new", PostLive.Index, :new
+      live "/posts/:id/edit", PostLive.Index, :edit
+
+      live "/posts/:id", PostLive.Show, :show
+      live "/posts/:id/show/edit", PostLive.Show, :edit
     end
   end
 
@@ -205,6 +214,20 @@ defmodule ItsmWeb.Router do
 
       live "/assets/:id", Admin.AssetLive.Show, :show
       live "/assets/:id/show/edit", Admin.AssetLive.Show, :edit
+
+      live "/boards", Admin.BoardLive.Index, :index
+      live "/boards/new", Admin.BoardLive.Index, :new
+      live "/boards/:id/edit", Admin.BoardLive.Index, :edit
+
+      live "/boards/:id", Admin.BoardLive.Show, :show
+      live "/boards/:id/show/edit", Admin.BoardLive.Show, :edit
+
+      live "/posts", Admin.PostLive.Index, :index
+      live "/posts/new", Admin.PostLive.Index, :new
+      live "/posts/:id/edit", Admin.PostLive.Index, :edit
+
+      live "/posts/:id", Admin.PostLive.Show, :show
+      live "/posts/:id/show/edit", Admin.PostLive.Show, :edit
     end
   end
 

@@ -458,4 +458,10 @@ defmodule Itsm.Accounts do
   def change_user(%User{} = user, attrs \\ %{}) do
     User.changeset(user, attrs)
   end
+
+  def get_select_options() do
+    User
+    |> select([c], {c.display_name, c.id})
+    |> Repo.all()
+  end
 end

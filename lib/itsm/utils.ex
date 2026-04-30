@@ -48,6 +48,22 @@ defmodule Itsm.Utils do
     Phoenix.PubSub.subscribe(Itsm.PubSub, "#{get_topic(domain)}")
   end
 
+  def maybe_parse_json(attrs, key) do
+    metadata = attrs[Atom.to_string(key)] || attrs[key]
+
+    if is_binary(metadata) && metadata != "" do
+      case Jason.decode(metadata) do
+        {:ok, decoded} ->
+          Map.put(attrs, "metadata", decoded)
+
+        {:error, _} ->
+          attrs
+      end
+    else
+      attrs
+    end
+  end
+
   defp get_topic(%{__struct__: module}), do: extract_domain(module)
 
   defp get_topic(module) when is_atom(module) do
