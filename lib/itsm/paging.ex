@@ -2,6 +2,50 @@ defmodule Itsm.Paging do
   import Ecto.Query
   alias Itsm.Repo
 
+  @doc """
+  Ecto 쿼리를 기반으로 검색, 페이징, 그리고 최적화된 프리로드를 수행합니다.
+
+  이 함수는 `params`에서 페이지 번호와 검색어를 추출하고, 지정된 컬럼들에 대해 `ILIKE` 검색을 수행합니다.
+  관계형 데이터(Association) 검색이 필요한 경우 자동으로 조인을 생성하며, 프리로드 시 필요한 필드만
+  가져오도록 최적화합니다.
+
+  ## 매개변수
+  - `params`: LiveView의 `handle_params`나 컨트롤러에서 전달받은 파라미터 맵.
+    - `"page"`: 현재 페이지 (기본값: 1)
+    - `"page_size"`: 페이지당 항목 수 (기본값: 10)
+    - `"search"`: 검색어 문자열 (기본값: "")
+    - `"search_columns"`: 현재 선택된 검색 대상 컬럼 (기본값: `default_columns`)
+  - `url`: 현재 페이지의 URL (결과 맵의 `current_path` 생성용).
+  - `query_base`: 기본이 되는 Ecto 쿼리 또는 스키마 모듈 (예: `Post`).
+  - `default_columns`: 검색 가능하도록 허용할 컬럼 리스트.
+    - 단순 컬럼: `[:title]`
+    - 관계 컬럼: `[author: :display_name]` (자동으로 left_join 수행)
+    - 중첩 관계: `[author: [profile: :nickname]]` (Profile까지 조인)
+  - `preloads`: 결과 엔티티에 포함할 프리로드 설정.
+    - 최적화 로직이 포함되어 있어 `{assoc, [:field1, :field2]}` 형태로 특정 필드만 지정 가능합니다.
+
+  ## 반환 값
+  `%{entries: list(), results: map()}` 형태의 맵을 반환합니다.
+  - `entries`: 쿼리 결과 리스트 (스트림에 사용 가능).
+  - `results`: 테이블 컨테이너 컴포넌트(`<.itsm_table_container results={assigns[:results]}>`)에서 요구하는 메타데이터 맵.
+
+  """
+  @spec search_and_pagination(
+          params :: map(),
+          url :: String.t(),
+          query_base :: Ecto.Queryable.t(),
+          default_columns :: [atom() | {atom(), atom() | tuple()} | list()],
+          preloads :: list()
+        ) :: %{
+          entries: [struct()],
+          results: %{
+            total_pages: integer(),
+            total_count: integer(),
+            columns_options: [{String.t(), String.t()}],
+            current_path: String.t(),
+            params: map()
+          }
+        }
   def search_and_pagination(params, url, query_base, default_columns \\ [:name], preloads \\ []) do
     page = parse_integer(params["page"], 1)
     page_size = parse_integer(params["page_size"], 10)
