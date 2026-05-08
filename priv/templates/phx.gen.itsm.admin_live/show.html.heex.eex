@@ -10,18 +10,18 @@
 
 <.list><%= for {k, type} <- schema.attrs do %>
   <%= if type == :utc_datetime do %><:item title={<%= "gettext(\"#{ItsmWeb.LiveUtils.titleize(k)}\")" %>}>
-    <span id={"<%= schema.singular %>-<%= k %>_#{@<%= schema.singular %>.id}"} phx-hook="LocalTime.ToLocale" utc-value={@<%= schema.singular %>.<%= k %>} />
+    <span id={"<%= schema.singular %>-<%= k %>-#{@<%= schema.singular %>.id}"} phx-hook="LocalTime.ToLocale" utc-value={@<%= schema.singular %>.<%= k %>} />
   </:item><% else %><:item title={<%= "gettext(\"#{ItsmWeb.LiveUtils.titleize(k)}\")" %>}>{@<%= schema.singular %>.<%= k %>}</:item><% end %><% end %>
   <:item title={gettext("Inserted At")}>
     <span
-      id={"<%= schema.singular %>-inserted-at_#{@<%= schema.singular %>.id}"}
+      id={"<%= schema.singular %>-inserted-at-#{@<%= schema.singular %>.id}"}
       phx-hook="LocalTime.ToLocale"
       utc-value={@<%= schema.singular %>.inserted_at}
     />
   </:item>
   <:item title={gettext("Updated At")}>
     <span
-      id={"<%= schema.singular %>-updated-at_#{@<%= schema.singular %>.id}"}
+      id={"<%= schema.singular %>-updated-at-#{@<%= schema.singular %>.id}"}
       phx-hook="LocalTime.ToLocale"
       utc-value={@<%= schema.singular %>.updated_at}
     />

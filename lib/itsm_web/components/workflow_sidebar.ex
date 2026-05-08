@@ -38,7 +38,7 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
         <div class="text-center mb-5 pb-4 border-b border-gray-100">
           <.label>WorkFlow</.label>
         </div>
-        
+
         <div class="space-y-3">
           <.workflow_step
             :for={step <- @step_data}
@@ -74,10 +74,10 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
               {@step.index + 1}
           <% end %>
         </div>
-        
+
         <div><span class={step_label_class(@step.status)}>{@step.label}</span></div>
       </div>
-      
+
       <div class="text-right">
         <.step_info step={@step} resource={@resource} workflow_type={@workflow_type} />
       </div>
@@ -106,7 +106,7 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
     <div class="text-xs font-medium text-green-700">{@approval.approver_name}</div>
 
     <div
-      id={"approval_#{@status}_date_#{@approval.id}"}
+      id={"approval-#{@status}-date-#{@approval.id}"}
       class="text-xs text-green-500"
       phx-hook="LocalTime.ToLocale"
       format="MM/DD HH:mm"
@@ -146,7 +146,7 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
     <div class="text-xs font-medium text-red-700">{@approval.approver_name}</div>
 
     <div
-      id={"approval_#{@status}_date_#{@approval.id}"}
+      id={"approval-#{@status}-date-#{@approval.id}"}
       class="text-xs text-red-500"
       phx-hook="LocalTime.ToLocale"
       format="MM/DD HH:mm"

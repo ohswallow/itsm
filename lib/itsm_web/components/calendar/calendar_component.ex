@@ -13,7 +13,7 @@ defmodule ItsmWeb.CalendarComponent do
 
   def update(assigns, socket) do
     errors =
-      if assigns[:field] && assigns[:field][:errors], do: assigns[:field][:errors], else: []
+      if Phoenix.Component.used_input?(assigns[:field]), do: assigns[:field].errors, else: []
 
     {:ok,
      socket

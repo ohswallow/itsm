@@ -36,14 +36,14 @@
   <:item title={gettext("Author")}>{@post.author.display_name}</:item>
   <:item title={gettext("Inserted At")}>
     <span
-      id={"post-inserted-at_#{@post.id}"}
+      id={"post-inserted-at-#{@post.id}"}
       phx-hook="LocalTime.ToLocale"
       utc-value={@post.inserted_at}
     />
   </:item>
   <:item title={gettext("Updated At")}>
     <span
-      id={"post-updated-at_#{@post.id}"}
+      id={"post-updated-at-#{@post.id}"}
       phx-hook="LocalTime.ToLocale"
       utc-value={@post.updated_at}
     />

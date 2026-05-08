@@ -17,14 +17,14 @@
   <:item title={gettext("Is Active")}>{@common_code.is_active}</:item>
   <:item title={gettext("Inserted At")}>
     <span
-      id={"common_code-inserted-at-#{@common_code.id}"}
+      id={"common-code-inserted-at-#{@common_code.id}"}
       phx-hook="LocalTime.ToLocale"
       utc-value={@common_code.inserted_at}
     />
   </:item>
   <:item title={gettext("Updated At")}>
     <span
-      id={"common_code-updated-at-#{@common_code.id}"}
+      id={"common-code-updated-at-#{@common_code.id}"}
       phx-hook="LocalTime.ToLocale"
       utc-value={@common_code.updated_at}
     />

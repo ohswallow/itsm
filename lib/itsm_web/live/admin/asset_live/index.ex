@@ -28,27 +28,24 @@ defmodule ItsmWeb.Admin.AssetLive.Index do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
+    opts = [
+      default_columns: [
+        :env,
+        :name,
+        :description,
+        :location,
+        :category,
+        :affiliate,
+        :region_type,
+        :infra_type,
+        :is_dmz_zone,
+        [service_crew: :name, system_crew: :name]
+      ],
+      preloads: [service_crew: :name, system_crew: :name]
+    ]
+
     value =
-      Paging.search_and_pagination(
-        params,
-        url,
-        Asset,
-        [
-          :env,
-          :name,
-          :description,
-          :location,
-          :category,
-          :affiliate,
-          :region_type,
-          :infra_type,
-          :is_dmz_zone,
-          service_crew: :name,
-          system_crew: :name
-        ],
-        service_crew: :name,
-        system_crew: :name
-      )
+      Paging.search_and_pagination(Asset, params, url, opts)
 
     socket
     |> assign(:results, value.results)

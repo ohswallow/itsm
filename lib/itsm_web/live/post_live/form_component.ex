@@ -87,8 +87,6 @@ defmodule ItsmWeb.PostLive.FormComponent do
             <.itsm_calendar
               :if={field && field["type"] === "date"}
               field={
-                IO.inspect(label: "test2")
-
                 %Phoenix.HTML.FormField{
                   id: "post_metadata_#{field["name"]}",
                   form: @form[:metadata],
@@ -113,7 +111,6 @@ defmodule ItsmWeb.PostLive.FormComponent do
                   end)
               }
               :if={
-                IO.inspect(label: "test3")
                 val = Map.get(@form[:metadata], :value) || %{}
                 targetMap = if is_map(val), do: val, else: %{}
 
@@ -138,8 +135,6 @@ defmodule ItsmWeb.PostLive.FormComponent do
   end
 
   def handle_event("validate", %{"post" => post_params}, socket) do
-    IO.inspect(socket.assigns[:board_id])
-    IO.inspect(post_params["board_id"])
     selected_board = Itsm.Boards.get_board!(socket.assigns[:board_id] || post_params["board_id"])
     post = Map.put(socket.assigns.post, :board_id, selected_board.id)
 

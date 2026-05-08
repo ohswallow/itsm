@@ -28,15 +28,21 @@ defmodule ItsmWeb.Admin.PostLive.Index do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
-    value =
-      Paging.search_and_pagination(
-        params,
-        url,
-        Post,
-        [:title, :content, :metadata, [author: :display_name, board: :name]],
+    opts = [
+      default_columns: [
+        :title,
+        :content,
+        :metadata,
         author: :display_name,
         board: :name
-      )
+      ],
+      preloads: [author: :display_name, board: :name],
+      range_columns: [:updated_at, :inserted_at]
+    ]
+
+    value =
+      Post
+      |> Paging.search_and_pagination(params, url, opts)
 
     socket
     |> assign(:results, value.results)

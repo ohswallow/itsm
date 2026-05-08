@@ -95,9 +95,9 @@ Calendar.getContext = (container) => {
   const uniqueId = container.id.replace("datepicker-container-", "");
   return {
     uniqueId,
-    hInput: document.getElementById(`${uniqueId}-selected_date_time-hour`),
-    mInput: document.getElementById(`${uniqueId}-selected_date_time-minute`),
-    sInput: document.getElementById(`selected_date_time-${uniqueId}`),
+    hInput: document.getElementById(`${uniqueId}-selected-date-time-hour`),
+    mInput: document.getElementById(`${uniqueId}-selected-date-time-minute`),
+    sInput: document.getElementById(`selected-date-time-${uniqueId}`),
     selectedDateEl: container.querySelector(".selected-date")
   };
 };
