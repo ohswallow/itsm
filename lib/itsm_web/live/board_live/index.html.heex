@@ -1,18 +1,18 @@
-<.header>
-  Listing Boards
-</.header>
+<.header>Listing Boards</.header>
 
 <.table
   id="boards"
   rows={@streams.boards}
   row_click={
     fn {_id, board} ->
-      JS.navigate(~p"/posts?&board_id=#{board.id}")
+      JS.navigate(~p"/posts?&board_id=#{board.id}&menu_id=boards")
     end
   }
 >
   <:col :let={{_id, board}} label={gettext("Name")}>{board.name}</:col>
+  
   <:col :let={{_id, board}} label={gettext("Slug")}>{board.slug}</:col>
+  
   <:col :let={{_id, board}} label={gettext("Description") <> " (클릭시 각각의 게시물로 이동됩니다)"}>
     {board.description}
   </:col>

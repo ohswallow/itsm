@@ -9,7 +9,7 @@
       return_url = ~p"/crews/all?#{@filter_params}"
 
       # 4. return_to 파라미터에 위에서 만든 URL을 통째로 넘김
-      JS.navigate(~p"/crews/#{crew}?return_to=#{return_url}")
+      JS.navigate(~p"/crews/#{crew}?return_to=#{return_url}&menu_id=all_crews")
     end
   }
 >
