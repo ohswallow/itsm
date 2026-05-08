@@ -8,9 +8,7 @@
       </div>
       
       <nav :if={@current_user} class="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
-        <% current_path = assigns[:current_path] || ""
-
-        icon_map = %{
+        <% icon_map = %{
           "categories" => "hero-document-plus",
           "requests" => "hero-list-bullet",
           "approvals" => "hero-check-badge",
@@ -23,43 +21,21 @@
           "users" => "hero-user-circle-solid"
         }
 
-        struct_class =
-          "flex items-center px-4 py-3 text-sm font-bold rounded-lg transition-all duration-200"
-
-        # 상태별 스타일 정의
-        active_styles = "bg-kb-yellow text-kb-dark-gray shadow-lg ring-1 ring-white/10"
-        inactive_styles = "text-gray-400 hover:bg-gray-700 hover:text-white group"
-
-        # 헬퍼 함수: 현재 경로와 일치하면 active 스타일 반환
-        get_link_class = fn path ->
-          if current_path == path or String.starts_with?(current_path, path <> "/"),
-            do: "#{struct_class} #{active_styles}",
-            else: "#{struct_class} #{inactive_styles}"
-        end
-
         get_icon_name = fn path ->
           path = String.replace(path, "/admin/", "")
           Map.get(icon_map, path) || "hero-question-mark-circle"
-        end
-
-        # 헬퍼 함수: 아이콘 색상 제어
-        get_icon_class = fn path ->
-          if current_path == path or String.starts_with?(current_path, path <> "/"),
-            # 활성화 시 아이콘은 어두운 색
-            do: "w-5 h-5 mr-3 text-kb-dark-gray",
-            # 비활성화 시 노란색 -> 호버 시 흰색
-            else: "w-5 h-5 mr-3 text-kb-yellow group-hover:text-white"
         end %>
-        <.link
+        <.sidebar_menu_link
           :for={menu <- ItsmWeb.RouterUtils.admin_menu_items()}
-          href={menu.path}
-          class={get_link_class.(menu.path)}
+          navigate={menu.path}
+          icon_name={get_icon_name.(menu.path)}
+          current_path={assigns[:current_path]}
         >
-          <.icon name={get_icon_name.(menu.path)} class={get_icon_class.(menu.path)} /> {Gettext.gettext(
+          {Gettext.gettext(
             ItsmWeb.Gettext,
             menu.name
           )}
-        </.link>
+        </.sidebar_menu_link>
       </nav>
       
       <div class="p-4 bg-[#24272b] border-t border-gray-700">

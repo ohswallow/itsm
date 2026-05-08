@@ -11,7 +11,7 @@
   crews={@streams.crews}
   row_click={
     fn {_id, crew} ->
-      JS.navigate(~p"/crews/#{crew}")
+      JS.navigate(~p"/crews/#{crew}?menu_id=crews")
     end
   }
 >
