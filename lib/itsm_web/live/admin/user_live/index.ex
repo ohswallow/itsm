@@ -28,13 +28,9 @@ defmodule ItsmWeb.Admin.UserLive.Index do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
-    value =
-      Paging.search_and_pagination(params, url, User, [
+    opts = [
+      default_columns: [
         :email,
-        :password,
-        :hashed_password,
-        :current_password,
-        :confirmed_at,
         :employee_number,
         :display_name,
         :organization,
@@ -42,7 +38,11 @@ defmodule ItsmWeb.Admin.UserLive.Index do
         :department,
         :department_code,
         :role
-      ])
+      ]
+    ]
+
+    value =
+      Paging.search_and_pagination(User, params, url, opts)
 
     socket
     |> assign(:results, value.results)

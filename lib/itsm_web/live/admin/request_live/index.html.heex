@@ -15,7 +15,7 @@
       <.common_code_label group="운영_구분" code={request.env} />
     </:col>
     <:col :let={{id, request}} label={gettext("Due Date")}>
-      <div id={"due_date_#{id}"} phx-hook="LocalTime.ToLocale" utc-value={request.due_date} />
+      <div id={"due-date-#{id}"} phx-hook="LocalTime.ToLocale" utc-value={request.due_date} />
     </:col>
     <:col :let={{_id, request}} label={gettext("Request Type")}>
       {request.category.request_name}

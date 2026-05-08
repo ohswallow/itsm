@@ -20,7 +20,7 @@
 
   <:col :let={{id, delegation}} label={gettext("Start Date")}>
     <div
-      id={"delegation_start_date_#{id}"}
+      id={"delegation-start-date-#{id}"}
       phx-hook="LocalTime.ToLocale"
       format="date"
       utc-value={delegation.start_date}
@@ -29,7 +29,7 @@
 
   <:col :let={{id, delegation}} label={gettext("End Date")}>
     <div
-      id={"delegation_end_date_#{id}"}
+      id={"delegation-end-date-#{id}"}
       phx-hook="LocalTime.ToLocale"
       format="date"
       utc-value={delegation.end_date}

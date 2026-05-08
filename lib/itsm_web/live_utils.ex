@@ -81,6 +81,41 @@ defmodule ItsmWeb.LiveUtils do
     end)
   end
 
+  @doc """
+  PubSub을 통해 수신된 표준 이벤트를 처리하고 LiveView 상태를 업데이트합니다.
+
+  이 함수는 다음과 같은 작업을 순차적으로 수행합니다:
+  1. 이벤트 이름(`event`, :update_common_code)에서 앞에 있는 액션 타입(예: create, update, delete)을 추출합니다.
+  2. 사용자에게 알림 메시지(Flash)를 표시합니다.
+  3. 현재 LiveView의 `live_action` 상태에 따라 스트림 삭제, 데이터 재할당 또는 페이지 이동을 수행합니다.
+  4. 편집 중인 리소스와 충돌이 발생할 경우(`:edit` 모드), 해당 FormComponent에 `send_update`를 보냅니다.
+
+  이 함수는 공통적인 UI 로직(알림, 상태 변경, 충돌 감지)을 처리하며, `socket`을 반환하므로
+  추가적인 상태 업데이트(예: 스트림 추가)가 필요한 경우 파이프라인으로 연결하여 사용할 수 있습니다.
+
+  ## 매개변수
+  - `socket`: 현재 LiveView의 socket.
+  - `action_user`: 이벤트를 발생시킨 사용자의 정보 (`display_name` 필드 필요).
+  - `event`: 발생한 이벤트 (예: `:project_updated`, `:user_deleted`).
+  - `item`: 이벤트 대상이 되는 리소스 데이터 (Struct 또는 Map).
+  - `opts`: 처리를 위한 옵션들.
+
+  ## 옵션 (opts)
+  - `:resource_name` - 메시지에 표시될 리소스의 이름 (예: gettext("Common Code"), "사용자").
+  - `:context_key` - 리소스가 socket.assigns에 저장된 키 (예: `:common_code`). `:show` 액션에서 데이터 업데이트 시 사용됩니다.
+  - `:stream_name` - `:index` 액션에서 `:delete` 이벤트 발생 시 스트림에서 제거할 이름.
+  - `:flash_message` - 기본 메시지 대신 표시할 커스텀 메시지.
+  - `:push_patch` - 액션 처리 후 이동할 경로 (`push_patch`), 있을 경우에만 이동.
+  - `:push_navigate` - 액션 처리 후 이동할 경로 (`push_navigate`), 있을 경우에만 이동.
+  - `:form_module` - 충돌 발생 시 업데이트를 보낼 컴포넌트 모듈 (기본값 `...FormComponent`).
+  """
+  @spec handle_standard_pubsub(
+          socket :: Phoenix.LiveView.Socket.t(),
+          action_user :: %{display_name: String.t()},
+          event :: atom(),
+          item :: map() | struct(),
+          opts :: keyword()
+        ) :: Phoenix.LiveView.Socket.t()
   def handle_standard_pubsub(socket, action_user, event, item, opts) do
     [action_type | _] = event |> Atom.to_string() |> String.split("_")
 

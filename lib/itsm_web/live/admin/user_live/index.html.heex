@@ -15,7 +15,7 @@
   >
     <:col :let={{_id, user}} label={gettext("Email")}>{user.email}</:col>
     <:col :let={{id, user}} label={gettext("Confirmed At")}>
-      <div id={"confirmed_at_#{id}"} phx-hook="LocalTime.ToLocale" utc-value={user.confirmed_at} />
+      <div id={"confirmed-at-#{id}"} phx-hook="LocalTime.ToLocale" utc-value={user.confirmed_at} />
     </:col>
     <:col :let={{_id, user}} label={gettext("Employee Number")}>{user.employee_number}</:col>
     <:col :let={{_id, user}} label={gettext("Display Name")}>{user.display_name}</:col>

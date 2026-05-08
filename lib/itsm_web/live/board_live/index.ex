@@ -28,8 +28,10 @@ defmodule ItsmWeb.BoardLive.Index do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
+    opts = [default_columns: [:name, :slug, :description, :metadata]]
+
     value =
-      Paging.search_and_pagination(params, url, Board, [:name, :slug, :description, :metadata])
+      Paging.search_and_pagination(Board, params, url, opts)
 
     socket
     |> assign(:results, value.results)

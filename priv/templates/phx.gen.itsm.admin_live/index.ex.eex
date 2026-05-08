@@ -28,8 +28,9 @@ defmodule <%= inspect context.web_module %>.<%= inspect Module.concat(schema.web
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
+    opts = [default_columns: <%= inspect Keyword.keys(schema.attrs) %>]
     value =
-      Paging.search_and_pagination(params, url, <%= inspect schema.alias %>, <%= inspect Keyword.keys(schema.attrs) %>)
+      Paging.search_and_pagination(<%= inspect schema.alias %>, params, url, opts)
 
     socket
     |> assign(:results, value.results)

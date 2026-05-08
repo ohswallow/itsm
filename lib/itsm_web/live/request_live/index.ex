@@ -33,18 +33,17 @@ defmodule ItsmWeb.RequestLive.Index do
   end
 
   defp apply_action(socket, :index, url, params) do
+    opts = [
+      default_columns: [:title, :description, :env, :requestor_name],
+      preloads: [:category, :requestor, :assignee_crew]
+    ]
+
     value =
       Paging.search_and_pagination(
+        Request,
         params,
         url,
-        Request,
-        [
-          :title,
-          :description,
-          :env,
-          :requestor_name
-        ],
-        [:category, :requestor, :assignee_crew]
+        opts
       )
 
     socket

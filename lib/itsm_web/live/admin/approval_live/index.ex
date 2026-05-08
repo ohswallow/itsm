@@ -28,18 +28,13 @@ defmodule ItsmWeb.Admin.ApprovalLive.Index do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
+    opts = [
+      default_columns: [:status, :action, :approver_name],
+      preloads: [request: [category: :name]]
+    ]
+
     value =
-      Paging.search_and_pagination(
-        params,
-        url,
-        Approval,
-        [
-          :status,
-          :action,
-          :approver_name
-        ],
-        request: [category: :name]
-      )
+      Paging.search_and_pagination(Approval, params, url, opts)
 
     socket
     |> assign(:results, value.results)

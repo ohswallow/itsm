@@ -6,7 +6,7 @@
           <img src={~p"/images/itsm_banner.svg"} alt="KB ITSM" class="h-10 w-auto" />
         </a>
       </div>
-      
+
       <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
         <.sidebar_menu_link
           navigate={~p"/categories"}
@@ -30,7 +30,7 @@
           {gettext("Approval List")}
         </.sidebar_menu_link>
         <div class="my-6 border-t border-gray-700/50"></div>
-        
+
         <.sidebar_menu_link
           navigate={~p"/delegations"}
           icon_name="hero-user-group"
@@ -55,6 +55,13 @@
           {gettext("All Crews")}
         </.sidebar_menu_link>
         <.sidebar_menu_link
+          navigate={~p"/assets"}
+          icon_name="hero-computer-desktop"
+          current_path={assigns[:current_path]}
+        >
+          {gettext("Assets")}
+        </.sidebar_menu_link>
+        <.sidebar_menu_link
           navigate={~p"/boards?menu_id=boards"}
           icon_name="hero-list-bullet"
           menu_id="boards"
@@ -66,7 +73,7 @@
           <p class="px-4 text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">
             ADMIN SYSTEM
           </p>
-          
+
           <.sidebar_menu_link
             navigate={~p"/admin"}
             icon_name="hero-shield-check"
@@ -76,7 +83,7 @@
           </.sidebar_menu_link>
         </div>
       </nav>
-      
+
       <div class="p-4 bg-[#24272b] border-t border-gray-700">
         <div class="flex items-center justify-between px-2 mb-4 bg-gray-800/50 rounded-full py-1.5 border border-gray-700">
           <% is_ko = Gettext.get_locale(ItsmWeb.Gettext) == "ko" %>
@@ -94,7 +101,7 @@
             EN
           </span>
         </div>
-        
+
         <div :if={@current_user} class="flex items-center justify-between px-2 pt-2">
           <div class="flex flex-col min-w-0">
             <span class="text-[10px] text-gray-500 font-bold uppercase">Authorized User</span>
@@ -102,7 +109,7 @@
               {@current_user.email}
             </span>
           </div>
-          
+
           <div class="flex gap-1">
             <.link
               href={~p"/users/settings"}
@@ -122,7 +129,7 @@
       </div>
     </div>
   </aside>
-  
+
   <main class="flex-1 p-8">
     <div class="max-w-6xl mx-auto"><.flash_group flash={@flash} /> {@inner_content}</div>
   </main>

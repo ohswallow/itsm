@@ -85,14 +85,14 @@ defmodule ItsmWeb.ItsmComponents do
       data-calendar-root
     >
       <div>
-        <d
+        <div
           :if={assigns[:label]}
           label={@label}
           class="block text-sm font-semibold leading-6 text-zinc-800"
         >
           {@label}
-        </d>
-        
+        </div>
+
         <div
           id={"datepicker-input-#{@id}"}
           class="flex items-center border rounded-lg px-3 py-2 cursor-pointer hover:border-indigo-500 bg-white"
@@ -103,7 +103,7 @@ defmodule ItsmWeb.ItsmComponents do
           }
         >
           <input
-            id={"selected_date_time-#{@id}"}
+            id={"selected-date-time-#{@id}"}
             name={@field && @field.name}
             utc-value={@selected_date_time}
             format={if @show_time, do: "datetime", else: "date"}
@@ -115,19 +115,19 @@ defmodule ItsmWeb.ItsmComponents do
           <div
             {@rests[:selected_date_time]}
             {@rest}
-            id={"display_date_time-#{@id}"}
+            id={"display-date-time-#{@id}"}
             class="text-gray-700 pointer-events-none w-full"
             phx-hook="LocalTime.ToLocale"
             utc-value={@selected_date_time}
             format={if @show_time, do: "datetime", else: "date"}
           >
           </div>
-           <span class="text-gray-400">📅</span>
+          <span class="text-gray-400">📅</span>
         </div>
-        
+
         <.error :for={msg <- @errors}>{msg}</.error>
       </div>
-      
+
       <div
         {@rests[:popup]}
         id={"#{@id}-calendar-popup"}
@@ -157,9 +157,9 @@ defmodule ItsmWeb.ItsmComponents do
               ◀
             </button>
           </div>
-          
+
           <div class="font-bold text-lg">{"#{@view_date.year}년 #{@view_date.month}월"}</div>
-          
+
           <div class="flex gap-1">
             <button
               type="button"
@@ -183,7 +183,7 @@ defmodule ItsmWeb.ItsmComponents do
             </button>
           </div>
         </div>
-        
+
         <div
           {@rests[:grid]}
           id={"#{@id}-calendar-grid"}
@@ -197,7 +197,7 @@ defmodule ItsmWeb.ItsmComponents do
           <div :for={day_name <- ~w(일 월 화 수 목 금 토)} class="text-xs text-gray-400 pb-2">
             {day_name}
           </div>
-          
+
           <div
             :for={{date, index} <- Enum.with_index(@days)}
             {@rests[:date]}
@@ -213,7 +213,7 @@ defmodule ItsmWeb.ItsmComponents do
             {date.day}
           </div>
         </div>
-        
+
         <div
           :if={@show_time}
           class="flex items-center justify-center gap-2 mt-4 pt-4 border-t border-gray-100"
@@ -221,7 +221,7 @@ defmodule ItsmWeb.ItsmComponents do
           <div class="flex items-center gap-1 bg-gray-50 p-2 rounded-lg border border-gray-200 w-fit">
             <input
               {@rests[:hour]}
-              id={"#{@id}-selected_date_time-hour"}
+              id={"#{@id}-selected-date-time-hour"}
               name={"#{@field.form.name}[calendar_ui][#{@field.name}][hour]"}
               phx-hook="Calendar.Input"
               utc-value={@selected_date_time}
@@ -235,7 +235,7 @@ defmodule ItsmWeb.ItsmComponents do
             /> <span class="text-gray-400 font-bold">:</span>
             <input
               {@rests[:minute]}
-              id={"#{@id}-selected_date_time-minute"}
+              id={"#{@id}-selected-date-time-minute"}
               name={"#{@field.form.name}[calendar_ui][#{@field.name}][minute]"}
               phx-hook="Calendar.Input"
               utc-value={@selected_date_time}
@@ -284,44 +284,92 @@ defmodule ItsmWeb.ItsmComponents do
       <form
         {@rest}
         phx-change="update-filters"
-        class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end"
         phx-target={@target}
       >
-        <div class="md:col-span-4">
-          <label class="form-label">검색 컬럼 선택</label>
-          <.input
-            id={@id <> "util_filters_search_columns"}
-            type="select"
-            name="search_columns[]"
-            options={@results.columns_options}
-            multiple
-            size="1"
-            phx-hook="InputSelect.selectAll"
-            value={@results.params.search_columns}
-          />
+        <div
+          :if={@results.range_column_options != []}
+          class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end"
+        >
+          <div class="md:col-span-4">
+            <label class="form-label">조건 날짜</label>
+            <.input
+              id={"#{@id}-util-filters-range-column"}
+              type="select"
+              name="range_column"
+              options={@results.range_column_options}
+              value={@results.params.range_column}
+            />
+          </div>
+          <div class="md:col-span-8">
+            <label class="form-label">날짜 범위</label>
+            <div class="flex justify-start items-center">
+              <.itsm_calendar
+                field={
+                  %Phoenix.HTML.FormField{
+                    id: "start_date",
+                    form: %{name: "start_date", params: %{}},
+                    name: "start_date",
+                    errors: [],
+                    field: String.to_atom("start_date"),
+                    value: ""
+                  }
+                }
+                default_selected_date_time={@results.params.start_date}
+              />
+              <div class="mx-1">-</div>
+              <.itsm_calendar
+                field={
+                  %Phoenix.HTML.FormField{
+                    id: "end_date",
+                    form: %{name: "end_date", params: %{}},
+                    name: "end_date",
+                    errors: [],
+                    field: String.to_atom("end_date"),
+                    value: ""
+                  }
+                }
+                default_selected_date_time={@results.params.end_date}
+              />
+            </div>
+          </div>
         </div>
-        
-        <div class="md:col-span-6">
-          <label class="form-label">검색</label>
-          <.input
-            type="text"
-            name="search"
-            placeholder="검색어를 입력해주세요"
-            value={@results.params.search}
-            phx-debounce="300"
-          />
-        </div>
-        
-        <div class="md:col-span-2 flex justify-end pb-1">
-          <.link
-            patch={@results.current_path}
-            class="btn-secondary py-2 px-4 text-sm group flex items-center w-full justify-center"
-          >
-            <.icon
-              name="hero-arrow-path"
-              class="mr-2 h-4 w-4 group-hover:rotate-180 transition-transform duration-500"
-            /> <span>초기화</span>
-          </.link>
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+          <div class="md:col-span-4">
+            <label class="form-label">검색 컬럼 선택</label>
+            <.input
+              id={"#{@id}-util-filters-search-columns"}
+              type="select"
+              name="search_columns[]"
+              options={@results.columns_options}
+              multiple
+              size="1"
+              phx-hook="InputSelect.selectAll"
+              value={@results.params.search_columns}
+            />
+          </div>
+
+          <div class="md:col-span-6">
+            <label class="form-label">검색</label>
+            <.input
+              type="text"
+              name="search"
+              placeholder="검색어를 입력해주세요"
+              value={@results.params.search}
+              phx-debounce="300"
+            />
+          </div>
+
+          <div class="md:col-span-2 flex justify-end pb-1">
+            <.link
+              patch={@results.current_path}
+              class="btn-secondary py-2 px-4 text-sm group flex items-center w-full justify-center"
+            >
+              <.icon
+                name="hero-arrow-path"
+                class="mr-2 h-4 w-4 group-hover:rotate-180 transition-transform duration-500"
+              /> <span>초기화</span>
+            </.link>
+          </div>
         </div>
       </form>
     </div>
@@ -331,7 +379,7 @@ defmodule ItsmWeb.ItsmComponents do
     <div class="grid grid-cols-3 items-center w-full mt-6">
       <div class="justify-self-start flex items-center">
         <div class="text-sm text-zinc-600">Total: {@results.total_count}</div>
-        
+
         <form phx-change="update-filters" phx-target={@target} class="ml-4">
           <input
             type="number"
@@ -342,7 +390,7 @@ defmodule ItsmWeb.ItsmComponents do
           />
         </form>
       </div>
-      
+
       <nav class="justify-self-center flex gap-2 items-center">
         <div class="pagination flex items-center">
           <.link
@@ -395,7 +443,7 @@ defmodule ItsmWeb.ItsmComponents do
               </span>
             </span>
           </div>
-          
+
           <.link
             :if={@results.params.page < @results.total_pages}
             patch={"#{@results.current_path}?#{Plug.Conn.Query.encode(Map.put(@results.params, :page, @results.params.page + 1))}"}
@@ -494,27 +542,27 @@ defmodule ItsmWeb.ItsmComponents do
     ~H"""
     <div class={["lds-spinner", @class]}>
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
     </div>
     """
@@ -531,7 +579,7 @@ defmodule ItsmWeb.ItsmComponents do
     ~H"""
     <div phx-feedback-for={@field.name}>
       <.label for={@field.id}>{@label}</.label>
-      
+
       <LiveSelect.live_select
         field={@field}
         allow_clear={true}

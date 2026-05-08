@@ -28,19 +28,13 @@ defmodule ItsmWeb.Admin.RequestLive.Index do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
+    opts = [
+      default_columns: [:title, :description, :env, :requestor_name],
+      preloads: [category: [:request_name, :name]]
+    ]
+
     value =
-      Paging.search_and_pagination(
-        params,
-        url,
-        Request,
-        [
-          :title,
-          :description,
-          :env,
-          :requestor_name
-        ],
-        category: [:request_name, :name]
-      )
+      Paging.search_and_pagination(Request, params, url, opts)
 
     socket
     |> assign(:results, value.results)

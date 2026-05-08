@@ -22,6 +22,13 @@
     <:col :let={{_id, post}} label={gettext("Author")}>
       {post.author.display_name}
     </:col>
+    <:col :let={{_id, post}} label={gettext("Updated At")}>
+      <span
+        id={"post-updated-at-#{post.id}"}
+        phx-hook="LocalTime.ToLocale"
+        utc-value={post.updated_at}
+      />
+    </:col>
     <:action :let={{_id, post}}>
       <div class="sr-only">
         <.link navigate={~p"/admin/posts/#{post}"}>Show</.link>

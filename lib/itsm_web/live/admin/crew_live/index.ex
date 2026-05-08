@@ -28,12 +28,9 @@ defmodule ItsmWeb.Admin.CrewLive.Index do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
-    value =
-      Paging.search_and_pagination(params, url, Crew, [
-        :name,
-        :description,
-        {:users, :display_name}
-      ])
+    opts = [default_columns: [:name, :description, {:users, :display_name}]]
+
+    value = Paging.search_and_pagination(Crew, params, url, opts)
 
     socket
     |> assign(:results, value.results)

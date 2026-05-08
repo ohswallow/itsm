@@ -91,7 +91,7 @@ defmodule ItsmWeb.Admin.PostLive.FormComponent do
               field={
                 %Phoenix.HTML.FormField{
                   id: "post_metadata_#{field["name"]}",
-                  form: @form[:metadata],
+                  form: @form[:metadata].form,
                   name: "post[metadata][#{field["name"]}]",
                   errors: [],
                   field: String.to_atom(field["name"]),
@@ -108,12 +108,12 @@ defmodule ItsmWeb.Admin.PostLive.FormComponent do
             <.error
               :for={
                 {msg, opts} <-
-                  Enum.filter(Map.get(@form[:metadata], :errors) || [], fn {_msg, opt} ->
+                  Enum.filter(@form[:metadata].errors || [], fn {_msg, opt} ->
                     opt[:field] == field["name"]
                   end)
               }
               :if={
-                val = Map.get(@form[:metadata], :value) || %{}
+                val = @form[:metadata].value || %{}
                 targetMap = if is_map(val), do: val, else: %{}
 
                 Map.has_key?(targetMap, field["name"]) &&

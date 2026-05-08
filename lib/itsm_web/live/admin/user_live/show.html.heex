@@ -12,7 +12,7 @@
   <:item title={gettext("Email")}>{@user.email}</:item>
   <:item title={gettext("Confirmed At")}>
     <span
-      id={"user-confirmed_at_#{@user.id}"}
+      id={"user-confirmed-at-#{@user.id}"}
       phx-hook="LocalTime.ToLocale"
       utc-value={@user.confirmed_at}
     />
@@ -30,14 +30,14 @@
   <:item title={gettext("Role")}><.common_code_label group="역할" code={@user.role} /></:item>
   <:item title={gettext("Inserted At")}>
     <span
-      id={"user-inserted-at_#{@user.id}"}
+      id={"user-inserted-at-#{@user.id}"}
       phx-hook="LocalTime.ToLocale"
       utc-value={@user.inserted_at}
     />
   </:item>
   <:item title={gettext("Updated At")}>
     <span
-      id={"user-updated-at_#{@user.id}"}
+      id={"user-updated-at-#{@user.id}"}
       phx-hook="LocalTime.ToLocale"
       utc-value={@user.updated_at}
     />

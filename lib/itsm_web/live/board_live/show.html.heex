@@ -12,14 +12,14 @@
   </:item>
   <:item title={gettext("Inserted At")}>
     <span
-      id={"board-inserted-at_#{@board.id}"}
+      id={"board-inserted-at-#{@board.id}"}
       phx-hook="LocalTime.ToLocale"
       utc-value={@board.inserted_at}
     />
   </:item>
   <:item title={gettext("Updated At")}>
     <span
-      id={"board-updated-at_#{@board.id}"}
+      id={"board-updated-at-#{@board.id}"}
       phx-hook="LocalTime.ToLocale"
       utc-value={@board.updated_at}
     />
