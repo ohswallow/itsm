@@ -6,87 +6,77 @@
           <img src={~p"/images/itsm_banner.svg"} alt="KB ITSM" class="h-10 w-auto" />
         </a>
       </div>
-
+      
       <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
-        <% current_path = assigns[:current_path] || ""
-
-        struct_class =
-          "flex items-center px-4 py-3 text-sm font-bold rounded-lg transition-all duration-200"
-
-        # 상태별 스타일 정의
-        active_styles = "bg-kb-yellow text-kb-dark-gray shadow-lg ring-1 ring-white/10"
-        inactive_styles = "text-gray-400 hover:bg-gray-700 hover:text-white group"
-
-        # 헬퍼 함수: 현재 경로와 일치하면 active 스타일 반환
-        get_link_class = fn path ->
-          if current_path == path or
-               (path == ~p"/boards" and String.starts_with?(current_path, "/posts")),
-             do: "#{struct_class} #{active_styles}",
-             else: "#{struct_class} #{inactive_styles}"
-        end
-
-        # 헬퍼 함수: 아이콘 색상 제어
-        get_icon_class = fn path ->
-          if current_path == path or
-               (path == ~p"/boards" and String.starts_with?(current_path, "/posts")),
-             # 활성화 시 아이콘은 어두운 색
-             do: "w-5 h-5 mr-3 text-kb-dark-gray",
-             # 비활성화 시 노란색 -> 호버 시 흰색
-             else: "w-5 h-5 mr-3 text-kb-yellow group-hover:text-white"
-        end %>
-        <.link navigate={~p"/categories"} class={get_link_class.(~p"/categories")}>
-          <.icon name="hero-document-plus" class={get_icon_class.(~p"/categories")} /> {gettext(
-            "Service Request"
-          )}
-        </.link>
-        <.link navigate={~p"/requests"} class={get_link_class.(~p"/requests")}>
-          <.icon name="hero-list-bullet" class={get_icon_class.(~p"/requests")} /> {gettext(
-            "My Request List"
-          )}
-        </.link>
-        <.link navigate={~p"/approvals"} class={get_link_class.(~p"/approvals")}>
-          <.icon name="hero-check-badge" class={get_icon_class.(~p"/approvals")} /> {gettext(
-            "Approval List"
-          )}
-        </.link>
+        <.sidebar_menu_link
+          navigate={~p"/categories"}
+          icon_name="hero-document-plus"
+          current_path={assigns[:current_path]}
+        >
+          {gettext("Service Request")}
+        </.sidebar_menu_link>
+        <.sidebar_menu_link
+          navigate={~p"/requests"}
+          icon_name="hero-list-bullet"
+          current_path={assigns[:current_path]}
+        >
+          {gettext("My Request List")}
+        </.sidebar_menu_link>
+        <.sidebar_menu_link
+          navigate={~p"/approvals"}
+          icon_name="hero-check-badge"
+          current_path={assigns[:current_path]}
+        >
+          {gettext("Approval List")}
+        </.sidebar_menu_link>
         <div class="my-6 border-t border-gray-700/50"></div>
-
-        <.link navigate={~p"/delegations"} class={get_link_class.(~p"/delegations")}>
-          <.icon name="hero-user-group" class={get_icon_class.(~p"/delegations")} /> {gettext(
-            "Delegation"
-          )}
-        </.link>
-        <.link navigate={~p"/crews"} class={get_link_class.(~p"/crews")}>
-          <.icon name="hero-users" class={get_icon_class.(~p"/crews")} /> {gettext("My Crews")}
-        </.link>
-        <.link navigate={~p"/crews/all"} class={get_link_class.(~p"/crews/all")}>
-          <.icon name="hero-rectangle-stack" class={get_icon_class.(~p"/crews/all")} /> {gettext(
-            "All Crews"
-          )}
-        </.link>
-        <.link navigate={~p"/assets"} class={get_link_class.(~p"/assets")}>
-          <.icon name="hero-computer-desktop" class={get_icon_class.(~p"/assets")} /> {gettext(
-            "Assets"
-          )}
-        </.link>
-        <.link navigate={~p"/boards"} class={get_link_class.(~p"/boards")}>
-          <.icon name="hero-list-bullet" class={get_icon_class.(~p"/boards")} /> {gettext(
-            "Boards"
-          )}
-        </.link>
+        
+        <.sidebar_menu_link
+          navigate={~p"/delegations"}
+          icon_name="hero-user-group"
+          current_path={assigns[:current_path]}
+        >
+          {gettext("Delegation")}
+        </.sidebar_menu_link>
+        <.sidebar_menu_link
+          navigate={~p"/crews?menu_id=crews"}
+          icon_name="hero-users"
+          menu_id="crews"
+          current_path={assigns[:current_path]}
+        >
+          {gettext("My Crews")}
+        </.sidebar_menu_link>
+        <.sidebar_menu_link
+          navigate={~p"/crews/all?menu_id=all_crews"}
+          icon_name="hero-rectangle-stack"
+          menu_id="all_crews"
+          current_path={assigns[:current_path]}
+        >
+          {gettext("All Crews")}
+        </.sidebar_menu_link>
+        <.sidebar_menu_link
+          navigate={~p"/boards?menu_id=boards"}
+          icon_name="hero-list-bullet"
+          menu_id="boards"
+          current_path={assigns[:current_path]}
+        >
+          {gettext("Boards")}
+        </.sidebar_menu_link>
         <div :if={@current_user && @current_user.role == "admin"} class="mt-8">
           <p class="px-4 text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">
             ADMIN SYSTEM
           </p>
-
-          <.link navigate={~p"/admin"} class={get_link_class.(~p"/admin")}>
-            <.icon name="hero-shield-check" class={get_icon_class.(~p"/admin")} /> {gettext(
-              "Admin Console"
-            )}
-          </.link>
+          
+          <.sidebar_menu_link
+            navigate={~p"/admin"}
+            icon_name="hero-shield-check"
+            current_path={assigns[:current_path]}
+          >
+            {gettext("Admin Console")}
+          </.sidebar_menu_link>
         </div>
       </nav>
-
+      
       <div class="p-4 bg-[#24272b] border-t border-gray-700">
         <div class="flex items-center justify-between px-2 mb-4 bg-gray-800/50 rounded-full py-1.5 border border-gray-700">
           <% is_ko = Gettext.get_locale(ItsmWeb.Gettext) == "ko" %>
@@ -104,7 +94,7 @@
             EN
           </span>
         </div>
-
+        
         <div :if={@current_user} class="flex items-center justify-between px-2 pt-2">
           <div class="flex flex-col min-w-0">
             <span class="text-[10px] text-gray-500 font-bold uppercase">Authorized User</span>
@@ -112,7 +102,7 @@
               {@current_user.email}
             </span>
           </div>
-
+          
           <div class="flex gap-1">
             <.link
               href={~p"/users/settings"}
@@ -132,7 +122,7 @@
       </div>
     </div>
   </aside>
-
+  
   <main class="flex-1 p-8">
     <div class="max-w-6xl mx-auto"><.flash_group flash={@flash} /> {@inner_content}</div>
   </main>

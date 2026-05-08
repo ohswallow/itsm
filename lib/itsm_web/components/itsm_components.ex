@@ -622,9 +622,15 @@ defmodule ItsmWeb.ItsmComponents do
     end
   end
 
+  @doc """
+  복사 가능한 텍스트를 렌더링하는 컴포넌트입니다.
+  """
   attr :value, :string, required: true, doc: "복사할 전체 텍스트"
   attr :label, :string, default: nil, doc: "툴팁 등에 표시할 이름 (예: ID, Email)"
-  attr :slice_range, :integer, default: 8
+
+  attr :slice_range, :integer,
+    default: 8,
+    doc: "화면에 표시할 텍스트의 길이 (기본값: 8, 예: 123e4567-e89b-12d3-a456-426614174000 -> 123e4567...)"
 
   def copyable_text(assigns) do
     assigns =
@@ -641,5 +647,70 @@ defmodule ItsmWeb.ItsmComponents do
       {String.slice(@value, 0, @slice_range)}
     </span>
     """
+  end
+
+  @doc """
+  사이트바 메뉴 링크 컴포넌트
+  current_path와 navigate를 비교하여 활성화 상태를 결정합니다.
+  menu_id가 제공된 경우 URL 쿼리에서 menu_id를 추출하여 비교합니다.
+  """
+  attr :navigate, :string, required: true, doc: "링크로 이동할 URL 경로 (예: /boards/123)"
+  attr :icon_name, :string, required: true, doc: "Heroicons name, e.g. 'hero-home'"
+  attr :current_path, :any, required: true, doc: "현재 페이지의 URL 경로 (예: /boards/123?menu_id=456)"
+  attr :menu_id, :string, default: nil, doc: "선택적으로 URL 쿼리에서 menu_id를 추출하여 메뉴 활성화 여부 결정"
+  slot :inner_block, required: true
+
+  def sidebar_menu_link(assigns) do
+    struct_class =
+      "flex items-center px-4 py-3 text-sm font-bold rounded-lg transition-all duration-200"
+
+    active_styles = "bg-kb-yellow text-kb-dark-gray shadow-lg ring-1 ring-white/10"
+    inactive_styles = "text-gray-400 hover:bg-gray-700 hover:text-white group"
+
+    link_class =
+      if selected_menu?(assigns),
+        do: "#{struct_class} #{active_styles}",
+        else: "#{struct_class} #{inactive_styles}"
+
+    link_icon_class =
+      if selected_menu?(assigns),
+        do: "w-5 h-5 mr-3 text-kb-dark-gray",
+        else: "w-5 h-5 mr-3 text-kb-yellow group-hover:text-white"
+
+    assigns =
+      assigns
+      |> assign(:link_class, link_class)
+      |> assign(:link_icon_class, link_icon_class)
+
+    ~H"""
+    <.link navigate={@navigate} class={@link_class}>
+      <.icon name={@icon_name} class={@link_icon_class} />{render_slot(@inner_block)}
+    </.link>
+    """
+  end
+
+  defp selected_menu?(%{current_path: nil}), do: false
+
+  defp selected_menu?(%{current_path: current_path, navigate: navigate, menu_id: nil}) do
+    String.starts_with?(current_path, navigate)
+  end
+
+  defp selected_menu?(%{current_path: current_path, navigate: _navigate, menu_id: menu_id}) do
+    extract_menu_id(current_path) == menu_id
+  end
+
+  defp extract_menu_id(url) do
+    url
+    |> URI.parse()
+    |> Map.get(:query)
+    |> case do
+      nil ->
+        url
+
+      query_string ->
+        query_string
+        |> URI.decode_query()
+        |> Map.get("menu_id", url)
+    end
   end
 end
