@@ -16,7 +16,8 @@ defmodule ItsmWeb.Admin.ApprovalLive.Index do
   end
 
   def handle_event("delete", %{"id" => _id} = approval_params, socket) do
-    {:ok, approval} = Approvals.delete_approval(approval_params)
+    %{current_user: action_user} = socket.assigns
+    {:ok, approval} = Approvals.delete_approval(action_user, approval_params)
 
     {:noreply, stream_delete(socket, :approvals, approval)}
   end

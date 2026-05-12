@@ -3,12 +3,13 @@ defmodule Itsm.Admin.BoardsFixtures do
   This module defines test helpers for creating
   entities via the `Itsm.Admin.Boards` context.
   """
+  alias Itsm.Accounts.User
 
   @doc """
   Generate a board.
   """
   def board_fixture(attrs \\ %{}) do
-    {:ok, board} =
+    attrs =
       attrs
       |> Enum.into(%{
         description: "some description",
@@ -16,7 +17,8 @@ defmodule Itsm.Admin.BoardsFixtures do
         name: "some name",
         slug: "some slug"
       })
-      |> Itsm.Admin.Boards.create_board()
+
+    {:ok, board} = Itsm.Admin.Boards.create_board(%User{}, attrs)
 
     board
   end

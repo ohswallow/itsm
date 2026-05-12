@@ -1,6 +1,7 @@
 defmodule Itsm.Paging do
   import Ecto.Query
   alias Itsm.Repo
+  alias Itsm.Utils
 
   def filter_by_range(query, params, opts \\ []) do
     range_columns = Keyword.get(opts, :range_columns, [])
@@ -14,9 +15,13 @@ defmodule Itsm.Paging do
     end
   end
 
-  def filter_status(query, _search_columns, search) when search in ["", nil], do: query
+  def filter_status(query, search_columns, search, opts \\ [])
 
-  def filter_status(query, search_columns, search) do
+  def filter_status(query, _search_columns, search, _opts) when search in ["", nil],
+    do: query
+
+  def filter_status(query, search_columns, search, opts) do
+    query_cond = Keyword.get(opts, :query_cond)
     {query_base, modules_map} = build_query_base(query, search_columns)
 
     dynamic_condition =
@@ -26,17 +31,40 @@ defmodule Itsm.Paging do
 
         if module do
           type = module.__schema__(:type, field_name)
-          search_pattern = "%#{search}%"
 
           search_int =
-            case Integer.parse(search) do
-              {num, _} -> num
-              :error -> nil
+            if is_binary(search) do
+              case Integer.parse(search) do
+                {num, _} -> num
+                :error -> nil
+              end
+            else
+              nil
             end
 
           cond do
+            query_cond == :in ->
+              search_list = search |> List.wrap()
+
+              case type do
+                t when t in [:string, :binary, :text] ->
+                  dynamic([{^b_name, x}], field(x, ^field_name) in ^search_list or ^acc)
+
+                t when t in [:integer, :id, :decimal] ->
+                  ints =
+                    Enum.map(search_list, &if(is_binary(&1), do: String.to_integer(&1), else: &1))
+
+                  dynamic([{^b_name, x}], field(x, ^field_name) in ^ints or ^acc)
+
+                _ ->
+                  dynamic(
+                    [{^b_name, x}],
+                    type(field(x, ^field_name), :string) in ^search_list or ^acc
+                  )
+              end
+
             type in [:string, :binary] ->
-              dynamic([{^b_name, x}], ilike(field(x, ^field_name), ^search_pattern) or ^acc)
+              dynamic([{^b_name, x}], ilike(field(x, ^field_name), ^"%#{search}%") or ^acc)
 
             type in [:integer, :id, :decimal] and not is_nil(search_int) ->
               dynamic([{^b_name, x}], field(x, ^field_name) == ^search_int or ^acc)
@@ -44,7 +72,7 @@ defmodule Itsm.Paging do
             true ->
               dynamic(
                 [{^b_name, x}],
-                ilike(type(field(x, ^field_name), :string), ^search_pattern) or ^acc
+                ilike(type(field(x, ^field_name), :string), ^"%#{search}%") or ^acc
               )
           end
         else
@@ -56,25 +84,30 @@ defmodule Itsm.Paging do
   end
 
   @doc """
-  Ecto 쿼리를 기반으로 검색, 페이징, 그리고 최적화된 프리로드를 수행합니다.
+  ## Ecto 쿼리를 기반으로 검색, 페이징, 그리고 최적화된 프리로드를 수행합니다.
 
-  이 함수는 `params`에서 페이지 번호와 검색어를 추출하고, 지정된 컬럼들에 대해 `ILIKE` 검색을 수행합니다.
-  관계형 데이터(Association) 검색이 필요한 경우 자동으로 조인을 생성하며, 프리로드 시 필요한 필드만
-  가져오도록 최적화합니다.
-  ## AND 조건
-  Post
-  |> Paging.filter_status([:content, author: :display_name], "mike") -- And 조건이 우선
-  |> Paging.search_and_pagination(params, url, opts) -- 기본값을
+  - 이 함수는 `params`에서 페이지 번호와 검색어를 추출합니다.
+  - 지정된 컬럼들에 대해 `ILIKE` 검색을 수행합니다.
+  - 관계형 데이터(Association) 검색이 필요한 경우 자동으로 조인을 생성하며, 프리로드 시 필요한 필드만 가져오도록 최적화합니다.
 
-  ## 매개변수
+  ### AND 조건
+  - Post
+  - |> Paging.filter_status(target_columns, con_val)  // 조건1
+  - |> Paging.search_and_pagination(params, url, opts)  // 조건2
+  - 위 파이프라인처럼 사용시 함수끼리 AND 조건 (조건1 AND 조건2)
+  - 무조건 `search_and_pagination`를 마지막에 선언해야합니다.
+  - `search_and_pagination`는 내부적으로 `filter_status`를 호출하여 사용
+  - `search_and_pagination`의 인자값은 내부 `filter_status(opts[:default_columns], params["search"])` 값이 들어갑니다.
+
+  ### 매개변수
   - `params`: LiveView의 `handle_params`나 컨트롤러에서 전달받은 파라미터 맵.
     - `"page"`: 현재 페이지 (기본값: 1)
     - `"page_size"`: 페이지당 항목 수 (기본값: 10)
     - `"search"`: 검색어 문자열 (기본값: "")
     - `"search_columns"`: 현재 선택된 검색 대상 컬럼 (기본값: `default_columns`)
     - `"range_column"`: 현재 선택된 날짜 범위 대상 컬럼 (없을시 날짜 선택 미노출)
-    - `"start_date"`: 날짜 범위 대상 시작 조건 (기본값: 30일 전)
-    - `"end_date"`: 날짜 범위 대상 끝 조건 (기본값: 30일 후)
+    - `"start_date"`: 날짜 범위 대상 시작 조건 (기본값: `30일 전`)
+    - `"end_date"`: 날짜 범위 대상 끝 조건 (기본값: `30일 후`)
   - `url`: 현재 페이지의 URL (결과 맵의 `current_path` 생성용).
   - `query_base`: 기본이 되는 Ecto 쿼리 또는 스키마 모듈 (예: `Post`).
   - `ops`: 나머지 옵션 값들
@@ -86,8 +119,11 @@ defmodule Itsm.Paging do
       - 최적화 로직이 포함되어 있어 `{assoc, [:field1, :field2]}` 형태로 특정 필드만 지정 가능합니다.
     - `range_columns`: 날짜 범위 조건용 선택할 컬럼 리스트.
       - [:inserted_at, :updated_at]
+    - `query_cond`: 쿼리 조건문을 선택하는 옵션입니다.(기본값: `ilike`, 선택 가능 값 `:in`)
+    - `column_custom_label`: 검색 셀렉터에 표시 label을 바꿉니다. default_columns에 값을 key로 value를 원하는 라벨로 생성용
+      - %{:title => "커스텀 제목", {:author, :display_name} => "작성자"}
 
-  ## 반환 값
+  ### 반환 값
   `%{entries: list(), results: map()}` 형태의 맵을 반환합니다.
   - `entries`: 쿼리 결과 리스트 (스트림에 사용 가능).
   - `results`: 테이블 컨테이너 컴포넌트(`<.itsm_table_container results={assigns[:results]}>`)에서 요구하는 메타데이터 맵.
@@ -100,7 +136,9 @@ defmodule Itsm.Paging do
           opts :: [
             default_columns: [atom() | {atom(), atom() | tuple()} | list()],
             preloads: [atom()],
-            range_columns: [atom()]
+            range_columns: [atom()],
+            column_custom_label: map(),
+            query_cond: atom()
           ]
         ) :: %{
           entries: [struct()],
@@ -117,6 +155,8 @@ defmodule Itsm.Paging do
     default_columns = Keyword.get(opts, :default_columns, [:name])
     preloads = Keyword.get(opts, :preloads, [])
     range_columns = Keyword.get(opts, :range_columns, [])
+    column_custom_label = Keyword.get(opts, :column_custom_label, %{})
+    query_cond = Keyword.get(opts, :query_cond)
 
     page = parse_integer(params["page"], 1)
     page_size = parse_integer(params["page_size"], 10)
@@ -136,12 +176,23 @@ defmodule Itsm.Paging do
         else: flatten_value(params["range_column"])
 
     now = Date.utc_today() |> DateTime.new!(~T[00:00:00], "Etc/UTC") |> DateTime.truncate(:second)
-    start_date = params["start_date"] || DateTime.add(now, -30, :day) |> DateTime.to_string()
-    end_date = params["end_date"] || DateTime.add(now, 30, :day) |> DateTime.to_string()
+
+    start_date =
+      if Utils.blank?(params["start_date"]),
+        do: DateTime.add(now, -30, :day) |> DateTime.to_string(),
+        else: params["start_date"]
+
+    end_date =
+      if Utils.blank?(params["end_date"]),
+        do: DateTime.add(now, 30, :day) |> DateTime.to_string(),
+        else: params["end_date"]
 
     search_columns = parse_columns(params["search_columns"], default_columns)
 
-    query = filter_status(query_base, search_columns, search) |> filter_by_range(params, opts)
+    query =
+      query_base
+      |> filter_status(search_columns, search, query_cond: query_cond)
+      |> filter_by_range(params, opts)
 
     total_count = Repo.aggregate(query, :count, :id)
     total_pages = if total_count == 0, do: 1, else: ceil(total_count / page_size)
@@ -170,10 +221,10 @@ defmodule Itsm.Paging do
       results: %{
         total_pages: total_pages,
         total_count: total_count,
-        columns_options: build_options(default_columns, :all),
+        columns_options: build_options(default_columns, column_custom_label, :all),
         current_path: URI.parse(url).path,
         params: results_params,
-        range_column_options: build_options(range_columns)
+        range_column_options: build_options(range_columns, column_custom_label)
       }
     }
   end
@@ -270,34 +321,48 @@ defmodule Itsm.Paging do
   defp build_query_base(query_base, search_columns) do
     initial_state =
       case query_base do
-        %Ecto.Query{from: %{source: {_, module}}} = query ->
-          {query, %{main: module}}
-
         module when is_atom(module) ->
           {from(m in module, as: :main), %{main: module}}
 
-        _ ->
-          query_base
+        query ->
+          query
       end
 
     search_columns
     |> List.wrap()
     |> Enum.reduce(initial_state, fn
-      col_info, {query, modules} when is_tuple(col_info) ->
-        ensure_join(query, modules, col_info)
+      {modules, _col}, %Ecto.Query{from: %{source: {_, module}}} = acc ->
+        ensure_join(acc, modules, {module, modules})
+
+      col, {query, modules} ->
+        ensure_join(query, modules, col)
+
+      col, %Ecto.Query{from: %{source: {_, module}}} = acc ->
+        ensure_join(acc, %{acc.from.as => module}, col)
 
       _col, acc ->
         acc
     end)
   end
 
-  defp build_options(default_columns) do
+  defp build_options(default_columns, column_custom_label, opt \\ :none)
+
+  defp build_options(default_columns, nil, :all) do
+    [{"전체", ""}] ++
+      Enum.map(default_columns, fn col -> {flatten_label(col), flatten_value(col)} end)
+  end
+
+  defp build_options(default_columns, nil, :none) do
     Enum.map(default_columns, fn col -> {flatten_label(col), flatten_value(col)} end)
   end
 
-  defp build_options(default_columns, :all) do
-    [{"전체", ""}] ++
-      Enum.map(default_columns, fn col -> {flatten_label(col), flatten_value(col)} end)
+  defp build_options(default_columns, column_custom_label, opt)
+       when is_map(column_custom_label) do
+    custom_label_columns = Enum.filter(default_columns, &Map.has_key?(column_custom_label, &1))
+    remaining_columns = default_columns -- custom_label_columns
+
+    build_options(remaining_columns, nil, opt) ++
+      Enum.map(custom_label_columns, &{Map.get(column_custom_label, &1), flatten_value(&1)})
   end
 
   defp parse_columns(columns, default_columns) when columns not in [nil, "", [], [""]] do
@@ -358,24 +423,32 @@ defmodule Itsm.Paging do
         {query, modules} = do_ensure_join(query, modules, parent, child_assoc)
         ensure_join(query, modules, {child_assoc, next_step})
 
-      field when is_atom(field) ->
+      _field ->
         {query, modules}
     end
   end
 
   defp do_ensure_join(query, modules, parent_name, assoc_name) do
-    if has_named_binding?(query, assoc_name) do
+    if Map.has_key?(modules, assoc_name) do
       {query, modules}
     else
-      parent_mod = Map.fetch!(modules, parent_name)
-      %{related: child_mod} = parent_mod.__schema__(:association, assoc_name)
+      parent_mod = Map.get(modules, parent_name)
 
-      new_query =
-        join(query, :left, [{^parent_name, p}], a in assoc(p, ^assoc_name), as: ^assoc_name)
+      if assoc_name in parent_mod.__schema__(:associations) do
+        if has_named_binding?(query, assoc_name) do
+          %{related: child_mod} = parent_mod.__schema__(:association, assoc_name)
+          {query, Map.put(modules, assoc_name, child_mod)}
+        else
+          %{related: child_mod} = parent_mod.__schema__(:association, assoc_name)
 
-      new_modules = Map.put(modules, assoc_name, child_mod)
+          new_query =
+            join(query, :left, [{^parent_name, p}], a in assoc(p, ^assoc_name), as: ^assoc_name)
 
-      {new_query, new_modules}
+          {new_query, Map.put(modules, assoc_name, child_mod)}
+        end
+      else
+        {query, modules}
+      end
     end
   end
 

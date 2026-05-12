@@ -66,9 +66,9 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   end
 
   def handle_event("delete_attachment", %{"id" => id}, socket) do
-    %{current_user: current_user} = socket.assigns
+    %{current_user: action_user} = socket.assigns
 
-    case Attachments.delete_attachment(id, %{"current_user" => current_user}) do
+    case Attachments.delete_attachment(action_user, id) do
       {:ok, attachment} ->
         {:noreply, stream_delete(socket, :attachments, attachment)}
 
@@ -93,7 +93,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
 
   defp assign_new_options(socket) do
     socket
-    |> assign_new(:crew_options, fn -> Accounts.crew_ids_names(socket.assigns.current_user) end)
+    |> assign_new(:crew_options, fn -> Accounts.crew_ids_names(socket.assigns[:current_user]) end)
     |> assign_new(:env_options, fn -> CommonCodes.get_select_options("운영_구분") end)
     |> assign_new(:group_code_options, fn -> CommonCodes.get_select_options("운영체제") end)
     |> assign_new(:location_options, fn -> CommonCodes.get_select_options("장소") end)
@@ -141,9 +141,14 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   end
 
   defp save_request(socket, :edit, params) do
-    %{request: request} = socket.assigns
+    %{current_user: action_user, request: request} = socket.assigns
 
-    case Service.update_request(request, LiveUtils.build_attachment_consumer(socket), params) do
+    case Service.update_request(
+           action_user,
+           request,
+           LiveUtils.build_attachment_consumer(socket),
+           params
+         ) do
       {:ok, request} ->
         {:noreply,
          socket
@@ -162,12 +167,12 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   end
 
   defp save_request(socket, :new, params) do
-    %{current_user: user, category: category} = socket.assigns
+    %{current_user: action_user, category: category} = socket.assigns
 
     crews = Crews.get_crews(params["referenced_crews"])
 
     case Service.create_request(
-           user,
+           action_user,
            category,
            crews,
            LiveUtils.build_attachment_consumer(socket),

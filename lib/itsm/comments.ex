@@ -29,9 +29,9 @@ defmodule Itsm.Comments do
     |> Repo.all()
   end
 
-  def changeset_comment(resource, %User{} = user, attrs \\ %{}) do
+  def changeset_comment(%User{} = action_user, resource, attrs \\ %{}) do
     %Comment{
-      user: user,
+      user: action_user,
       resource_type: Utils.resource_name(resource),
       resource_id: resource.id
     }
@@ -42,8 +42,8 @@ defmodule Itsm.Comments do
     Comment.changeset(comment, attrs)
   end
 
-  def create_comment(resource, %User{} = user, attrs \\ %{}) do
-    changeset_comment(resource, user, attrs)
+  def create_comment(%User{} = action_user, resource, attrs \\ %{}) do
+    changeset_comment(action_user, resource, attrs)
     |> Repo.insert()
     |> case do
       {:ok, comment} ->
@@ -52,12 +52,8 @@ defmodule Itsm.Comments do
 
         # 🌟 2. 여기서 직접 PubSub 방송을 쏩니다! (기존 로직 활용)
         # Requests.broadcast_request(resource.id, {:comment_created, preloaded_comment})
-        Itsm.Utils.broadcast(
-          Requests,
-          {attrs["current_user"], :create_comment, preloaded_comment}
-        )
-
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :create_comment, comment})
+        Itsm.Utils.broadcast(Requests, {action_user, :create_comment, preloaded_comment})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_comment, comment})
 
         {:ok, preloaded_comment}
 

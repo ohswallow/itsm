@@ -64,6 +64,10 @@ defmodule Itsm.Utils do
     end
   end
 
+  def blank?(nil), do: true
+  def blank?(""), do: true
+  def blank?(_), do: false
+
   defp get_topic(%{__struct__: module}), do: extract_domain(module)
 
   defp get_topic(module) when is_atom(module) do

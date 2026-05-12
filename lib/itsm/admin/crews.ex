@@ -1,5 +1,6 @@
 defmodule Itsm.Admin.Crews do
   import Ecto.Query, warn: false
+  alias Itsm.Accounts.User
   alias Itsm.Repo
   alias Itsm.Crews.Crew
 
@@ -10,9 +11,9 @@ defmodule Itsm.Admin.Crews do
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
   end
 
-  defdelegate create_crew(leader, attrs \\ %{}), to: Itsm.Crews
+  defdelegate create_crew(action_user, attrs \\ %{}), to: Itsm.Crews
 
-  def update_crew(%Crew{} = crew, attrs) do
+  def update_crew(%User{} = action_user, %Crew{} = crew, attrs) do
     crew
     |> Crew.changeset(attrs)
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
@@ -21,8 +22,8 @@ defmodule Itsm.Admin.Crews do
       {:ok, crew} ->
         crew = Repo.preload(crew, [:leader])
         event = :update_crew
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, crew})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, crew})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, event, crew})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, crew})
         {:ok, crew}
 
       {:error, changeset} ->
@@ -30,13 +31,13 @@ defmodule Itsm.Admin.Crews do
     end
   end
 
-  def delete_crew(%{"id" => id} = attrs) do
+  def delete_crew(%User{} = action_user, %{"id" => id}) do
     Repo.delete(get_crew!(id))
     |> case do
       {:ok, crew} ->
         event = :delete_crew
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, crew})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, crew})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, event, crew})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, crew})
         {:ok, crew}
 
       {:error, changeset} ->

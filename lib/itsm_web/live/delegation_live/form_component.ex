@@ -152,7 +152,7 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
   end
 
   defp save_delegation(socket, :new, delegation_params) do
-    %{current_user: current_user} = socket.assigns
+    %{current_user: action_user} = socket.assigns
     %{"delegator_id" => delegator_id, "delegatee_id" => delegatee_id} = delegation_params
 
     delegator = Accounts.get_user!(delegator_id)
@@ -170,7 +170,7 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
       end)
 
     case Delegations.create_delegation(
-           current_user,
+           action_user,
            delegator,
            delegatee,
            correct_delegation_params

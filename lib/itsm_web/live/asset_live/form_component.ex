@@ -16,12 +16,12 @@ defmodule ItsmWeb.AssetLive.FormComponent do
   def update(%{asset: asset} = assigns, socket) do
     {:ok,
      socket
-     |> assign_new_options()
      |> assign(assigns)
      |> assign(:conflict, false)
      |> assign_new(:form, fn ->
        to_form(Assets.change_asset(asset))
-     end)}
+     end)
+     |> assign_new_options()}
   end
 
   def render(assigns) do
@@ -95,6 +95,22 @@ defmodule ItsmWeb.AssetLive.FormComponent do
           options={@location_options}
         />
         <.input field={@form[:is_dmz_zone]} type="checkbox" label={gettext("Is dmz zone")} />
+
+        <.input
+          field={@form[:service_crew_id]}
+          type="select"
+          label={gettext("service_crew")}
+          prompt="Choose a value"
+          options={@crew_options}
+        />
+        <.input
+          field={@form[:system_crew_id]}
+          type="select"
+          label={gettext("system_crew")}
+          prompt="Choose a value"
+          options={@crew_options}
+        />
+
         <:actions>
           <.button :if={!@conflict} phx-disable-with="Saving...">Save Asset</.button>
         </:actions>
@@ -120,10 +136,15 @@ defmodule ItsmWeb.AssetLive.FormComponent do
     |> assign_new(:infra_type_options, fn -> CommonCodes.get_select_options("인프라_유형") end)
     |> assign_new(:env_options, fn -> CommonCodes.get_select_options("운영_구분") end)
     |> assign_new(:location_options, fn -> CommonCodes.get_select_options("장소") end)
+    |> assign_new(:crew_options, fn ->
+      Itsm.Crews.options_excluding_user(socket.assigns[:current_user])
+    end)
   end
 
   defp save_asset(socket, :new, asset_params) do
-    case Assets.create_asset(asset_params) do
+    %{current_user: action_user} = socket.assigns
+
+    case Assets.create_asset(action_user, asset_params) do
       {:ok, _asset} ->
         {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 
@@ -133,7 +154,9 @@ defmodule ItsmWeb.AssetLive.FormComponent do
   end
 
   defp save_asset(socket, :edit, asset_params) do
-    case Assets.update_asset(socket.assigns.asset, asset_params) do
+    %{current_user: action_user} = socket.assigns
+
+    case Assets.update_asset(action_user, socket.assigns.asset, asset_params) do
       {:ok, _asset} ->
         {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 

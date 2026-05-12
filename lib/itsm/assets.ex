@@ -4,6 +4,7 @@ defmodule Itsm.Assets do
   """
 
   import Ecto.Query, warn: false
+  alias Itsm.Accounts.User
   alias Itsm.Repo
 
   alias Itsm.Assets.Asset
@@ -94,14 +95,14 @@ defmodule Itsm.Assets do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_asset(attrs \\ %{}) do
+  def create_asset(%User{} = action_user, attrs) do
     %Asset{}
     |> Asset.changeset(attrs)
     |> Repo.insert()
     |> case do
       {:ok, asset} ->
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :create_asset, asset})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :create_asset, asset})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, :create_asset, asset})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_asset, asset})
         {:ok, asset}
 
       {:error, changeset} ->
@@ -121,14 +122,14 @@ defmodule Itsm.Assets do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_asset(%Asset{} = asset, attrs) do
+  def update_asset(%User{} = action_user, %Asset{} = asset, attrs) do
     asset
     |> Asset.changeset(attrs)
     |> Repo.update()
     |> case do
       {:ok, asset} ->
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :update_asset, asset})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :update_asset, asset})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, :update_asset, asset})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :update_asset, asset})
         {:ok, asset}
 
       {:error, changeset} ->
@@ -148,12 +149,12 @@ defmodule Itsm.Assets do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_asset(%{"id" => id} = attrs) do
+  def delete_asset(%User{} = action_user, %{"id" => id}) do
     Repo.delete(get_asset!(id))
     |> case do
       {:ok, asset} ->
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :delete_asset, asset})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :delete_asset, asset})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, :delete_asset, asset})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :delete_asset, asset})
         {:ok, asset}
 
       {:error, changeset} ->
@@ -177,7 +178,7 @@ defmodule Itsm.Assets do
   @doc """
   Asset과 OsInstance를 순차적으로 생성하되, 하나라도 실패하면 전체 롤백
   """
-  def create_asset_with_os(request) do
+  def create_asset_with_os(%User{} = action_user, request) do
     # embeds_many 리스트를 가져옵니다. (비어있을 경우를 대비해 빈 리스트 기본값)
     vm_list = request.common_k_create_vms || []
 
@@ -201,7 +202,7 @@ defmodule Itsm.Assets do
             is_dmz_zone: vm_data.is_dmz_zone
           }
 
-          with {:ok, asset} <- create_asset(asset_attrs),
+          with {:ok, asset} <- create_asset(action_user, asset_attrs),
 
                # 2. OS 속성 매핑 (위에서 생성된 asset.id를 FK로 삽입)
                os_attrs = %{
@@ -214,7 +215,7 @@ defmodule Itsm.Assets do
                  # FK 삽입
                  asset_id: asset.id
                },
-               {:ok, os_instance} <- OsInstances.create_os_instance(os_attrs) do
+               {:ok, os_instance} <- OsInstances.create_os_instance(action_user, os_attrs) do
             # 둘 다 성공하면 결과 반환
             %{asset: asset, os_instance: os_instance}
           else

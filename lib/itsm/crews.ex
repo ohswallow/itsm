@@ -101,13 +101,13 @@ defmodule Itsm.Crews do
     Crew.changeset(crew, attrs)
   end
 
-  def create_crew(%User{} = leader, attrs \\ %{}) do
-    Crew.changeset(%Crew{leader: leader, users: [leader]}, attrs)
+  def create_crew(%User{} = action_user, attrs \\ %{}) do
+    Crew.changeset(%Crew{leader: action_user, users: [action_user]}, attrs)
     |> Repo.insert()
     |> case do
       {:ok, crew} ->
         crew = Repo.preload(crew, [:leader, :users])
-        Utils.broadcasts(__MODULE__, {attrs["current_user"], :create_crew, {:crews, crew}})
+        Utils.broadcasts(__MODULE__, {action_user, :create_crew, {:crews, crew}})
         {:ok, crew}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -115,7 +115,8 @@ defmodule Itsm.Crews do
     end
   end
 
-  def create_crew_references(repo, %_{id: id} = resource, crews) when is_list(crews) do
+  def create_crew_references(%User{} = action_user, repo, %_{id: id} = resource, crews)
+      when is_list(crews) do
     Enum.reduce_while(crews, {:ok, []}, fn crew, {:ok, acc} ->
       %CrewReference{
         resource_type: Utils.resource_name(resource),
@@ -125,6 +126,7 @@ defmodule Itsm.Crews do
       |> repo.insert()
       |> case do
         {:ok, crew_reference} ->
+          Utils.broadcasts(__MODULE__, {action_user, :create_crew_references, crew_reference})
           {:cont, {:ok, [crew_reference | acc]}}
 
         {:error, reason} ->
@@ -133,7 +135,7 @@ defmodule Itsm.Crews do
     end)
   end
 
-  def add_users(%Crew{} = crew, add_users, %User{} = action_user) when is_list(add_users) do
+  def add_users(%User{} = action_user, %Crew{} = crew, add_users) when is_list(add_users) do
     crew = Repo.preload(crew, :users)
 
     new_users =
@@ -154,7 +156,7 @@ defmodule Itsm.Crews do
     end
   end
 
-  def switch_leader(%Crew{} = crew, %User{} = leader, %User{} = action_user) do
+  def switch_leader(%User{} = action_user, %Crew{} = crew, %User{} = leader) do
     changeset = Crew.leader_changeset(crew, leader)
 
     with :ok <- ensure_leader(crew, action_user),
@@ -173,7 +175,7 @@ defmodule Itsm.Crews do
     end
   end
 
-  def update_crew(%Crew{} = crew, %User{} = action_user, attrs \\ %{}) do
+  def update_crew(%User{} = action_user, %Crew{} = crew, attrs \\ %{}) do
     crew = Repo.preload(crew, :leader)
     changeset = Crew.changeset(crew, attrs)
 
@@ -190,7 +192,7 @@ defmodule Itsm.Crews do
     end
   end
 
-  def delete_crew(%Crew{} = crew, %User{} = action_user) do
+  def delete_crew(%User{} = action_user, %Crew{} = crew) do
     crew = Repo.preload(crew, :leader)
 
     with :ok <- ensure_leader(crew, action_user),
@@ -208,7 +210,7 @@ defmodule Itsm.Crews do
     end
   end
 
-  def delete_user(%Crew{} = crew, %User{} = target_user, %User{} = action_user) do
+  def delete_user(%User{} = action_user, %Crew{} = crew, %User{} = target_user) do
     crews_users = Repo.get_by(CrewsUsers, crew_id: crew.id, user_id: target_user.id)
 
     with :ok <- ensure_delete_auth(crew, target_user, action_user),

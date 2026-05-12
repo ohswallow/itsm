@@ -16,7 +16,8 @@ defmodule <%= inspect context.web_module %>.<%= inspect Module.concat(schema.web
   end
 
   def handle_event("delete", %{"id" => _id} = <%= schema.singular %>_params, socket) do
-    {:ok, <%= schema.singular %>} = <%= inspect context.alias %>.delete_<%= schema.singular %>(<%= schema.singular %>_params)
+    %{current_user: action_user} = socket.assigns
+    {:ok, <%= schema.singular %>} = <%= inspect context.alias %>.delete_<%= schema.singular %>(action_user, <%= schema.singular %>_params)
 
     {:noreply, stream_delete(socket, :<%= schema.collection %>, <%= schema.singular %>)}
   end

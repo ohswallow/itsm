@@ -1,6 +1,7 @@
 defmodule Itsm.Attachments do
   import Ecto.Query, warn: false
 
+  alias Itsm.Accounts.User
   alias Itsm.Repo
   alias Itsm.Utils
   alias Itsm.Attachments.Attachment
@@ -18,16 +19,13 @@ defmodule Itsm.Attachments do
     |> Repo.all()
   end
 
-  def create_attachment(attrs \\ %{}) do
+  def create_attachment(%User{} = action_user, attrs \\ %{}) do
     %Attachment{}
     |> Attachment.changeset(attrs)
     |> Repo.insert()
     |> case do
       {:ok, attachment} ->
-        Itsm.Utils.broadcasts(
-          __MODULE__,
-          {attrs["curremt_user"], :create_attachments, attachment}
-        )
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_attachments, attachment})
 
         {:ok, attachment}
 
@@ -36,7 +34,7 @@ defmodule Itsm.Attachments do
     end
   end
 
-  def create_attachments(repo, resource, consumer_fn, attachments_attrs) do
+  def create_attachments(%User{} = action_user, repo, resource, consumer_fn) do
     attachments = consumer_fn.()
 
     Enum.reduce_while(attachments, {:ok, []}, fn attrs, {:ok, acc} ->
@@ -45,10 +43,7 @@ defmodule Itsm.Attachments do
       |> repo.insert()
       |> case do
         {:ok, attachment} ->
-          Itsm.Utils.broadcasts(
-            __MODULE__,
-            {attachments_attrs["curremt_user"], :create_attachments, attachment}
-          )
+          Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_attachments, attachment})
 
           {:cont, {:ok, [attachment | acc]}}
 
@@ -58,16 +53,14 @@ defmodule Itsm.Attachments do
     end)
   end
 
-  def delete_attachment(id, attrs \\ []) do
+  def delete_attachment(%User{} = action_user, id) do
     get_attachment!(id)
     |> Attachment.delete_changeset()
     |> Repo.update()
     |> case do
       {:ok, attachment} ->
-        Itsm.Utils.broadcasts(
-          __MODULE__,
-          {attrs["current_user"], :delete_attachment, attachment}
-        )
+        Itsm.Utils.broadcast(__MODULE__, {action_user, :delete_attachment, attachment})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :delete_attachment, attachment})
 
         {:ok, attachment}
 

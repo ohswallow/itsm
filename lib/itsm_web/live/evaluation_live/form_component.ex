@@ -81,7 +81,9 @@ defmodule ItsmWeb.EvaluationLive.FormComponent do
   end
 
   defp save_evaluation(socket, :edit, evaluation_params) do
-    case Evaluations.update_evaluation(socket.assigns.evaluation, evaluation_params) do
+    %{current_user: action_user, evaluation: evaluation} = socket.assigns
+
+    case Evaluations.update_evaluation(action_user, evaluation, evaluation_params) do
       {:ok, _evaluation} ->
         {:noreply, socket |> push_patch(to: socket.assigns.patcg)}
 

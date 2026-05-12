@@ -1,5 +1,6 @@
 defmodule Itsm.Admin.Categories do
   import Ecto.Query, warn: false
+  alias Itsm.Accounts.User
   alias Itsm.Repo
   alias Itsm.Service.Category
 
@@ -10,15 +11,15 @@ defmodule Itsm.Admin.Categories do
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
   end
 
-  def create_category(attrs \\ %{}) do
+  def create_category(%User{} = action_user, attrs \\ %{}) do
     %Category{}
     |> Category.changeset(attrs)
     |> Repo.insert()
     |> case do
       {:ok, category} ->
         event = :create_category
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, category})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, category})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, event, category})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, category})
         {:ok, category}
 
       {:error, changeset} ->
@@ -26,7 +27,7 @@ defmodule Itsm.Admin.Categories do
     end
   end
 
-  def update_category(%Category{} = category, attrs) do
+  def update_category(%User{} = action_user, %Category{} = category, attrs) do
     category
     |> Category.changeset(attrs)
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
@@ -34,8 +35,8 @@ defmodule Itsm.Admin.Categories do
     |> case do
       {:ok, category} ->
         event = :update_category
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, category})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, category})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, event, category})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, category})
         {:ok, category}
 
       {:error, changeset} ->
@@ -43,13 +44,13 @@ defmodule Itsm.Admin.Categories do
     end
   end
 
-  def delete_category(%{"id" => id} = attrs) do
+  def delete_category(%User{} = action_user, %{"id" => id}) do
     Repo.delete(get_category!(id))
     |> case do
       {:ok, category} ->
         event = :delete_category
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, category})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, category})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, event, category})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, category})
         {:ok, category}
 
       {:error, changeset} ->

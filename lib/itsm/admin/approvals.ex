@@ -1,5 +1,6 @@
 defmodule Itsm.Admin.Approvals do
   import Ecto.Query, warn: false
+  alias Itsm.Accounts.User
   alias Itsm.Repo
   alias Itsm.Service.Approval
 
@@ -10,7 +11,7 @@ defmodule Itsm.Admin.Approvals do
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
   end
 
-  def update_approval(%Approval{} = approval, attrs) do
+  def update_approval(%User{} = action_user, %Approval{} = approval, attrs) do
     approval
     |> Approval.changeset(attrs)
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
@@ -18,8 +19,8 @@ defmodule Itsm.Admin.Approvals do
     |> case do
       {:ok, approval} ->
         event = :update_approval
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, approval})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, approval})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, event, approval})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, approval})
         {:ok, approval}
 
       {:error, changeset} ->
@@ -27,13 +28,13 @@ defmodule Itsm.Admin.Approvals do
     end
   end
 
-  def delete_approval(%{"id" => id} = attrs) do
+  def delete_approval(%User{} = action_user, %{"id" => id}) do
     Repo.delete(get_approval!(id))
     |> case do
       {:ok, approval} ->
         event = :delete_approval
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, approval})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, approval})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, event, approval})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, approval})
         {:ok, approval}
 
       {:error, changeset} ->

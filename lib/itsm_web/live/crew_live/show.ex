@@ -31,22 +31,20 @@ defmodule ItsmWeb.CrewLive.Show do
   end
 
   def handle_event("switch_leader", %{"user-id" => user_id}, socket) do
-    %{crew: crew, current_user: current_user} = socket.assigns
-
     leader = Accounts.get_user!(user_id)
 
-    switch_leader(socket, crew, leader, current_user)
+    switch_leader(socket, leader)
   end
 
   def handle_event("remove_member", %{"user-id" => user_id}, socket) do
-    %{crew: crew, current_user: current_user} = socket.assigns
+    %{crew: crew, current_user: action_user} = socket.assigns
 
     target_user = Accounts.get_user!(user_id)
 
-    case Crews.delete_user(crew, target_user, current_user) do
+    case Crews.delete_user(action_user, crew, target_user) do
       {:ok, _target_user} ->
         msg =
-          if current_user == target_user,
+          if action_user == target_user,
             do: "You have left the crew",
             else: "Member removed successfully"
 
@@ -64,11 +62,11 @@ defmodule ItsmWeb.CrewLive.Show do
   end
 
   def handle_event("show_member_modal", _params, socket) do
-    %{crew: crew, current_user: current_user} = socket.assigns
+    %{crew: crew, current_user: action_user} = socket.assigns
 
     # 리더가 없을경우 현재 로그인 사람 리더가 됨
     if Enum.empty?(crew.users) and crew.leader in ["", nil] do
-      switch_leader(socket, crew, current_user, current_user)
+      switch_leader(socket, action_user)
     else
       {:noreply, assign(socket, :show_member_modal, true)}
     end
@@ -91,7 +89,7 @@ defmodule ItsmWeb.CrewLive.Show do
 
     users = Accounts.get_users(user_ids)
 
-    case Crews.add_users(crew, users, action_user) do
+    case Crews.add_users(action_user, crew, users) do
       {:ok, _crew} ->
         socket =
           users
@@ -184,8 +182,10 @@ defmodule ItsmWeb.CrewLive.Show do
     {:noreply, socket}
   end
 
-  defp switch_leader(socket, crew, leader, current_user) do
-    case Crews.switch_leader(crew, leader, current_user) do
+  defp switch_leader(socket, leader) do
+    %{crew: crew, current_user: action_user} = socket.assigns
+
+    case Crews.switch_leader(action_user, crew, leader) do
       {:ok, crew} ->
         crew =
           Crews.get_crew!(crew.id)

@@ -4,6 +4,7 @@ defmodule Itsm.OsInstances do
   """
 
   import Ecto.Query, warn: false
+  alias Itsm.Accounts.User
   alias Itsm.Repo
 
   alias Itsm.OsInstances.OsInstance
@@ -49,16 +50,13 @@ defmodule Itsm.OsInstances do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_os_instance(attrs \\ %{}) do
+  def create_os_instance(%User{} = action_user, attrs \\ %{}) do
     %OsInstance{}
     |> OsInstance.changeset(attrs)
     |> Repo.insert()
     |> case do
       {:ok, os_istance} ->
-        Itsm.Utils.broadcasts(
-          __MODULE__,
-          {attrs["current_user"], :create_os_instance, os_istance}
-        )
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_os_instance, os_istance})
 
         {:ok, os_istance}
 
@@ -79,22 +77,14 @@ defmodule Itsm.OsInstances do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_os_instance(%OsInstance{} = os_instance, attrs) do
+  def update_os_instance(%User{} = action_user, %OsInstance{} = os_instance, attrs) do
     os_instance
     |> OsInstance.changeset(attrs)
     |> Repo.update()
     |> case do
       {:ok, os_istance} ->
-        Itsm.Utils.broadcast(
-          __MODULE__,
-          {attrs["current_user"], :update_os_instance, os_istance}
-        )
-
-        Itsm.Utils.broadcasts(
-          __MODULE__,
-          {attrs["current_user"], :update_os_instance, os_istance}
-        )
-
+        Itsm.Utils.broadcast(__MODULE__, {action_user, :update_os_instance, os_istance})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :update_os_instance, os_istance})
         {:ok, os_istance}
 
       {:error, changeset} ->
@@ -114,20 +104,12 @@ defmodule Itsm.OsInstances do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_os_instance(%{"id" => id}, attrs) do
+  def delete_os_instance(%User{} = action_user, %{"id" => id}) do
     Repo.delete(get_os_instance!(id))
     |> case do
       {:ok, os_istance} ->
-        Itsm.Utils.broadcast(
-          __MODULE__,
-          {attrs["current_user"], :delete_os_instance, os_istance}
-        )
-
-        Itsm.Utils.broadcasts(
-          __MODULE__,
-          {attrs["current_user"], :delete_os_instance, os_istance}
-        )
-
+        Itsm.Utils.broadcast(__MODULE__, {action_user, :delete_os_instance, os_istance})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :delete_os_instance, os_istance})
         {:ok, os_istance}
 
       {:error, changeset} ->

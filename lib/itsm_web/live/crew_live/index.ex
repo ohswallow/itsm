@@ -44,10 +44,10 @@ defmodule ItsmWeb.CrewLive.Index do
   end
 
   def handle_event("delete", %{"id" => id}, socket) do
+    %{current_user: action_user} = socket.assigns
     crew = Crews.get_crew!(id)
-    current_user = socket.assigns.current_user
 
-    case Crews.delete_crew(crew, current_user) do
+    case Crews.delete_crew(action_user, crew) do
       {:ok, crew} ->
         {:noreply,
          socket

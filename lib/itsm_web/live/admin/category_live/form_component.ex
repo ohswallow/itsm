@@ -113,7 +113,13 @@ defmodule ItsmWeb.Admin.CategoryLive.FormComponent do
   end
 
   defp save_category(socket, :edit, category_params) do
-    case Categories.update_category(socket.assigns.category, category_params) do
+    %{current_user: action_user} = socket.assigns
+
+    case Categories.update_category(
+           action_user,
+           socket.assigns.category,
+           category_params
+         ) do
       {:ok, _category} ->
         {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 
@@ -123,7 +129,9 @@ defmodule ItsmWeb.Admin.CategoryLive.FormComponent do
   end
 
   defp save_category(socket, :new, category_params) do
-    case Categories.create_category(category_params) do
+    %{current_user: action_user} = socket.assigns
+
+    case Categories.create_category(action_user, category_params) do
       {:ok, _category} ->
         {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 

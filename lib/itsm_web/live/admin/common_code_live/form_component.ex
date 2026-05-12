@@ -79,7 +79,13 @@ defmodule ItsmWeb.Admin.CommonCodeLive.FormComponent do
   end
 
   defp save_common_code(socket, :edit, common_code_params) do
-    case CommonCodes.update_common_code(socket.assigns.common_code, common_code_params) do
+    %{current_user: action_user} = socket.assigns
+
+    case CommonCodes.update_common_code(
+           action_user,
+           socket.assigns.common_code,
+           common_code_params
+         ) do
       {:ok, _common_code} ->
         {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 
@@ -89,7 +95,9 @@ defmodule ItsmWeb.Admin.CommonCodeLive.FormComponent do
   end
 
   defp save_common_code(socket, :new, common_code_params) do
-    case CommonCodes.create_common_code(common_code_params) do
+    %{current_user: action_user} = socket.assigns
+
+    case CommonCodes.create_common_code(action_user, common_code_params) do
       {:ok, _common_code} ->
         {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 

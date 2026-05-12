@@ -4,6 +4,7 @@ defmodule Itsm.Boards do
   """
 
   import Ecto.Query, warn: false
+  alias Itsm.Accounts.User
   alias Itsm.Repo
   alias Itsm.Boards.Board
 
@@ -12,13 +13,13 @@ defmodule Itsm.Boards do
 
   def list_boards, do: Repo.all(Board)
 
-  def create_board(attrs \\ %{}) do
+  def create_board(%User{} = action_user, attrs \\ %{}) do
     %Board{}
     |> Board.changeset(attrs)
     |> Repo.insert()
     |> case do
       {:ok, board} ->
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :create_board, board})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_board, board})
         {:ok, board}
 
       {:error, changeset} ->
@@ -26,14 +27,14 @@ defmodule Itsm.Boards do
     end
   end
 
-  def update_board(%Board{} = board, attrs) do
+  def update_board(%User{} = action_user, %Board{} = board, attrs) do
     board
     |> Board.changeset(attrs)
     |> Repo.update()
     |> case do
       {:ok, board} ->
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :update_board, board})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :update_board, board})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, :update_board, board})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :update_board, board})
         {:ok, board}
 
       {:error, changeset} ->
@@ -41,12 +42,12 @@ defmodule Itsm.Boards do
     end
   end
 
-  def delete_board(%{"id" => id} = attrs) do
+  def delete_board(%User{} = action_user, %{"id" => id}) do
     Repo.delete(get_board!(id))
     |> case do
       {:ok, board} ->
-        Itsm.Utils.broadcast(Board, {attrs["current_user"], :delete_board, board})
-        Itsm.Utils.broadcasts(Board, {attrs["current_user"], :delete_board, board})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, :delete_board, board})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :delete_board, board})
         {:ok, board}
 
       {:error, changeset} ->

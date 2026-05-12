@@ -45,16 +45,16 @@ defmodule Itsm.Requests do
   # CUD
   # ==================================================
 
-  def create_request(%User{} = user, attrs \\ %{}) do
-    user
+  def create_request(%User{} = action_user, attrs \\ %{}) do
+    action_user
     |> Ecto.build_assoc(:requests)
     |> Request.changeset(attrs)
-    |> Ecto.Changeset.put_change(:requestor_name, user.display_name)
+    |> Ecto.Changeset.put_change(:requestor_name, action_user.display_name)
     |> Repo.insert()
     |> case do
       {:ok, request} ->
         request = Repo.preload(request, :category)
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :create_request, request})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_request, request})
         {:ok, request}
 
       {:error, _} = error ->
@@ -62,16 +62,14 @@ defmodule Itsm.Requests do
     end
   end
 
-  def delete_request(
-        %User{id: user_id},
-        %Request{requestor_id: user_id},
-        %{"id" => id} = attrs
-      ) do
+  def delete_request(%User{id: user_id} = action_user, %Request{requestor_id: user_id}, %{
+        "id" => id
+      }) do
     Repo.delete(get_request!(id))
     |> case do
       {:ok, request} ->
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :delete_request, request})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :delete_request, request})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, :delete_request, request})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :delete_request, request})
         {:ok, request}
 
       {:error, _} = error ->

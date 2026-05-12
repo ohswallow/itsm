@@ -1,6 +1,7 @@
 defmodule Itsm.Admin.Assets do
   import Ecto.Query, warn: false
 
+  alias Itsm.Accounts.User
   alias Itsm.Repo
   alias Itsm.Assets.Asset
 
@@ -11,9 +12,9 @@ defmodule Itsm.Admin.Assets do
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
   end
 
-  defdelegate create_asset(attrs \\ %{}), to: Itsm.Assets
+  defdelegate create_asset(action_user, attrs), to: Itsm.Assets
 
-  def update_asset(%Asset{} = asset, attrs) do
+  def update_asset(%User{} = action_user, %Asset{} = asset, attrs) do
     asset
     |> Asset.changeset(attrs)
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
@@ -21,8 +22,8 @@ defmodule Itsm.Admin.Assets do
     |> case do
       {:ok, asset} ->
         event = :update_asset
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, asset})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, asset})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, event, asset})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, asset})
         {:ok, asset}
 
       {:error, changeset} ->
@@ -30,13 +31,13 @@ defmodule Itsm.Admin.Assets do
     end
   end
 
-  def delete_asset(%{"id" => id} = attrs) do
+  def delete_asset(%User{} = action_user, %{"id" => id}) do
     Repo.delete(get_asset!(id))
     |> case do
       {:ok, asset} ->
         event = :delete_asset
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, asset})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, asset})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, event, asset})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, asset})
         {:ok, asset}
 
       {:error, changeset} ->

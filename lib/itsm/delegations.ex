@@ -86,12 +86,12 @@ defmodule Itsm.Delegations do
 
   """
 
-  def create_delegation(%User{} = current_user, %User{} = delegator, %User{} = delegatee, attrs) do
+  def create_delegation(%User{} = action_user, %User{} = delegator, %User{} = delegatee, attrs) do
     # 구조체 기반으로 필드 채우기
     %Delegation{
-      created_by: current_user,
-      created_by_id: current_user.id,
-      created_by_name: current_user.display_name,
+      created_by: action_user,
+      created_by_id: action_user.id,
+      created_by_name: action_user.display_name,
       delegator: delegator,
       delegator_id: delegator.id,
       delegator_name: delegator.display_name,
@@ -106,7 +106,7 @@ defmodule Itsm.Delegations do
     |> Repo.insert()
     |> case do
       {:ok, delegation} ->
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :create_delegation, delegation})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_delegation, delegation})
 
         {:ok, delegation}
 
@@ -201,25 +201,16 @@ defmodule Itsm.Delegations do
   #   |> Repo.update()
   # end
 
-  def delete_delegation(%{"id" => id} = attrs) do
+  def delete_delegation(%User{} = action_user, %{"id" => id}) do
     delegation = get_delegation!(id)
 
-    if delegation.created_by_id == attrs["current_user"].id or
-         attrs["current_user"].role == "admin" do
+    if delegation.created_by_id == action_user.id or action_user.role == "admin" do
       delegation
       |> Repo.delete()
       |> case do
         {:ok, delegation} ->
-          Itsm.Utils.broadcast(
-            __MODULE__,
-            {attrs["current_user"], :delete_delegation, delegation}
-          )
-
-          Itsm.Utils.broadcasts(
-            __MODULE__,
-            {attrs["current_user"], :delete_delegation, delegation}
-          )
-
+          Itsm.Utils.broadcast(__MODULE__, {action_user, :delete_delegation, delegation})
+          Itsm.Utils.broadcasts(__MODULE__, {action_user, :delete_delegation, delegation})
           {:ok, delegation}
 
         {:error, delegation} ->

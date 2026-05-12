@@ -97,7 +97,13 @@ defmodule ItsmWeb.Admin.RequestLive.FormComponent do
   end
 
   defp save_request(socket, :edit, request_params) do
-    case Requests.update_request(socket.assigns.request, request_params) do
+    %{current_user: action_user} = socket.assigns
+
+    case Requests.update_request(
+           action_user,
+           socket.assigns.request,
+           request_params
+         ) do
       {:ok, _request} ->
         {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 
@@ -107,7 +113,9 @@ defmodule ItsmWeb.Admin.RequestLive.FormComponent do
   end
 
   defp save_request(socket, :new, request_params) do
-    case Requests.create_request(socket.assigns.current_user, request_params) do
+    %{current_user: action_user} = socket.assigns
+
+    case Requests.create_request(action_user, request_params) do
       {:ok, _request} ->
         {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 

@@ -16,7 +16,9 @@ defmodule ItsmWeb.DelegationLive.Index do
   end
 
   def handle_event("delete", %{"id" => _id} = delegation_params, socket) do
-    case Delegations.delete_delegation(delegation_params) do
+    %{current_user: action_user} = socket.assigns
+
+    case Delegations.delete_delegation(action_user, delegation_params) do
       {:ok, delegation} ->
         {:noreply, stream_delete(socket, :delegations, delegation)}
 

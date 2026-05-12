@@ -90,6 +90,20 @@ defmodule Itsm.Accounts do
     |> Repo.insert()
   end
 
+  def register_user(%User{} = action_user, attrs) do
+    %User{}
+    |> User.registration_changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, user} ->
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :register_user, user})
+        {:ok, user}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking user changes.
 
@@ -413,13 +427,13 @@ defmodule Itsm.Accounts do
 
   def list_users, do: Repo.all(User)
 
-  def create_user(attrs \\ %{}) do
+  def create_user(%User{} = action_user, attrs \\ %{}) do
     %User{}
     |> User.changeset(attrs)
     |> Repo.insert()
     |> case do
       {:ok, user} ->
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :create_user, user})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_user, user})
         {:ok, user}
 
       {:error, changeset} ->
@@ -427,14 +441,14 @@ defmodule Itsm.Accounts do
     end
   end
 
-  def update_user(%User{} = user, attrs) do
+  def update_user(%User{} = action_user, %User{} = user, attrs) do
     user
     |> User.changeset(attrs)
     |> Repo.update()
     |> case do
       {:ok, user} ->
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :update_user, user})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :update_user, user})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, :update_user, user})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :update_user, user})
         {:ok, user}
 
       {:error, changeset} ->
@@ -442,12 +456,12 @@ defmodule Itsm.Accounts do
     end
   end
 
-  def delete_user(%{"id" => id} = attrs) do
+  def delete_user(%User{} = action_user, %{"id" => id}) do
     Repo.delete(get_user!(id))
     |> case do
       {:ok, user} ->
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :delete_user, user})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :delete_user, user})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, :delete_user, user})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :delete_user, user})
         {:ok, user}
 
       {:error, changeset} ->

@@ -71,10 +71,10 @@ defmodule ItsmWeb.CreateCommentDialog do
   # end
 
   def handle_event("save", %{"comment" => comment_params}, socket) do
-    %{request: request, action: action, current_user: user} = socket.assigns
+    %{request: request, action: action, current_user: action_user} = socket.assigns
 
-    with {:ok, _comment} <- Comments.create_comment(request, user, comment_params),
-         {:ok, _} <- do_action(action, request, user) do
+    with {:ok, _comment} <- Comments.create_comment(action_user, request, comment_params),
+         {:ok, _} <- do_action(action, request, action_user) do
       {:noreply,
        socket
        |> clear_flash()
@@ -86,8 +86,8 @@ defmodule ItsmWeb.CreateCommentDialog do
     end
   end
 
-  defp do_action(:approve, request, user), do: Approvals.approve(request, user)
-  defp do_action(:reject, request, user), do: Approvals.reject(request, user)
+  defp do_action(:approve, request, action_user), do: Approvals.approve(request, action_user)
+  defp do_action(:reject, request, action_user), do: Approvals.reject(request, action_user)
   # defp perform_action(:approve, request, user) do
   #   Service.approve_or_reject_request(request, user, :approve)
   # end

@@ -16,7 +16,7 @@ defmodule Itsm.Service do
   alias Itsm.Crews
 
   def create_request(
-        %User{} = user,
+        %User{} = action_user,
         %Category{} = category,
         crews,
         consumer_fn,
@@ -24,23 +24,23 @@ defmodule Itsm.Service do
       )
       when is_list(crews) and is_function(consumer_fn) do
     Multi.new()
-    |> Multi.insert(:request, Requests.change_request(user, category, attrs))
+    |> Multi.insert(:request, Requests.change_request(action_user, category, attrs))
     |> check_minimum_k_vms(attrs)
     |> Multi.run(:approval, fn repo, %{request: request} ->
-      Approvals.create_approval(repo, request, user, attrs)
+      Approvals.create_approval(action_user, repo, request)
     end)
     |> Multi.run(:attachment, fn repo, %{request: request} ->
-      Attachments.create_attachments(repo, request, consumer_fn, attrs)
+      Attachments.create_attachments(action_user, repo, request, consumer_fn)
     end)
     |> Multi.run(:crew_reference, fn repo, %{request: request} ->
-      Crews.create_crew_references(repo, request, crews)
+      Crews.create_crew_references(action_user, repo, request, crews)
     end)
     |> Repo.transact()
     |> case do
       {:ok, %{request: request}} ->
         request = Repo.preload(request, [:category, :attachments])
         Approvals.broadcast_approvals_list({:request_created, request})
-        Itsm.Utils.broadcasts(Requests, {user, :created_request, request})
+        Itsm.Utils.broadcasts(Requests, {action_user, :created_request, request})
         {:ok, request}
 
       error ->
@@ -49,22 +49,23 @@ defmodule Itsm.Service do
   end
 
   def update_request(
+        %User{id: user_id} = action_user,
         %Request{requestor_id: user_id} = request,
         consumer_fn,
-        %{"current_user" => %{id: user_id}} = attrs
+        attrs
       ) do
     Ecto.Multi.new()
     |> Ecto.Multi.update(:request, Request.changeset(request, attrs))
     |> Multi.run(:attachment, fn repo, %{request: request} ->
-      Attachments.create_attachments(repo, request, consumer_fn, attrs)
+      Attachments.create_attachments(action_user, repo, request, consumer_fn)
     end)
-    |> sync_crew_references(request, attrs["referenced_crews"])
+    |> sync_crew_references(action_user, request, attrs["referenced_crews"])
     |> Repo.transact()
     |> case do
       {:ok, %{request: request}} ->
         request = Repo.preload(request, :category)
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :update_request, request})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :update_request, request})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, :update_request, request})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :update_request, request})
         {:ok, request}
 
       error ->
@@ -73,22 +74,22 @@ defmodule Itsm.Service do
   end
 
   def create_comment(
+        %User{} = action_user,
         resource,
-        %User{} = user,
         consumer_fn,
         attrs \\ %{}
       ) do
     Multi.new()
-    |> Multi.insert(:comment, Comments.changeset_comment(resource, user, attrs))
+    |> Multi.insert(:comment, Comments.changeset_comment(action_user, resource, attrs))
     |> Multi.run(:attachments, fn repo, %{comment: comment} ->
-      Attachments.create_attachments(repo, comment, consumer_fn, attrs)
+      Attachments.create_attachments(action_user, repo, comment, consumer_fn)
     end)
     |> Repo.transact()
     |> case do
       {:ok, %{comment: comment, attachments: attachments}} ->
-        Itsm.Utils.broadcasts(Comments, {user, :create_comment, comment})
-        Itsm.Utils.broadcast(Requests, resource, {user, :create_comment, comment})
-        Itsm.Utils.broadcasts(Attachments, {user, :create_attachments, attachments})
+        Itsm.Utils.broadcasts(Comments, {action_user, :create_comment, comment})
+        Itsm.Utils.broadcast(Requests, resource, {action_user, :create_comment, comment})
+        Itsm.Utils.broadcasts(Attachments, {action_user, :create_attachments, attachments})
         {:ok, comment}
 
       {:error, _} = error ->
@@ -96,7 +97,12 @@ defmodule Itsm.Service do
     end
   end
 
-  defp sync_crew_references(%Ecto.Multi{} = mult, %_{} = resource, crews_ids) do
+  defp sync_crew_references(
+         %Ecto.Multi{} = mult,
+         %User{} = action_user,
+         %_{} = resource,
+         crews_ids
+       ) do
     mult
     |> Ecto.Multi.run(:diff, fn repo, _ ->
       db_crew_references = Crews.list_crew_reference(repo, resource)
@@ -123,7 +129,7 @@ defmodule Itsm.Service do
       end)
     end)
     |> Ecto.Multi.run(:create, fn repo, %{diff: %{add_id_list: add_id_list}} ->
-      Crews.create_crew_references(repo, resource, Crews.get_crews(add_id_list))
+      Crews.create_crew_references(action_user, repo, resource, Crews.get_crews(add_id_list))
     end)
   end
 

@@ -153,7 +153,9 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
   end
 
   defp save_asset(socket, :edit, asset_params) do
-    case Assets.update_asset(socket.assigns.asset, asset_params) do
+    %{current_user: action_user, asset: asset} = socket.assigns
+
+    case Assets.update_asset(action_user, asset, asset_params) do
       {:ok, _asset} ->
         {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 
@@ -163,7 +165,9 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
   end
 
   defp save_asset(socket, :new, asset_params) do
-    case Assets.create_asset(asset_params) do
+    %{current_user: action_user} = socket.assigns
+
+    case Assets.create_asset(action_user, asset_params) do
       {:ok, _asset} ->
         {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 

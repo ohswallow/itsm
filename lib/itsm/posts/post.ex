@@ -15,10 +15,10 @@ defmodule Itsm.Posts.Post do
   end
 
   @doc false
-  def changeset(post, attrs, current_user, selected_board_metadata) do
+  def changeset(post, attrs, action_user, selected_board_metadata) do
     post
     |> cast(attrs, [:title, :content, :metadata, :board_id])
-    |> put_change(:author_id, Map.get(current_user || %{}, :id))
+    |> put_change(:author_id, Map.get(action_user || %{}, :id))
     |> validate_required([:title, :content, :board_id])
     |> validate_metadata_required(selected_board_metadata["required"] || [])
   end
