@@ -63,7 +63,7 @@ defmodule ItsmWeb.PostLive.FormComponent do
           type="text"
           label={gettext("Title")}
         />
-        <.input field={@form[:content]} type="text" label={gettext("Content")} />
+        <.input field={@form[:content]} type="textarea" label={gettext("Content")} />
         <div
           :if={assigns[:selected_board] && Map.get(@selected_board, :metadata, %{})["fields"]}
           class="space-y-4"
@@ -135,14 +135,15 @@ defmodule ItsmWeb.PostLive.FormComponent do
   end
 
   def handle_event("validate", %{"post" => post_params}, socket) do
+    %{current_user: action_user, post: post} = socket.assigns
     selected_board = Itsm.Boards.get_board!(socket.assigns[:board_id] || post_params["board_id"])
-    post = Map.put(socket.assigns.post, :board_id, selected_board.id)
+    post = Map.put(post, :board_id, selected_board.id)
 
     changeset =
       Posts.change_post(
         post,
+        action_user: action_user,
         attrs: post_params,
-        current_user: socket.assigns.current_user,
         selected_board_metadata: Map.get(selected_board, :metadata, %{})
       )
 
@@ -160,7 +161,6 @@ defmodule ItsmWeb.PostLive.FormComponent do
       socket,
       socket.assigns.action,
       post_params,
-      socket.assigns.current_user,
       Map.get(selected_board, :metadata, %{})
     )
   end
@@ -171,13 +171,10 @@ defmodule ItsmWeb.PostLive.FormComponent do
     |> assign_new(:author_options, fn -> Itsm.Accounts.get_select_options() end)
   end
 
-  defp save_post(socket, :edit, post_params, current_user, selected_board_metadata) do
-    case Posts.update_post(
-           socket.assigns.post,
-           post_params,
-           current_user,
-           selected_board_metadata
-         ) do
+  defp save_post(socket, :edit, post_params, selected_board_metadata) do
+    %{current_user: action_user, post: post} = socket.assigns
+
+    case Posts.update_post(action_user, post, post_params, selected_board_metadata) do
       {:ok, _post} ->
         {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 
@@ -186,8 +183,10 @@ defmodule ItsmWeb.PostLive.FormComponent do
     end
   end
 
-  defp save_post(socket, :new, post_params, current_user, selected_board_metadata) do
-    case Posts.create_post(post_params, current_user, selected_board_metadata) do
+  defp save_post(socket, :new, post_params, selected_board_metadata) do
+    %{current_user: action_user} = socket.assigns
+
+    case Posts.create_post(action_user, post_params, selected_board_metadata) do
       {:ok, _post} ->
         {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 

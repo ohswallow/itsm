@@ -75,7 +75,9 @@ defmodule ItsmWeb.Admin.CrewLive.FormComponent do
   end
 
   defp save_crew(socket, :edit, crew_params) do
-    case Crews.update_crew(socket.assigns.crew, crew_params) do
+    %{current_user: action_user} = socket.assigns
+
+    case Crews.update_crew(action_user, socket.assigns.crew, crew_params) do
       {:ok, _crew} ->
         {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 
@@ -85,9 +87,9 @@ defmodule ItsmWeb.Admin.CrewLive.FormComponent do
   end
 
   defp save_crew(socket, :new, crew_params) do
-    current_user = socket.assigns.current_user
+    %{current_user: action_user} = socket.assigns
 
-    case Crews.create_crew(current_user, crew_params) do
+    case Crews.create_crew(action_user, crew_params) do
       {:ok, _crew} ->
         {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 

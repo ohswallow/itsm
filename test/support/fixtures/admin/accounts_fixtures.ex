@@ -3,12 +3,13 @@ defmodule Itsm.Admin.AccountsFixtures do
   This module defines test helpers for creating
   entities via the `Itsm.Admin.Accounts` context.
   """
+  alias Itsm.Accounts.User
 
   @doc """
   Generate a user.
   """
   def user_fixture(attrs \\ %{}) do
-    {:ok, user} =
+    attrs =
       attrs
       |> Enum.into(%{
         confirmed_at: ~U[2026-04-19 07:59:00Z],
@@ -24,7 +25,8 @@ defmodule Itsm.Admin.AccountsFixtures do
         password: "some password",
         role: "some role"
       })
-      |> Itsm.Admin.Accounts.create_user()
+
+    {:ok, user} = Itsm.Admin.Accounts.create_user(%User{}, attrs)
 
     user
   end

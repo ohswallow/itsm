@@ -1,5 +1,6 @@
 defmodule Itsm.Admin.Comments do
   import Ecto.Query, warn: false
+  alias Itsm.Accounts.User
   alias Itsm.Admin.Requests
   alias Itsm.Repo
   alias Itsm.Comments.Comment
@@ -11,9 +12,9 @@ defmodule Itsm.Admin.Comments do
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
   end
 
-  defdelegate create_comment(resource, user, attrs \\ %{}), to: Itsm.Comments
+  defdelegate create_comment(action_user, resource, attrs), to: Itsm.Comments
 
-  def update_comment(%Comment{} = comment, attrs) do
+  def update_comment(%User{} = action_user, %Comment{} = comment, attrs) do
     comment
     |> Comment.changeset(attrs)
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
@@ -21,10 +22,10 @@ defmodule Itsm.Admin.Comments do
     |> case do
       {:ok, comment} ->
         event = :update_comment
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, comment})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, comment})
-        Itsm.Utils.broadcast(Requests, {attrs["current_user"], event, comment})
-        Itsm.Utils.broadcasts(Requests, {attrs["current_user"], event, comment})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, event, comment})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, comment})
+        Itsm.Utils.broadcast(Requests, {action_user, event, comment})
+        Itsm.Utils.broadcasts(Requests, {action_user, event, comment})
         {:ok, comment}
 
       {:error, changeset} ->
@@ -32,15 +33,15 @@ defmodule Itsm.Admin.Comments do
     end
   end
 
-  def delete_comment(%{"id" => id} = attrs) do
+  def delete_comment(%User{} = action_user, %{"id" => id}) do
     Repo.delete(get_comment!(id))
     |> case do
       {:ok, comment} ->
         event = :delete_comment
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, comment})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, comment})
-        Itsm.Utils.broadcast(Requests, {attrs["current_user"], event, comment})
-        Itsm.Utils.broadcasts(Requests, {attrs["current_user"], event, comment})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, event, comment})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, comment})
+        Itsm.Utils.broadcast(Requests, {action_user, event, comment})
+        Itsm.Utils.broadcasts(Requests, {action_user, event, comment})
         {:ok, comment}
 
       {:error, changeset} ->

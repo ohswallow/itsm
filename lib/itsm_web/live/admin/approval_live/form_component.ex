@@ -93,7 +93,13 @@ defmodule ItsmWeb.Admin.ApprovalLive.FormComponent do
   end
 
   defp save_approval(socket, :edit, approval_params) do
-    case Approvals.update_approval(socket.assigns.approval, approval_params) do
+    %{current_user: action_user} = socket.assigns
+
+    case Approvals.update_approval(
+           action_user,
+           socket.assigns.approval,
+           approval_params
+         ) do
       {:ok, _approval} ->
         {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 

@@ -70,8 +70,6 @@ defmodule ItsmWeb.Admin.UserLive.FormComponent do
           prompt="Choose a value"
           options={@organization_options}
         />
-        <%!-- <.input field={@form[:organization]} type="text" label={gettext("Organization")} />
-        <.input field={@form[:organization_code]} type="text" label={gettext("Organization Code")} /> --%>
         <.input
           field={@form[:department_code]}
           type="select"
@@ -79,8 +77,6 @@ defmodule ItsmWeb.Admin.UserLive.FormComponent do
           prompt="Choose a value"
           options={@department_options}
         />
-        <%!-- <.input field={@form[:department]} type="text" label={gettext("Department")} />
-        <.input field={@form[:department_code]} type="text" label={gettext("Department Code")} /> --%>
         <.input field={@form[:role]} type="text" label={gettext("Role")} />
         <.itsm_calendar
           :if={@action == :edit}
@@ -113,7 +109,9 @@ defmodule ItsmWeb.Admin.UserLive.FormComponent do
   end
 
   defp save_user(socket, :edit, user_params) do
-    case Accounts.update_user(socket.assigns.user, user_params) do
+    %{current_user: action_user} = socket.assigns
+
+    case Accounts.update_user(action_user, socket.assigns.user, user_params) do
       {:ok, _user} ->
         {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 
@@ -123,7 +121,9 @@ defmodule ItsmWeb.Admin.UserLive.FormComponent do
   end
 
   defp save_user(socket, :new, user_params) do
-    case Itsm.Accounts.register_user(user_params) do
+    %{current_user: action_user} = socket.assigns
+
+    case Accounts.register_user(action_user, user_params) do
       {:ok, _user} ->
         {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 

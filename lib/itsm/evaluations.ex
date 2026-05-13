@@ -4,6 +4,7 @@ defmodule Itsm.Evaluations do
   """
 
   import Ecto.Query, warn: false
+  alias Itsm.Accounts.User
   alias Itsm.Repo
 
   alias Itsm.Evaluations.Evaluation
@@ -49,13 +50,13 @@ defmodule Itsm.Evaluations do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_evaluation(attrs \\ %{}) do
+  def create_evaluation(%User{} = action_user, attrs \\ %{}) do
     %Evaluation{}
     |> Evaluation.changeset(attrs)
     |> Repo.insert()
     |> case do
       {:ok, evaluation} ->
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :create_evaluation, evaluation})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_evaluation, evaluation})
         {:ok, evaluation}
 
       {:error, changeset} ->
@@ -75,14 +76,14 @@ defmodule Itsm.Evaluations do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_evaluation(%Evaluation{} = evaluation, attrs) do
+  def update_evaluation(%User{} = action_user, %Evaluation{} = evaluation, attrs) do
     evaluation
     |> Evaluation.changeset(attrs)
     |> Repo.update()
     |> case do
       {:ok, evaluation} ->
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :update_evaluation, evaluation})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :update_evaluation, evaluation})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, :update_evaluation, evaluation})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :update_evaluation, evaluation})
         {:ok, evaluation}
 
       {:error, changeset} ->
@@ -102,12 +103,12 @@ defmodule Itsm.Evaluations do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_evaluation(%{"id" => id} = attrs) do
+  def delete_evaluation(%User{} = action_user, %{"id" => id}) do
     Repo.delete(get_evaluation!(id))
     |> case do
       {:ok, evaluation} ->
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :delete_evaluation, evaluation})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :delete_evaluation, evaluation})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, :delete_evaluation, evaluation})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :delete_evaluation, evaluation})
         {:ok, evaluation}
 
       {:error, changeset} ->

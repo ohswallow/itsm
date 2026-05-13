@@ -16,7 +16,8 @@ defmodule ItsmWeb.Admin.CommentLive.Index do
   end
 
   def handle_event("delete", %{"id" => _id} = comment_params, socket) do
-    {:ok, comment} = Comments.delete_comment(comment_params)
+    %{current_user: action_user} = socket.assigns
+    {:ok, comment} = Comments.delete_comment(action_user, comment_params)
 
     {:noreply, stream_delete(socket, :comments, comment)}
   end
@@ -28,7 +29,11 @@ defmodule ItsmWeb.Admin.CommentLive.Index do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
-    opts = [default_columns: [:comment, {:user, :display_name}], preloads: [user: :display_name]]
+    opts = [
+      default_columns: [:comment, {:user, :display_name}],
+      preloads: [user: :display_name]
+    ]
+
     value = Paging.search_and_pagination(Comment, params, url, opts)
 
     socket

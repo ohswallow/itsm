@@ -1,5 +1,6 @@
 defmodule Itsm.Admin.CommonCodes do
   import Ecto.Query, warn: false
+  alias Itsm.Accounts.User
   alias Itsm.Repo
   alias Itsm.Common.CommonCode
 
@@ -10,14 +11,14 @@ defmodule Itsm.Admin.CommonCodes do
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
   end
 
-  def create_common_code(attrs \\ %{}) do
+  def create_common_code(%User{} = action_user, attrs \\ %{}) do
     %CommonCode{}
     |> CommonCode.changeset(attrs)
     |> Repo.insert()
     |> case do
       {:ok, common_code} ->
         event = :create_common_code
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, common_code})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, common_code})
         {:ok, common_code}
 
       {:error, changeset} ->
@@ -25,7 +26,7 @@ defmodule Itsm.Admin.CommonCodes do
     end
   end
 
-  def update_common_code(%CommonCode{} = common_code, attrs) do
+  def update_common_code(%User{} = action_user, %CommonCode{} = common_code, attrs) do
     common_code
     |> CommonCode.changeset(attrs)
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
@@ -33,8 +34,8 @@ defmodule Itsm.Admin.CommonCodes do
     |> case do
       {:ok, common_code} ->
         event = :update_common_code
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, common_code})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, common_code})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, event, common_code})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, common_code})
         {:ok, common_code}
 
       {:error, changeset} ->
@@ -42,13 +43,13 @@ defmodule Itsm.Admin.CommonCodes do
     end
   end
 
-  def delete_common_code(%{"id" => id} = attrs) do
+  def delete_common_code(%User{} = action_user, %{"id" => id}) do
     Repo.delete(get_common_code!(id))
     |> case do
       {:ok, common_code} ->
         event = :delete_common_code
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], event, common_code})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], event, common_code})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, event, common_code})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, common_code})
         {:ok, common_code}
 
       {:error, changeset} ->

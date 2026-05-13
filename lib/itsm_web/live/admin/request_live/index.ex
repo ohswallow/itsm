@@ -16,7 +16,8 @@ defmodule ItsmWeb.Admin.RequestLive.Index do
   end
 
   def handle_event("delete", %{"id" => _id} = request_params, socket) do
-    {:ok, request} = Requests.delete_request(request_params)
+    %{current_user: action_user} = socket.assigns
+    {:ok, request} = Requests.delete_request(action_user, request_params)
 
     {:noreply, stream_delete(socket, :requests, request)}
   end

@@ -84,13 +84,12 @@ defmodule Itsm.Approvals do
         with {:ok, changeset} <- Workflow.transition(:service_request, request, action),
              {:ok, updated_request} <- Repo.update(changeset),
              {:ok, approval} <-
-               create_approval(%{
+               create_approval(approver, %{
                  request_id: request.id,
                  status: request.status,
                  action: action,
                  approver_id: approver.id,
-                 approver_name: approver.display_name,
-                 current_user: approver
+                 approver_name: approver.display_name
                }) do
           preloaded_request =
             Repo.preload(updated_request, [
@@ -112,12 +111,11 @@ defmodule Itsm.Approvals do
         # TODO : Sync 호출 (자산 한번에 10개 이상 신청 대응)
         # 상태가 :finish(또는 워크플로우에 맞는 완료 상태)일 때 바로 실행
         if preloaded_request.status == :confirmation do
-          Finalization.execute_after_finish(preloaded_request)
+          Finalization.execute_after_finish(approver, preloaded_request)
         end
 
         broadcast_approvals_list({:request_updated, preloaded_request})
-        Itsm.Utils.broadcast(__MODULE__, {:request_updated, preloaded_request})
-        # Requests.broadcast_request(preloaded_request.id, {:request_updated, preloaded_request})
+        Itsm.Utils.broadcast(__MODULE__, {approver, :request_updated, preloaded_request})
         result
 
       error ->
@@ -128,17 +126,17 @@ defmodule Itsm.Approvals do
   # ==================================================
   # CUD
   # ==================================================
-  def create_approval(repo, %Request{} = request, %User{} = user, attrs) do
+  def create_approval(%User{} = action_user, repo, %Request{} = request) do
     %Approval{
-      approver: user,
-      approver_name: user.display_name,
+      approver: action_user,
+      approver_name: action_user.display_name,
       request: request,
       status: :request
     }
     |> repo.insert()
     |> case do
       {:ok, approval} ->
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :create_approval, approval})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_approval, approval})
         {:ok, approval}
 
       {:error, changeset} ->
@@ -146,13 +144,13 @@ defmodule Itsm.Approvals do
     end
   end
 
-  def create_approval(attrs \\ %{}) do
+  def create_approval(%User{} = action_user, attrs \\ %{}) do
     %Approval{}
     |> Approval.changeset(attrs)
     |> Repo.insert()
     |> case do
       {:ok, approval} ->
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :create_approval, approval})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_approval, approval})
         {:ok, approval}
 
       {:error, changeset} ->

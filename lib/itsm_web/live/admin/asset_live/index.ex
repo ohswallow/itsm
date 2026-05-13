@@ -16,7 +16,8 @@ defmodule ItsmWeb.Admin.AssetLive.Index do
   end
 
   def handle_event("delete", %{"id" => _id} = asset_params, socket) do
-    {:ok, asset} = Assets.delete_asset(asset_params)
+    %{current_user: action_user} = socket.assigns
+    {:ok, asset} = Assets.delete_asset(action_user, asset_params)
 
     {:noreply, stream_delete(socket, :assets, asset)}
   end

@@ -65,7 +65,7 @@ defmodule ItsmWeb.Admin.PostLive.FormComponent do
           type="text"
           label={gettext("Title")}
         />
-        <.input field={@form[:content]} type="text" label={gettext("Content")} />
+        <.input field={@form[:content]} type="textarea" label={gettext("Content")} />
         <div
           :if={assigns[:selected_board] && Map.get(@selected_board, :metadata, %{})["fields"]}
           class="space-y-4"
@@ -174,7 +174,6 @@ defmodule ItsmWeb.Admin.PostLive.FormComponent do
       socket,
       socket.assigns.action,
       post_params,
-      socket.assigns.current_user,
       Map.get(selected_board, :metadata, %{})
     )
   end
@@ -185,11 +184,13 @@ defmodule ItsmWeb.Admin.PostLive.FormComponent do
     |> assign_new(:author_options, fn -> Itsm.Admin.Accounts.get_select_options() end)
   end
 
-  defp save_post(socket, :edit, post_params, current_user, selected_board_metadata) do
+  defp save_post(socket, :edit, post_params, selected_board_metadata) do
+    %{current_user: action_user} = socket.assigns
+
     case Posts.update_post(
+           action_user,
            socket.assigns.post,
            post_params,
-           current_user,
            selected_board_metadata
          ) do
       {:ok, _post} ->
@@ -200,8 +201,10 @@ defmodule ItsmWeb.Admin.PostLive.FormComponent do
     end
   end
 
-  defp save_post(socket, :new, post_params, current_user, selected_board_metadata) do
-    case Posts.create_post(post_params, current_user, selected_board_metadata) do
+  defp save_post(socket, :new, post_params, selected_board_metadata) do
+    %{current_user: action_user} = socket.assigns
+
+    case Posts.create_post(action_user, post_params, selected_board_metadata) do
       {:ok, _post} ->
         {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 
@@ -211,20 +214,18 @@ defmodule ItsmWeb.Admin.PostLive.FormComponent do
   end
 
   defp get_effective_board(new_id, current_board_id, current_board) do
-    empty? = fn val -> is_nil(val) || val == "" end
-
     cond do
-      empty?.(new_id) ->
+      Itsm.Utils.blank?(new_id) ->
         %{}
 
-      is_nil(current_board) && !empty?.(current_board_id) ->
+      is_nil(current_board) && !Itsm.Utils.blank?(current_board_id) ->
         Itsm.Admin.Boards.get_board!(current_board_id)
 
-      !empty?.(new_id) &&
+      !Itsm.Utils.blank?(new_id) &&
           (is_nil(current_board) || current_board == %{} || new_id != current_board.id) ->
         Itsm.Admin.Boards.get_board!(new_id)
 
-      is_nil(current_board) && !empty?.(current_board_id) ->
+      is_nil(current_board) && !Itsm.Utils.blank?(current_board_id) ->
         Itsm.Admin.Boards.get_board!(current_board_id)
 
       true ->

@@ -4,6 +4,7 @@ defmodule Itsm.Admin.Boards do
   """
 
   import Ecto.Query, warn: false
+  alias Itsm.Accounts.User
   alias Itsm.Repo
   alias Itsm.Boards.Board
 
@@ -13,17 +14,17 @@ defmodule Itsm.Admin.Boards do
 
   defdelegate list_boards, to: Itsm.Boards
 
-  defdelegate create_board(attrs \\ %{}), to: Itsm.Boards
+  defdelegate create_board(action_user, attrs), to: Itsm.Boards
 
-  def update_board(%Board{} = board, attrs) do
+  def update_board(%User{} = action_user, %Board{} = board, attrs) do
     board
     |> Board.changeset(attrs)
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
     |> Repo.update()
     |> case do
       {:ok, board} ->
-        Itsm.Utils.broadcast(__MODULE__, {attrs["current_user"], :update_board, board})
-        Itsm.Utils.broadcasts(__MODULE__, {attrs["current_user"], :update_board, board})
+        Itsm.Utils.broadcast(__MODULE__, {action_user, :update_board, board})
+        Itsm.Utils.broadcasts(__MODULE__, {action_user, :update_board, board})
         {:ok, board}
 
       {:error, changeset} ->
@@ -31,7 +32,7 @@ defmodule Itsm.Admin.Boards do
     end
   end
 
-  defdelegate delete_board(attrs), to: Itsm.Boards
+  defdelegate delete_board(action_user, attrs), to: Itsm.Boards
 
   def change_board(%Board{} = board, attrs \\ %{}) do
     Board.changeset(board, attrs)

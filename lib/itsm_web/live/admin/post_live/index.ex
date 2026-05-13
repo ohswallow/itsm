@@ -16,7 +16,8 @@ defmodule ItsmWeb.Admin.PostLive.Index do
   end
 
   def handle_event("delete", %{"id" => _id} = post_params, socket) do
-    {:ok, post} = Posts.delete_post(post_params)
+    %{current_user: action_user} = socket.assigns
+    {:ok, post} = Posts.delete_post(action_user, post_params)
 
     {:noreply, stream_delete(socket, :posts, post)}
   end
@@ -42,6 +43,11 @@ defmodule ItsmWeb.Admin.PostLive.Index do
 
     value =
       Post
+      |> Paging.filter_status(
+        [author: :organization_code],
+        socket.assigns[:current_user].organization_code,
+        query_cond: :in
+      )
       |> Paging.search_and_pagination(params, url, opts)
 
     socket

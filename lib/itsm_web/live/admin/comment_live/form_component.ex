@@ -65,7 +65,9 @@ defmodule ItsmWeb.Admin.CommentLive.FormComponent do
   end
 
   def handle_event("validate", %{"comment" => comment_params}, socket) do
-    changeset = Comments.change_comment(socket.assigns.comment, comment_params)
+    changeset =
+      Comments.change_comment(socket.assigns.comment, comment_params)
+
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
@@ -74,7 +76,13 @@ defmodule ItsmWeb.Admin.CommentLive.FormComponent do
   end
 
   defp save_comment(socket, :edit, comment_params) do
-    case Comments.update_comment(socket.assigns.comment, comment_params) do
+    %{current_user: action_user} = socket.assigns
+
+    case Comments.update_comment(
+           action_user,
+           socket.assigns.comment,
+           comment_params
+         ) do
       {:ok, _comment} ->
         {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 
