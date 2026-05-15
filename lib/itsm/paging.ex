@@ -135,7 +135,7 @@ defmodule Itsm.Paging do
           url :: String.t(),
           opts :: [
             default_columns: [atom() | {atom(), atom() | tuple()} | list()],
-            preloads: [atom() | {atom(), atom() | tuple()} | list()],
+            preloads: [atom() | {atom(), atom() | tuple() | list(atom())} | list(atom())],
             range_columns: [atom()],
             column_custom_label: map(),
             query_cond: atom()
