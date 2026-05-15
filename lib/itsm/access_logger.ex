@@ -98,7 +98,10 @@ defmodule Itsm.AccessLogger do
   end
 
   defp extract_user_id(nil), do: "anonymous_guest"
-  defp extract_user_id(user) when is_map(user), do: user.id || user[:email]
+
+  defp extract_user_id(user) when is_map(user),
+    do: Map.get(user, :id, Map.get(user, :email, "anonymous_guest"))
+
   defp extract_user_id(user), do: to_string(user)
 
   defp get_header(%Plug.Conn{} = conn, header_name) do

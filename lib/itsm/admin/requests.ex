@@ -19,8 +19,8 @@ defmodule Itsm.Admin.Requests do
     |> case do
       {:ok, request} ->
         event = :update_request
-        Itsm.Utils.broadcast(__MODULE__, {action_user, event, request})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, request})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, event, request}, id: request.id)
+
         {:ok, request}
 
       {:error, changeset} ->
@@ -29,16 +29,23 @@ defmodule Itsm.Admin.Requests do
   end
 
   def delete_request(%User{} = action_user, %{"id" => id}) do
-    Repo.delete(get_request!(id))
+    get_request!(id)
+    |> Request.delete_changeset()
+    |> Repo.delete()
     |> case do
       {:ok, request} ->
         event = :delete_request
-        Itsm.Utils.broadcast(__MODULE__, {action_user, event, request})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, request})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, event, request}, id: request.id)
+
         {:ok, request}
 
-      {:error, changeset} ->
-        {:error, changeset}
+      {:error,
+       %Ecto.Changeset{
+         errors: [
+           id: {message, [constraint: :foreign, constraint_name: "approvals_request_id_fkey"]}
+         ]
+       }} ->
+        {:error, :foreign_approvals, message}
     end
   end
 end

@@ -1,22 +1,46 @@
 defmodule ItsmWeb.Admin.RequestLive.Show do
+  alias Itsm.Admin.Attachments
+  alias Itsm.Admin.Approvals
+  alias Itsm.Admin.Comments
   use ItsmWeb, :live_view
 
   alias Itsm.Admin.Requests
 
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    {:ok, socket |> stream(:attachments, []) |> stream(:comments, []) |> stream(:approvals, [])}
   end
 
   def handle_params(%{"id" => id}, _, socket) do
-    if(connected?(socket)) do
-      Itsm.Utils.subscribe(Requests, id)
-      Itsm.Utils.subscribes(Requests)
-    end
+    request =
+      Requests.get_request!(id)
+      |> Requests.with_assoc([:category, :requestor_crew, :requestor])
 
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:request, Requests.get_request!(id) |> Requests.with_assoc(:category))}
+     |> assign(:request, request)
+     |> stream(:attachments, Attachments.list_attachments_by_resource(request), reset: true)
+     |> stream(:comments, Comments.list_comments_by_resource(request), reset: true)
+     |> stream(:approvals, Approvals.list_approvals_by_request(request.id), reset: true)
+     |> Itsm.PubSub.Helper.subscribe(Requests, id: id, is_admin: true)}
+  end
+
+  def handle_event("delete", %{"schema" => schema, "id" => _id} = params, socket) do
+    %{current_user: action_user} = socket.assigns
+
+    case schema do
+      "attachments" ->
+        {:ok, attachment} = Attachments.delete_attachment(action_user, params)
+        {:noreply, stream_delete(socket, :attachments, attachment)}
+
+      "comments" ->
+        {:ok, comment} = Comments.delete_comment(action_user, params)
+        {:noreply, stream_delete(socket, :comments, comment)}
+
+      "approvals" ->
+        {:ok, approval} = Approvals.delete_approval(action_user, params)
+        {:noreply, stream_delete(socket, :approvals, approval)}
+    end
   end
 
   def handle_info({:pubsub, {action_user, event, item}}, socket) do
@@ -36,7 +60,7 @@ defmodule ItsmWeb.Admin.RequestLive.Show do
        ) do
     opts =
       [context_key: :request, resource_name: gettext("Request")]
-      |> Keyword.merge(push_event_action(event))
+      |> Keyword.merge(push_event_action(socket, event))
 
     {:noreply,
      socket
@@ -47,8 +71,8 @@ defmodule ItsmWeb.Admin.RequestLive.Show do
     {:noreply, socket}
   end
 
-  defp push_event_action(:delete_request),
-    do: [push_navigate: [to: ~p"/admin/requests"]]
+  defp push_event_action(socket, :delete_request),
+    do: [push_navigate: [to: "#{socket.assigns.current_path}"]]
 
-  defp push_event_action(_), do: []
+  defp push_event_action(_socket, _), do: []
 end

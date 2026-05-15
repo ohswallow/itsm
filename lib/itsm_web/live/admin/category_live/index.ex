@@ -7,9 +7,11 @@ defmodule ItsmWeb.Admin.CategoryLive.Index do
   alias Itsm.Admin.CommonCodes
 
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Categories)
-
-    {:ok, socket |> stream(:categories, []) |> assign_new_options()}
+    {:ok,
+     socket
+     |> stream(:categories, [])
+     |> assign_new_options()
+     |> Itsm.PubSub.Helper.subscribe(Categories, is_admin: true)}
   end
 
   def handle_params(params, url, socket) do
@@ -65,7 +67,7 @@ defmodule ItsmWeb.Admin.CategoryLive.Index do
       context_key: :category,
       resource_name: gettext("Category"),
       stream_name: :categories,
-      push_patch: [to: ~p"/admin/categories?#{socket.assigns[:results][:params] || %{}}"]
+      push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 
     {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}

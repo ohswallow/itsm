@@ -9,9 +9,7 @@ defmodule ItsmWeb.ApprovalLive.Index do
   alias Itsm.Workflow
 
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Approvals)
-
-    {:ok, stream(socket, :requests, [])}
+    {:ok, socket |> stream(:requests, []) |> Itsm.PubSub.Helper.subscribe(Approvals)}
   end
 
   def handle_params(params, _url, socket) do
@@ -45,11 +43,11 @@ defmodule ItsmWeb.ApprovalLive.Index do
   end
 
   defp apply_action(socket, :index, _params) do
+    %{current_user: current_user} = socket.assigns
+
     socket
     |> assign(:page_title, "Listing Approvals")
-    |> stream(:requests, Approvals.list_pending_requests(socket.assigns.current_user),
-      reset: true
-    )
+    |> stream(:requests, Approvals.list_pending_requests(current_user), reset: true)
   end
 
   defp handle_pubsub(action_user, event, item, socket) do
@@ -57,7 +55,7 @@ defmodule ItsmWeb.ApprovalLive.Index do
       context_key: :request,
       resource_name: gettext("Approval"),
       stream_name: :requests,
-      push_patch: [to: ~p"/approvals"]
+      push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 
     {:noreply,

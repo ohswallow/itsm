@@ -8,15 +8,11 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Show do
   end
 
   def handle_params(%{"id" => id}, _, socket) do
-    if(connected?(socket)) do
-      Itsm.Utils.subscribe(CommonCodes, id)
-      Itsm.Utils.subscribes(CommonCodes)
-    end
-
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:common_code, CommonCodes.get_common_code!(id))}
+     |> assign(:common_code, CommonCodes.get_common_code!(id))
+     |> Itsm.PubSub.Helper.subscribe(CommonCodes, id: id, is_admin: true)}
   end
 
   def handle_info({:pubsub, {action_user, event, item}}, socket) do
@@ -36,7 +32,7 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Show do
        ) do
     opts =
       [context_key: :common_code, resource_name: gettext("Common Code")]
-      |> Keyword.merge(push_event_action(event))
+      |> Keyword.merge(push_event_action(socket, event))
 
     {:noreply,
      socket
@@ -47,8 +43,8 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Show do
     {:noreply, socket}
   end
 
-  defp push_event_action(:delete_common_code),
-    do: [push_navigate: [to: ~p"/admin/common_codes"]]
+  defp push_event_action(socket, :delete_common_code),
+    do: [push_navigate: [to: "#{socket.assigns.current_path}"]]
 
-  defp push_event_action(_), do: []
+  defp push_event_action(_socket, _), do: []
 end

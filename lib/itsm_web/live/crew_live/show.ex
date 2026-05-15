@@ -3,7 +3,6 @@ defmodule ItsmWeb.CrewLive.Show do
   use ItsmWeb, :live_view
 
   alias Itsm.Crews
-  alias Itsm.Utils
   alias ItsmWeb.LiveUtils
 
   def mount(params, _session, socket) do
@@ -13,11 +12,6 @@ defmodule ItsmWeb.CrewLive.Show do
   end
 
   def handle_params(%{"id" => id}, _params, socket) do
-    if connected?(socket) do
-      Utils.subscribe(Crews, id)
-      Utils.subscribes(Crews)
-    end
-
     crew =
       Crews.get_crew!(id)
       |> Crews.with_assoc([:leader, :users])
@@ -27,7 +21,8 @@ defmodule ItsmWeb.CrewLive.Show do
      |> assign(:page_title, "Show Crew")
      |> assign(:crew, crew)
      |> assign(:show_member_modal, false)
-     |> stream(:users, Crews.list_regular_users(crew))}
+     |> stream(:users, Crews.list_regular_users(crew))
+     |> Itsm.PubSub.Helper.subscribe(Crews, id: id)}
   end
 
   def handle_event("switch_leader", %{"user-id" => user_id}, socket) do

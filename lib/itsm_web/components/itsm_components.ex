@@ -287,7 +287,7 @@ defmodule ItsmWeb.ItsmComponents do
         phx-target={@target}
       >
         <div
-          :if={@results.range_column_options != []}
+          :if={@results.range_column_options != [] and @results.range_column_options != [""]}
           class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end"
         >
           <div class="md:col-span-4">
@@ -333,7 +333,13 @@ defmodule ItsmWeb.ItsmComponents do
             </div>
           </div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+        <div
+          :if={
+            @results.columns_options != [] and @results.columns_options != [""] and
+              @results.columns_options != ["전체"]
+          }
+          class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end"
+        >
           <div class="md:col-span-4">
             <label class="form-label">검색 컬럼 선택</label>
             <.input

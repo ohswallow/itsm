@@ -24,8 +24,7 @@ defmodule Itsm.Admin.Accounts do
     |> Repo.update()
     |> case do
       {:ok, user} ->
-        Itsm.Utils.broadcast(__MODULE__, {action_user, :update_user, user})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :update_user, user})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_user, user}, id: user.id)
         {:ok, user}
 
       {:error, changeset} ->

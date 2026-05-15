@@ -5,9 +5,7 @@ defmodule ItsmWeb.AssetLive.Index do
   alias Itsm.Assets.Asset
 
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Assets)
-
-    {:ok, stream(socket, :assets, [])}
+    {:ok, socket |> stream(:assets, []) |> Itsm.PubSub.Helper.subscribe(Assets)}
   end
 
   def handle_params(params, _url, socket) do
@@ -54,7 +52,7 @@ defmodule ItsmWeb.AssetLive.Index do
       context_key: :asset,
       resource_name: gettext("Asset"),
       stream_name: :assets,
-      push_patch: [to: ~p"/assets"]
+      push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 
     {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}

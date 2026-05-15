@@ -88,6 +88,14 @@ defmodule Itsm.Accounts do
     %User{}
     |> User.registration_changeset(attrs)
     |> Repo.insert()
+    |> case do
+      {:ok, user} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {user, :register_user, user})
+        {:ok, user}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   def register_user(%User{} = action_user, attrs) do
@@ -96,7 +104,7 @@ defmodule Itsm.Accounts do
     |> Repo.insert()
     |> case do
       {:ok, user} ->
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :register_user, user})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :register_user, user})
         {:ok, user}
 
       {:error, changeset} ->
@@ -427,13 +435,27 @@ defmodule Itsm.Accounts do
 
   def list_users, do: Repo.all(User)
 
-  def create_user(%User{} = action_user, attrs \\ %{}) do
+  def create_user(attrs) do
     %User{}
-    |> User.changeset(attrs)
+    |> User.registration_changeset(attrs)
     |> Repo.insert()
     |> case do
       {:ok, user} ->
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_user, user})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {user, :create_user, user})
+        {:ok, user}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  def create_user(%User{} = action_user, attrs) do
+    %User{}
+    |> User.registration_changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, user} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_user, user})
         {:ok, user}
 
       {:error, changeset} ->
@@ -447,8 +469,7 @@ defmodule Itsm.Accounts do
     |> Repo.update()
     |> case do
       {:ok, user} ->
-        Itsm.Utils.broadcast(__MODULE__, {action_user, :update_user, user})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :update_user, user})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_user, user}, id: user.id)
         {:ok, user}
 
       {:error, changeset} ->
@@ -457,11 +478,14 @@ defmodule Itsm.Accounts do
   end
 
   def delete_user(%User{} = action_user, %{"id" => id}) do
-    Repo.delete(get_user!(id))
+    get_user!(id)
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.foreign_key_constraint(:id, name: :requests_requestor_id_fkey)
+    |> Repo.delete()
     |> case do
       {:ok, user} ->
-        Itsm.Utils.broadcast(__MODULE__, {action_user, :delete_user, user})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :delete_user, user})
+        Itsm.Accounts.UserToken.by_user_and_contexts_query(user, :all) |> Repo.delete_all()
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_user, user}, id: user.id)
         {:ok, user}
 
       {:error, changeset} ->

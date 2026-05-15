@@ -11,7 +11,7 @@
     |> Repo.insert()
     |> case do
       {:ok, <%= schema.singular %>} ->
-       Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_<%= schema.singular %>, <%= schema.singular %>})
+       Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_<%= schema.singular %>, <%= schema.singular %>})
        {:ok, <%= schema.singular %>}
 
       {:error, changeset} ->
@@ -25,8 +25,7 @@
     |> Repo.update()
     |> case do
       {:ok, <%= schema.singular %>} ->
-       Itsm.Utils.broadcast(__MODULE__, {action_user, :update_<%= schema.singular %>, <%= schema.singular %>})
-       Itsm.Utils.broadcasts(__MODULE__, {action_user, :update_<%= schema.singular %>, <%= schema.singular %>})
+       Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_<%= schema.singular %>, <%= schema.singular %>}, id: <%= schema.singular %>.id)
        {:ok, <%= schema.singular %>}
 
       {:error, changeset} ->
@@ -38,8 +37,7 @@
     Repo.delete(get_<%= schema.singular %>!(id))
     |> case do
        {:ok, <%= schema.singular %>} ->
-        Itsm.Utils.broadcast(__MODULE__, {action_user, :delete_<%= schema.singular %>, <%= schema.singular %>})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :delete_<%= schema.singular %>, <%= schema.singular %>})
+        <%= schema.singular %>.broadcast(__MODULE__, {action_user, :delete_<%= schema.singular %>, <%= schema.singular %>}, id: <%= schema.singular %>.id)
         {:ok, <%= schema.singular %>}
 
       {:error, changeset} ->

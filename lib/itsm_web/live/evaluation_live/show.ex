@@ -8,15 +8,11 @@ defmodule ItsmWeb.EvaluationLive.Show do
   end
 
   def handle_params(%{"id" => id}, _, socket) do
-    if connected?(socket) do
-      Itsm.Utils.subscribe(Evaluations, id)
-      Itsm.Utils.subscribes(Evaluations)
-    end
-
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:evaluation, Evaluations.get_evaluation!(id))}
+     |> assign(:evaluation, Evaluations.get_evaluation!(id))
+     |> Itsm.PubSub.Helper.subscribe(Evaluations, id: id)}
   end
 
   def handle_info({:pubsub, {action_user, event, item}}, socket) do
@@ -36,7 +32,7 @@ defmodule ItsmWeb.EvaluationLive.Show do
        ) do
     opts =
       [context_key: :evaluation, resource_name: gettext("Evaluation")]
-      |> Keyword.merge(push_event_action(event))
+      |> Keyword.merge(push_event_action(socket, event))
 
     {:noreply,
      socket
@@ -47,8 +43,8 @@ defmodule ItsmWeb.EvaluationLive.Show do
     {:noreply, socket}
   end
 
-  defp push_event_action(:delete_evaluation),
-    do: [push_navigate: [to: ~p"/evaluations"]]
+  defp push_event_action(socket, :delete_evaluation),
+    do: [push_navigate: [to: "#{socket.assigns.current_path}"]]
 
-  defp push_event_action(_), do: []
+  defp push_event_action(_socket, _), do: []
 end

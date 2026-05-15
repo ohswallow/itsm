@@ -6,9 +6,7 @@ defmodule ItsmWeb.DelegationLive.Index do
   alias Itsm.Accounts.User
 
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Delegations)
-
-    {:ok, stream(socket, :delegations, [])}
+    {:ok, socket |> stream(:delegations, []) |> Itsm.PubSub.Helper.subscribe(Delegations)}
   end
 
   def handle_params(params, _url, socket) do
@@ -80,7 +78,7 @@ defmodule ItsmWeb.DelegationLive.Index do
       context_key: :delegation,
       resource_name: gettext("Delegation"),
       stream_name: :delegations,
-      push_patch: [to: ~p"/delegations"]
+      push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 
     {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}

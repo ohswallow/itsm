@@ -6,6 +6,8 @@ defmodule Itsm.Admin.Approvals do
 
   def get_approval!(id), do: Repo.get!(Approval, id)
 
+  defdelegate list_approvals_by_request(request_id), to: Itsm.Approvals
+
   def change_approval(%Approval{} = approval, attrs \\ %{}) do
     Approval.changeset(approval, attrs)
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
@@ -19,8 +21,8 @@ defmodule Itsm.Admin.Approvals do
     |> case do
       {:ok, approval} ->
         event = :update_approval
-        Itsm.Utils.broadcast(__MODULE__, {action_user, event, approval})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, approval})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, event, approval}, id: approval.id)
+
         {:ok, approval}
 
       {:error, changeset} ->
@@ -33,8 +35,8 @@ defmodule Itsm.Admin.Approvals do
     |> case do
       {:ok, approval} ->
         event = :delete_approval
-        Itsm.Utils.broadcast(__MODULE__, {action_user, event, approval})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, approval})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, event, approval}, id: approval.id)
+
         {:ok, approval}
 
       {:error, changeset} ->

@@ -1,4 +1,6 @@
 defmodule Itsm.AssetsFixtures do
+  alias Itsm.Accounts.User
+
   @moduledoc """
   This module defines test helpers for creating
   entities via the `Itsm.Assets` context.
@@ -13,7 +15,7 @@ defmodule Itsm.AssetsFixtures do
   Generate a asset.
   """
   def asset_fixture(attrs \\ %{}) do
-    {:ok, asset} =
+    attrs =
       attrs
       |> Enum.into(%{
         affiliate: :A0,
@@ -26,7 +28,8 @@ defmodule Itsm.AssetsFixtures do
         name: unique_asset_name(),
         region_type: :P_region
       })
-      |> Itsm.Assets.create_asset()
+
+    {:ok, asset} = Itsm.Assets.create_asset(%User{}, attrs)
 
     asset
   end

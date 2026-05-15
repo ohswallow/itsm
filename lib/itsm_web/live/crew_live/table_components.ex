@@ -1,7 +1,7 @@
 defmodule ItsmWeb.CrewLive.TableComponents do
   use ItsmWeb, :html
 
-  alias ItsmWeb.LiveUtils
+  import ItsmWeb.LiveUtils, only: [fetch_safe: 2]
 
   def crew_table(assigns) do
     assigns = assign_new(assigns, :action, fn -> [] end)
@@ -13,18 +13,15 @@ defmodule ItsmWeb.CrewLive.TableComponents do
       <:col :let={{_id, crew}} label={gettext("Description")}>{crew.description}</:col>
 
       <:col :let={{_id, crew}} label={gettext("Organization")}>
-        <.common_code_label
-          group="계열사"
-          code={LiveUtils.fetch_safe(crew.leader, :organization_code)}
-        />
+        <.common_code_label group="계열사" code={fetch_safe(crew.leader, :organization_code)} />
       </:col>
 
       <:col :let={{_id, crew}} label={gettext("Department")}>
-        {LiveUtils.fetch_safe(crew.leader, :department)}
+        {fetch_safe(crew.leader, :department)}
       </:col>
 
       <:col :let={{_id, crew}} label={gettext("Leader")}>
-        {LiveUtils.fetch_safe(crew.leader, :display_name)}
+        {fetch_safe(crew.leader, :display_name)}
       </:col>
 
       <%!--

@@ -6,9 +6,10 @@ defmodule ItsmWeb.RequestLive.Index do
   alias Itsm.Paging
 
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Requests)
-
-    {:ok, stream(socket, :requests, [])}
+    {:ok,
+     socket
+     |> stream(:requests, [])
+     |> Itsm.PubSub.Helper.subscribe(Requests)}
   end
 
   def handle_params(params, url, socket) do
@@ -33,18 +34,19 @@ defmodule ItsmWeb.RequestLive.Index do
   end
 
   defp apply_action(socket, :index, url, params) do
+    %{current_user: %{organization_code: organization_code}} = socket.assigns
+
     opts = [
       default_columns: [:title, :description, :env, :requestor_name],
       preloads: [:category, :requestor, :assignee_crew]
     ]
 
     value =
-      Paging.search_and_pagination(
-        Request,
-        params,
-        url,
-        opts
+      Request
+      |> Paging.filter_status([requestor: :organization_code], ["CM", "FG", organization_code],
+        query_cond: :in
       )
+      |> Paging.search_and_pagination(params, url, opts)
 
     socket
     |> assign(:page_title, "Listing Requests")
@@ -63,7 +65,7 @@ defmodule ItsmWeb.RequestLive.Index do
       context_key: :request,
       resource_name: gettext("Request"),
       stream_name: :requests,
-      push_patch: [to: ~p"/requests"]
+      push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 
     {:noreply,

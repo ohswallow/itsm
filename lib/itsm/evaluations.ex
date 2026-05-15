@@ -56,7 +56,7 @@ defmodule Itsm.Evaluations do
     |> Repo.insert()
     |> case do
       {:ok, evaluation} ->
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_evaluation, evaluation})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_evaluation, evaluation})
         {:ok, evaluation}
 
       {:error, changeset} ->
@@ -82,8 +82,10 @@ defmodule Itsm.Evaluations do
     |> Repo.update()
     |> case do
       {:ok, evaluation} ->
-        Itsm.Utils.broadcast(__MODULE__, {action_user, :update_evaluation, evaluation})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :update_evaluation, evaluation})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_evaluation, evaluation},
+          id: evaluation.id
+        )
+
         {:ok, evaluation}
 
       {:error, changeset} ->
@@ -107,8 +109,10 @@ defmodule Itsm.Evaluations do
     Repo.delete(get_evaluation!(id))
     |> case do
       {:ok, evaluation} ->
-        Itsm.Utils.broadcast(__MODULE__, {action_user, :delete_evaluation, evaluation})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :delete_evaluation, evaluation})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_evaluation, evaluation},
+          id: evaluation.id
+        )
+
         {:ok, evaluation}
 
       {:error, changeset} ->

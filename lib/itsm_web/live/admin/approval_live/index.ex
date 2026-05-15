@@ -6,9 +6,10 @@ defmodule ItsmWeb.Admin.ApprovalLive.Index do
   alias Itsm.Paging
 
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Approvals)
-
-    {:ok, stream(socket, :approvals, [])}
+    {:ok,
+     socket
+     |> stream(:approvals, [])
+     |> Itsm.PubSub.Helper.subscribe(Approvals, is_admin: true)}
   end
 
   def handle_params(params, url, socket) do
@@ -31,7 +32,7 @@ defmodule ItsmWeb.Admin.ApprovalLive.Index do
   defp apply_action(socket, :index, params, url) do
     opts = [
       default_columns: [:status, :action, :approver_name],
-      preloads: [request: [category: :name]]
+      preloads: [request: [:title, category: :name]]
     ]
 
     value =
@@ -61,7 +62,7 @@ defmodule ItsmWeb.Admin.ApprovalLive.Index do
       context_key: :approval,
       resource_name: gettext("Approval"),
       stream_name: :approvals,
-      push_patch: [to: ~p"/admin/approvals?#{socket.assigns[:results][:params] || %{}}"]
+      push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 
     {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}

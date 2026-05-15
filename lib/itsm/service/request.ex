@@ -94,4 +94,27 @@ defmodule Itsm.Service.Request do
     |> assoc_constraint(:category)
     |> cast_assoc(:attachments, with: &Attachment.changeset/2)
   end
+
+  def delete_changeset(%Ecto.Changeset{} = request) do
+    request
+    |> foreign_key_constraint(:id,
+      name: :approvals_request_id_fkey,
+      message: "결제를 먼저 지워주세요"
+    )
+
+    # |> foreign_key_constraint(:id,
+    #   name: :comments_request_id_fkey,
+    #   message: "댓글을 먼저 지워주세요"
+    # )
+    # |> foreign_key_constraint(:id,
+    #   name: :attachments_request_id_fkey,
+    #   message: "첨부파일을 먼저 지워주세요"
+    # )
+  end
+
+  def delete_changeset(%__MODULE__{} = request) do
+    request
+    |> change()
+    |> delete_changeset()
+  end
 end

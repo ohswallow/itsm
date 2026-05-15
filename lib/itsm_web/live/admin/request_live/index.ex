@@ -6,9 +6,8 @@ defmodule ItsmWeb.Admin.RequestLive.Index do
   alias Itsm.Service.Request
 
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Requests)
-
-    {:ok, stream(socket, :requests, [])}
+    {:ok,
+     socket |> stream(:requests, []) |> Itsm.PubSub.Helper.subscribe(Requests, is_admin: true)}
   end
 
   def handle_params(params, url, socket) do
@@ -17,9 +16,14 @@ defmodule ItsmWeb.Admin.RequestLive.Index do
 
   def handle_event("delete", %{"id" => _id} = request_params, socket) do
     %{current_user: action_user} = socket.assigns
-    {:ok, request} = Requests.delete_request(action_user, request_params)
 
-    {:noreply, stream_delete(socket, :requests, request)}
+    case Requests.delete_request(action_user, request_params) do
+      {:ok, request} ->
+        {:noreply, stream_delete(socket, :requests, request)}
+
+      {:error, :foreign_approvals, message} ->
+        {:noreply, put_flash(socket, :error, message)}
+    end
   end
 
   def handle_info({:pubsub, {action_user, event, item}}, socket) do
@@ -30,8 +34,8 @@ defmodule ItsmWeb.Admin.RequestLive.Index do
 
   defp apply_action(socket, :index, params, url) do
     opts = [
-      default_columns: [:title, :description, :env, :requestor_name],
-      preloads: [category: [:request_name, :name]]
+      default_columns: [:id, :title, :description, :env, :requestor_name],
+      preloads: [requestor: :organization_code, category: [:request_name, :name, :affiliate]]
     ]
 
     value =
@@ -61,7 +65,7 @@ defmodule ItsmWeb.Admin.RequestLive.Index do
       context_key: :request,
       resource_name: gettext("Request"),
       stream_name: :requests,
-      push_patch: [to: ~p"/admin/requests?#{socket.assigns[:results][:params] || %{}}"]
+      push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 
     {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}

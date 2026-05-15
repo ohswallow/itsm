@@ -15,29 +15,6 @@ defmodule Itsm.Assets do
   # @resource_preloads [:os_instance, :db_instances, :was_instances, :applications]
   @resource_preloads [:os_instance]
 
-  # ==================================================
-  # PubSub
-  # ==================================================
-
-  def subscribe_assets_list do
-    Phoenix.PubSub.subscribe(Itsm.PubSub, "assets_list")
-  end
-
-  def subscribe_asset(asset_id) do
-    Phoenix.PubSub.subscribe(Itsm.PubSub, "asset:#{asset_id}")
-  end
-
-  def broadcast_asset(asset, event_name) do
-    # Index.ex의 handle_info와 포맷을 맞추기 위해 튜플로 묶습니다.
-    # 예: {Itsm.Assets, [:asset, :created], %Asset{}}
-    message = {__MODULE__, event_name, asset}
-    Phoenix.PubSub.broadcast(Itsm.PubSub, "assets_list", message)
-    Phoenix.PubSub.broadcast(Itsm.PubSub, "asset:#{asset.id}", message)
-
-    # 함수 체이닝을 위해 결과를 반환해 줍니다.
-    {:ok, asset}
-  end
-
   @doc """
   Returns the list of assets.
 
@@ -101,8 +78,8 @@ defmodule Itsm.Assets do
     |> Repo.insert()
     |> case do
       {:ok, asset} ->
-        Itsm.Utils.broadcast(__MODULE__, {action_user, :create_asset, asset})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_asset, asset})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_asset, asset})
+
         {:ok, asset}
 
       {:error, changeset} ->
@@ -128,8 +105,10 @@ defmodule Itsm.Assets do
     |> Repo.update()
     |> case do
       {:ok, asset} ->
-        Itsm.Utils.broadcast(__MODULE__, {action_user, :update_asset, asset})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :update_asset, asset})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_asset, asset},
+          id: asset.id
+        )
+
         {:ok, asset}
 
       {:error, changeset} ->
@@ -153,8 +132,10 @@ defmodule Itsm.Assets do
     Repo.delete(get_asset!(id))
     |> case do
       {:ok, asset} ->
-        Itsm.Utils.broadcast(__MODULE__, {action_user, :delete_asset, asset})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :delete_asset, asset})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_asset, asset},
+          id: asset.id
+        )
+
         {:ok, asset}
 
       {:error, changeset} ->
@@ -229,11 +210,6 @@ defmodule Itsm.Assets do
 
     case result do
       {:ok, created_items} ->
-        # created_items는 [%{asset: asset1, ...}, %{asset: asset2, ...}] 형태의 리스트입니다.
-        Enum.each(created_items, fn %{asset: asset} ->
-          broadcast_asset(asset, [:asset, :created])
-        end)
-
         {:ok, created_items}
 
       {:error, reason} ->

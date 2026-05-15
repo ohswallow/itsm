@@ -7,6 +7,9 @@
     rows={@streams.approvals}
     row_click={fn {_id, approval} -> JS.navigate(~p"/admin/approvals/#{approval}") end}
   >
+    <:col :let={{_id, approval}} label={gettext("request")}>
+      {approval.request.title}
+    </:col>
     <:col :let={{_id, approval}} label={gettext("Category")}>
       {approval.request.category.name}
     </:col>

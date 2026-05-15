@@ -6,9 +6,7 @@ defmodule ItsmWeb.PostLive.Index do
   alias Itsm.Posts.Post
 
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Posts)
-
-    {:ok, stream(socket, :posts, [])}
+    {:ok, socket |> stream(:posts, []) |> Itsm.PubSub.Helper.subscribe(Posts)}
   end
 
   def handle_params(%{"board_id" => board_id} = params, url, socket)

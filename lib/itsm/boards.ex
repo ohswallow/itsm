@@ -19,7 +19,7 @@ defmodule Itsm.Boards do
     |> Repo.insert()
     |> case do
       {:ok, board} ->
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_board, board})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_board, board})
         {:ok, board}
 
       {:error, changeset} ->
@@ -33,8 +33,10 @@ defmodule Itsm.Boards do
     |> Repo.update()
     |> case do
       {:ok, board} ->
-        Itsm.Utils.broadcast(__MODULE__, {action_user, :update_board, board})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :update_board, board})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_board, board},
+          id: board.id
+        )
+
         {:ok, board}
 
       {:error, changeset} ->
@@ -46,8 +48,10 @@ defmodule Itsm.Boards do
     Repo.delete(get_board!(id))
     |> case do
       {:ok, board} ->
-        Itsm.Utils.broadcast(__MODULE__, {action_user, :delete_board, board})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :delete_board, board})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_board, board},
+          id: board.id
+        )
+
         {:ok, board}
 
       {:error, changeset} ->

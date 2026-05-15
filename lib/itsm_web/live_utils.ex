@@ -3,6 +3,7 @@ defmodule ItsmWeb.LiveUtils do
   ITSM 개발에 필요한 LiveView에서 사용할 Util메소드 정의 합니다.
   """
   require Logger
+  alias Itsm.Accounts.User
   alias Phoenix.LiveView
 
   def translate_error(reason, scope \\ nil, opt \\ nil)
@@ -118,6 +119,9 @@ defmodule ItsmWeb.LiveUtils do
         ) :: Phoenix.LiveView.Socket.t()
   def handle_standard_pubsub(socket, action_user, event, item, opts) do
     [action_type | _] = event |> Atom.to_string() |> String.split("_")
+
+    action_user =
+      if is_nil(action_user), do: %User{display_name: "anonymous_guest"}, else: action_user
 
     socket
     |> put_flash_by_event(action_user, action_type, opts)

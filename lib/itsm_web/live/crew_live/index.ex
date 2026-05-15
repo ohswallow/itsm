@@ -5,38 +5,32 @@ defmodule ItsmWeb.CrewLive.Index do
   alias Itsm.Crews.Crew
   alias Itsm.Accounts.User
   alias ItsmWeb.LiveUtils
-  alias Itsm.Utils
 
   # 공통 컴포넌트 임포트
   import ItsmWeb.CrewLive.TableComponents
 
   def mount(_params, _session, socket) do
-    %{current_user: user} = socket.assigns
-
-    if connected?(socket), do: Utils.subscribes(Crews)
-
-    {:ok, stream(socket, :crews, Crews.list_my_crews(user))}
+    {:ok, socket |> stream(:crews, []) |> Itsm.PubSub.Helper.subscribe(Crews)}
   end
 
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  # 1. 목록 조회 (:index)
   defp apply_action(socket, :index, _params) do
+    %{current_user: current_user} = socket.assigns
+
     socket
     |> assign(:page_title, "My Crews")
-    |> assign(:crew, nil)
+    |> stream(:crews, Crews.list_my_crews(current_user), reset: true)
   end
 
-  # 2. 생성 모달 (:new)
   defp apply_action(socket, :new, _params) do
     socket
     |> assign(:page_title, "New Crew")
     |> assign(:crew, %Crew{})
   end
 
-  # 3. 수정 모달 (:edit)
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Crew")

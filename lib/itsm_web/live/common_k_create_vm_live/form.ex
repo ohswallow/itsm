@@ -24,12 +24,10 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   end
 
   def handle_params(%{"id" => id} = params, _uri, socket) do
-    if(connected?(socket)) do
-      Itsm.Utils.subscribe(Requests, id)
-      Itsm.Utils.subscribes(Requests)
-    end
-
-    {:noreply, socket |> apply_action(socket.assigns.live_action, params)}
+    {:noreply,
+     socket
+     |> apply_action(socket.assigns.live_action, params)
+     |> Itsm.PubSub.Helper.subscribe(Requests, id: id)}
   end
 
   def handle_params(_params, _uri, socket) do

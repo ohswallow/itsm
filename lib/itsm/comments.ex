@@ -7,17 +7,7 @@ defmodule Itsm.Comments do
   alias Itsm.Accounts.User
   alias Itsm.Utils
 
-  # 결과 처리
-  def broadcast_result({:ok, %{comment: comment}}, action_user) do
-    Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_comment, comment})
-    Itsm.Utils.broadcast(Requests, {action_user, :create_comment, comment})
-
-    {:ok, comment}
-  end
-
-  def broadcast_result({:error, _, failed, _}, _, _), do: {:error, failed}
-
-  def list_comments(resource) do
+  def list_comments_by_resource(resource) do
     Comment
     # "Request"
     |> where([c], c.resource_type == ^Utils.resource_name(resource))
@@ -50,10 +40,12 @@ defmodule Itsm.Comments do
         # 🌟 1. Show.ex 화면을 위해 :user와 :attachments 둘 다 Preload!
         preloaded_comment = Repo.preload(comment, [:user, :attachments])
 
-        # 🌟 2. 여기서 직접 PubSub 방송을 쏩니다! (기존 로직 활용)
-        # Requests.broadcast_request(resource.id, {:comment_created, preloaded_comment})
-        Itsm.Utils.broadcast(Requests, {action_user, :create_comment, preloaded_comment})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_comment, comment})
+        Itsm.PubSub.Helper.broadcast(Requests, {action_user, :create_comment, preloaded_comment},
+          id: resource.id,
+          only: :detail
+        )
+
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_comment, comment})
 
         {:ok, preloaded_comment}
 

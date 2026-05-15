@@ -6,9 +6,8 @@ defmodule ItsmWeb.Admin.CommentLive.Index do
   alias Itsm.Paging
 
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Comments)
-
-    {:ok, stream(socket, :comments, [])}
+    {:ok,
+     socket |> stream(:comments, []) |> Itsm.PubSub.Helper.subscribe(Comments, is_admin: true)}
   end
 
   def handle_params(params, url, socket) do
@@ -60,7 +59,7 @@ defmodule ItsmWeb.Admin.CommentLive.Index do
       context_key: :comment,
       resource_name: gettext("Comment"),
       stream_name: :comments,
-      push_patch: [to: ~p"/admin/comments?#{socket.assigns[:results][:params] || %{}}"]
+      push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 
     {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}

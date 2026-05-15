@@ -21,6 +21,13 @@
       {request.category.request_name}
     </:col>
     <:col :let={{_id, request}} label={gettext("Request Name")}>{request.category.name}</:col>
+    <:col :let={{_id, request}} label={gettext("Requestor Affiliate")}>
+      <.common_code_label group="계열사" code={request.requestor.organization_code} />
+    </:col>
+    <:col :let={{_id, request}} label={gettext("Category Affiliate")}>
+      <.common_code_label group="계열사" code={request.category.affiliate} />
+    </:col>
+
     <:action :let={{_id, request}}>
       <div class="sr-only"><.link navigate={~p"/admin/requests/#{request}"}>Show</.link></div>
       <.link patch={~p"/admin/requests/#{request.id}/edit"}>Edit</.link>

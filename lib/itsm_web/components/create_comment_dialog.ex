@@ -80,8 +80,7 @@ defmodule ItsmWeb.CreateCommentDialog do
        |> clear_flash()
        |> push_patch(to: ~p"/approvals")}
     else
-      {:error, %Ecto.Changeset{} = changeset} ->
-        IO.inspect(changeset, label: "Approval Error")
+      {:error, %Ecto.Changeset{}} ->
         {:noreply, put_flash(socket, :error, "Failed")}
     end
   end
