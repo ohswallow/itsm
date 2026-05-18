@@ -25,7 +25,7 @@ defmodule Itsm.Posts do
     |> Repo.insert()
     |> case do
       {:ok, post} ->
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_post, post})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_post, post})
         {:ok, post}
 
       {:error, changeset} ->
@@ -43,8 +43,8 @@ defmodule Itsm.Posts do
     |> Repo.update()
     |> case do
       {:ok, post} ->
-        Itsm.Utils.broadcast(__MODULE__, {action_user, :update_post, post})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :update_post, post})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_post, post}, id: post.id)
+
         {:ok, post}
 
       {:error, changeset} ->
@@ -56,8 +56,8 @@ defmodule Itsm.Posts do
     Repo.delete(get_post!(id))
     |> case do
       {:ok, post} ->
-        Itsm.Utils.broadcast(__MODULE__, {action_user, :delete_post, post})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :delete_post, post})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_post, post}, id: post.id)
+
         {:ok, post}
 
       {:error, changeset} ->

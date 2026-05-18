@@ -6,9 +6,10 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Index do
   alias Itsm.Paging
 
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(CommonCodes)
-
-    {:ok, stream(socket, :common_codes, [])}
+    {:ok,
+     socket
+     |> stream(:common_codes, [])
+     |> Itsm.PubSub.Helper.subscribe(CommonCodes, is_admin: true)}
   end
 
   def handle_params(params, url, socket) do
@@ -59,7 +60,7 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Index do
       context_key: :common_code,
       resource_name: gettext("Common Code"),
       stream_name: :common_codes,
-      push_patch: [to: ~p"/admin/common_codes?#{socket.assigns[:results][:params] || %{}}"]
+      push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 
     {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}

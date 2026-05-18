@@ -22,8 +22,8 @@ defmodule Itsm.Admin.Assets do
     |> case do
       {:ok, asset} ->
         event = :update_asset
-        Itsm.Utils.broadcast(__MODULE__, {action_user, event, asset})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, asset})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, event, asset}, id: asset.id)
+
         {:ok, asset}
 
       {:error, changeset} ->
@@ -36,8 +36,7 @@ defmodule Itsm.Admin.Assets do
     |> case do
       {:ok, asset} ->
         event = :delete_asset
-        Itsm.Utils.broadcast(__MODULE__, {action_user, event, asset})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, asset})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, event, asset}, id: asset.id)
         {:ok, asset}
 
       {:error, changeset} ->

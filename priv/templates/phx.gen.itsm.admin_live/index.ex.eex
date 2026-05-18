@@ -6,9 +6,7 @@ defmodule <%= inspect context.web_module %>.<%= inspect Module.concat(schema.web
   alias <%= inspect context.base_module %>.Paging
 
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(<%= inspect context.alias %>)
-
-    {:ok, stream(socket, :<%= schema.collection %>, [])}
+    {:ok, socket |> stream(:<%= schema.collection %>, []) |> Itsm.PubSub.Helper.subscribe(<%= inspect context.alias %>)}
   end
 
   def handle_params(params, url, socket) do
@@ -57,7 +55,7 @@ defmodule <%= inspect context.web_module %>.<%= inspect Module.concat(schema.web
       context_key: :<%= schema.singular %>,
       resource_name: gettext("<%= schema.human_singular %>"),
       stream_name: :<%= schema.collection %>,
-      push_patch: [to: ~p"/admin/<%= schema.collection %>?#{socket.assigns[:results][:params] || %{}}"]
+      push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 
     {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}

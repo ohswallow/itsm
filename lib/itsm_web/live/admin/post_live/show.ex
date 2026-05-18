@@ -8,15 +8,11 @@ defmodule ItsmWeb.Admin.PostLive.Show do
   end
 
   def handle_params(%{"id" => id}, _, socket) do
-    if(connected?(socket)) do
-      Itsm.Utils.subscribe(Itsm.Admin.Posts, id)
-      Itsm.Utils.subscribes(Itsm.Admin.Posts)
-    end
-
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:post, Posts.get_post!(id) |> Posts.with_assoc([:board, :author]))}
+     |> assign(:post, Posts.get_post!(id) |> Posts.with_assoc([:board, :author]))
+     |> Itsm.PubSub.Helper.subscribe(Posts, id: id, is_admin: true)}
   end
 
   def handle_info({:pubsub, {action_user, event, item}}, socket) do
@@ -36,7 +32,7 @@ defmodule ItsmWeb.Admin.PostLive.Show do
        ) do
     opts =
       [context_key: :post, resource_name: gettext("Post")]
-      |> Keyword.merge(push_event_action(event))
+      |> Keyword.merge(push_event_action(socket, event))
 
     {:noreply,
      socket
@@ -47,8 +43,8 @@ defmodule ItsmWeb.Admin.PostLive.Show do
     {:noreply, socket}
   end
 
-  defp push_event_action(:delete_post),
-    do: [push_navigate: [to: ~p"/admin/posts"]]
+  defp push_event_action(socket, :delete_post),
+    do: [push_navigate: [to: "#{socket.assigns.current_path}"]]
 
-  defp push_event_action(_), do: []
+  defp push_event_action(_socket, _), do: []
 end

@@ -6,9 +6,7 @@ defmodule ItsmWeb.BoardLive.Index do
   alias Itsm.Paging
 
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Boards)
-
-    {:ok, stream(socket, :boards, [])}
+    {:ok, socket |> stream(:boards, []) |> Itsm.PubSub.Helper.subscribe(Boards)}
   end
 
   def handle_params(params, url, socket) do
@@ -58,7 +56,7 @@ defmodule ItsmWeb.BoardLive.Index do
       context_key: :board,
       resource_name: gettext("Board"),
       stream_name: :boards,
-      push_patch: [to: ~p"/boards?#{socket.assigns[:results][:params] || %{}}"]
+      push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 
     {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}

@@ -99,6 +99,7 @@ defmodule Mix.Tasks.Phx.Gen.Itsm.AdminLive do
   alias Mix.Phoenix.{Context, Schema}
   alias Mix.Tasks.Phx.Gen
 
+  # ex) mix phx.gen.itsm.admin_live Attachments Attachment attachments filename:string local_path:string file_type:string byte_size:integer status:string resource_type:string resource_id:uuid deleted_at:utc_datetime
   @doc false
   def run(args) do
     if Mix.Project.umbrella?() do

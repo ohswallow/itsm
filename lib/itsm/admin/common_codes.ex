@@ -18,7 +18,7 @@ defmodule Itsm.Admin.CommonCodes do
     |> case do
       {:ok, common_code} ->
         event = :create_common_code
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, common_code})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, event, common_code})
         {:ok, common_code}
 
       {:error, changeset} ->
@@ -34,8 +34,11 @@ defmodule Itsm.Admin.CommonCodes do
     |> case do
       {:ok, common_code} ->
         event = :update_common_code
-        Itsm.Utils.broadcast(__MODULE__, {action_user, event, common_code})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, common_code})
+
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, event, common_code},
+          id: common_code.id
+        )
+
         {:ok, common_code}
 
       {:error, changeset} ->
@@ -48,8 +51,11 @@ defmodule Itsm.Admin.CommonCodes do
     |> case do
       {:ok, common_code} ->
         event = :delete_common_code
-        Itsm.Utils.broadcast(__MODULE__, {action_user, event, common_code})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, common_code})
+
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, event, common_code},
+          id: common_code.id
+        )
+
         {:ok, common_code}
 
       {:error, changeset} ->

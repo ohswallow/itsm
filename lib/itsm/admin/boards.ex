@@ -23,8 +23,10 @@ defmodule Itsm.Admin.Boards do
     |> Repo.update()
     |> case do
       {:ok, board} ->
-        Itsm.Utils.broadcast(__MODULE__, {action_user, :update_board, board})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :update_board, board})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_board, board},
+          id: board.id
+        )
+
         {:ok, board}
 
       {:error, changeset} ->

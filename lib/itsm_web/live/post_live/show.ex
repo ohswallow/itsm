@@ -10,11 +10,6 @@ defmodule ItsmWeb.PostLive.Show do
   def handle_params(%{"id" => id, "board_id" => board_id}, _, socket)
       when board_id != nil and board_id != "" and is_binary(board_id) and
              byte_size(board_id) == 36 do
-    if(connected?(socket)) do
-      Itsm.Utils.subscribe(Itsm.Posts, id)
-      Itsm.Utils.subscribes(Itsm.Posts)
-    end
-
     target_board = Itsm.Boards.get_board!(board_id)
 
     {:noreply,
@@ -22,7 +17,8 @@ defmodule ItsmWeb.PostLive.Show do
      |> assign(:board_name, Map.get(target_board, :name, ""))
      |> assign(:board_id, Map.get(target_board, :id, ""))
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:post, Posts.get_post!(id) |> Posts.with_assoc([:board, :author]))}
+     |> assign(:post, Posts.get_post!(id) |> Posts.with_assoc([:board, :author]))
+     |> Itsm.PubSub.Helper.subscribe(Posts, id: id)}
   end
 
   def handle_params(_params, _url, socket) do
@@ -46,7 +42,7 @@ defmodule ItsmWeb.PostLive.Show do
        ) do
     opts =
       [context_key: :post, resource_name: gettext("Post")]
-      |> Keyword.merge(push_event_action(event))
+      |> Keyword.merge(push_event_action(socket, event))
 
     {:noreply,
      socket
@@ -57,8 +53,8 @@ defmodule ItsmWeb.PostLive.Show do
     {:noreply, socket}
   end
 
-  defp push_event_action(:delete_post),
-    do: [push_navigate: [to: ~p"/posts"]]
+  defp push_event_action(socket, :delete_post),
+    do: [push_navigate: [to: "#{socket.assigns.current_path}"]]
 
-  defp push_event_action(_), do: []
+  defp push_event_action(_socket, _), do: []
 end

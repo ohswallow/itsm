@@ -135,7 +135,7 @@ defmodule Itsm.Paging do
           url :: String.t(),
           opts :: [
             default_columns: [atom() | {atom(), atom() | tuple()} | list()],
-            preloads: [atom()],
+            preloads: [atom() | {atom(), atom() | tuple() | list(atom())} | list(atom())],
             range_columns: [atom()],
             column_custom_label: map(),
             query_cond: atom()
@@ -210,11 +210,17 @@ defmodule Itsm.Paging do
       page: page,
       page_size: page_size,
       search: search,
-      search_columns: formatted_columns,
+      search_columns: formatted_columns
+    }
+
+    range_params = %{
       range_column: formatted_range_column,
       start_date: start_date,
       end_date: end_date
     }
+
+    results_params =
+      if range_columns != [], do: Map.merge(results_params, range_params), else: results_params
 
     %{
       entries: entries,
@@ -452,11 +458,11 @@ defmodule Itsm.Paging do
     end
   end
 
-  def build_optimized_preloads(%Ecto.Query{from: %{source: {_, module}}}, preloads) do
+  defp build_optimized_preloads(%Ecto.Query{from: %{source: {_, module}}}, preloads) do
     do_build_optimized_preloads(module, preloads)
   end
 
-  def build_optimized_preloads(schema, preloads) do
+  defp build_optimized_preloads(schema, preloads) do
     do_build_optimized_preloads(schema, preloads)
   end
 

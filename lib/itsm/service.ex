@@ -39,8 +39,7 @@ defmodule Itsm.Service do
     |> case do
       {:ok, %{request: request}} ->
         request = Repo.preload(request, [:category, :attachments])
-        Approvals.broadcast_approvals_list({:request_created, request})
-        Itsm.Utils.broadcasts(Requests, {action_user, :created_request, request})
+        Itsm.PubSub.Helper.broadcast(Requests, {action_user, :created_request, request})
         {:ok, request}
 
       error ->
@@ -64,8 +63,11 @@ defmodule Itsm.Service do
     |> case do
       {:ok, %{request: request}} ->
         request = Repo.preload(request, :category)
-        Itsm.Utils.broadcast(__MODULE__, {action_user, :update_request, request})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :update_request, request})
+
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_request, request},
+          id: request.id
+        )
+
         {:ok, request}
 
       error ->
@@ -87,9 +89,13 @@ defmodule Itsm.Service do
     |> Repo.transact()
     |> case do
       {:ok, %{comment: comment, attachments: attachments}} ->
-        Itsm.Utils.broadcasts(Comments, {action_user, :create_comment, comment})
-        Itsm.Utils.broadcast(Requests, resource, {action_user, :create_comment, comment})
-        Itsm.Utils.broadcasts(Attachments, {action_user, :create_attachments, attachments})
+        Itsm.PubSub.Helper.broadcast(Requests, {action_user, :create_comment, comment},
+          id: resource.id,
+          only: :detail
+        )
+
+        Itsm.PubSub.Helper.broadcast(Comments, {action_user, :create_comment, comment})
+        Itsm.PubSub.Helper.broadcast(Attachments, {action_user, :create_attachments, attachments})
         {:ok, comment}
 
       {:error, _} = error ->

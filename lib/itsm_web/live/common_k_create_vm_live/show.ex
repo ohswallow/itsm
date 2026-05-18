@@ -19,12 +19,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   end
 
   def handle_params(%{"id" => id}, _uri, socket) do
-    if(connected?(socket)) do
-      Itsm.Utils.subscribe(Requests, id)
-      Itsm.Utils.subscribes(Requests)
-      Itsm.Utils.subscribes(Attachments)
-    end
-
     request =
       Requests.get_request!(id)
       |> Requests.with_assoc([
@@ -43,7 +37,11 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
      |> assign(:selected_attachment, nil)
      |> assign(:attachments_count, length(attachments))
      |> stream(:attachments, attachments, reset: true)
-     |> stream(:comments, Comments.list_comments(Requests.get_request!(id)), reset: true)}
+     |> stream(:comments, Comments.list_comments_by_resource(Requests.get_request!(id)),
+       reset: true
+     )
+     |> Itsm.PubSub.Helper.subscribe(Requests, id: id)
+     |> Itsm.PubSub.Helper.subscribe(Attachments)}
   end
 
   def handle_event("view_attachment", %{"id" => id, "filename" => filename}, socket) do
@@ -109,7 +107,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
        ) do
     opts =
       [context_key: :request, resource_name: gettext("Request")]
-      |> Keyword.merge(push_event_action(event))
+      |> Keyword.merge(push_event_action(socket, event))
 
     {:noreply,
      socket
@@ -128,7 +126,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
         stream_name: :comments,
         resource_name: gettext("Comment")
       ]
-      |> Keyword.merge(push_event_action(event))
+      |> Keyword.merge(push_event_action(socket, event))
 
     item = Comments.with_assoc(item, [:user, :attachments])
 
@@ -143,10 +141,10 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
     {:noreply, socket}
   end
 
-  defp push_event_action(:delete_request),
-    do: [push_navigate: [to: ~p"/requests"]]
+  defp push_event_action(socket, :delete_request),
+    do: [push_navigate: [to: "#{socket.assigns.current_path}"]]
 
-  defp push_event_action(_), do: []
+  defp push_event_action(_socket, _), do: []
 
   defp handle_pubsub_comment(socket, "update" <> _action, item),
     do: stream_insert(socket, :comments, item)

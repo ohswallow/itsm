@@ -54,7 +54,7 @@ defmodule Itsm.Requests do
     |> case do
       {:ok, request} ->
         request = Repo.preload(request, :category)
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_request, request})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_request, request})
         {:ok, request}
 
       {:error, _} = error ->
@@ -68,8 +68,10 @@ defmodule Itsm.Requests do
     Repo.delete(get_request!(id))
     |> case do
       {:ok, request} ->
-        Itsm.Utils.broadcast(__MODULE__, {action_user, :delete_request, request})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :delete_request, request})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_request, request},
+          id: request.id
+        )
+
         {:ok, request}
 
       {:error, _} = error ->

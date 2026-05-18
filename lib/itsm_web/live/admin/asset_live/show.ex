@@ -8,15 +8,11 @@ defmodule ItsmWeb.Admin.AssetLive.Show do
   end
 
   def handle_params(%{"id" => id}, _, socket) do
-    if(connected?(socket)) do
-      Itsm.Utils.subscribe(Assets, id)
-      Itsm.Utils.subscribes(Assets)
-    end
-
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:asset, Assets.get_asset!(id))}
+     |> assign(:asset, Assets.get_asset!(id))
+     |> Itsm.PubSub.Helper.subscribe(Assets, id: id, is_admin: true)}
   end
 
   def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
@@ -47,7 +43,7 @@ defmodule ItsmWeb.Admin.AssetLive.Show do
        ) do
     opts =
       [context_key: :asset, resource_name: gettext("Asset")]
-      |> Keyword.merge(push_event_action(event))
+      |> Keyword.merge(push_event_action(socket, event))
 
     {:noreply,
      socket
@@ -58,8 +54,8 @@ defmodule ItsmWeb.Admin.AssetLive.Show do
     {:noreply, socket}
   end
 
-  defp push_event_action(:delete_asset),
-    do: [push_navigate: [to: ~p"/admin/assets"]]
+  defp push_event_action(socket, :delete_asset),
+    do: [push_navigate: [to: "#{socket.assigns.current_path}"]]
 
-  defp push_event_action(_), do: []
+  defp push_event_action(_socket, _), do: []
 end

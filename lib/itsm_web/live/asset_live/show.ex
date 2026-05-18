@@ -11,16 +11,12 @@ defmodule ItsmWeb.AssetLive.Show do
   end
 
   def handle_params(%{"id" => id}, _, socket) do
-    if connected?(socket) do
-      Itsm.Utils.subscribe(Assets, id)
-      Itsm.Utils.subscribes(Assets)
-    end
-
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
      |> assign(:asset, Assets.get_asset_with_relations!(id))
-     |> assign_new_options()}
+     |> assign_new_options()
+     |> Itsm.PubSub.Helper.subscribe(Assets, id: id)}
   end
 
   def handle_info({:pubsub, {action_user, event, item}}, socket) do
@@ -81,7 +77,7 @@ defmodule ItsmWeb.AssetLive.Show do
        ) do
     opts =
       [context_key: :asset, resource_name: gettext("Asset")]
-      |> Keyword.merge(push_event_action(event))
+      |> Keyword.merge(push_event_action(socket, event))
 
     item = Itsm.Assets.with_assoc(item, service_crew: [:users], system_crew: [:users])
 
@@ -94,8 +90,8 @@ defmodule ItsmWeb.AssetLive.Show do
     {:noreply, socket}
   end
 
-  defp push_event_action(:delete_asset),
-    do: [push_navigate: [to: ~p"/assets"]]
+  defp push_event_action(socket, :delete_asset),
+    do: [push_navigate: [to: "#{socket.assigns.current_path}"]]
 
-  defp push_event_action(_), do: []
+  defp push_event_action(_socket, _), do: []
 end

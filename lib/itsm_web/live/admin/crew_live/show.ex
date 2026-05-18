@@ -8,15 +8,11 @@ defmodule ItsmWeb.Admin.CrewLive.Show do
   end
 
   def handle_params(%{"id" => id}, _, socket) do
-    if(connected?(socket)) do
-      Itsm.Utils.subscribe(Crews, id)
-      Itsm.Utils.subscribes(Crews)
-    end
-
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:crew, Crews.get_crew!(id))}
+     |> assign(:crew, Crews.get_crew!(id))
+     |> Itsm.PubSub.Helper.subscribe(Crews, id: id, is_admin: true)}
   end
 
   def handle_info({:pubsub, {action_user, event, item}}, socket) do
@@ -36,7 +32,7 @@ defmodule ItsmWeb.Admin.CrewLive.Show do
        ) do
     opts =
       [context_key: :crew, resource_name: gettext("Crew")]
-      |> Keyword.merge(push_event_action(event))
+      |> Keyword.merge(push_event_action(socket, event))
 
     {:noreply,
      socket
@@ -47,8 +43,8 @@ defmodule ItsmWeb.Admin.CrewLive.Show do
     {:noreply, socket}
   end
 
-  defp push_event_action(:delete_crew),
-    do: [push_navigate: [to: ~p"/admin/crews"]]
+  defp push_event_action(socket, :delete_crew),
+    do: [push_navigate: [to: "#{socket.assigns.current_path}"]]
 
-  defp push_event_action(_), do: []
+  defp push_event_action(_socket, _), do: []
 end

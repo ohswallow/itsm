@@ -7,6 +7,8 @@ defmodule Itsm.Admin.Comments do
 
   def get_comment!(id), do: Repo.get!(Comment, id)
 
+  defdelegate list_comments_by_resource(resource), to: Itsm.Comments
+
   def change_comment(comment, attrs \\ %{}) do
     Comment.changeset(comment, attrs)
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
@@ -22,10 +24,8 @@ defmodule Itsm.Admin.Comments do
     |> case do
       {:ok, comment} ->
         event = :update_comment
-        Itsm.Utils.broadcast(__MODULE__, {action_user, event, comment})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, comment})
-        Itsm.Utils.broadcast(Requests, {action_user, event, comment})
-        Itsm.Utils.broadcasts(Requests, {action_user, event, comment})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, event, comment}, id: comment.id)
+        Itsm.PubSub.Helper.broadcast(Requests, {action_user, event, comment}, id: comment.id)
         {:ok, comment}
 
       {:error, changeset} ->
@@ -38,10 +38,8 @@ defmodule Itsm.Admin.Comments do
     |> case do
       {:ok, comment} ->
         event = :delete_comment
-        Itsm.Utils.broadcast(__MODULE__, {action_user, event, comment})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, comment})
-        Itsm.Utils.broadcast(Requests, {action_user, event, comment})
-        Itsm.Utils.broadcasts(Requests, {action_user, event, comment})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, event, comment}, id: comment.id)
+        Itsm.PubSub.Helper.broadcast(Requests, {action_user, event, comment}, id: comment.id)
         {:ok, comment}
 
       {:error, changeset} ->

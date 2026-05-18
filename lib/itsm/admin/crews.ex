@@ -22,8 +22,8 @@ defmodule Itsm.Admin.Crews do
       {:ok, crew} ->
         crew = Repo.preload(crew, [:leader])
         event = :update_crew
-        Itsm.Utils.broadcast(__MODULE__, {action_user, event, crew})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, crew})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, event, crew}, id: crew.id)
+
         {:ok, crew}
 
       {:error, changeset} ->
@@ -36,8 +36,8 @@ defmodule Itsm.Admin.Crews do
     |> case do
       {:ok, crew} ->
         event = :delete_crew
-        Itsm.Utils.broadcast(__MODULE__, {action_user, event, crew})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, event, crew})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, event, crew}, id: crew.id)
+
         {:ok, crew}
 
       {:error, changeset} ->

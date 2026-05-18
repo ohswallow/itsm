@@ -56,7 +56,7 @@ defmodule Itsm.OsInstances do
     |> Repo.insert()
     |> case do
       {:ok, os_istance} ->
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_os_instance, os_istance})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_os_instance, os_istance})
 
         {:ok, os_istance}
 
@@ -82,10 +82,12 @@ defmodule Itsm.OsInstances do
     |> OsInstance.changeset(attrs)
     |> Repo.update()
     |> case do
-      {:ok, os_istance} ->
-        Itsm.Utils.broadcast(__MODULE__, {action_user, :update_os_instance, os_istance})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :update_os_instance, os_istance})
-        {:ok, os_istance}
+      {:ok, os_instance} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_os_instance, os_instance},
+          id: os_instance.id
+        )
+
+        {:ok, os_instance}
 
       {:error, changeset} ->
         {:error, changeset}
@@ -107,10 +109,12 @@ defmodule Itsm.OsInstances do
   def delete_os_instance(%User{} = action_user, %{"id" => id}) do
     Repo.delete(get_os_instance!(id))
     |> case do
-      {:ok, os_istance} ->
-        Itsm.Utils.broadcast(__MODULE__, {action_user, :delete_os_instance, os_istance})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :delete_os_instance, os_istance})
-        {:ok, os_istance}
+      {:ok, os_instance} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_os_instance, os_instance},
+          id: os_instance.id
+        )
+
+        {:ok, os_instance}
 
       {:error, changeset} ->
         {:error, changeset}

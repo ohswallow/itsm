@@ -5,9 +5,7 @@ defmodule ItsmWeb.EvaluationLive.Index do
   alias Itsm.Evaluations.Evaluation
 
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Evaluations)
-
-    {:ok, stream(socket, :evaluations, [])}
+    {:ok, socket |> stream(:evaluations, []) |> Itsm.PubSub.Helper.subscribe(Evaluations)}
   end
 
   def handle_params(params, _url, socket) do
@@ -56,7 +54,7 @@ defmodule ItsmWeb.EvaluationLive.Index do
       context_key: :evaluation,
       resource_name: gettext("Evaluation"),
       stream_name: :evaluations,
-      push_patch: [to: ~p"/evaluations"]
+      push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 
     {:noreply,

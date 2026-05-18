@@ -228,6 +228,13 @@ defmodule ItsmWeb.Router do
 
       live "/posts/:id", Admin.PostLive.Show, :show
       live "/posts/:id/show/edit", Admin.PostLive.Show, :edit
+
+      live "/attachments", Admin.AttachmentLive.Index, :index
+      live "/attachments/new", Admin.AttachmentLive.Index, :new
+      live "/attachments/:id/edit", Admin.AttachmentLive.Index, :edit
+
+      live "/attachments/:id", Admin.AttachmentLive.Show, :show
+      live "/attachments/:id/show/edit", Admin.AttachmentLive.Show, :edit
     end
   end
 

@@ -25,7 +25,7 @@ defmodule Itsm.Attachments do
     |> Repo.insert()
     |> case do
       {:ok, attachment} ->
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_attachments, attachment})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_attachments, attachment})
 
         {:ok, attachment}
 
@@ -43,7 +43,7 @@ defmodule Itsm.Attachments do
       |> repo.insert()
       |> case do
         {:ok, attachment} ->
-          Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_attachments, attachment})
+          Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_attachments, attachment})
 
           {:cont, {:ok, [attachment | acc]}}
 
@@ -59,8 +59,9 @@ defmodule Itsm.Attachments do
     |> Repo.update()
     |> case do
       {:ok, attachment} ->
-        Itsm.Utils.broadcast(__MODULE__, {action_user, :delete_attachment, attachment})
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :delete_attachment, attachment})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_attachment, attachment},
+          id: attachment.id
+        )
 
         {:ok, attachment}
 

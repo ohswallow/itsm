@@ -9,8 +9,7 @@ defmodule Itsm.CommonCodeCache do
 
   def init(_) do
     :ets.new(@table, [:named_table, :public, :set, read_concurrency: true])
-
-    Itsm.Utils.subscribes(CommonCodes)
+    Itsm.PubSub.Helper.subscribe(nil, CommonCodes)
 
     send(self(), :load_from_db)
     {:ok, %{}}

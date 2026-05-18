@@ -6,9 +6,7 @@ defmodule ItsmWeb.Admin.UserLive.Index do
   alias Itsm.Paging
 
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Accounts)
-
-    {:ok, stream(socket, :users, [])}
+    {:ok, socket |> stream(:users, []) |> Itsm.PubSub.Helper.subscribe(Accounts, is_admin: true)}
   end
 
   def handle_params(params, url, socket) do
@@ -16,9 +14,18 @@ defmodule ItsmWeb.Admin.UserLive.Index do
   end
 
   def handle_event("delete", %{"id" => _id} = user_params, socket) do
-    {:ok, user} = Accounts.delete_user(socket.assigns.current_user, user_params)
+    %{current_user: action_user} = socket.assigns
 
-    {:noreply, stream_delete(socket, :users, user)}
+    case Accounts.delete_user(action_user, user_params) do
+      {:ok, user} ->
+        socket =
+          if action_user.id == user.id, do: redirect(socket, to: ~p"/users/log_out"), else: socket
+
+        {:noreply, stream_delete(socket, :users, user)}
+
+      {:error, %Ecto.Changeset{} = _changeset} ->
+        {:noreply, put_flash(socket, :error, "삭제 실패: 자식 데이터가 존재합니다.")}
+    end
   end
 
   def handle_info({:pubsub, {action_user, event, item}}, socket) do
@@ -68,7 +75,7 @@ defmodule ItsmWeb.Admin.UserLive.Index do
       context_key: :user,
       resource_name: gettext("User"),
       stream_name: :users,
-      push_patch: [to: ~p"/admin/users?#{socket.assigns[:results][:params] || %{}}"]
+      push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 
     {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}

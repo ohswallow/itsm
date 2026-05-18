@@ -6,9 +6,7 @@ defmodule ItsmWeb.Admin.PostLive.Index do
   alias Itsm.Paging
 
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Posts)
-
-    {:ok, stream(socket, :posts, [])}
+    {:ok, socket |> stream(:posts, []) |> Itsm.PubSub.Helper.subscribe(Posts, is_admin: true)}
   end
 
   def handle_params(params, url, socket) do
@@ -43,11 +41,6 @@ defmodule ItsmWeb.Admin.PostLive.Index do
 
     value =
       Post
-      |> Paging.filter_status(
-        [author: :organization_code],
-        socket.assigns[:current_user].organization_code,
-        query_cond: :in
-      )
       |> Paging.search_and_pagination(params, url, opts)
 
     socket
@@ -74,7 +67,7 @@ defmodule ItsmWeb.Admin.PostLive.Index do
       context_key: :post,
       resource_name: gettext("Post"),
       stream_name: :posts,
-      push_patch: [to: ~p"/admin/posts?#{socket.assigns[:results][:params] || %{}}"]
+      push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 
     {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}

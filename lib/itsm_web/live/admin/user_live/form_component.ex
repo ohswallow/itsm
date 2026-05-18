@@ -109,10 +109,13 @@ defmodule ItsmWeb.Admin.UserLive.FormComponent do
   end
 
   defp save_user(socket, :edit, user_params) do
-    %{current_user: action_user} = socket.assigns
+    %{current_user: action_user, user: user} = socket.assigns
 
-    case Accounts.update_user(action_user, socket.assigns.user, user_params) do
-      {:ok, _user} ->
+    case Accounts.update_user(action_user, user, user_params) do
+      {:ok, user} ->
+        socket =
+          if action_user.id == user.id, do: socket |> assign(:current_user, user), else: socket
+
         {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -123,8 +126,11 @@ defmodule ItsmWeb.Admin.UserLive.FormComponent do
   defp save_user(socket, :new, user_params) do
     %{current_user: action_user} = socket.assigns
 
-    case Accounts.register_user(action_user, user_params) do
-      {:ok, _user} ->
+    case Accounts.create_user(action_user, user_params) do
+      {:ok, user} ->
+        socket =
+          if action_user.id == user.id, do: socket |> assign(:current_user, user), else: socket
+
         {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->

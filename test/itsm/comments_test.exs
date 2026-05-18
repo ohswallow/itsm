@@ -12,7 +12,7 @@ defmodule Itsm.CommentsTest do
 
     test "list_comments/0 returns all comments" do
       comment = comment_fixture()
-      assert Comments.list_comments() == [comment]
+      assert Comments.list_comments_by_resource() == [comment]
     end
 
     test "get_comment!/1 returns the comment with given id" do

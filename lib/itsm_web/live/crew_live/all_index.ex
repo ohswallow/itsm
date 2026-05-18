@@ -1,46 +1,23 @@
 defmodule ItsmWeb.CrewLive.AllIndex do
+  alias Itsm.Crews.Crew
   use ItsmWeb, :live_view
 
   alias Itsm.Crews
-  alias Itsm.Utils
 
   # 공통 컴포넌트 임포트
   import ItsmWeb.CrewLive.TableComponents
-  import ItsmWeb.CrewLive.Components
+  alias Itsm.Paging
 
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Utils.subscribes(Crews)
-
-    {:ok, socket |> assign(:org_options, Itsm.CommonCodes.get_select_options("계열사"))}
+    {:ok,
+     socket
+     |> stream(:crews, [])
+     |> assign(:org_options, Itsm.CommonCodes.get_select_options("계열사"))
+     |> Itsm.PubSub.Helper.subscribe(Crews)}
   end
 
-  def handle_params(params, _uri, socket) do
-    # 1. URL에 지저분한 파라미터가 섞이지 않도록 필요한 필터만
-    filter_params = Map.take(params, ["keyword", "organization_code"])
-
-    socket =
-      socket
-      |> assign(:page_title, "All Crew")
-      |> stream(:crews, Crews.filter_crews(params), reset: true)
-      |> assign(:form, to_form(params))
-      # 2 현재 필터 조건을 뷰에서 쓸 수 있게 assign
-      |> assign(:filter_params, filter_params)
-
-    {:noreply, socket}
-  end
-
-  def handle_event("filter", params, socket) do
-    # URL 파라미터를 깔끔하게 정리
-    params =
-      params
-      |> Map.take(~w(keyword organization_code))
-      |> Map.reject(fn {_, v} -> v == "" end)
-
-    # push_patch는 현재 URL을 변경하고, 페이지를 새로고침하지 않음
-    # 이 경우, 현재 LiveView의 상태를 유지하면서 URL만 업데이트
-    socket = push_patch(socket, to: ~p"/crews/all?#{params}")
-
-    {:noreply, socket}
+  def handle_params(params, url, socket) do
+    {:noreply, apply_action(socket, socket.assigns.live_action, params, url)}
   end
 
   def handle_info({:pubsub, {action_user, event, item}}, socket) do
@@ -49,9 +26,30 @@ defmodule ItsmWeb.CrewLive.AllIndex do
 
   def handle_info(_event, socket), do: {:noreply, socket}
 
+  defp apply_action(socket, :index, params, url) do
+    opts = [
+      default_columns: [
+        :name,
+        :description,
+        leader: :display_name,
+        leader: :department
+      ],
+      preloads: [leader: [:organization_code, :department, :display_name]]
+    ]
+
+    value =
+      Crew
+      |> Paging.search_and_pagination(params, url, opts)
+
+    socket
+    |> assign(:page_title, "All Crew")
+    |> assign(:results, value.results)
+    |> stream(:crews, value.entries, reset: true)
+  end
+
   defp handle_pubsub(_action_user, event, {:crews, _crew}, socket)
        when event in [:create_crew, :update_crew, :delete_crew] do
-    %{filter_params: params} = socket.assigns
+    %{results: params} = socket.assigns
 
     {:noreply, push_patch(socket, to: ~p"/crews/all?#{params}")}
   end

@@ -6,9 +6,7 @@ defmodule ItsmWeb.Admin.CrewLive.Index do
   alias Itsm.Paging
 
   def mount(_params, _session, socket) do
-    if connected?(socket), do: Itsm.Utils.subscribes(Crews)
-
-    {:ok, stream(socket, :crews, [])}
+    {:ok, socket |> stream(:crews, []) |> Itsm.PubSub.Helper.subscribe(Crews, is_admin: true)}
   end
 
   def handle_params(params, url, socket) do
@@ -57,7 +55,7 @@ defmodule ItsmWeb.Admin.CrewLive.Index do
       context_key: :crew,
       resource_name: gettext("Crew"),
       stream_name: :crews,
-      push_patch: [to: ~p"/admin/crews?#{socket.assigns[:results][:params] || %{}}"]
+      push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 
     {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}

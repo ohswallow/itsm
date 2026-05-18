@@ -9,15 +9,6 @@ defmodule Itsm.Delegations do
   alias Itsm.Delegations.Delegation
   alias Itsm.Accounts.User
 
-  # ✅ 모든 delegation 리스트 변경사항 구독 (생성, 업데이트 등)
-  def subscribe_delegation_list do
-    Phoenix.PubSub.subscribe(Itsm.PubSub, "delegation_list")
-  end
-
-  def broadcast_delegation_list(message) do
-    Phoenix.PubSub.broadcast(Itsm.PubSub, "delegation_list", message)
-  end
-
   @doc """
   Returns the list of delegations.
 
@@ -106,7 +97,7 @@ defmodule Itsm.Delegations do
     |> Repo.insert()
     |> case do
       {:ok, delegation} ->
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_delegation, delegation})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_delegation, delegation})
 
         {:ok, delegation}
 
@@ -209,8 +200,10 @@ defmodule Itsm.Delegations do
       |> Repo.delete()
       |> case do
         {:ok, delegation} ->
-          Itsm.Utils.broadcast(__MODULE__, {action_user, :delete_delegation, delegation})
-          Itsm.Utils.broadcasts(__MODULE__, {action_user, :delete_delegation, delegation})
+          Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_delegation, delegation},
+            id: delegation.id
+          )
+
           {:ok, delegation}
 
         {:error, delegation} ->

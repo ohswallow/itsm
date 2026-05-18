@@ -10,18 +10,6 @@ defmodule Itsm.Approvals do
   alias Itsm.Finalization
 
   # ==================================================
-  # PubSub
-  # ==================================================
-
-  def subscribe_approvals_list do
-    Phoenix.PubSub.subscribe(Itsm.PubSub, "approvals_list")
-  end
-
-  def broadcast_approvals_list(message) do
-    Phoenix.PubSub.broadcast(Itsm.PubSub, "approvals_list", message)
-  end
-
-  # ==================================================
   # 조회
   # ==================================================
 
@@ -62,7 +50,7 @@ defmodule Itsm.Approvals do
     )
     |> order_by(desc: :inserted_at)
     |> Repo.all()
-    |> Repo.preload([:category, :assignee_crew])
+    |> Repo.preload([:category, :assignee_crew, :requestor_crew])
   end
 
   # ==================================================
@@ -114,8 +102,8 @@ defmodule Itsm.Approvals do
           Finalization.execute_after_finish(approver, preloaded_request)
         end
 
-        broadcast_approvals_list({:request_updated, preloaded_request})
-        Itsm.Utils.broadcast(__MODULE__, {approver, :request_updated, preloaded_request})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {approver, :request_updated, preloaded_request})
+
         result
 
       error ->
@@ -136,7 +124,7 @@ defmodule Itsm.Approvals do
     |> repo.insert()
     |> case do
       {:ok, approval} ->
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_approval, approval})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_approval, approval})
         {:ok, approval}
 
       {:error, changeset} ->
@@ -150,7 +138,7 @@ defmodule Itsm.Approvals do
     |> Repo.insert()
     |> case do
       {:ok, approval} ->
-        Itsm.Utils.broadcasts(__MODULE__, {action_user, :create_approval, approval})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_approval, approval})
         {:ok, approval}
 
       {:error, changeset} ->
