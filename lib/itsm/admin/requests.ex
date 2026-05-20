@@ -8,7 +8,22 @@ defmodule Itsm.Admin.Requests do
 
   defdelegate change_request(request, attrs \\ %{}), to: Itsm.Requests
 
-  defdelegate create_request(action_user, attrs \\ %{}), to: Itsm.Requests
+  def create_request(%User{} = action_user, attrs \\ %{}) do
+    action_user
+    |> Ecto.build_assoc(:requests)
+    |> Request.changeset(attrs)
+    |> Ecto.Changeset.put_change(:requestor_name, action_user.display_name)
+    |> Repo.insert()
+    |> case do
+      {:ok, request} ->
+        request = Repo.preload(request, :category)
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_request, request})
+        {:ok, request}
+
+      {:error, _} = error ->
+        error
+    end
+  end
 
   defdelegate with_assoc(request, preloads), to: Itsm.Requests
 

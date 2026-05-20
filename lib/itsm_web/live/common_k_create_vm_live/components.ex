@@ -12,7 +12,11 @@ defmodule ItsmWeb.CommonKCreateVmLive.Components do
         <:subtitle>Request ID: {@request.id}</:subtitle>
         
         <:actions>
-          <.link navigate={~p"/common_k_create_vm/#{@request}/edit"} class="text-sm text-zinc-700">
+          <.link
+            :if={@show_edit}
+            navigate={~p"/common_k_create_vm/#{@request}/edit"}
+            class="text-sm text-zinc-700"
+          >
             Edit
           </.link>
           <.link navigate={~p"/common_k_create_vm/#{@request}/copy"} class="text-sm text-zinc-700">
