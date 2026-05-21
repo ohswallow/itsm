@@ -6,6 +6,14 @@ defmodule ItsmWeb.LiveUtils do
   alias Itsm.Accounts.User
   alias Phoenix.LiveView
 
+  @doc """
+  모든 에러 메세지를 통합적으로 처리하는 함수입니다. `reason`과 `scope`에 따라 적절한 사용자 친화적인 메시지를 반환합니다.
+  또한, 알려지지 않은 에러 유형에 대해서는 로깅을 수행하여 디버깅에 도움을 줍니다.
+  scope는 에러가 발생한 컨텍스트를 나타내며, 예를 들어 `:crew`는 크루 관련 에러임을 나타냅니다.
+  reason은 에러의 유형을 나타내며, 예를 들어 `:not_leader`는 크루의 리더가 아닌 사용자가 리더 전용 작업을 시도했음을 나타냅니다.
+  opt은 추가적인 정보를 제공하는데 사용될 수 있으며, 예를 들어 `:not_leader` 에러의 경우 어떤 메소드에서 발생했는지에 대한 정보를 담을 수 있습니다.
+  """
+  @spec translate_error(reason :: atom(), scope :: atom() | nil, opt :: any()) :: String.t()
   def translate_error(reason, scope \\ nil, opt \\ nil)
 
   def translate_error(:approval, _scope, _opt), do: gettext("Approval creation failed.")
@@ -26,8 +34,8 @@ defmodule ItsmWeb.LiveUtils do
   def translate_error(:unauthorized, :crew, _opt),
     do: gettext("You don't have permission to remove this member.")
 
-  def translate_error(type, msg, _opt) do
-    Logger.error("#{type}: #{msg}")
+  def translate_error(reason, scope, opt) do
+    Logger.error("reason : #{reason}\nscope : #{scope}\nopt : #{opt}")
     gettext("An unknown error occurred.")
   end
 

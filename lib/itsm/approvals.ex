@@ -145,4 +145,10 @@ defmodule Itsm.Approvals do
         {:error, changeset}
     end
   end
+
+  def get_approval_by_request(%Request{id: id}) do
+    Approval
+    |> where([a], a.request_id == ^id)
+    |> Repo.one()
+  end
 end

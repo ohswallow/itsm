@@ -1,6 +1,9 @@
 <div class="flex gap-6">
   <div class="flex-1">
-    <.request_header request={@request} /> <.request_info request={@request} />
+    <.request_header
+      request={@request}
+      show_edit={@request.requestor_id == @current_user.id and @request.status == :validation}
+    /> <.request_info request={@request} />
     <.vm_section
       :if={Enum.any?(@request.common_k_create_vms)}
       vms={@request.common_k_create_vms}
