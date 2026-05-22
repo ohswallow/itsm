@@ -75,9 +75,8 @@ defmodule ItsmWeb.DelegationLive.Index do
 
   defp handle_pubsub(action_user, event, item, socket) do
     opts = [
-      context_key: :delegation,
       resource_name: gettext("Delegation"),
-      stream_name: :delegations,
+      target_key: :delegations,
       push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 

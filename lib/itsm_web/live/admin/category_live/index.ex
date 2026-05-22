@@ -64,9 +64,8 @@ defmodule ItsmWeb.Admin.CategoryLive.Index do
 
   defp handle_pubsub(action_user, event, item, socket) do
     opts = [
-      context_key: :category,
       resource_name: gettext("Category"),
-      stream_name: :categories,
+      target_key: :categories,
       push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 

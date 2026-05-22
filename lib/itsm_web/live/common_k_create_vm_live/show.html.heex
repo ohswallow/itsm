@@ -1,12 +1,15 @@
 <div class="flex gap-6">
   <div class="flex-1">
-    <.request_header request={@request} /> <.request_info request={@request} />
+    <.request_header
+      request={@request}
+      show_edit={@request.requestor_id == @current_user.id and @request.status == :validation}
+    /> <.request_info request={@request} />
     <.vm_section
       :if={Enum.any?(@request.common_k_create_vms)}
       vms={@request.common_k_create_vms}
     />
     <.attachments_section
-      :if={@attachments_count > 1}
+      :if={@attachments_count > 0}
       id="attachments"
       attachments_count={@attachments_count}
     >
@@ -16,7 +19,7 @@
         attachment={attachment}
       />
     </.attachments_section>
-     <.comments_section streams={@streams} />
+    <.comments_section streams={@streams} />
     <.comment_form
       :if={@request.status not in [:closed, :rejected]}
       form={@form}
@@ -24,7 +27,7 @@
     />
     <.back navigate={~p"/requests"}>Back</.back>
   </div>
-   <%!-- Work Flow sidebar--%>
+  <%!-- Work Flow sidebar--%>
   <.workflow_sidebar
     workflow_type={:service_request}
     resource={@request}

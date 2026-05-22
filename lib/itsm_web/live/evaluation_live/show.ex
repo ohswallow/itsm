@@ -31,7 +31,7 @@ defmodule ItsmWeb.EvaluationLive.Show do
          %{assigns: %{evaluation: %{id: id}}} = socket
        ) do
     opts =
-      [context_key: :evaluation, resource_name: gettext("Evaluation")]
+      [target_key: :evaluation, resource_name: gettext("Evaluation")]
       |> Keyword.merge(push_event_action(socket, event))
 
     {:noreply,

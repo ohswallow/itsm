@@ -11,7 +11,7 @@ defmodule Itsm.Admin.Categories do
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
   end
 
-  def create_category(%User{} = action_user, attrs \\ %{}) do
+  def create_category(%User{} = action_user, attrs) do
     %Category{}
     |> Category.changeset(attrs)
     |> Repo.insert()

@@ -3,7 +3,9 @@ defmodule ItsmWeb.RequestLive.Index do
 
   alias Itsm.Requests
   alias Itsm.Service.Request
+  alias Itsm.Service
   alias Itsm.Paging
+  alias ItsmWeb.LiveUtils
 
   def mount(_params, _session, socket) do
     {:ok,
@@ -16,13 +18,18 @@ defmodule ItsmWeb.RequestLive.Index do
     {:noreply, apply_action(socket, socket.assigns.live_action, url, params)}
   end
 
-  def handle_event("delete", %{"id" => id} = request_params, socket) do
+  def handle_event("delete", %{"id" => id}, socket) do
     %{current_user: user} = socket.assigns
-    request = Requests.get_request!(id)
 
-    {:ok, request} = Requests.delete_request(user, request, request_params)
+    case Service.delete_request(user, id) do
+      {:ok, request} ->
+        {:noreply, stream_delete(socket, :requests, request)}
 
-    {:noreply, stream_delete(socket, :requests, request)}
+      {:error, step, _changeset, _so_far_changeset} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, LiveUtils.translate_error(step, :request))}
+    end
   end
 
   def handle_info({:pubsub, {action_user, event, item}}, socket) do
@@ -62,9 +69,8 @@ defmodule ItsmWeb.RequestLive.Index do
 
   defp handle_pubsub(action_user, event, item, socket) do
     opts = [
-      context_key: :request,
       resource_name: gettext("Request"),
-      stream_name: :requests,
+      target_key: :requests,
       push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 

@@ -5,7 +5,7 @@
 
   defdelegate list_<%= schema.plural %>, to: Itsm.<%= inspect context.alias %>
 
-  defdelegate create_<%= schema.singular %>(action_user, attrs \\ %{}), to: Itsm.<%= inspect context.alias %>
+  defdelegate create_<%= schema.singular %>(action_user, attrs), to: Itsm.<%= inspect context.alias %>
 
   def update_<%= schema.singular %>(%User{} = action_user, %<%= inspect schema.alias %>{} = <%= schema.singular %>, attrs) do
     <%= schema.singular %>

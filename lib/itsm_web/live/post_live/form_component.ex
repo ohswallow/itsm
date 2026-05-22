@@ -1,6 +1,7 @@
 defmodule ItsmWeb.PostLive.FormComponent do
   use ItsmWeb, :live_component
 
+  import ItsmWeb.CommonKCreateVmLive.Components
   alias Itsm.Posts
 
   def update(%{conflict: {event, user}} = _assigns, socket) do
@@ -13,22 +14,35 @@ defmodule ItsmWeb.PostLive.FormComponent do
   end
 
   def update(%{post: post, board_id: board_id} = assigns, socket) do
-    selected_board =
-      if assigns.action == :edit,
-        do: Itsm.Boards.get_board!(post.board_id),
-        else: board_id && Itsm.Boards.get_board!(board_id)
-
-    post = Map.put(post || %{}, :board_id, selected_board.id)
-
     {:ok,
      socket
      |> assign(assigns)
+     |> ItsmWeb.LiveUtils.allow_uploads()
      |> assign(:conflict, false)
-     |> assign_new(:form, fn ->
-       to_form(Posts.change_post(post))
-     end)
-     |> assign(:selected_board, selected_board)
-     |> assign_new_options()}
+     |> assign_new_options()
+     |> apply_action(board_id, post, assigns.action)}
+  end
+
+  defp apply_action(socket, _board_id, post, :edit) do
+    selected_board = Itsm.Boards.get_board!(post.board_id)
+    attachments = Itsm.Attachments.get_list_attachments(post)
+    post = Map.put(post, :board_id, selected_board.id)
+
+    socket
+    |> assign(:attachments_count, length(attachments))
+    |> stream(:form_attachments, attachments, reset: true)
+    |> assign(:selected_board, selected_board)
+    |> assign_new(:form, fn ->
+      to_form(Posts.change_post(post))
+    end)
+  end
+
+  defp apply_action(socket, board_id, post, _action) do
+    socket
+    |> assign(:selected_board, board_id && Itsm.Boards.get_board!(board_id))
+    |> assign_new(:form, fn ->
+      to_form(Posts.change_post(post))
+    end)
   end
 
   def render(assigns) do
@@ -71,13 +85,13 @@ defmodule ItsmWeb.PostLive.FormComponent do
           <fragment :for={field <- @selected_board.metadata["fields"] || []}>
             <.input
               :if={field && field["type"] !== "date"}
-              id={"#{@form[:metadata].name}_#{field["name"]}"}
-              name={"#{@form[:metadata].name}[#{field["name"]}]"}
-              value={
-                case @form[:metadata].value do
-                  m when is_map(m) -> Map.get(m, field["name"]) || field["default"]
-                  _ -> field["default"]
-                end
+              field={
+                ItsmWeb.LiveUtils.get_sub_field(
+                  field["name"],
+                  @form[:metadata],
+                  @form.params["metadata"],
+                  field["default"]
+                )
               }
               type={field["type"]}
               label={field["label"]}
@@ -87,14 +101,12 @@ defmodule ItsmWeb.PostLive.FormComponent do
             <.itsm_calendar
               :if={field && field["type"] === "date"}
               field={
-                %Phoenix.HTML.FormField{
-                  id: "post_metadata_#{field["name"]}",
-                  form: @form[:metadata],
-                  name: "post[metadata][#{field["name"]}]",
-                  errors: [],
-                  field: String.to_atom(field["name"]),
-                  value: ""
-                }
+                ItsmWeb.LiveUtils.get_sub_field(
+                  field["name"],
+                  @form[:metadata],
+                  @form.params["metadata"],
+                  field["default"]
+                )
               }
               label={field["label"]}
               show_time
@@ -103,23 +115,79 @@ defmodule ItsmWeb.PostLive.FormComponent do
               }
               rests={%{hour: %{name: ""}, minute: %{name: ""}}}
             />
-            <.error
-              :for={
-                {msg, opts} <-
-                  Enum.filter(Map.get(@form[:metadata], :errors) || [], fn {_msg, opt} ->
-                    opt[:field] == field["name"]
-                  end)
-              }
-              :if={
-                val = Map.get(@form[:metadata], :value) || %{}
-                targetMap = if is_map(val), do: val, else: %{}
-
-                Map.has_key?(targetMap, field["name"]) &&
-                  !Map.has_key?(targetMap, "_unused_#{field["name"]}")
-              }
+            <br />
+          </fragment>
+          <fragment :if={@selected_board.metadata && @selected_board.metadata["is_attachments"]}>
+            <.attachments_section
+              :if={@action == :edit and @attachments_count > 0}
+              id="form-attachments"
+              attachments_count={@attachments_count}
             >
-              {translate_error({msg, opts})}
+              <.attachment
+                :for={{dom_id, attachment} <- @streams.form_attachments}
+                id={dom_id}
+                attachment={attachment}
+                live_action={@action}
+                target={@myself}
+              />
+            </.attachments_section>
+            <%!-- 파일업로드 --%>
+            <label class="block text-sm font-semibold text-zinc-700 mb-2">
+              {gettext("Attachments")}
+            </label>
+            <.live_file_input class="hidden" upload={@uploads.attachment} />
+            <label
+              class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 mt-2"
+              for={@uploads.attachment.ref}
+              phx-drop-target={@uploads.attachment.ref}
+            >
+              <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                <.icon name="hero-arrow-up-tray" class="w-8 h-8 mb-4 text-gray-500" />
+                <p class="mb-2 text-sm text-gray-500">
+                  <spaxn class="font-semibold">Click to upload</spaxn>
+                  or drag and drop
+                </p>
+
+                <p class="text-xs text-gray-500">
+                  {@uploads.attachment.max_entries} photos max, up to {trunc(
+                    @uploads.attachment.max_file_size / (1 * 1024 * 1024)
+                  )} MB each
+                </p>
+              </div>
+            </label>
+            <.error :for={err <- upload_errors(@uploads.attachment)}>
+              {Phoenix.Naming.humanize(err)}
             </.error>
+
+            <div
+              :if={length(@uploads.attachment.entries) > 0}
+              class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-4"
+            >
+              <div
+                :for={entry <- @uploads.attachment.entries}
+                class="relative group border border-zinc-200 rounded-lg p-2 bg-white shadow-sm"
+              >
+                <div class="aspect-square bg-zinc-100 rounded-md overflow-hidden mb-2">
+                  <.live_img_preview entry={entry} class="w-full h-full object-cover" />
+                </div>
+
+                <p class="text-xs text-zinc-600 truncate px-1">{entry.client_name}</p>
+
+                <p class="text-xs text-zinc-400">{format_file_size(entry.client_size)}</p>
+
+                <button
+                  type="button"
+                  phx-click="cancel-upload"
+                  phx-value-ref={entry.ref}
+                  class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-md hover:bg-red-600 transition-colors"
+                >
+                  <.icon name="hero-x-mark" class="w-3 h-3" />
+                </button>
+                <.error :for={err <- upload_errors(@uploads.attachment, entry)}>
+                  {Phoenix.Naming.humanize(err)}
+                </.error>
+              </div>
+            </div>
           </fragment>
         </div>
         <:actions>
@@ -165,10 +233,46 @@ defmodule ItsmWeb.PostLive.FormComponent do
     )
   end
 
+  def handle_event("delete_attachment", %{"id" => id}, socket) do
+    %{current_user: action_user} = socket.assigns
+
+    case Itsm.Attachments.delete_attachment(action_user, id) do
+      {:ok, attachment} ->
+        {:noreply, stream_delete(socket, :form_attachments, attachment)}
+
+      {:error, _} ->
+        {:noreply, socket |> put_flash(:error, "Failed to delete attachment.")}
+    end
+  end
+
   defp assign_new_options(socket) do
     socket
     |> assign_new(:board_options, fn -> Itsm.Boards.get_select_options() end)
     |> assign_new(:author_options, fn -> Itsm.Accounts.get_select_options() end)
+  end
+
+  defp save_post(
+         %{assigns: %{uploads: %{attachment: %{entries: [_ | _]}}}} = socket,
+         action,
+         post_params,
+         selected_board_metadata
+       ) do
+    %{current_user: action_user, post: post} = socket.assigns
+
+    case Posts.save_with_attachment(
+           action,
+           action_user,
+           post || %{},
+           post_params,
+           selected_board_metadata,
+           ItsmWeb.LiveUtils.build_attachment_consumer(socket)
+         ) do
+      {:ok, _post} ->
+        {:noreply, socket |> push_patch(to: socket.assigns.patch)}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
+    end
   end
 
   defp save_post(socket, :edit, post_params, selected_board_metadata) do
@@ -194,4 +298,8 @@ defmodule ItsmWeb.PostLive.FormComponent do
         {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
+
+  defp format_file_size(bytes) when bytes < 1024, do: "#{bytes} B"
+  defp format_file_size(bytes) when bytes < 1024 * 1024, do: "#{round(bytes / 1024)} KB"
+  defp format_file_size(bytes), do: "#{round(bytes / (1024 * 1024))} MB"
 end

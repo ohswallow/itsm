@@ -64,9 +64,8 @@ defmodule ItsmWeb.Admin.AttachmentLive.Index do
 
   defp handle_pubsub(action_user, event, item, socket) do
     opts = [
-      context_key: :attachment,
       resource_name: gettext("Attachment"),
-      stream_name: :attachments,
+      target_key: :attachments,
       push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 

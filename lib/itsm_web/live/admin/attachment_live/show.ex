@@ -29,9 +29,9 @@ defmodule ItsmWeb.Admin.AttachmentLive.Show do
          event,
          %{id: id} = item,
          %{assigns: %{attachment: %{id: id}}} = socket
-        ) do
+       ) do
     opts =
-      [context_key: :attachment, resource_name: gettext("Attachment")]
+      [target_key: :attachment, resource_name: gettext("Attachment")]
       |> Keyword.merge(push_event_action(socket, event))
 
     {:noreply,

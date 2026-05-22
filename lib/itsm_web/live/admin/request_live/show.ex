@@ -59,7 +59,7 @@ defmodule ItsmWeb.Admin.RequestLive.Show do
          %{assigns: %{request: %{id: id}}} = socket
        ) do
     opts =
-      [context_key: :request, resource_name: gettext("Request")]
+      [target_key: :request, resource_name: gettext("Request")]
       |> Keyword.merge(push_event_action(socket, event))
 
     {:noreply,

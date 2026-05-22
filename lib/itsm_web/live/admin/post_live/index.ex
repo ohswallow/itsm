@@ -64,9 +64,8 @@ defmodule ItsmWeb.Admin.PostLive.Index do
 
   defp handle_pubsub(action_user, event, item, socket) do
     opts = [
-      context_key: :post,
       resource_name: gettext("Post"),
-      stream_name: :posts,
+      target_key: :posts,
       push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 

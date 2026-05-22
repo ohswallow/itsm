@@ -3,18 +3,20 @@ defmodule Itsm.EvaluationsFixtures do
   This module defines test helpers for creating
   entities via the `Itsm.Evaluations` context.
   """
+  alias Itsm.Accounts.User
 
   @doc """
   Generate a evaluation.
   """
   def evaluation_fixture(attrs \\ %{}) do
-    {:ok, evaluation} =
+    attrs =
       attrs
       |> Enum.into(%{
         comment: "some comment",
         rating: 120.5
       })
-      |> Itsm.Evaluations.create_evaluation()
+
+    {:ok, evaluation} = Itsm.Evaluations.create_evaluation(%User{}, attrs)
 
     evaluation
   end

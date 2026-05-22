@@ -56,9 +56,8 @@ defmodule ItsmWeb.Admin.CommentLive.Index do
 
   defp handle_pubsub(action_user, event, item, socket) do
     opts = [
-      context_key: :comment,
       resource_name: gettext("Comment"),
-      stream_name: :comments,
+      target_key: :comments,
       push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 

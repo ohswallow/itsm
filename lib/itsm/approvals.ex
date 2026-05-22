@@ -132,7 +132,7 @@ defmodule Itsm.Approvals do
     end
   end
 
-  def create_approval(%User{} = action_user, attrs \\ %{}) do
+  def create_approval(%User{} = action_user, attrs) do
     %Approval{}
     |> Approval.changeset(attrs)
     |> Repo.insert()
@@ -144,5 +144,11 @@ defmodule Itsm.Approvals do
       {:error, changeset} ->
         {:error, changeset}
     end
+  end
+
+  def get_approval_by_request(%Request{id: id}) do
+    Approval
+    |> where([a], a.request_id == ^id)
+    |> Repo.one()
   end
 end

@@ -53,9 +53,8 @@ defmodule ItsmWeb.Admin.BoardLive.Index do
 
   defp handle_pubsub(action_user, event, item, socket) do
     opts = [
-      context_key: :board,
       resource_name: gettext("Board"),
-      stream_name: :boards,
+      target_key: :boards,
       push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 

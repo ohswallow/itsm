@@ -31,7 +31,7 @@ defmodule ItsmWeb.Admin.UserLive.Show do
          %{assigns: %{user: %{id: id}}} = socket
        ) do
     opts =
-      [context_key: :user, resource_name: gettext("User")]
+      [target_key: :user, resource_name: gettext("User")]
       |> Keyword.merge(push_event_action(socket, event))
 
     {:noreply,

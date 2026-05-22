@@ -58,15 +58,11 @@ defmodule ItsmWeb.PostLive.Index do
   end
 
   defp handle_pubsub(action_user, event, item, socket) do
-    opts = [
-      context_key: :post,
-      resource_name: gettext("Post"),
-      stream_name: :posts
-    ]
+    opts = [resource_name: gettext("Post"), target_key: :posts]
 
     {:noreply,
      socket
      |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)
-     |> stream(:posts, Posts.list_posts_by_board_id(socket.assigns[:board_id]), reset: true)}
+     |> stream_insert(:posts, item)}
   end
 end

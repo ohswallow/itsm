@@ -52,9 +52,8 @@ defmodule <%= inspect context.web_module %>.<%= inspect Module.concat(schema.web
 
   defp handle_pubsub(action_user, event, item, socket) do
     opts = [
-      context_key: :<%= schema.singular %>,
       resource_name: gettext("<%= schema.human_singular %>"),
-      stream_name: :<%= schema.collection %>,
+      target_key: :<%= schema.collection %>,
       push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 

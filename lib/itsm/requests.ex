@@ -6,9 +6,6 @@ defmodule Itsm.Requests do
   alias Itsm.Service.Category
   alias Itsm.Accounts.User
 
-  # ==================================================
-  # 조회
-  # ==================================================
   def get_request!(id) do
     Request
     |> Repo.get!(id)
@@ -21,10 +18,6 @@ defmodule Itsm.Requests do
   def assign_referenced_crews(%Request{crew_references: crew_refs} = request) do
     %{request | referenced_crews: Enum.map(crew_refs, & &1.crew_id)}
   end
-
-  # ==================================================
-  # Changeset
-  # ==================================================
 
   def change_request(%Request{} = request, attrs \\ %{}) do
     Request.changeset(request, attrs)
@@ -45,7 +38,7 @@ defmodule Itsm.Requests do
   # CUD
   # ==================================================
 
-  def create_request(%User{} = action_user, attrs \\ %{}) do
+  def create_request(%User{} = action_user, attrs) do
     action_user
     |> Ecto.build_assoc(:requests)
     |> Request.changeset(attrs)
@@ -59,6 +52,40 @@ defmodule Itsm.Requests do
 
       {:error, _} = error ->
         error
+    end
+  end
+
+  def create_request(%User{} = action_user, %Category{} = catrgory, attrs, repo \\ Repo) do
+    action_user
+    |> change_request(catrgory, attrs)
+    |> repo.insert()
+    |> case do
+      {:ok, request} ->
+        request = repo.preload(request, :category)
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_request, request})
+        {:ok, request}
+
+      {:error, _} = error ->
+        error
+    end
+  end
+
+  def update_request(%User{} = action_user, %Request{} = request, attrs, repo \\ Repo) do
+    request
+    |> Request.changeset(attrs)
+    |> repo.update()
+    |> case do
+      {:ok, request} ->
+        request = request |> repo.preload(:category)
+
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_request, request},
+          id: request.id
+        )
+
+        {:ok, request}
+
+      {:error, changeset} ->
+        {:error, changeset}
     end
   end
 

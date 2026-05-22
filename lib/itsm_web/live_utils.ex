@@ -6,6 +6,14 @@ defmodule ItsmWeb.LiveUtils do
   alias Itsm.Accounts.User
   alias Phoenix.LiveView
 
+  @doc """
+  모든 에러 메세지를 통합적으로 처리하는 함수입니다. `reason`과 `scope`에 따라 적절한 사용자 친화적인 메시지를 반환합니다.
+  또한, 알려지지 않은 에러 유형에 대해서는 로깅을 수행하여 디버깅에 도움을 줍니다.
+  scope는 에러가 발생한 컨텍스트를 나타내며, 예를 들어 `:crew`는 크루 관련 에러임을 나타냅니다.
+  reason은 에러의 유형을 나타내며, 예를 들어 `:not_leader`는 크루의 리더가 아닌 사용자가 리더 전용 작업을 시도했음을 나타냅니다.
+  opt은 추가적인 정보를 제공하는데 사용될 수 있으며, 예를 들어 `:not_leader` 에러의 경우 어떤 메소드에서 발생했는지에 대한 정보를 담을 수 있습니다.
+  """
+  @spec translate_error(reason :: atom(), scope :: atom() | nil, opt :: any()) :: String.t()
   def translate_error(reason, scope \\ nil, opt \\ nil)
 
   def translate_error(:approval, _scope, _opt), do: gettext("Approval creation failed.")
@@ -26,8 +34,8 @@ defmodule ItsmWeb.LiveUtils do
   def translate_error(:unauthorized, :crew, _opt),
     do: gettext("You don't have permission to remove this member.")
 
-  def translate_error(type, msg, _opt) do
-    Logger.error("#{type}: #{msg}")
+  def translate_error(reason, scope, opt) do
+    Logger.error("reason : #{reason}\nscope : #{scope}\nopt : #{opt}")
     gettext("An unknown error occurred.")
   end
 
@@ -50,7 +58,10 @@ defmodule ItsmWeb.LiveUtils do
   end
 
   defp consume_attachments(%Phoenix.LiveView.Socket{} = socket, upload_key) do
-    dest_dir = Application.get_env(:itsm, :upload_path) || "C:\\uploads"
+    base_dir = Application.get_env(:itsm, :upload_path) || "C:/uploads"
+
+    date_path = Calendar.strftime(Date.utc_today(), "%Y/%m/%d")
+    dest_dir = Path.join(base_dir, date_path)
     File.mkdir_p!(dest_dir)
 
     LiveView.consume_uploaded_entries(socket, upload_key, fn %{path: tmp_path}, entry ->
@@ -82,33 +93,79 @@ defmodule ItsmWeb.LiveUtils do
     end)
   end
 
+  @spec get_sub_field(atom() | binary(), Phoenix.HTML.FormField.t(), map(), binary()) ::
+          Phoenix.HTML.FormField.t()
+  def get_sub_field(key, form_field, params, default_value \\ "")
+
+  def get_sub_field(key, %Phoenix.HTML.FormField{} = form_field, params, default_value)
+      when is_atom(key) do
+    current_value =
+      params[key] || params[Atom.to_string(key)] ||
+        (form_field.value[key] || form_field.value[Atom.to_string(key)]) || default_value
+
+    form_field
+    |> to_sub_form(params)
+    |> get_in([key])
+    |> Map.put(:value, current_value)
+  end
+
+  def get_sub_field(key, %Phoenix.HTML.FormField{} = form_field, params, default_value)
+      when is_binary(key) do
+    current_value =
+      params[key] || params[String.to_atom(key)] ||
+        (form_field.value[key] || form_field.value[String.to_atom(key)]) || default_value
+
+    form_field
+    |> to_sub_form(params)
+    |> get_in([String.to_atom(key)])
+    |> Map.put(:value, current_value)
+  end
+
+  def to_sub_form(%Phoenix.HTML.FormField{} = form_field, params) do
+    %Phoenix.HTML.Form{} = base_form = form_field.form
+
+    %Phoenix.HTML.Form{
+      base_form
+      | id: form_field.id,
+        name: form_field.name,
+        errors: List.flatten(form_field.errors),
+        params: params || %{}
+    }
+  end
+
+  def live_select_params(attrs, fields, :single) when is_list(fields) do
+    Enum.reduce(fields, attrs, fn field, acc ->
+      process_empty_selection(acc, field, nil)
+    end)
+  end
+
+  def live_select_params(attrs, fields, :tags) when is_list(fields) do
+    Enum.reduce(fields, attrs, fn field, acc ->
+      process_empty_selection(acc, field, [])
+    end)
+  end
+
   @doc """
-  PubSub을 통해 수신된 표준 이벤트를 처리하고 LiveView 상태를 업데이트합니다.
+  다른 노드나 프로세스로부터 수신한 표준 PubSub 이벤트를 처리하여 LiveView 소켓의 상태를 동기화하고 유저 피드백을 처리합니다.
 
-  이 함수는 다음과 같은 작업을 순차적으로 수행합니다:
-  1. 이벤트 이름(`event`, :update_common_code)에서 앞에 있는 액션 타입(예: create, update, delete)을 추출합니다.
-  2. 사용자에게 알림 메시지(Flash)를 표시합니다.
-  3. 현재 LiveView의 `live_action` 상태에 따라 스트림 삭제, 데이터 재할당 또는 페이지 이동을 수행합니다.
-  4. 편집 중인 리소스와 충돌이 발생할 경우(`:edit` 모드), 해당 FormComponent에 `send_update`를 보냅니다.
+  이 함수는 이벤트명(예: `:update_post`, `:delete_post`)에서 액션 유형(`"update"`, `"delete"`)을 동적으로 추출하여 플래시 메시지를 띄우고, 현재 화면의 `live_action` 상태에 따라 스트림 삭제, 리소스 재할당, 혹은 페이지 리다이렉션을 수행합니다. 또한, 현재 사용자가 편집 중인 항목에 다른 유저의 변경이 감지되면 컴포넌트에 충돌(Conflict) 알림을 보냅니다.
 
-  이 함수는 공통적인 UI 로직(알림, 상태 변경, 충돌 감지)을 처리하며, `socket`을 반환하므로
-  추가적인 상태 업데이트(예: 스트림 추가)가 필요한 경우 파이프라인으로 연결하여 사용할 수 있습니다.
+  ## 옵션 (Options)
+    * `:live_action` - 현재 화면의 라이브 액션 상태 (예: `:index`, `:show`, `:edit`, `:new`). 지정하지 않으면 `socket.assigns.live_action`을 기본값으로 사용합니다.
+    * `:resource_name` - 플래시 메시지 생성 시 사용할 리소스의 한국어/영어 명칭 (예: `"게시글"`, `"Post"`).
+    * `:flash_message` - 자동으로 생성되는 메시지 대신 명시적으로 보여줄 커스텀 알림 메시지.
+    * `:target_key` - 목록 화면(`:index`)에서 `"delete"` 액션 발생 시, 프론트엔드에서 즉시 제거할 LiveView 스트림의 이름 (예: `:posts`). 또는 상세 화면 및 편집 충돌 감지 시, `socket.assigns`에서 현재 리소스를 조회할 키 (예: `:post`).
+    * `:form_module` - 편집 충돌 발생 시 `send_update/2`를 전달받을 부모 혹은 자식 LiveComponent 모듈. 지정하지 않을 경우 현재 LiveView 파일명을 기반으로 `{현재뷰}FormComponent`를 자동 추론합니다.
+    * `:push_patch` - 매칭되는 특정 액션 처리가 없을 때 이동할 `push_patch` 경로.
+    * `:push_navigate` - 매칭되는 특정 액션 처리가 없을 때 이동할 `push_navigate` 경로.
 
-  ## 매개변수
-  - `socket`: 현재 LiveView의 socket.
-  - `action_user`: 이벤트를 발생시킨 사용자의 정보 (`display_name` 필드 필요).
-  - `event`: 발생한 이벤트 (예: `:project_updated`, `:user_deleted`).
-  - `item`: 이벤트 대상이 되는 리소스 데이터 (Struct 또는 Map).
-  - `opts`: 처리를 위한 옵션들.
-
-  ## 옵션 (opts)
-  - `:resource_name` - 메시지에 표시될 리소스의 이름 (예: gettext("Common Code"), "사용자").
-  - `:context_key` - 리소스가 socket.assigns에 저장된 키 (예: `:common_code`). `:show` 액션에서 데이터 업데이트 시 사용됩니다.
-  - `:stream_name` - `:index` 액션에서 `:delete` 이벤트 발생 시 스트림에서 제거할 이름.
-  - `:flash_message` - 기본 메시지 대신 표시할 커스텀 메시지.
-  - `:push_patch` - 액션 처리 후 이동할 경로 (`push_patch`), 있을 경우에만 이동.
-  - `:push_navigate` - 액션 처리 후 이동할 경로 (`push_navigate`), 있을 경우에만 이동.
-  - `:form_module` - 충돌 발생 시 업데이트를 보낼 컴포넌트 모듈 (기본값 `...FormComponent`).
+  ## 주요 내부 메커니즘
+  1. **이벤트 파싱:** 인자로 넘어온 `event` 아톰을 문자열로 바꾼 뒤 언더바(`_`) 기준으로 쪼개어 첫 번째 단어를 `action_type`으로 인식합니다 (예: `:create_user` ➡️ `"create"`).
+  2. **상태 동기화 (`apply_action_type/5`):**
+     * `:index` 화면에서 `"delete"` 발생 시 ➡️ 화면에서 스트림을 즉시 제거합니다 (`stream_delete`).
+     * `:show` 화면에서 `"update"` 발생 시 ➡️ 보고 있던 리소스 ID와 일치하면 변경된 새 데이터로 덮어씁니다 (`assign`).
+  3. **동시 수정 충돌 감지 (`send_update_by_conflict/5`):**
+     * 사용자가 현재 특정 항목을 수정 중인 상태(`live_action == :edit`)에서, 다른 누군가가 동일한 항목을 수정하거나 삭제하여 이벤트를 발행했다면, 해당 폼 컴포넌트(`FormComponent`)로 `conflict: {event, action_user}` 메시지를 원격 주입(`send_update`)하여 화면에 경고를 띄우거나 방어 처리를 유도합니다.
   """
   @spec handle_standard_pubsub(
           socket :: Phoenix.LiveView.Socket.t(),
@@ -118,6 +175,9 @@ defmodule ItsmWeb.LiveUtils do
           opts :: keyword()
         ) :: Phoenix.LiveView.Socket.t()
   def handle_standard_pubsub(socket, action_user, event, item, opts) do
+    live_action = Keyword.get(opts, :live_action, socket.assigns.live_action)
+    opts = Keyword.put(opts, :live_action, live_action)
+
     [action_type | _] = event |> Atom.to_string() |> String.split("_")
 
     action_user =
@@ -125,7 +185,7 @@ defmodule ItsmWeb.LiveUtils do
 
     socket
     |> put_flash_by_event(action_user, action_type, opts)
-    |> apply_action_type(action_type, item, opts)
+    |> apply_action_type(action_type, item, live_action, opts)
     |> send_update_by_conflict(action_user, event, item, opts)
   end
 
@@ -136,19 +196,19 @@ defmodule ItsmWeb.LiveUtils do
     Phoenix.LiveView.put_flash(socket, :info, message)
   end
 
-  defp apply_action_type(%{assigns: %{live_action: :index}} = socket, "delete", item, opts),
-    do: maybe_stream_delete(socket, opts[:stream_name], item)
+  defp apply_action_type(socket, "delete", item, :index, opts),
+    do: maybe_stream_delete(socket, opts[:target_key], item)
 
-  defp apply_action_type(%{assigns: %{live_action: :show}} = socket, "update", item, opts),
-    do: maybe_assign_resource(socket, opts[:context_key], item)
+  defp apply_action_type(socket, "update", item, :show, opts),
+    do: maybe_assign_resource(socket, opts[:target_key], item)
 
-  defp apply_action_type(%{assigns: %{live_action: :edit}} = socket, _event, _item, _opts),
+  defp apply_action_type(socket, _event, _item, :edit, _opts),
     do: socket
 
-  defp apply_action_type(%{assigns: %{live_action: :new}} = socket, _event, _item, _opts),
+  defp apply_action_type(socket, _event, _item, :new, _opts),
     do: socket
 
-  defp apply_action_type(socket, _action_type, _item, opts) do
+  defp apply_action_type(socket, _action_type, _item, _live_action, opts) do
     cond do
       path = opts[:push_patch] -> Phoenix.LiveView.push_patch(socket, path)
       path = opts[:push_navigate] -> Phoenix.LiveView.push_navigate(socket, path)
@@ -157,7 +217,7 @@ defmodule ItsmWeb.LiveUtils do
   end
 
   defp send_update_by_conflict(socket, action_user, event, item, opts) do
-    resource = socket.assigns[opts[:context_key]]
+    resource = socket.assigns[opts[:target_key]]
     current_id = if resource, do: to_string(resource.id), else: nil
 
     if current_id == to_string(item.id) and socket.assigns.live_action == :edit do
@@ -208,18 +268,6 @@ defmodule ItsmWeb.LiveUtils do
     else
       socket
     end
-  end
-
-  def live_select_params(attrs, fields, :single) when is_list(fields) do
-    Enum.reduce(fields, attrs, fn field, acc ->
-      process_empty_selection(acc, field, nil)
-    end)
-  end
-
-  def live_select_params(attrs, fields, :tags) when is_list(fields) do
-    Enum.reduce(fields, attrs, fn field, acc ->
-      process_empty_selection(acc, field, [])
-    end)
   end
 
   defp process_empty_selection(acc, field, default_value) do

@@ -208,7 +208,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   defp format_file_size(bytes), do: "#{round(bytes / (1024 * 1024))} MB"
 
   defp handle_pubsub(action_user, event, item, socket) do
-    opts = [context_key: :request]
+    opts = [target_key: :request]
     {:noreply, socket |> check_conflict(action_user, event, item, opts)}
   end
 

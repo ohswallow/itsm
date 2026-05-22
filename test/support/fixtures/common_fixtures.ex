@@ -3,12 +3,13 @@ defmodule Itsm.CommonFixtures do
   This module defines test helpers for creating
   entities via the `Itsm.Common` context.
   """
+  alias Itsm.Accounts.User
 
   @doc """
   Generate a common code.
   """
   def common_code_fixture(attrs \\ %{}) do
-    {:ok, codes} =
+    attrs =
       attrs
       |> Enum.into(%{
         code: "some code",
@@ -18,7 +19,8 @@ defmodule Itsm.CommonFixtures do
         label: "some label",
         sort_order: 42
       })
-      |> Itsm.Admin.CommonCodes.create_common_code()
+
+    {:ok, codes} = Itsm.Admin.CommonCodes.create_common_code(%User{}, attrs)
 
     codes
   end

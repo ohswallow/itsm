@@ -72,9 +72,8 @@ defmodule ItsmWeb.Admin.UserLive.Index do
 
   defp handle_pubsub(action_user, event, item, socket) do
     opts = [
-      context_key: :user,
       resource_name: gettext("User"),
-      stream_name: :users,
+      target_key: :users,
       push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 

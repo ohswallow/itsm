@@ -19,7 +19,7 @@ defmodule Itsm.Attachments do
     |> Repo.all()
   end
 
-  def create_attachment(%User{} = action_user, attrs \\ %{}) do
+  def create_attachment(%User{} = action_user, attrs) do
     %Attachment{}
     |> Attachment.changeset(attrs)
     |> Repo.insert()

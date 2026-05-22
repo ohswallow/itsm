@@ -52,9 +52,8 @@ defmodule ItsmWeb.Admin.CrewLive.Index do
 
   defp handle_pubsub(action_user, event, item, socket) do
     opts = [
-      context_key: :crew,
       resource_name: gettext("Crew"),
-      stream_name: :crews,
+      target_key: :crews,
       push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 

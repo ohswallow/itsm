@@ -101,7 +101,7 @@ defmodule Itsm.Crews do
     Crew.changeset(crew, attrs)
   end
 
-  def create_crew(%User{} = action_user, attrs \\ %{}) do
+  def create_crew(%User{} = action_user, attrs) do
     Crew.changeset(%Crew{leader: action_user, users: [action_user]}, attrs)
     |> Repo.insert()
     |> case do
@@ -182,7 +182,7 @@ defmodule Itsm.Crews do
     end
   end
 
-  def update_crew(%User{} = action_user, %Crew{} = crew, attrs \\ %{}) do
+  def update_crew(%User{} = action_user, %Crew{} = crew, attrs) do
     crew = Repo.preload(crew, :leader)
     changeset = Crew.changeset(crew, attrs)
 

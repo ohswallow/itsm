@@ -76,7 +76,7 @@ defmodule ItsmWeb.AssetLive.Show do
          %{assigns: %{asset: %{id: id}}} = socket
        ) do
     opts =
-      [context_key: :asset, resource_name: gettext("Asset")]
+      [target_key: :asset, resource_name: gettext("Asset")]
       |> Keyword.merge(push_event_action(socket, event))
 
     item = Itsm.Assets.with_assoc(item, service_crew: [:users], system_crew: [:users])

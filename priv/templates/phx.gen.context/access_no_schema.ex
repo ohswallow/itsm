@@ -5,7 +5,7 @@
 
   def list_<%= schema.plural %>, do: Repo.all(<%= inspect schema.alias %>)
 
-  def create_<%= schema.singular %>(%User{} = action_user, attrs \\ %{}) do
+  def create_<%= schema.singular %>(%User{} = action_user, attrs) do
     %<%= inspect schema.alias %>{}
     |> <%= inspect schema.alias %>.changeset(attrs)
     |> Repo.insert()

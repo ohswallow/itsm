@@ -20,11 +20,13 @@ defmodule Itsm.Service do
         %Category{} = category,
         crews,
         consumer_fn,
-        attrs \\ %{}
+        attrs
       )
       when is_list(crews) and is_function(consumer_fn) do
     Multi.new()
-    |> Multi.insert(:request, Requests.change_request(action_user, category, attrs))
+    |> Multi.run(:request, fn repo, _ ->
+      Requests.create_request(action_user, category, attrs, repo)
+    end)
     |> check_minimum_k_vms(attrs)
     |> Multi.run(:approval, fn repo, %{request: request} ->
       Approvals.create_approval(action_user, repo, request)
@@ -39,7 +41,7 @@ defmodule Itsm.Service do
     |> case do
       {:ok, %{request: request}} ->
         request = Repo.preload(request, [:category, :attachments])
-        Itsm.PubSub.Helper.broadcast(Requests, {action_user, :created_request, request})
+        Itsm.PubSub.Helper.broadcast(Requests, {action_user, :create_request, request})
         {:ok, request}
 
       error ->
@@ -54,7 +56,9 @@ defmodule Itsm.Service do
         attrs
       ) do
     Ecto.Multi.new()
-    |> Ecto.Multi.update(:request, Request.changeset(request, attrs))
+    |> Multi.run(:request, fn repo, _ ->
+      Requests.update_request(action_user, request, attrs, repo)
+    end)
     |> Multi.run(:attachment, fn repo, %{request: request} ->
       Attachments.create_attachments(action_user, repo, request, consumer_fn)
     end)
@@ -64,7 +68,7 @@ defmodule Itsm.Service do
       {:ok, %{request: request}} ->
         request = Repo.preload(request, :category)
 
-        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_request, request},
+        Itsm.PubSub.Helper.broadcast(Requests, {action_user, :update_request, request},
           id: request.id
         )
 
@@ -75,27 +79,43 @@ defmodule Itsm.Service do
     end
   end
 
+  def delete_request(%User{} = action_user, request_id) do
+    request = Requests.get_request!(request_id)
+
+    with :ok <- ensure_requestor(action_user, request),
+         {:ok, %{delete_request: deleted_request, delete_approval: deleted_approve}} <-
+           delete_request_mult(request) do
+      Itsm.PubSub.Helper.broadcast(Requests, {action_user, :delete_request, deleted_request},
+        id: deleted_request.id
+      )
+
+      Itsm.PubSub.Helper.broadcast(Approvals, {action_user, :delete_approval, deleted_approve},
+        id: deleted_approve.id
+      )
+
+      {:ok, request}
+    else
+      error ->
+        error
+    end
+  end
+
   def create_comment(
         %User{} = action_user,
         resource,
         consumer_fn,
-        attrs \\ %{}
+        attrs
       ) do
     Multi.new()
-    |> Multi.insert(:comment, Comments.changeset_comment(action_user, resource, attrs))
+    |> Multi.run(:comment, fn repo, _ ->
+      Comments.create_comment(action_user, resource, attrs, repo)
+    end)
     |> Multi.run(:attachments, fn repo, %{comment: comment} ->
       Attachments.create_attachments(action_user, repo, comment, consumer_fn)
     end)
     |> Repo.transact()
     |> case do
-      {:ok, %{comment: comment, attachments: attachments}} ->
-        Itsm.PubSub.Helper.broadcast(Requests, {action_user, :create_comment, comment},
-          id: resource.id,
-          only: :detail
-        )
-
-        Itsm.PubSub.Helper.broadcast(Comments, {action_user, :create_comment, comment})
-        Itsm.PubSub.Helper.broadcast(Attachments, {action_user, :create_attachments, attachments})
+      {:ok, %{comment: comment}} ->
         {:ok, comment}
 
       {:error, _} = error ->
@@ -148,4 +168,14 @@ defmodule Itsm.Service do
       multi
     end
   end
+
+  def delete_request_mult(%Request{} = request) do
+    Multi.new()
+    |> Multi.delete(:delete_approval, Approvals.get_approval_by_request(request))
+    |> Multi.delete(:delete_request, request)
+    |> Repo.transact()
+  end
+
+  defp ensure_requestor(%User{id: id}, %Request{requestor_id: id}), do: :ok
+  defp ensure_requestor(_action_user, _request), do: {:error, :not_requestor}
 end

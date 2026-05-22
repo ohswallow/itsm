@@ -31,7 +31,7 @@ defmodule ItsmWeb.Admin.CrewLive.Show do
          %{assigns: %{crew: %{id: id}}} = socket
        ) do
     opts =
-      [context_key: :crew, resource_name: gettext("Crew")]
+      [target_key: :crew, resource_name: gettext("Crew")]
       |> Keyword.merge(push_event_action(socket, event))
 
     {:noreply,

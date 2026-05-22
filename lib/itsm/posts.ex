@@ -15,16 +15,17 @@ defmodule Itsm.Posts do
   def list_posts_by_board_id(board_id),
     do: Post |> where([p], p.board_id == ^board_id) |> preload(:author) |> Repo.all()
 
-  def create_post(%User{} = action_user, attrs, selected_board_metadata) do
+  def create_post(%User{} = action_user, attrs, selected_board_metadata, repo \\ Repo) do
     %Post{}
     |> change_post(
       attrs: attrs,
       action_user: action_user,
       selected_board_metadata: selected_board_metadata
     )
-    |> Repo.insert()
+    |> repo.insert()
     |> case do
       {:ok, post} ->
+        post = post |> repo.preload(:author)
         Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_post, post})
         {:ok, post}
 
@@ -33,16 +34,23 @@ defmodule Itsm.Posts do
     end
   end
 
-  def update_post(%User{} = action_user, %Post{} = post, attrs, selected_board_metadata) do
+  def update_post(
+        %User{} = action_user,
+        %Post{} = post,
+        attrs,
+        selected_board_metadata,
+        repo \\ Repo
+      ) do
     post
     |> change_post(
       attrs: attrs,
       action_user: action_user,
       selected_board_metadata: selected_board_metadata
     )
-    |> Repo.update()
+    |> repo.update()
     |> case do
       {:ok, post} ->
+        post = post |> repo.preload(:author)
         Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_post, post}, id: post.id)
 
         {:ok, post}
@@ -78,5 +86,41 @@ defmodule Itsm.Posts do
 
   def with_assoc(%Post{} = post, preloads) do
     Repo.preload(post, preloads)
+  end
+
+  def save_with_attachment(
+        :edit,
+        %User{} = action_user,
+        %Post{} = post,
+        attrs,
+        selected_board_metadata,
+        consumer_fn
+      ) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.run(:update_post, fn repo, _ ->
+      update_post(action_user, post, attrs, selected_board_metadata, repo)
+    end)
+    |> Ecto.Multi.run(:attachment, fn repo, %{update_post: post} ->
+      Itsm.Attachments.create_attachments(action_user, repo, post, consumer_fn)
+    end)
+    |> Repo.transact()
+  end
+
+  def save_with_attachment(
+        :new,
+        %User{} = action_user,
+        %{},
+        attrs,
+        selected_board_metadata,
+        consumer_fn
+      ) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.run(:create_post, fn repo, _ ->
+      create_post(action_user, attrs, selected_board_metadata, repo)
+    end)
+    |> Ecto.Multi.run(:attachment, fn repo, %{create_post: post} ->
+      Itsm.Attachments.create_attachments(action_user, repo, post, consumer_fn)
+    end)
+    |> Repo.transact()
   end
 end

@@ -13,7 +13,7 @@ defmodule Itsm.Boards do
 
   def list_boards, do: Repo.all(Board)
 
-  def create_board(%User{} = action_user, attrs \\ %{}) do
+  def create_board(%User{} = action_user, attrs) do
     %Board{}
     |> Board.changeset(attrs)
     |> Repo.insert()

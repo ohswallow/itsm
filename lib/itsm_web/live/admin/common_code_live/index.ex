@@ -57,9 +57,8 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Index do
 
   defp handle_pubsub(action_user, event, item, socket) do
     opts = [
-      context_key: :common_code,
       resource_name: gettext("Common Code"),
-      stream_name: :common_codes,
+      target_key: :common_codes,
       push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 

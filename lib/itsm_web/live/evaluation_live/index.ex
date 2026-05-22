@@ -51,9 +51,8 @@ defmodule ItsmWeb.EvaluationLive.Index do
 
   defp handle_pubsub(action_user, event, item, socket) do
     opts = [
-      context_key: :evaluation,
       resource_name: gettext("Evaluation"),
-      stream_name: :evaluations,
+      target_key: :evaluations,
       push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 

@@ -11,7 +11,7 @@ defmodule Itsm.Admin.Crews do
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
   end
 
-  defdelegate create_crew(action_user, attrs \\ %{}), to: Itsm.Crews
+  defdelegate create_crew(action_user, attrs), to: Itsm.Crews
 
   def update_crew(%User{} = action_user, %Crew{} = crew, attrs) do
     crew

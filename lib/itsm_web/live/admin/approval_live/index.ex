@@ -59,9 +59,8 @@ defmodule ItsmWeb.Admin.ApprovalLive.Index do
 
   defp handle_pubsub(action_user, event, item, socket) do
     opts = [
-      context_key: :approval,
       resource_name: gettext("Approval"),
-      stream_name: :approvals,
+      target_key: :approvals,
       push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 

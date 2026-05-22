@@ -41,7 +41,7 @@ defmodule ItsmWeb.Admin.BoardLive.FormComponent do
         <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
       </div>
 
-      <.simple_form
+      <.form
         for={@form}
         id="board-form"
         phx-target={@myself}
@@ -69,10 +69,8 @@ defmodule ItsmWeb.Admin.BoardLive.FormComponent do
           show_time
           default_selected_date_time={@form[:inserted_at].value}
         />
-        <:actions>
-          <.button :if={!@conflict} phx-disable-with="Saving...">Save Board</.button>
-        </:actions>
-      </.simple_form>
+        <.button :if={!@conflict} phx-disable-with="Saving...">Save Board</.button>
+      </.form>
     </div>
     """
   end
