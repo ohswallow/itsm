@@ -33,17 +33,8 @@ defmodule ItsmWeb.Admin.RequestLive.Index do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
-    opts = [
-      default_columns: [:id, :title, :description, :env, :requestor_name],
-      preloads: [requestor: :organization_code, category: [:request_name, :name, :affiliate]]
-    ]
-
-    value =
-      Paging.search_and_pagination(Request, params, url, opts)
-
     socket
-    |> assign(:results, value.results)
-    |> stream(:requests, value.entries, reset: true)
+    |> assign_paged_stream(:requests, Request, params, url)
     |> assign(:page_title, "Listing Requests")
     |> assign(:request, nil)
   end
@@ -58,6 +49,20 @@ defmodule ItsmWeb.Admin.RequestLive.Index do
     socket
     |> assign(:page_title, "Edit Request")
     |> assign(:request, Requests.get_request!(id))
+  end
+
+  defp assign_paged_stream(socket, stream_key, schema, params, url) do
+    opts = [
+      default_columns: [:id, :title, :description, :env, :requestor_name],
+      preloads: [requestor: :organization_code, category: [:request_name, :name, :affiliate]]
+    ]
+
+    %{entries: entries, results: results} =
+      Paging.search_and_pagination(schema, params, url, opts)
+
+    socket
+    |> assign(:results, results)
+    |> stream(stream_key, entries, reset: true)
   end
 
   defp handle_pubsub(action_user, event, item, socket) do

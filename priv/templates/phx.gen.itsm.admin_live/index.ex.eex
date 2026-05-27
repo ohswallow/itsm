@@ -27,13 +27,8 @@ defmodule <%= inspect context.web_module %>.<%= inspect Module.concat(schema.web
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
-    opts = [default_columns: <%= inspect Keyword.keys(schema.attrs) %>]
-    value =
-      Paging.search_and_pagination(<%= inspect schema.alias %>, params, url, opts)
-
     socket
-    |> assign(:results, value.results)
-    |> stream(:<%= schema.collection %>, value.entries, reset: true)
+    |> assign_paged_stream(:<%= schema.collection %>, <%= inspect schema.alias %>, params, url)
     |> assign(:page_title, "Listing <%= schema.human_plural %>")
     |> assign(:<%= schema.singular %>, nil)
   end
@@ -48,6 +43,17 @@ defmodule <%= inspect context.web_module %>.<%= inspect Module.concat(schema.web
     socket
     |> assign(:page_title, "Edit <%= schema.human_singular %>")
     |> assign(:<%= schema.singular %>, <%= inspect context.alias %>.get_<%= schema.singular %>!(id))
+  end
+
+  defp assign_paged_stream(socket, stream_key, schema, params, url) do
+    opts = [default_columns: <%= inspect Keyword.keys(schema.attrs) %>]
+
+    %{entries: entries, results: results} =
+      Paging.search_and_pagination(schema, params, url, opts)
+
+    socket
+    |> assign(:results, results)
+    |> stream(stream_key, entries, reset: true)
   end
 
   defp handle_pubsub(action_user, event, item, socket) do

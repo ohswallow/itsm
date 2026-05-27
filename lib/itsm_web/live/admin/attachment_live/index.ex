@@ -27,25 +27,8 @@ defmodule ItsmWeb.Admin.AttachmentLive.Index do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
-    opts = [
-      default_columns: [
-        :filename,
-        :local_path,
-        :file_type,
-        :byte_size,
-        :status,
-        :resource_type,
-        :resource_id,
-        :deleted_at
-      ]
-    ]
-
-    value =
-      Paging.search_and_pagination(Attachment, params, url, opts)
-
     socket
-    |> assign(:results, value.results)
-    |> stream(:attachments, value.entries, reset: true)
+    |> assign_paged_stream(:attachments, Attachment, params, url)
     |> assign(:page_title, "Listing Attachments")
     |> assign(:attachment, nil)
   end
@@ -60,6 +43,28 @@ defmodule ItsmWeb.Admin.AttachmentLive.Index do
     socket
     |> assign(:page_title, "Edit Attachment")
     |> assign(:attachment, Attachments.get_attachment!(id))
+  end
+
+  defp assign_paged_stream(socket, stream_key, schema, params, url) do
+    opts = [
+      default_columns: [
+        :filename,
+        :local_path,
+        :file_type,
+        :byte_size,
+        :status,
+        :resource_type,
+        :resource_id,
+        :deleted_at
+      ]
+    ]
+
+    %{entries: entries, results: results} =
+      Paging.search_and_pagination(schema, params, url, opts)
+
+    socket
+    |> assign(:results, results)
+    |> stream(stream_key, entries, reset: true)
   end
 
   defp handle_pubsub(action_user, event, item, socket) do

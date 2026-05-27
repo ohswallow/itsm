@@ -12,7 +12,7 @@ defmodule Itsm.Admin.Posts do
 
   defdelegate list_posts, to: Itsm.Posts
 
-  defdelegate create_post(action_user, attrs, selected_board_metadata, repo \\ Repo),
+  defdelegate create_post(action_user, attrs, selected_board_metadata, repo \\ Repo, opts \\ []),
     to: Itsm.Posts
 
   def update_post(
@@ -20,7 +20,8 @@ defmodule Itsm.Admin.Posts do
         %Post{} = post,
         attrs,
         selected_board_metadata,
-        repo \\ Repo
+        repo \\ Repo,
+        opts \\ []
       ) do
     post
     |> change_post(
@@ -33,7 +34,10 @@ defmodule Itsm.Admin.Posts do
     |> case do
       {:ok, post} ->
         post = post |> repo.preload(:author)
-        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_post, post}, id: post.id)
+
+        if Keyword.get(opts, :broadcast, true) do
+          Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_post, post}, id: post.id)
+        end
 
         {:ok, post}
 

@@ -25,7 +25,7 @@ defmodule Itsm.Comments.Comment do
   end
 
   @doc false
-  def changeset(comment, attrs) do
+  def changeset(comment, attrs \\ %{}) do
     comment
     |> cast(attrs, [:comment, :resource_type, :resource_id])
     |> validate_required([:comment, :resource_type, :resource_id])

@@ -17,7 +17,7 @@ defmodule Itsm.Service.CommonKCreateVm do
   end
 
   @doc false
-  def changeset(common_k_create_vm, attrs) do
+  def changeset(common_k_create_vm, attrs \\ %{}) do
     common_k_create_vm
     |> cast(attrs, [
       :hostname,

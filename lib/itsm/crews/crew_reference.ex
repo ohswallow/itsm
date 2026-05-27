@@ -14,7 +14,7 @@ defmodule Itsm.Crews.CrewReference do
   end
 
   @doc false
-  def changeset(crew_reference, attrs) do
+  def changeset(crew_reference, attrs \\ %{}) do
     crew_reference
     |> cast(attrs, [:resource_id, :resource_type, :crew_id])
     |> validate_required([:resource_id, :resource_type, :crew_id])

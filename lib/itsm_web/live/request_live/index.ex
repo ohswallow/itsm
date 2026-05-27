@@ -41,6 +41,18 @@ defmodule ItsmWeb.RequestLive.Index do
   end
 
   defp apply_action(socket, :index, url, params) do
+    socket
+    |> assign_paged_stream(:requests, Request, params, url)
+    |> assign(:page_title, "Listing Requests")
+  end
+
+  defp apply_action(socket, :edit, _url, %{"id" => id}) do
+    socket
+    |> assign(:page_title, "Edit Requests")
+    |> assign(:request, Requests.get_request!(id))
+  end
+
+  defp assign_paged_stream(socket, stream_key, schema, params, url) do
     %{current_user: %{organization_code: organization_code}} = socket.assigns
 
     opts = [
@@ -48,23 +60,16 @@ defmodule ItsmWeb.RequestLive.Index do
       preloads: [:category, :requestor, :assignee_crew]
     ]
 
-    value =
-      Request
+    %{entries: entries, results: results} =
+      schema
       |> Paging.filter_status([requestor: :organization_code], ["CM", "FG", organization_code],
         query_cond: :in
       )
       |> Paging.search_and_pagination(params, url, opts)
 
     socket
-    |> assign(:page_title, "Listing Requests")
-    |> assign(:results, value.results)
-    |> stream(:requests, value.entries, reset: true)
-  end
-
-  defp apply_action(socket, :edit, _url, %{"id" => id}) do
-    socket
-    |> assign(:page_title, "Edit Requests")
-    |> assign(:request, Requests.get_request!(id))
+    |> assign(:results, results)
+    |> stream(stream_key, entries, reset: true)
   end
 
   defp handle_pubsub(action_user, event, item, socket) do

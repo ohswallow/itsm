@@ -58,7 +58,7 @@ defmodule Itsm.Service.Request do
     timestamps(type: :utc_datetime)
   end
 
-  def changeset(request, attrs) do
+  def changeset(request, attrs \\ %{}) do
     request
     |> cast(attrs, [
       :title,

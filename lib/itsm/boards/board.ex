@@ -14,7 +14,7 @@ defmodule Itsm.Boards.Board do
   end
 
   @doc false
-  def changeset(board, attrs) do
+  def changeset(board, attrs \\ %{}) do
     attrs = Itsm.Utils.maybe_parse_json(attrs, :metadata)
 
     board

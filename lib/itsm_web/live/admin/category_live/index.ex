@@ -38,14 +38,8 @@ defmodule ItsmWeb.Admin.CategoryLive.Index do
   end
 
   defp apply_action(socket, :index, params, url) do
-    opts = [default_columns: [:name, :description, :group, :affiliate, :request_name, :category]]
-
-    value =
-      Paging.search_and_pagination(Category, params, url, opts)
-
     socket
-    |> assign(:results, value.results)
-    |> stream(:categories, value.entries, reset: true)
+    |> assign_paged_stream(:categories, Category, params, url)
     |> assign(:page_title, "Listing Categories")
     |> assign(:category, nil)
   end
@@ -60,6 +54,17 @@ defmodule ItsmWeb.Admin.CategoryLive.Index do
     socket
     |> assign(:page_title, "Edit Category")
     |> assign(:category, Categories.get_category!(id))
+  end
+
+  defp assign_paged_stream(socket, stream_key, schema, params, url) do
+    opts = [default_columns: [:name, :description, :group, :affiliate, :request_name, :category]]
+
+    %{entries: entries, results: results} =
+      Paging.search_and_pagination(schema, params, url, opts)
+
+    socket
+    |> assign(:results, results)
+    |> stream(stream_key, entries, reset: true)
   end
 
   defp handle_pubsub(action_user, event, item, socket) do

@@ -195,7 +195,7 @@ defmodule Itsm.Accounts.User do
     end
   end
 
-  def changeset(user, attrs) do
+  def changeset(user, attrs \\ %{}) do
     user
     |> cast(attrs, [
       :email,

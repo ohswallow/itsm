@@ -15,7 +15,7 @@ defmodule Itsm.Evaluations.Evaluation do
   end
 
   @doc false
-  def changeset(evaluation, attrs) do
+  def changeset(evaluation, attrs \\ %{}) do
     evaluation
     |> cast(attrs, [:comment, :rating, :crew_id])
     |> validate_required([:comment, :crew_id])

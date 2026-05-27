@@ -25,7 +25,7 @@ defmodule Itsm.Delegations.Delegation do
   end
 
   @doc false
-  def changeset(delegation, attrs) do
+  def changeset(delegation, attrs \\ %{}) do
     delegation
     |> cast(attrs, [
       # :delegator_name,

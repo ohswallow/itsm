@@ -20,7 +20,7 @@ defmodule Itsm.OsInstances.OsInstance do
   end
 
   @doc false
-  def changeset(os_instance, attrs) do
+  def changeset(os_instance, attrs \\ %{}) do
     os_instance
     |> cast(attrs, [:ip, :os_type, :os_version, :cpu_core, :memory_gb, :asset_id, :crew_id])
     |> validate_required([:ip, :os_type, :os_version, :cpu_core, :memory_gb, :asset_id, :crew_id])

@@ -172,7 +172,15 @@ defmodule ItsmWeb.LiveUtils do
           action_user :: %{display_name: String.t()},
           event :: atom(),
           item :: map() | struct(),
-          opts :: keyword()
+          opts :: [
+            {:resource_name, String.t()}
+            | {:target_key, atom()}
+            | {:flash_message, String.t()}
+            | {:push_patch, [{:to, String.t()} | {:replace, boolean()}]}
+            | {:push_navigate, [{:to, String.t()} | {:replace, boolean()}]}
+            | {:form_module, module()}
+            | {:live_action, atom()}
+          ]
         ) :: Phoenix.LiveView.Socket.t()
   def handle_standard_pubsub(socket, action_user, event, item, opts) do
     live_action = Keyword.get(opts, :live_action, socket.assigns.live_action)
@@ -186,7 +194,7 @@ defmodule ItsmWeb.LiveUtils do
     socket
     |> put_flash_by_event(action_user, action_type, opts)
     |> apply_action_type(action_type, item, live_action, opts)
-    |> send_update_by_conflict(action_user, event, item, opts)
+    |> send_update_by_conflict(action_user, event, item, live_action, opts)
   end
 
   defp put_flash_by_event(socket, action_user, action_type, opts) do
@@ -216,17 +224,20 @@ defmodule ItsmWeb.LiveUtils do
     end
   end
 
-  defp send_update_by_conflict(socket, action_user, event, item, opts) do
+  defp send_update_by_conflict(socket, action_user, event, item, :edit, opts) do
     resource = socket.assigns[opts[:target_key]]
     current_id = if resource, do: to_string(resource.id), else: nil
 
-    if current_id == to_string(item.id) and socket.assigns.live_action == :edit do
+    if current_id == to_string(item.id) do
       form_module = get_form_module(socket, opts)
       Phoenix.LiveView.send_update(form_module, id: item.id, conflict: {event, action_user})
     end
 
     socket
   end
+
+  defp send_update_by_conflict(socket, _action_user, _event, _item, _live_action, _opts),
+    do: socket
 
   defp build_message(action_user, "create", name),
     do: "#{action_user.display_name} #{gettext("Created")} #{name}"

@@ -35,7 +35,7 @@ defmodule Itsm.Service.Approval do
   def status_values, do: @status_values
 
   @doc false
-  def changeset(approval, attrs) do
+  def changeset(approval, attrs \\ %{}) do
     approval
     |> cast(attrs, [
       :status,

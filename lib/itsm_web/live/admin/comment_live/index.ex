@@ -28,16 +28,8 @@ defmodule ItsmWeb.Admin.CommentLive.Index do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
-    opts = [
-      default_columns: [:comment, {:user, :display_name}],
-      preloads: [user: :display_name]
-    ]
-
-    value = Paging.search_and_pagination(Comment, params, url, opts)
-
     socket
-    |> assign(:results, value.results)
-    |> stream(:comments, value.entries, reset: true)
+    |> assign_paged_stream(:comments, Comment, params, url)
     |> assign(:page_title, "Listing Comments")
     |> assign(:comment, nil)
   end
@@ -52,6 +44,20 @@ defmodule ItsmWeb.Admin.CommentLive.Index do
     socket
     |> assign(:page_title, "Edit Comment")
     |> assign(:comment, Comments.get_comment!(id))
+  end
+
+  defp assign_paged_stream(socket, stream_key, schema, params, url) do
+    opts = [
+      default_columns: [:comment, {:user, :display_name}],
+      preloads: [user: :display_name]
+    ]
+
+    %{entries: entries, results: results} =
+      Paging.search_and_pagination(schema, params, url, opts)
+
+    socket
+    |> assign(:results, results)
+    |> stream(stream_key, entries, reset: true)
   end
 
   defp handle_pubsub(action_user, event, item, socket) do

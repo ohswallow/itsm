@@ -55,14 +55,24 @@ defmodule Itsm.Requests do
     end
   end
 
-  def create_request(%User{} = action_user, %Category{} = catrgory, attrs, repo \\ Repo) do
+  def create_request(
+        %User{} = action_user,
+        %Category{} = catrgory,
+        attrs,
+        repo \\ Repo,
+        opts \\ []
+      ) do
     action_user
     |> change_request(catrgory, attrs)
     |> repo.insert()
     |> case do
       {:ok, request} ->
         request = repo.preload(request, :category)
-        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_request, request})
+
+        if Keyword.get(opts, :broadcast, true) do
+          Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_request, request})
+        end
+
         {:ok, request}
 
       {:error, _} = error ->
@@ -70,7 +80,7 @@ defmodule Itsm.Requests do
     end
   end
 
-  def update_request(%User{} = action_user, %Request{} = request, attrs, repo \\ Repo) do
+  def update_request(%User{} = action_user, %Request{} = request, attrs, repo \\ Repo, opts \\ []) do
     request
     |> Request.changeset(attrs)
     |> repo.update()
@@ -78,9 +88,11 @@ defmodule Itsm.Requests do
       {:ok, request} ->
         request = request |> repo.preload(:category)
 
-        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_request, request},
-          id: request.id
-        )
+        if Keyword.get(opts, :broadcast, true) do
+          Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_request, request},
+            id: request.id
+          )
+        end
 
         {:ok, request}
 

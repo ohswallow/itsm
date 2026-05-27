@@ -15,7 +15,7 @@ defmodule Itsm.Common.CommonCode do
     timestamps(type: :utc_datetime)
   end
 
-  def changeset(codes, attrs) do
+  def changeset(codes, attrs \\ %{}) do
     codes
     |> cast(attrs, [:group_code, :code, :label, :description, :sort_order, :is_active])
     |> validate_required([:group_code, :code, :label, :is_active])

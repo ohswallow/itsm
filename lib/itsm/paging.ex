@@ -134,11 +134,11 @@ defmodule Itsm.Paging do
           params :: map(),
           url :: String.t(),
           opts :: [
-            default_columns: [atom() | {atom(), atom() | tuple()} | list()],
-            preloads: [atom() | {atom(), atom() | tuple() | list(atom())} | list(atom())],
-            range_columns: [atom()],
-            column_custom_label: map(),
-            query_cond: atom()
+            {:default_columns, [atom() | {atom(), atom() | tuple()} | list()]}
+            | {:preloads, [atom() | {atom(), atom() | tuple() | list(atom())} | list(atom())]}
+            | {:range_columns, [atom()]}
+            | {:column_custom_label, map()}
+            | {:query_cond, atom()}
           ]
         ) :: %{
           entries: [struct()],
@@ -151,7 +151,7 @@ defmodule Itsm.Paging do
             range_column_options: [atom()]
           }
         }
-  def search_and_pagination(query_base, params, url, opts \\ []) do
+  def search_and_pagination(query_base, params, url, opts) do
     default_columns = Keyword.get(opts, :default_columns, [:name])
     preloads = Keyword.get(opts, :preloads, [])
     range_columns = Keyword.get(opts, :range_columns, [])
@@ -220,7 +220,9 @@ defmodule Itsm.Paging do
     }
 
     results_params =
-      if range_columns != [], do: Map.merge(results_params, range_params), else: results_params
+      if range_columns != [],
+        do: Map.merge(params, Map.merge(results_params, range_params)),
+        else: Map.merge(params, results_params)
 
     %{
       entries: entries,
@@ -371,7 +373,13 @@ defmodule Itsm.Paging do
       Enum.map(custom_label_columns, &{Map.get(column_custom_label, &1), flatten_value(&1)})
   end
 
-  defp parse_columns(columns, default_columns) when columns not in [nil, "", [], [""]] do
+  # 또는 적절한 예외처리
+  defp parse_columns(nil, default_columns), do: default_columns
+  defp parse_columns("", default_columns), do: default_columns
+  defp parse_columns([], default_columns), do: default_columns
+  defp parse_columns([""], default_columns), do: default_columns
+
+  defp parse_columns(columns, default_columns) do
     allowed_fields =
       default_columns
       |> Enum.map(&flatten_value(&1))
@@ -392,8 +400,6 @@ defmodule Itsm.Paging do
         col
     end)
   end
-
-  defp parse_columns(_columns, default_columns), do: default_columns
 
   defp parse_integer(value, default) when is_binary(value) do
     case Integer.parse(value) do

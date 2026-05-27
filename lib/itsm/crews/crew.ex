@@ -18,7 +18,7 @@ defmodule Itsm.Crews.Crew do
   end
 
   @doc false
-  def changeset(crew, attrs) do
+  def changeset(crew, attrs \\ %{}) do
     crew
     |> cast(attrs, [:name, :description])
     |> normalize_name()

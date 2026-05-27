@@ -4,6 +4,7 @@ defmodule Itsm.Posts do
   """
 
   import Ecto.Query, warn: false
+  alias Itsm.Attachments
   alias Itsm.Accounts.User
   alias Itsm.Repo
   alias Itsm.Posts.Post
@@ -15,7 +16,7 @@ defmodule Itsm.Posts do
   def list_posts_by_board_id(board_id),
     do: Post |> where([p], p.board_id == ^board_id) |> preload(:author) |> Repo.all()
 
-  def create_post(%User{} = action_user, attrs, selected_board_metadata, repo \\ Repo) do
+  def create_post(%User{} = action_user, attrs, selected_board_metadata, repo \\ Repo, opts \\ []) do
     %Post{}
     |> change_post(
       attrs: attrs,
@@ -26,7 +27,11 @@ defmodule Itsm.Posts do
     |> case do
       {:ok, post} ->
         post = post |> repo.preload(:author)
-        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_post, post})
+
+        if Keyword.get(opts, :broadcast, true) do
+          Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_post, post})
+        end
+
         {:ok, post}
 
       {:error, changeset} ->
@@ -39,7 +44,8 @@ defmodule Itsm.Posts do
         %Post{} = post,
         attrs,
         selected_board_metadata,
-        repo \\ Repo
+        repo \\ Repo,
+        opts \\ []
       ) do
     post
     |> change_post(
@@ -51,7 +57,10 @@ defmodule Itsm.Posts do
     |> case do
       {:ok, post} ->
         post = post |> repo.preload(:author)
-        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_post, post}, id: post.id)
+
+        if Keyword.get(opts, :broadcast, true) do
+          Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_post, post}, id: post.id)
+        end
 
         {:ok, post}
 
@@ -98,12 +107,19 @@ defmodule Itsm.Posts do
       ) do
     Ecto.Multi.new()
     |> Ecto.Multi.run(:update_post, fn repo, _ ->
-      update_post(action_user, post, attrs, selected_board_metadata, repo)
+      update_post(action_user, post, attrs, selected_board_metadata, repo, broadcast: false)
     end)
-    |> Ecto.Multi.run(:attachment, fn repo, %{update_post: post} ->
-      Itsm.Attachments.create_attachments(action_user, repo, post, consumer_fn)
+    |> Ecto.Multi.run(:create_attachments, fn repo, %{update_post: post} ->
+      Attachments.create_attachments(action_user, post, consumer_fn, repo, broadcast: false)
     end)
     |> Repo.transact()
+    |> case do
+      {:ok, %{update_post: post, create_attachments: attachments}} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_post, post}, id: post.id)
+        Itsm.PubSub.Helper.broadcast(Attachments, {action_user, :create_attachments, attachments})
+
+        {:ok, post}
+    end
   end
 
   def save_with_attachment(
@@ -116,11 +132,21 @@ defmodule Itsm.Posts do
       ) do
     Ecto.Multi.new()
     |> Ecto.Multi.run(:create_post, fn repo, _ ->
-      create_post(action_user, attrs, selected_board_metadata, repo)
+      create_post(action_user, attrs, selected_board_metadata, repo, broadcast: false)
     end)
-    |> Ecto.Multi.run(:attachment, fn repo, %{create_post: post} ->
-      Itsm.Attachments.create_attachments(action_user, repo, post, consumer_fn)
+    |> Ecto.Multi.run(:create_attachments, fn repo, %{create_post: post} ->
+      Attachments.create_attachments(action_user, post, consumer_fn, repo, broadcast: false)
     end)
     |> Repo.transact()
+    |> case do
+      {:ok, %{create_post: post, create_attachments: attachments}} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_post, post})
+        Itsm.PubSub.Helper.broadcast(Attachments, {action_user, :create_attachments, attachments})
+
+        {:ok, post}
+
+      error ->
+        error
+    end
   end
 end

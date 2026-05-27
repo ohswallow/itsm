@@ -27,6 +27,25 @@ defmodule ItsmWeb.Admin.AssetLive.Index do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
+    socket
+    |> assign_paged_stream(:assets, Asset, params, url)
+    |> assign(:page_title, "Listing Assets")
+    |> assign(:asset, nil)
+  end
+
+  defp apply_action(socket, :new, _params, _url) do
+    socket
+    |> assign(:page_title, "New Asset")
+    |> assign(:asset, %Asset{} |> Itsm.Assets.with_assoc([:service_crew, :system_crew]))
+  end
+
+  defp apply_action(socket, :edit, %{"id" => id}, _url) do
+    socket
+    |> assign(:page_title, "Edit Asset")
+    |> assign(:asset, Assets.get_asset!(id))
+  end
+
+  defp assign_paged_stream(socket, stream_key, schema, params, url) do
     opts = [
       default_columns: [
         :env,
@@ -43,26 +62,12 @@ defmodule ItsmWeb.Admin.AssetLive.Index do
       preloads: [service_crew: :name, system_crew: :name]
     ]
 
-    value =
-      Paging.search_and_pagination(Asset, params, url, opts)
+    %{entries: entries, results: results} =
+      Paging.search_and_pagination(schema, params, url, opts)
 
     socket
-    |> assign(:results, value.results)
-    |> stream(:assets, value.entries, reset: true)
-    |> assign(:page_title, "Listing Assets")
-    |> assign(:asset, nil)
-  end
-
-  defp apply_action(socket, :new, _params, _url) do
-    socket
-    |> assign(:page_title, "New Asset")
-    |> assign(:asset, %Asset{} |> Itsm.Assets.with_assoc([:service_crew, :system_crew]))
-  end
-
-  defp apply_action(socket, :edit, %{"id" => id}, _url) do
-    socket
-    |> assign(:page_title, "Edit Asset")
-    |> assign(:asset, Assets.get_asset!(id))
+    |> assign(:results, results)
+    |> stream(stream_key, entries, reset: true)
   end
 
   defp handle_pubsub(action_user, event, item, socket) do

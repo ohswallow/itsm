@@ -27,13 +27,8 @@ defmodule ItsmWeb.Admin.CrewLive.Index do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
-    opts = [default_columns: [:name, :description, {:users, :display_name}]]
-
-    value = Paging.search_and_pagination(Crew, params, url, opts)
-
     socket
-    |> assign(:results, value.results)
-    |> stream(:crews, value.entries, reset: true)
+    |> assign_paged_stream(:crews, Crew, params, url)
     |> assign(:page_title, "Listing Crews")
     |> assign(:crew, nil)
   end
@@ -48,6 +43,17 @@ defmodule ItsmWeb.Admin.CrewLive.Index do
     socket
     |> assign(:page_title, "Edit Crew")
     |> assign(:crew, Crews.get_crew!(id))
+  end
+
+  defp assign_paged_stream(socket, stream_key, schema, params, url) do
+    opts = [default_columns: [:name, :description, {:users, :display_name}]]
+
+    %{entries: entries, results: results} =
+      Paging.search_and_pagination(schema, params, url, opts)
+
+    socket
+    |> assign(:results, results)
+    |> stream(stream_key, entries, reset: true)
   end
 
   defp handle_pubsub(action_user, event, item, socket) do
