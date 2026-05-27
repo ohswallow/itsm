@@ -51,4 +51,6 @@ defmodule Itsm.Crews.Crew do
       name -> put_change(changeset, :name, String.upcase(name))
     end
   end
+
+  @type t :: %__MODULE__{}
 end

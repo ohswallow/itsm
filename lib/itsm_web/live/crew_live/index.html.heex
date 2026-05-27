@@ -18,7 +18,7 @@
   <:action :let={{_id, crew}} label="Actions">
     <.dropdown_menu id={"#{crew.id}-menu"}>
       <.link
-        patch={~p"/crews/#{crew}/edit"}
+        patch={~p"/crews/#{crew}/edit?menu_id=crews"}
         class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
       >
         <.icon name="hero-pencil" class="w-4 h-4" /> Edit Crew
@@ -38,7 +38,7 @@
   :if={@live_action in [:new, :edit]}
   id="crew-modal"
   show
-  on_cancel={JS.patch(~p"/crews")}
+  on_cancel={JS.patch(~p"/crews?menu_id=crews")}
 >
   <.live_component
     module={ItsmWeb.CrewLive.FormComponent}

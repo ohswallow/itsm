@@ -123,7 +123,15 @@ defmodule ItsmWeb.LiveUtils do
           action_user :: %{display_name: String.t()},
           event :: atom(),
           item :: map() | struct(),
-          opts :: keyword()
+          opts :: [
+            {:resource_name, String.t()}
+            | {:context_key, atom()}
+            | {:stream_name, atom()}
+            | {:flash_message, String.t()}
+            | {:push_patch, [{:to, String.t()} | {:replace, boolean()}]}
+            | {:push_navigate, [{:to, String.t()} | {:replace, boolean()}]}
+            | {:form_module, module()}
+          ]
         ) :: Phoenix.LiveView.Socket.t()
   def handle_standard_pubsub(socket, action_user, event, item, opts) do
     [action_type | _] = event |> Atom.to_string() |> String.split("_")

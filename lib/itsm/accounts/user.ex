@@ -218,4 +218,6 @@ defmodule Itsm.Accounts.User do
       :role
     ])
   end
+
+  @type t :: %__MODULE__{}
 end

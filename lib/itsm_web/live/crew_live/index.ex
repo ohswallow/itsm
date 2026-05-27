@@ -64,55 +64,51 @@ defmodule ItsmWeb.CrewLive.Index do
 
   def handle_info(_event, socket), do: {:noreply, socket}
 
-  defp handle_pubsub(action_user, event, {:crews, %Crew{} = crew}, socket)
+  defp handle_pubsub(action_user, event, %Crew{} = item, socket)
        when event in [:update_crew, :add_users, :switch_leader] do
     %{current_user: user} = socket.assigns
-    crew = Crews.with_assoc(crew, [:leader, :users])
 
-    if(Enum.any?(crew.users, &(&1.id == user.id)) || user == crew.leader) do
+    if(Enum.any?(item.users, &(&1.id == user.id)) || user.id == item.leader.id) do
+      opts = [
+        resource_name: get_resource_name(event),
+        stream_name: :crews
+      ]
+
       {:noreply,
-       stream_insert(socket, :crews, crew)
-       |> put_flash(
-         :info,
-         gettext("%{crew_name} added/updated by %{action_user}.",
-           crew_name: crew.name,
-           action_user: action_user.display_name
-         )
-       )}
+       socket
+       |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)
+       |> stream_insert(:crews, item)}
     else
       {:noreply, socket}
     end
   end
 
-  defp handle_pubsub(action_user, :delete_crew, {:crews, %Crew{} = crew}, socket) do
+  defp handle_pubsub(action_user, :delete_crew = event, %Crew{} = item, socket) do
+    opts = [
+      resource_name: gettext("Crew"),
+      stream_name: :crews
+    ]
+
     {:noreply,
-     stream_delete(socket, :crews, crew)
-     |> put_flash(
-       :info,
-       gettext("%{crew_name} deleted by %{action_user}.",
-         crew_name: crew.name,
-         action_user: action_user.display_name
-       )
-     )}
+     socket
+     |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}
   end
 
   defp handle_pubsub(
          action_user,
-         :delete_user,
-         {:crews, %Crew{} = crew, %User{} = deleted_user},
+         :delete_user = event,
+         {%Crew{} = item, %User{} = deleted_user},
          socket
        ) do
     %{current_user: user} = socket.assigns
 
-    if(user == deleted_user) do
-      {:noreply,
-       stream_delete(socket, :crews, crew)
-       |> put_flash(
-         :info,
-         gettext("You have been removed from the crew by %{action_user}.",
-           action_user: action_user.display_name
-         )
-       )}
+    if(user.id == deleted_user.id) do
+      opts = [
+        resource_name: gettext("Member"),
+        stream_name: :crews
+      ]
+
+      {:noreply, ItsmWeb.LiveUtils.handle_standard_pubsub(socket, action_user, event, item, opts)}
     else
       {:noreply, socket}
     end
@@ -121,4 +117,8 @@ defmodule ItsmWeb.CrewLive.Index do
   defp handle_pubsub(_action_user, _event, _item, socket) do
     {:noreply, socket}
   end
+
+  defp get_resource_name(:update_crew), do: gettext("Crew")
+  defp get_resource_name(:add_users), do: gettext("Members")
+  defp get_resource_name(:switch_leader), do: gettext("Crew Leader")
 end
