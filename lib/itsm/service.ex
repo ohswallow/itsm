@@ -45,6 +45,8 @@ defmodule Itsm.Service do
          create_approval: approval,
          create_attachments: attachments
        }} ->
+        request = Repo.preload(request, [:category])
+
         Itsm.PubSub.Helper.broadcast(Requests, {action_user, :create_request, request})
         Itsm.PubSub.Helper.broadcast(Approvals, {action_user, :create_approval, approval})
         Itsm.PubSub.Helper.broadcast(Attachments, {action_user, :create_attachments, attachments})
@@ -72,11 +74,9 @@ defmodule Itsm.Service do
     |> sync_crew_references(action_user, request, attrs["referenced_crews"])
     |> Repo.transact()
     |> case do
-      {:ok,
-       %{
-         update_request: request,
-         create_attachments: attachment
-       }} ->
+      {:ok, %{update_request: request, create_attachments: attachment}} ->
+        request = Repo.preload(request, :category)
+
         Itsm.PubSub.Helper.broadcast(Requests, {action_user, :update_request, request},
           id: request.id
         )
@@ -94,14 +94,14 @@ defmodule Itsm.Service do
     request = Requests.get_request!(request_id)
 
     with :ok <- ensure_requestor(action_user, request),
-         {:ok, %{delete_request: deleted_request, delete_approval: deleted_approve}} <-
-           delete_request_mult(action_user, request) do
-      Itsm.PubSub.Helper.broadcast(Requests, {action_user, :delete_request, deleted_request},
-        id: deleted_request.id
+         {:ok, %{delete_request: request, delete_approval: approve}} <-
+           delete_request_mult(action_user, request, broadcast: false) do
+      Itsm.PubSub.Helper.broadcast(Requests, {action_user, :delete_request, request},
+        id: request.id
       )
 
-      Itsm.PubSub.Helper.broadcast(Approvals, {action_user, :delete_approval, deleted_approve},
-        id: deleted_approve.id
+      Itsm.PubSub.Helper.broadcast(Approvals, {action_user, :delete_approval, approve},
+        id: approve.id
       )
 
       {:ok, request}
@@ -190,20 +190,22 @@ defmodule Itsm.Service do
     end
   end
 
-  def delete_request_mult(%User{} = action_user, %Request{} = request) do
+  def delete_request_mult(%User{} = action_user, %Request{} = request, opts \\ []) do
     Multi.new()
     |> Multi.delete(:delete_approval, Approvals.get_approval_by_request(request))
     |> Multi.delete(:delete_request, request)
     |> Repo.transact()
     |> case do
       {:ok, %{delete_approval: approval, delete_request: request}} ->
-        Itsm.PubSub.Helper.broadcast(Requests, {action_user, :delete_request, request},
-          id: request.id
-        )
+        if Keyword.get(opts, :broadcast, true) do
+          Itsm.PubSub.Helper.broadcast(Requests, {action_user, :delete_request, request},
+            id: request.id
+          )
 
-        Itsm.PubSub.Helper.broadcast(Approvals, {action_user, :delete_approval, approval},
-          id: request.id
-        )
+          Itsm.PubSub.Helper.broadcast(Approvals, {action_user, :delete_approval, approval},
+            id: request.id
+          )
+        end
 
         {:ok, request}
 
