@@ -106,11 +106,11 @@
   :if={@show_member_modal}
   id="search-users"
   show
-  on_cancel={JS.patch(~p"/crews/#{@crew}")}
+  on_cancel={JS.patch(~p"/crews/#{@crew}?menu_id=crews")}
 >
-  <.live_component
+  <.users_search
     id="search-users-dialog"
     current_user={@current_user}
-    module={ItsmWeb.SearchUsersDialog}
+    opts={[exclude_crew: @crew]}
   />
 </.modal>
