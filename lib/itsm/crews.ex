@@ -3,6 +3,7 @@ defmodule Itsm.Crews do
   alias Itsm.Repo
   alias Itsm.Crews.{Crew, CrewsUsers, CrewReference}
   alias Itsm.Accounts.User
+  alias Itsm.Accounts
   alias Itsm.Utils
 
   @doc """
@@ -16,8 +17,9 @@ defmodule Itsm.Crews do
     |> Repo.all()
   end
 
-  def with_assoc(%Crew{} = crew, preloads) do
-    Repo.preload(crew, preloads)
+  def get_crew_with_leader_users(id) do
+    get_crew!(id)
+    |> Repo.preload([:leader, :users])
   end
 
   def list_crews do
@@ -107,7 +109,7 @@ defmodule Itsm.Crews do
     |> case do
       {:ok, crew} ->
         crew = Repo.preload(crew, [:leader, :users])
-        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_crew, {:crews, crew}})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_crew, crew})
         {:ok, crew}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -152,7 +154,8 @@ defmodule Itsm.Crews do
     end
   end
 
-  def add_users(%User{} = action_user, %Crew{} = crew, add_users) when is_list(add_users) do
+  def add_users(%User{} = action_user, %Crew{} = crew, add_user_ids) do
+    add_users = Accounts.get_users(add_user_ids)
     crew = Repo.preload(crew, :users)
 
     new_users =
@@ -163,12 +166,15 @@ defmodule Itsm.Crews do
     |> Crew.users_changeset(new_users)
     |> Repo.update()
     |> case do
-      {:ok, crew} ->
-        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :add_users, {:crew, add_users}},
+      {:ok, _crew} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :add_users, {add_users}},
           id: crew.id
         )
 
-        {:ok, crew}
+        crew = get_crew!(crew.id) |> Repo.preload([:users, :leader])
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :add_users, crew})
+
+        {:ok, add_users}
 
       {:error, %Ecto.Changeset{} = _changeset} ->
         {:error, :add_users}
@@ -181,9 +187,8 @@ defmodule Itsm.Crews do
     with :ok <- ensure_leader(crew, action_user),
          :ok <- ensure_crew(crew, action_user),
          {:ok, crew} <- Repo.update(changeset) do
-      Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :switch_leader, {:crew, crew}},
-        id: crew.id
-      )
+      crew = Repo.preload(crew, [:leader, :users])
+      Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :switch_leader, crew}, id: crew.id)
 
       {:ok, crew}
     else
@@ -201,7 +206,8 @@ defmodule Itsm.Crews do
 
     with :ok <- ensure_leader(crew, action_user),
          {:ok, crew} <- Repo.update(changeset) do
-      Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_crew, {:crews, crew}})
+      crew = Repo.preload(crew, [:leader, :users])
+      Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_crew, crew})
       {:ok, crew}
     else
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -217,9 +223,7 @@ defmodule Itsm.Crews do
 
     with :ok <- ensure_leader(crew, action_user),
          {:ok, crew} <- Repo.delete(crew) do
-      Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_crew, {:crew, crew}},
-        id: crew.id
-      )
+      Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_crew, crew}, id: crew.id)
 
       {:ok, crew}
     else
@@ -236,7 +240,7 @@ defmodule Itsm.Crews do
 
     with :ok <- ensure_delete_auth(crew, target_user, action_user),
          {:ok, _} <- Repo.delete(crews_users) do
-      Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_user, {:crew, target_user}},
+      Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_user, {crew, target_user}},
         id: crew.id
       )
 

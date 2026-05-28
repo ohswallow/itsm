@@ -271,11 +271,11 @@ defmodule ItsmWeb.LiveUtils do
 
   defp maybe_stream_delete(socket, _, _), do: socket
 
-  defp maybe_assign_resource(socket, context_key, item) do
-    current_resource = socket.assigns[context_key]
+  defp maybe_assign_resource(socket, target_key, item) do
+    current_resource = socket.assigns[target_key]
 
     if current_resource && to_string(current_resource.id) == to_string(item.id) do
-      Phoenix.Component.assign(socket, context_key, item)
+      Phoenix.Component.assign(socket, target_key, item)
     else
       socket
     end

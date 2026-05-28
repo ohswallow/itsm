@@ -7,6 +7,7 @@ defmodule Itsm.Accounts do
   alias Itsm.Repo
 
   alias Itsm.Accounts.{User, UserToken, UserNotifier}
+  alias Itsm.Crews.{Crew, CrewsUsers}
 
   ## Database getters
 
@@ -383,9 +384,15 @@ defmodule Itsm.Accounts do
     end
   end
 
-  def live_select_by_name(%User{} = user, keyword) do
+  @spec live_select_by_name(
+          user :: User.t(),
+          keyword :: String.t(),
+          opt :: [{:exclude_crew, Crew.t()}]
+        ) :: [map()]
+  def live_select_by_name(%User{} = user, keyword, opt \\ []) do
     User
     |> search_by(keyword)
+    |> exclude_crew(opt)
     |> where([u], u.organization_code == ^user.organization_code)
     |> where([u], u.department_code == ^user.department_code)
     |> order_by(:display_name)
@@ -400,6 +407,17 @@ defmodule Itsm.Accounts do
     })
     |> Repo.all()
   end
+
+  defp exclude_crew(query, exclude_crew: crew) do
+    crew_member_query =
+      CrewsUsers
+      |> where([cu], cu.crew_id == ^crew.id)
+      |> select([cu], cu.user_id)
+
+    where(query, [u], u.id not in subquery(crew_member_query))
+  end
+
+  defp exclude_crew(query, _), do: query
 
   # 1. 이름 검색
   # 검색어가 없으면("") -> 전체 검색

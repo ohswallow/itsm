@@ -51,8 +51,8 @@ defmodule ItsmWeb.CrewLive.AllIndex do
     |> stream(stream_key, entries, reset: true)
   end
 
-  defp handle_pubsub(_action_user, event, {:crews, _crew}, socket)
-       when event in [:create_crew, :update_crew, :delete_crew] do
+  defp handle_pubsub(_action_user, event, _crew, socket)
+       when event in [:create_crew, :update_crew, :delete_crew, :switch_leader] do
     %{results: params} = socket.assigns
 
     {:noreply, push_patch(socket, to: ~p"/crews/all?#{params}")}
