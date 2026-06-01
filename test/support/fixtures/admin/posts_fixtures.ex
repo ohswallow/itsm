@@ -3,19 +3,21 @@ defmodule Itsm.Admin.PostsFixtures do
   This module defines test helpers for creating
   entities via the `Itsm.Admin.Posts` context.
   """
+  alias Itsm.Accounts.User
 
   @doc """
   Generate a post.
   """
   def post_fixture(attrs \\ %{}) do
-    {:ok, post} =
+    attrs =
       attrs
       |> Enum.into(%{
         content: "some content",
         metadata: %{},
         title: "some title"
       })
-      |> Itsm.Admin.Posts.create_post(%{}, %{})
+
+    {:ok, post} = Itsm.Admin.Posts.create_post(%User{}, attrs, %{})
 
     post
   end

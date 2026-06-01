@@ -114,14 +114,11 @@ defmodule Itsm.Approvals do
   # ==================================================
   # CUD
   # ==================================================
-  def create_approval(%User{} = action_user, repo, %Request{} = request) do
-    %Approval{
-      approver: action_user,
-      approver_name: action_user.display_name,
-      request: request,
-      status: :request
-    }
-    |> repo.insert()
+
+  def create_approval(%User{} = action_user, attrs) do
+    %Approval{}
+    |> Approval.changeset(attrs)
+    |> Repo.insert()
     |> case do
       {:ok, approval} ->
         Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_approval, approval})
@@ -132,13 +129,20 @@ defmodule Itsm.Approvals do
     end
   end
 
-  def create_approval(%User{} = action_user, attrs \\ %{}) do
-    %Approval{}
-    |> Approval.changeset(attrs)
-    |> Repo.insert()
+  def create_approval(%User{} = action_user, %Request{} = request, repo \\ Repo, opts \\ []) do
+    %Approval{
+      approver: action_user,
+      approver_name: action_user.display_name,
+      request: request,
+      status: request.status
+    }
+    |> repo.insert()
     |> case do
       {:ok, approval} ->
-        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_approval, approval})
+        if Keyword.get(opts, :broadcast, true) do
+          Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_approval, approval})
+        end
+
         {:ok, approval}
 
       {:error, changeset} ->

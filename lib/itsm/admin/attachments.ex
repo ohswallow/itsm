@@ -9,6 +9,11 @@ defmodule Itsm.Admin.Attachments do
   alias Itsm.Attachments.Attachment
 
   defdelegate get_attachment!(id), to: Itsm.Attachments
+  defdelegate get_list_attachments(resource), to: Itsm.Attachments
+
+  def list_attachments_by_resource_is_active(resource) do
+    get_list_attachments(resource)
+  end
 
   def list_attachments_by_resource(resource) do
     Attachment

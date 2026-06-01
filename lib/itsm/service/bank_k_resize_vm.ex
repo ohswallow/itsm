@@ -11,7 +11,7 @@ defmodule Itsm.Service.BankKResizeVm do
   end
 
   @doc false
-  def changeset(bank_k_resize_vm, attrs) do
+  def changeset(bank_k_resize_vm, attrs \\ %{}) do
     bank_k_resize_vm
     |> cast(attrs, [:hostname, :ip, :cpu, :memory, :description])
     |> validate_required([:hostname, :ip, :cpu, :memory, :description])

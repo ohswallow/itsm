@@ -50,7 +50,7 @@ defmodule Itsm.Evaluations do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_evaluation(%User{} = action_user, attrs \\ %{}) do
+  def create_evaluation(%User{} = action_user, attrs) do
     %Evaluation{}
     |> Evaluation.changeset(attrs)
     |> Repo.insert()

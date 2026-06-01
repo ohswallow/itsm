@@ -27,25 +27,8 @@ defmodule ItsmWeb.Admin.PostLive.Index do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
-    opts = [
-      default_columns: [
-        :title,
-        :content,
-        :metadata,
-        author: :display_name,
-        board: :name
-      ],
-      preloads: [author: :display_name, board: :name],
-      range_columns: [:updated_at, :inserted_at]
-    ]
-
-    value =
-      Post
-      |> Paging.search_and_pagination(params, url, opts)
-
     socket
-    |> assign(:results, value.results)
-    |> stream(:posts, value.entries, reset: true)
+    |> assign_paged_stream(:posts, Post, params, url)
     |> assign(:page_title, "Listing Posts")
     |> assign(:post, nil)
   end
@@ -62,11 +45,31 @@ defmodule ItsmWeb.Admin.PostLive.Index do
     |> assign(:post, Posts.get_post!(id))
   end
 
+  defp assign_paged_stream(socket, stream_key, schema, params, url) do
+    opts = [
+      default_columns: [
+        :title,
+        :content,
+        :metadata,
+        author: :display_name,
+        board: :name
+      ],
+      preloads: [author: :display_name, board: :name],
+      range_columns: [:updated_at, :inserted_at]
+    ]
+
+    %{entries: entries, results: results} =
+      Paging.search_and_pagination(schema, params, url, opts)
+
+    socket
+    |> assign(:results, results)
+    |> stream(stream_key, entries, reset: true)
+  end
+
   defp handle_pubsub(action_user, event, item, socket) do
     opts = [
-      context_key: :post,
       resource_name: gettext("Post"),
-      stream_name: :posts,
+      target_key: :posts,
       push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 

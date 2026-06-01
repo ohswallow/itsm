@@ -21,7 +21,7 @@ defmodule Itsm.Attachments.Attachment do
   end
 
   @doc false
-  def changeset(attachment, attrs) do
+  def changeset(attachment, attrs \\ %{}) do
     attachment
     |> cast(attrs, [
       :filename,

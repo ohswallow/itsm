@@ -30,15 +30,8 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Index do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
-    opts = [default_columns: [:group_code, :label, :code]]
-
-    value =
-      CommonCode
-      |> Paging.search_and_pagination(params, url, opts)
-
     socket
-    |> assign(:results, value.results)
-    |> stream(:common_codes, value.entries, reset: true)
+    |> assign_paged_stream(:common_codes, CommonCode, params, url)
     |> assign(:page_title, "Listing Common codes")
     |> assign(:common_code, nil)
   end
@@ -55,11 +48,21 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Index do
     |> assign(:common_code, CommonCodes.get_common_code!(id))
   end
 
+  defp assign_paged_stream(socket, stream_key, schema, params, url) do
+    opts = [default_columns: [:group_code, :label, :code]]
+
+    %{entries: entries, results: results} =
+      Paging.search_and_pagination(schema, params, url, opts)
+
+    socket
+    |> assign(:results, results)
+    |> stream(stream_key, entries, reset: true)
+  end
+
   defp handle_pubsub(action_user, event, item, socket) do
     opts = [
-      context_key: :common_code,
       resource_name: gettext("Common Code"),
-      stream_name: :common_codes,
+      target_key: :common_codes,
       push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 

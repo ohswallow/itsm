@@ -30,17 +30,8 @@ defmodule ItsmWeb.Admin.ApprovalLive.Index do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
-    opts = [
-      default_columns: [:status, :action, :approver_name],
-      preloads: [request: [:title, category: :name]]
-    ]
-
-    value =
-      Paging.search_and_pagination(Approval, params, url, opts)
-
     socket
-    |> assign(:results, value.results)
-    |> stream(:approvals, value.entries, reset: true)
+    |> assign_paged_stream(:approvals, Approval, params, url)
     |> assign(:page_title, "Listing Approvals")
     |> assign(:approval, nil)
   end
@@ -57,11 +48,24 @@ defmodule ItsmWeb.Admin.ApprovalLive.Index do
     |> assign(:approval, Approvals.get_approval!(id))
   end
 
+  defp assign_paged_stream(socket, stream_key, schema, params, url) do
+    opts = [
+      default_columns: [:status, :action, :approver_name],
+      preloads: [request: [:title, category: :name]]
+    ]
+
+    %{entries: entries, results: results} =
+      Paging.search_and_pagination(schema, params, url, opts)
+
+    socket
+    |> assign(:results, results)
+    |> stream(stream_key, entries, reset: true)
+  end
+
   defp handle_pubsub(action_user, event, item, socket) do
     opts = [
-      context_key: :approval,
       resource_name: gettext("Approval"),
-      stream_name: :approvals,
+      target_key: :approvals,
       push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 

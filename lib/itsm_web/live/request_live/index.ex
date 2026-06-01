@@ -41,24 +41,9 @@ defmodule ItsmWeb.RequestLive.Index do
   end
 
   defp apply_action(socket, :index, url, params) do
-    %{current_user: %{organization_code: organization_code}} = socket.assigns
-
-    opts = [
-      default_columns: [:title, :description, :env, :requestor_name],
-      preloads: [:category, :requestor, :assignee_crew]
-    ]
-
-    value =
-      Request
-      |> Paging.filter_status([requestor: :organization_code], ["CM", "FG", organization_code],
-        query_cond: :in
-      )
-      |> Paging.search_and_pagination(params, url, opts)
-
     socket
+    |> assign_paged_stream(:requests, Request, params, url)
     |> assign(:page_title, "Listing Requests")
-    |> assign(:results, value.results)
-    |> stream(:requests, value.entries, reset: true)
   end
 
   defp apply_action(socket, :edit, _url, %{"id" => id}) do
@@ -67,11 +52,30 @@ defmodule ItsmWeb.RequestLive.Index do
     |> assign(:request, Requests.get_request!(id))
   end
 
+  defp assign_paged_stream(socket, stream_key, schema, params, url) do
+    %{current_user: %{organization_code: organization_code}} = socket.assigns
+
+    opts = [
+      default_columns: [:title, :description, :env, :requestor_name],
+      preloads: [:category, :requestor, :assignee_crew]
+    ]
+
+    %{entries: entries, results: results} =
+      schema
+      |> Paging.filter_status([requestor: :organization_code], ["CM", "FG", organization_code],
+        query_cond: :in
+      )
+      |> Paging.search_and_pagination(params, url, opts)
+
+    socket
+    |> assign(:results, results)
+    |> stream(stream_key, entries, reset: true)
+  end
+
   defp handle_pubsub(action_user, event, item, socket) do
     opts = [
-      context_key: :request,
       resource_name: gettext("Request"),
-      stream_name: :requests,
+      target_key: :requests,
       push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 

@@ -32,20 +32,26 @@ defmodule Itsm.Comments do
     Comment.changeset(comment, attrs)
   end
 
-  def create_comment(%User{} = action_user, resource, attrs \\ %{}) do
-    changeset_comment(action_user, resource, attrs)
-    |> Repo.insert()
+  def create_comment(%User{} = action_user, resource, attrs, repo \\ Repo, opts \\ []) do
+    action_user
+    |> changeset_comment(resource, attrs)
+    |> repo.insert()
     |> case do
       {:ok, comment} ->
         # 🌟 1. Show.ex 화면을 위해 :user와 :attachments 둘 다 Preload!
-        preloaded_comment = Repo.preload(comment, [:user, :attachments])
+        # 이후에 attachments를 저장하는 Mulit 로직이 있으면 Preload가 안되여 :attachments는 제외
+        preloaded_comment = repo.preload(comment, [:user])
 
-        Itsm.PubSub.Helper.broadcast(Requests, {action_user, :create_comment, preloaded_comment},
-          id: resource.id,
-          only: :detail
-        )
+        if Keyword.get(opts, :broadcast, true) do
+          Itsm.PubSub.Helper.broadcast(
+            Requests,
+            {action_user, :create_comment, preloaded_comment},
+            id: resource.id,
+            only: :detail
+          )
 
-        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_comment, comment})
+          Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_comment, comment})
+        end
 
         {:ok, preloaded_comment}
 

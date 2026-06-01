@@ -31,7 +31,7 @@ defmodule ItsmWeb.Admin.ApprovalLive.Show do
          %{assigns: %{approval: %{id: id}}} = socket
        ) do
     opts =
-      [context_key: :approval, resource_name: gettext("Approval")]
+      [target_key: :approval, resource_name: gettext("Approval")]
       |> Keyword.merge(push_event_action(socket, event))
 
     {:noreply,

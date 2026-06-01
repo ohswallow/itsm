@@ -27,6 +27,12 @@ defmodule ItsmWeb.CrewLive.AllIndex do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
+    socket
+    |> assign_paged_stream(:crews, Crew, params, url)
+    |> assign(:page_title, "All Crew")
+  end
+
+  defp assign_paged_stream(socket, stream_key, schema, params, url) do
     opts = [
       default_columns: [
         :name,
@@ -37,14 +43,12 @@ defmodule ItsmWeb.CrewLive.AllIndex do
       preloads: [leader: [:organization_code, :department, :display_name]]
     ]
 
-    value =
-      Crew
-      |> Paging.search_and_pagination(params, url, opts)
+    %{entries: entries, results: results} =
+      Paging.search_and_pagination(schema, params, url, opts)
 
     socket
-    |> assign(:page_title, "All Crew")
-    |> assign(:results, value.results)
-    |> stream(:crews, value.entries, reset: true)
+    |> assign(:results, results)
+    |> stream(stream_key, entries, reset: true)
   end
 
   defp handle_pubsub(_action_user, event, _crew, socket)

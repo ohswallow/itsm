@@ -20,21 +20,43 @@ defmodule Itsm.Posts.Post do
     |> cast(attrs, [:title, :content, :metadata, :board_id])
     |> put_change(:author_id, Map.get(action_user || %{}, :id))
     |> validate_required([:title, :content, :board_id])
-    |> validate_metadata_required(selected_board_metadata["required"] || [])
+    |> validate_metadata_required(selected_board_metadata)
   end
 
-  defp validate_metadata_required(changeset, fields) do
-    metadata = get_field(changeset, :metadata) || %{}
+  defp validate_metadata_required(changeset, metadata) do
+    {types, required} = parse_metadata_specs(metadata)
 
-    Enum.reduce(fields, changeset, fn field_name, acc ->
-      if Map.get(metadata, field_name) in [nil, ""] do
-        add_error(acc, :metadata, "can't be blank",
-          validation: :required,
-          field: field_name
-        )
-      else
-        acc
-      end
-    end)
+    current_metadata_params =
+      changeset.params["metadata"] || changeset.changes[:metadata] || %{}
+
+    new_errors =
+      {%{}, types}
+      |> cast(current_metadata_params, Map.keys(types))
+      |> validate_required(required)
+      |> Map.get(:errors)
+
+    case new_errors do
+      [] ->
+        changeset
+
+      _ ->
+        combined = Keyword.put(changeset.errors, :metadata, new_errors)
+        %{changeset | errors: combined, valid?: false}
+    end
+  end
+
+  defp parse_metadata_specs(metadata) do
+    types =
+      metadata["fields"]
+      |> List.wrap()
+      |> Map.new(fn field ->
+        key = String.to_atom(field["name"] || "undefined")
+        type = String.to_atom(Itsm.Utils.input_type_cast(field["type"]))
+        {key, type}
+      end)
+
+    required = Enum.map(metadata["required"] || [], &String.to_atom/1)
+
+    {types, required}
   end
 end

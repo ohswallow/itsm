@@ -208,12 +208,12 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   defp format_file_size(bytes), do: "#{round(bytes / (1024 * 1024))} MB"
 
   defp handle_pubsub(action_user, event, item, socket) do
-    opts = [context_key: :request]
+    opts = [target_key: :request]
     {:noreply, socket |> check_conflict(action_user, event, item, opts)}
   end
 
   defp check_conflict(socket, action_user, event, item, opts) do
-    resource = socket.assigns[opts[:context_key]]
+    resource = socket.assigns[opts[:target_key]]
     current_id = if resource, do: to_string(resource.id), else: nil
 
     if current_id == to_string(item.id) and socket.assigns.live_action == :edit do

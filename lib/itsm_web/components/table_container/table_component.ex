@@ -1,57 +1,66 @@
 defmodule ItsmWeb.TableContainerComponent do
   use ItsmWeb, :live_component
 
+  @default_page 1
+  @default_page_size 10
+  @date_range_days 30
+
   def update(assigns, socket) do
     {:ok, socket |> assign(assigns) |> init_default_value()}
   end
 
   def handle_event("update-filters", params, socket) do
-    query_params = %{
-      "search" => params["search"],
-      "page" => 1,
-      "page_size" => params["page_size"],
-      "search_columns" => params["search_columns"],
-      "range_column" => params["range_column"],
-      "start_date" => params["start_date"],
-      "end_date" => params["end_date"]
-    }
+    %{current_path: current_path, params: current_params} = socket.assigns.results
+
+    query_params =
+      params
+      |> Map.take(~w[search page_size search_columns range_column start_date end_date])
+      |> Map.put("page", @default_page)
+
+    merged_params =
+      current_params
+      |> Map.new(fn {k, v} -> {to_string(k), v} end)
+      |> Map.merge(query_params)
 
     {:noreply,
      push_patch(socket,
-       to: "#{socket.assigns.results.current_path}?#{Plug.Conn.Query.encode(query_params)}"
+       to: "#{current_path}?#{Plug.Conn.Query.encode(merged_params)}"
      )}
   end
 
   defp init_default_value(socket) do
-    current_results = get_in(socket.assigns, [:results]) || %{}
-
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
-    start_date = DateTime.add(now, -30, :day) |> DateTime.to_string()
-    end_date = DateTime.add(now, 30, :day) |> DateTime.to_string()
-
-    default_params = %{
-      search: "",
-      page: 1,
-      page_size: 10,
-      search_columns: [""],
-      start_date: start_date,
-      end_date: end_date,
-      range_column: nil
-    }
-
-    safe_params = Map.merge(default_params, current_results[:params] || %{})
-
-    updated_results =
-      Map.merge(current_results, %{
-        params: safe_params,
-        columns_options: current_results[:columns_options] || [""],
-        current_path: current_results[:current_path] || "",
-        total_count: current_results[:total_count] || 0,
-        total_pages: current_results[:total_pages] || 0,
-        range_column_options: current_results[:range_column_options] || [""]
-      })
+    current_results = socket.assigns[:results] || %{}
 
     socket
-    |> assign(:results, updated_results)
+    |> assign(:results, build_results(current_results))
+  end
+
+  defp build_results(current_results) do
+    Map.merge(current_results, %{
+      params: build_params(current_results[:params]),
+      columns_options: current_results[:columns_options] || [],
+      current_path: current_results[:current_path] || "",
+      total_count: current_results[:total_count] || 0,
+      total_pages: current_results[:total_pages] || 0,
+      range_column_options: current_results[:range_column_options] || []
+    })
+  end
+
+  defp build_params(existing_params) do
+    Map.merge(default_params(), existing_params || %{})
+  end
+
+  defp default_params do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    %{
+      search: "",
+      page: @default_page,
+      page_size: @default_page_size,
+      search_columns: [],
+      start_date: now |> DateTime.add(-@date_range_days, :day) |> DateTime.to_string(),
+      end_date: now |> DateTime.add(@date_range_days, :day) |> DateTime.to_string(),
+      range_column: nil
+    }
   end
 end

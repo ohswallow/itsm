@@ -5,7 +5,7 @@
     crews={@streams.crews}
     row_click={
       fn {_id, crew} ->
-        return_url = ~p"/crews/all?#{assigns[:results][:params] || %{}}&menu_id=all_crews"
+        return_url = ~p"/crews/all?#{assigns[:results][:params] || %{}}"
         JS.navigate(~p"/crews/#{crew}?return_to=#{return_url}&menu_id=all_crews")
       end
     }

@@ -71,7 +71,7 @@ defmodule ItsmWeb.CrewLive.Index do
     if(Enum.any?(item.users, &(&1.id == user.id)) || user.id == item.leader.id) do
       opts = [
         resource_name: get_resource_name(event),
-        stream_name: :crews
+        target_key: :crews
       ]
 
       {:noreply,
@@ -86,7 +86,7 @@ defmodule ItsmWeb.CrewLive.Index do
   defp handle_pubsub(action_user, :delete_crew = event, %Crew{} = item, socket) do
     opts = [
       resource_name: gettext("Crew"),
-      stream_name: :crews
+      target_key: :crews
     ]
 
     {:noreply,
@@ -105,7 +105,7 @@ defmodule ItsmWeb.CrewLive.Index do
     if(user.id == deleted_user.id) do
       opts = [
         resource_name: gettext("Member"),
-        stream_name: :crews
+        target_key: :crews
       ]
 
       {:noreply, ItsmWeb.LiveUtils.handle_standard_pubsub(socket, action_user, event, item, opts)}

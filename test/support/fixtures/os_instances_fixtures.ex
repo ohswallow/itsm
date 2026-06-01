@@ -3,12 +3,13 @@ defmodule Itsm.OsInstancesFixtures do
   This module defines test helpers for creating
   entities via the `Itsm.OsInstances` context.
   """
+  alias Itsm.Accounts.User
 
   @doc """
   Generate a os_instance.
   """
   def os_instance_fixture(attrs \\ %{}) do
-    {:ok, os_instance} =
+    attrs =
       attrs
       |> Enum.into(%{
         cpu_core: 42,
@@ -18,7 +19,8 @@ defmodule Itsm.OsInstancesFixtures do
         os_type: :linux,
         os_version: "some os_version"
       })
-      |> Itsm.OsInstances.create_os_instance()
+
+    {:ok, os_instance} = Itsm.OsInstances.create_os_instance(%User{}, attrs)
 
     os_instance
   end

@@ -91,7 +91,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp handle_pubsub(action_user, :delete_attachment = event, item, socket) do
-    opts = [resource_name: gettext("attachment"), stream_name: :attachments]
+    opts = [resource_name: gettext("attachment"), target_key: :attachments]
 
     {:noreply,
      socket
@@ -105,8 +105,16 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
          %{id: id} = item,
          %{assigns: %{request: %{id: id}}} = socket
        ) do
+    item =
+      item
+      |> Requests.with_assoc(
+        requestor_crew: [:users],
+        assignee_crew: [:users],
+        crew_references: [crew: [:users]]
+      )
+
     opts =
-      [context_key: :request, resource_name: gettext("Request")]
+      [target_key: :request, resource_name: gettext("Request")]
       |> Keyword.merge(push_event_action(socket, event))
 
     {:noreply,
@@ -122,17 +130,14 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
        ) do
     opts =
       [
-        context_key: [:streams, :comments],
-        stream_name: :comments,
-        resource_name: gettext("Comment")
+        target_key: :comments,
+        resource_name: gettext("Comment"),
+        live_action: :index
       ]
       |> Keyword.merge(push_event_action(socket, event))
 
-    item = Comments.with_assoc(item, [:user, :attachments])
-
     {:noreply,
      socket
-     |> assign(:live_action, :index)
      |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)
      |> handle_pubsub_comment(Atom.to_string(event), item)}
   end
@@ -147,6 +152,9 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   defp push_event_action(_socket, _), do: []
 
   defp handle_pubsub_comment(socket, "update" <> _action, item),
+    do: stream_insert(socket, :comments, item)
+
+  defp handle_pubsub_comment(socket, "create" <> _action, item),
     do: stream_insert(socket, :comments, item)
 
   defp handle_pubsub_comment(socket, _other_event, _item), do: socket

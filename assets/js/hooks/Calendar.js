@@ -39,6 +39,7 @@ Calendar.DateGrid = {
     if (!this.el.querySelector(".today-active")) {
       Calendar.setTodayDate(this.el);
     }
+    this.el.querySelectorAll("[data-disabled]").forEach(e => Calendar.updateDateElementStatus(e));
 
     const utcValue = this.el.getAttribute("utc-value");
     const selectedDate = this.el.querySelector(".selected-date");

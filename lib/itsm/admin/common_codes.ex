@@ -11,7 +11,7 @@ defmodule Itsm.Admin.CommonCodes do
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
   end
 
-  def create_common_code(%User{} = action_user, attrs \\ %{}) do
+  def create_common_code(%User{} = action_user, attrs) do
     %CommonCode{}
     |> CommonCode.changeset(attrs)
     |> Repo.insert()

@@ -31,7 +31,7 @@ defmodule ItsmWeb.DelegationLive.Show do
          %{assigns: %{delegation: %{id: id}}} = socket
        ) do
     opts =
-      [context_key: :delegation, resource_name: gettext("Delegation")]
+      [target_key: :delegation, resource_name: gettext("Delegation")]
       |> Keyword.merge(push_event_action(socket, event))
 
     {:noreply,

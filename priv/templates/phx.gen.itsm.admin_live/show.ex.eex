@@ -31,7 +31,7 @@ defmodule <%= inspect context.web_module %>.<%= inspect Module.concat(schema.web
          %{assigns: %{<%= schema.singular %>: %{id: id}}} = socket
         ) do
     opts =
-      [context_key: :<%= schema.singular %>, resource_name: gettext("<%= schema.human_singular %>")]
+      [target_key: :<%= schema.singular %>, resource_name: gettext("<%= schema.human_singular %>")]
       |> Keyword.merge(push_event_action(socket, event))
 
     {:noreply,

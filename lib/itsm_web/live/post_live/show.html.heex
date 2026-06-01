@@ -3,7 +3,7 @@
   <:subtitle>This is a post record from your database.</:subtitle>
   <:actions>
     <.link
-      patch={~p"/posts/#{@post}/show/edit?board_id=#{assigns[:board_id] || ""}"}
+      patch={~p"/posts/#{@post}/show/edit?board_id=#{assigns[:board_id] || ""}&menu_id=boards"}
       phx-click={JS.push_focus()}
     >
       <.button>Edit post</.button>
@@ -25,7 +25,7 @@
   >
     <span
       :if={type == "date"}
-      id={"#{name}_#{@post.id}"}
+      id={"#{name}-#{@post.id}"}
       phx-hook="LocalTime.ToLocale"
       utc-value={@post.metadata[name]}
     />
@@ -50,13 +50,35 @@
   </:item>
 </.list>
 
-<.back navigate={~p"/posts?board_id=#{assigns[:board_id] || ""}"}>Back to posts</.back>
+<.attachments_section
+  :if={@attachments_count > 0}
+  id="attachments"
+  attachments_count={@attachments_count}
+>
+  <.attachment
+    :for={{dom_id, attachment} <- @streams.attachments}
+    id={dom_id}
+    attachment={attachment}
+  />
+</.attachments_section>
+
+<div :if={@post.metadata["allow_comment"] in ["true", true]}>
+  <.comments_section streams={@streams} />
+  <.comment_form
+    form={@form}
+    uploads={@uploads}
+  />
+</div>
+
+<.back navigate={~p"/posts?board_id=#{assigns[:board_id] || ""}&menu_id=boards"}>
+  Back to posts
+</.back>
 
 <.modal
   :if={@live_action == :edit}
   id="post-modal"
   show
-  on_cancel={JS.patch(~p"/posts/#{@post}?board_id=#{assigns[:board_id] || ""}")}
+  on_cancel={JS.patch(~p"/posts/#{@post}?board_id=#{assigns[:board_id] || ""}&menu_id=boards")}
 >
   <.live_component
     module={ItsmWeb.PostLive.FormComponent}
@@ -65,8 +87,13 @@
     action={@live_action}
     post={@post}
     current_user={@current_user}
-    patch={~p"/posts/#{@post}?board_id=#{assigns[:board_id] || ""}"}
+    patch={~p"/posts/#{@post}?board_id=#{assigns[:board_id] || ""}&menu_id=boards"}
     board_id={assigns[:board_id]}
     board_name={assigns[:board_name]}
   />
 </.modal>
+
+<.attachment_modal
+  :if={@selected_attachment}
+  attachment={@selected_attachment}
+/>

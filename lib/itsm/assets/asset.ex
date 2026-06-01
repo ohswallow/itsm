@@ -36,7 +36,7 @@ defmodule Itsm.Assets.Asset do
   end
 
   @doc false
-  def changeset(asset, attrs) do
+  def changeset(asset, attrs \\ %{}) do
     asset
     |> cast(attrs, [
       :name,

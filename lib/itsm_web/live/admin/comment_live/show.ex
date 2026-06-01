@@ -31,7 +31,7 @@ defmodule ItsmWeb.Admin.CommentLive.Show do
          %{assigns: %{comment: %{id: id}}} = socket
        ) do
     opts =
-      [context_key: :comment, resource_name: gettext("Comment")]
+      [target_key: :comment, resource_name: gettext("Comment")]
       |> Keyword.merge(push_event_action(socket, event))
 
     {:noreply,

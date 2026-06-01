@@ -31,7 +31,7 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Show do
          %{assigns: %{common_code: %{id: id}}} = socket
        ) do
     opts =
-      [context_key: :common_code, resource_name: gettext("Common Code")]
+      [target_key: :common_code, resource_name: gettext("Common Code")]
       |> Keyword.merge(push_event_action(socket, event))
 
     {:noreply,

@@ -111,7 +111,7 @@ defmodule ItsmWeb.CrewLive.Show do
     %{back_path: back_path, current_user: user} = socket.assigns
 
     opts =
-      [resource_name: gettext("Member"), stream_name: :users]
+      [resource_name: gettext("Member"), target_key: :users]
       |> add_back_path(user.id == target_user.id, back_path)
 
     {:noreply,
@@ -126,7 +126,7 @@ defmodule ItsmWeb.CrewLive.Show do
 
     opts = [
       resource_name: gettext("Crew"),
-      context_key: :crew
+      target_key: :crew
     ]
 
     if(crew.id == update_crew.id) do
@@ -143,7 +143,7 @@ defmodule ItsmWeb.CrewLive.Show do
 
     opts = [
       resource_name: gettext("Crew"),
-      context_key: :crew,
+      target_key: :crew,
       push_navigate: [to: back_path]
     ]
 

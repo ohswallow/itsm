@@ -27,28 +27,8 @@ defmodule ItsmWeb.Admin.AssetLive.Index do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
-    opts = [
-      default_columns: [
-        :env,
-        :name,
-        :description,
-        :location,
-        :category,
-        :affiliate,
-        :region_type,
-        :infra_type,
-        :is_dmz_zone,
-        [service_crew: :name, system_crew: :name]
-      ],
-      preloads: [service_crew: :name, system_crew: :name]
-    ]
-
-    value =
-      Paging.search_and_pagination(Asset, params, url, opts)
-
     socket
-    |> assign(:results, value.results)
-    |> stream(:assets, value.entries, reset: true)
+    |> assign_paged_stream(:assets, Asset, params, url)
     |> assign(:page_title, "Listing Assets")
     |> assign(:asset, nil)
   end
@@ -65,11 +45,35 @@ defmodule ItsmWeb.Admin.AssetLive.Index do
     |> assign(:asset, Assets.get_asset!(id))
   end
 
+  defp assign_paged_stream(socket, stream_key, schema, params, url) do
+    opts = [
+      default_columns: [
+        :env,
+        :name,
+        :description,
+        :location,
+        :category,
+        :affiliate,
+        :region_type,
+        :infra_type,
+        :is_dmz_zone,
+        [service_crew: :name, system_crew: :name]
+      ],
+      preloads: [service_crew: :name, system_crew: :name]
+    ]
+
+    %{entries: entries, results: results} =
+      Paging.search_and_pagination(schema, params, url, opts)
+
+    socket
+    |> assign(:results, results)
+    |> stream(stream_key, entries, reset: true)
+  end
+
   defp handle_pubsub(action_user, event, item, socket) do
     opts = [
-      context_key: :asset,
       resource_name: gettext("Asset"),
-      stream_name: :assets,
+      target_key: :assets,
       push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 

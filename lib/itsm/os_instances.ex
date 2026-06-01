@@ -50,7 +50,7 @@ defmodule Itsm.OsInstances do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_os_instance(%User{} = action_user, attrs \\ %{}) do
+  def create_os_instance(%User{} = action_user, attrs) do
     %OsInstance{}
     |> OsInstance.changeset(attrs)
     |> Repo.insert()

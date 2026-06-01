@@ -31,7 +31,7 @@ defmodule ItsmWeb.Admin.CategoryLive.Show do
          %{assigns: %{category: %{id: id}}} = socket
        ) do
     opts =
-      [context_key: :category, resource_name: gettext("Category")]
+      [target_key: :category, resource_name: gettext("Category")]
       |> Keyword.merge(push_event_action(socket, event))
 
     {:noreply,

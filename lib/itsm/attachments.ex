@@ -19,7 +19,7 @@ defmodule Itsm.Attachments do
     |> Repo.all()
   end
 
-  def create_attachment(%User{} = action_user, attrs \\ %{}) do
+  def create_attachment(%User{} = action_user, attrs) do
     %Attachment{}
     |> Attachment.changeset(attrs)
     |> Repo.insert()
@@ -34,23 +34,17 @@ defmodule Itsm.Attachments do
     end
   end
 
-  def create_attachments(%User{} = action_user, repo, resource, consumer_fn) do
-    attachments = consumer_fn.()
-
-    Enum.reduce_while(attachments, {:ok, []}, fn attrs, {:ok, acc} ->
-      %Attachment{resource_type: Utils.resource_name(resource), resource_id: resource.id}
-      |> Attachment.changeset(attrs)
-      |> repo.insert()
-      |> case do
-        {:ok, attachment} ->
-          Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_attachments, attachment})
-
-          {:cont, {:ok, [attachment | acc]}}
-
-        {:error, reason} ->
-          {:halt, {:error, reason}}
+  def create_attachments(%User{} = action_user, resource, consumer_fn, repo \\ Repo, opts \\ []) do
+    with {:ok, attachments} <- insert_attachments(resource, consumer_fn, repo) do
+      if Keyword.get(opts, :broadcast, true) do
+        Itsm.PubSub.Helper.broadcast(
+          __MODULE__,
+          {action_user, :create_attachments, attachments}
+        )
       end
-    end)
+
+      {:ok, attachments}
+    end
   end
 
   def delete_attachment(%User{} = action_user, id) do
@@ -71,4 +65,18 @@ defmodule Itsm.Attachments do
   end
 
   def active_attachment(), do: Attachment |> where([a], a.status == :active)
+
+  defp insert_attachments(resource, consumer_fn, repo) do
+    attachments = consumer_fn.()
+
+    Enum.reduce_while(attachments, {:ok, []}, fn attrs, {:ok, acc} ->
+      %Attachment{resource_type: Utils.resource_name(resource), resource_id: resource.id}
+      |> Attachment.changeset(attrs)
+      |> repo.insert()
+      |> case do
+        {:ok, attachment} -> {:cont, {:ok, [attachment | acc]}}
+        {:error, reason} -> {:halt, {:error, reason}}
+      end
+    end)
+  end
 end

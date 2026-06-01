@@ -35,25 +35,8 @@ defmodule ItsmWeb.Admin.UserLive.Index do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp apply_action(socket, :index, params, url) do
-    opts = [
-      default_columns: [
-        :email,
-        :employee_number,
-        :display_name,
-        :organization,
-        :organization_code,
-        :department,
-        :department_code,
-        :role
-      ]
-    ]
-
-    value =
-      Paging.search_and_pagination(User, params, url, opts)
-
     socket
-    |> assign(:results, value.results)
-    |> stream(:users, value.entries, reset: true)
+    |> assign_paged_stream(:users, User, params, url)
     |> assign(:page_title, "Listing Users")
     |> assign(:user, nil)
   end
@@ -70,11 +53,32 @@ defmodule ItsmWeb.Admin.UserLive.Index do
     |> assign(:user, Accounts.get_user!(id))
   end
 
+  defp assign_paged_stream(socket, stream_key, schema, params, url) do
+    opts = [
+      default_columns: [
+        :email,
+        :employee_number,
+        :display_name,
+        :organization,
+        :organization_code,
+        :department,
+        :department_code,
+        :role
+      ]
+    ]
+
+    %{entries: entries, results: results} =
+      Paging.search_and_pagination(schema, params, url, opts)
+
+    socket
+    |> assign(:results, results)
+    |> stream(stream_key, entries, reset: true)
+  end
+
   defp handle_pubsub(action_user, event, item, socket) do
     opts = [
-      context_key: :user,
       resource_name: gettext("User"),
-      stream_name: :users,
+      target_key: :users,
       push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 

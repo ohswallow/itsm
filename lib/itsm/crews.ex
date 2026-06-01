@@ -103,7 +103,7 @@ defmodule Itsm.Crews do
     Crew.changeset(crew, attrs)
   end
 
-  def create_crew(%User{} = action_user, attrs \\ %{}) do
+  def create_crew(%User{} = action_user, attrs) do
     Crew.changeset(%Crew{leader: action_user, users: [action_user]}, attrs)
     |> Repo.insert()
     |> case do
@@ -117,7 +117,13 @@ defmodule Itsm.Crews do
     end
   end
 
-  def create_crew_references(%User{} = action_user, repo, %_{id: id} = resource, crews)
+  def create_crew_references(
+        %User{} = action_user,
+        %_{id: id} = resource,
+        crews,
+        repo \\ Repo,
+        opts \\ []
+      )
       when is_list(crews) do
     Enum.reduce_while(crews, {:ok, []}, fn crew, {:ok, acc} ->
       %CrewReference{
@@ -128,17 +134,24 @@ defmodule Itsm.Crews do
       |> repo.insert()
       |> case do
         {:ok, crew_reference} ->
-          Itsm.PubSub.Helper.broadcast(
-            __MODULE__,
-            {action_user, :create_crew_references, crew_reference}
-          )
-
           {:cont, {:ok, [crew_reference | acc]}}
 
         {:error, reason} ->
           {:halt, {:error, reason}}
       end
     end)
+    |> case do
+      {:ok, crew_references} ->
+        if Keyword.get(opts, :broadcast, true) do
+          Itsm.PubSub.Helper.broadcast(
+            __MODULE__,
+            {action_user, :create_crew_references, crew_references}
+          )
+        end
+
+      error ->
+        error
+    end
   end
 
   def add_users(%User{} = action_user, %Crew{} = crew, add_user_ids) do
@@ -187,7 +200,7 @@ defmodule Itsm.Crews do
     end
   end
 
-  def update_crew(%User{} = action_user, %Crew{} = crew, attrs \\ %{}) do
+  def update_crew(%User{} = action_user, %Crew{} = crew, attrs) do
     crew = Repo.preload(crew, :leader)
     changeset = Crew.changeset(crew, attrs)
 

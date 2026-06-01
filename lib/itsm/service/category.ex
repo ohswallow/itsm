@@ -24,7 +24,7 @@ defmodule Itsm.Service.Category do
   end
 
   @doc false
-  def changeset(category, attrs) do
+  def changeset(category, attrs \\ %{}) do
     category
     |> cast(attrs, [
       :name,

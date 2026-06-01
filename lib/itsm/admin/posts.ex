@@ -12,9 +12,17 @@ defmodule Itsm.Admin.Posts do
 
   defdelegate list_posts, to: Itsm.Posts
 
-  defdelegate create_post(action_user, attrs, selected_board_metadata), to: Itsm.Posts
+  defdelegate create_post(action_user, attrs, selected_board_metadata, repo \\ Repo, opts \\ []),
+    to: Itsm.Posts
 
-  def update_post(%User{} = action_user, %Post{} = post, attrs, selected_board_metadata) do
+  def update_post(
+        %User{} = action_user,
+        %Post{} = post,
+        attrs,
+        selected_board_metadata,
+        repo \\ Repo,
+        opts \\ []
+      ) do
     post
     |> change_post(
       attrs: attrs,
@@ -22,10 +30,14 @@ defmodule Itsm.Admin.Posts do
       selected_board_metadata: selected_board_metadata,
       call_back: &Itsm.Utils.maybe_put_change(&1, :inserted_at, attrs["inserted_at"])
     )
-    |> Repo.update()
+    |> repo.update()
     |> case do
       {:ok, post} ->
-        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_post, post}, id: post.id)
+        post = post |> repo.preload(:author)
+
+        if Keyword.get(opts, :broadcast, true) do
+          Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_post, post}, id: post.id)
+        end
 
         {:ok, post}
 
@@ -39,4 +51,14 @@ defmodule Itsm.Admin.Posts do
   defdelegate change_post(post, opts \\ []), to: Itsm.Posts
 
   defdelegate with_assoc(post, preloads), to: Itsm.Posts
+
+  defdelegate save_with_attachment(
+                action,
+                action_user,
+                post,
+                attrs,
+                selected_board_metadata,
+                consumer_fn
+              ),
+              to: Itsm.Posts
 end

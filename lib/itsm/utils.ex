@@ -45,4 +45,24 @@ defmodule Itsm.Utils do
   def blank?(nil), do: true
   def blank?(""), do: true
   def blank?(_), do: false
+
+  def input_type_cast(type) do
+    case type do
+      "text" -> "string"
+      "checkbox" -> "boolean"
+      "select" -> "string"
+      "date" -> "utc_datetime"
+      _ -> "string"
+    end
+  end
+
+  def hybrid_encrypt(data) do
+    [pk: pk, sk: _] = Application.get_env(:itsm, :meta_crypto_keys)
+    MetamorphicCrypto.Hybrid.seal_1024(data, pk)
+  end
+
+  def hybrid_decrypt(data) do
+    [pk: _, sk: sk] = Application.get_env(:itsm, :meta_crypto_keys)
+    MetamorphicCrypto.Hybrid.open(data, sk)
+  end
 end

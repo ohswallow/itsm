@@ -31,7 +31,7 @@ defmodule ItsmWeb.BoardLive.Show do
          %{assigns: %{board: %{id: id}}} = socket
        ) do
     opts =
-      [context_key: :board, resource_name: gettext("Board")]
+      [target_key: :board, resource_name: gettext("Board")]
       |> Keyword.merge(push_event_action(socket, event))
 
     {:noreply,

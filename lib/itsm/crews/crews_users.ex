@@ -13,7 +13,7 @@ defmodule Itsm.Crews.CrewsUsers do
   end
 
   @doc false
-  def changeset(crews_users, attrs) do
+  def changeset(crews_users, attrs \\ %{}) do
     crews_users
     |> cast(attrs, [:crew_id, :user_id])
     |> validate_required([:crew_id, :user_id])

@@ -49,9 +49,8 @@ defmodule ItsmWeb.AssetLive.Index do
 
   defp handle_pubsub(action_user, event, item, socket) do
     opts = [
-      context_key: :asset,
       resource_name: gettext("Asset"),
-      stream_name: :assets,
+      target_key: :assets,
       push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 
