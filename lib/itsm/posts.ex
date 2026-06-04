@@ -70,7 +70,8 @@ defmodule Itsm.Posts do
   end
 
   def delete_post(%User{} = action_user, %{"id" => id}) do
-    Repo.delete(get_post!(id))
+    get_post!(id)
+    |> Repo.delete()
     |> case do
       {:ok, post} ->
         Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_post, post}, id: post.id)

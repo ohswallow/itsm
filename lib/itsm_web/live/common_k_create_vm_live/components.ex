@@ -181,7 +181,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Components do
         class="top-2 right-2 p-1 bg-white/80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
         phx-click="delete_attachment"
         phx-value-id={@attachment.id}
-        phx-target={assigns[:target]}
+        phx-target={@target}
         data-confirm="정말로 이 첨부파일을 삭제하시겠습니까?"
       >
         <.icon name="hero-x-mark" class="w-6 h-6 text-red-600" />

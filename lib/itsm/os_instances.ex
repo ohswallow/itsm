@@ -107,7 +107,8 @@ defmodule Itsm.OsInstances do
 
   """
   def delete_os_instance(%User{} = action_user, %{"id" => id}) do
-    Repo.delete(get_os_instance!(id))
+    get_os_instance!(id)
+    |> Repo.delete()
     |> case do
       {:ok, os_instance} ->
         Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_os_instance, os_instance},

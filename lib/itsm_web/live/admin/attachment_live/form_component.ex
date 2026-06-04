@@ -17,6 +17,7 @@ defmodule ItsmWeb.Admin.AttachmentLive.FormComponent do
      socket
      |> assign(assigns)
      |> assign(:conflict, false)
+     |> ItsmWeb.LiveUtils.allow_uploads()
      |> assign_new(:form, fn ->
        to_form(Attachments.change_attachment(attachment))
      end)}
@@ -48,32 +49,92 @@ defmodule ItsmWeb.Admin.AttachmentLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={@form[:filename]} type="text" label={gettext("Filename")} />
-        <.input field={@form[:local_path]} type="text" label={gettext("Local Path")} />
-        <.input field={@form[:file_type]} type="text" label={gettext("File Type")} />
-        <.input field={@form[:byte_size]} type="number" label={gettext("Byte Size")} />
-        <.input field={@form[:status]} type="text" label={gettext("Status")} />
-        <.input field={@form[:resource_type]} type="text" label={gettext("Resource Type")} />
-        <.input field={@form[:resource_id]} type="text" label={gettext("Resource Id")} />
-        <.itsm_calendar
-          field={@form[:deleted_at]}
-          label={gettext("Deleted At")}
-          show_time
-          default_selected_date_time={@form[:deleted_at].value}
-        />
-        <.itsm_calendar
-          :if={@action == :edit}
-          field={@form[:inserted_at]}
-          label={gettext("Inserted At")}
-          show_time
-          default_selected_date_time={@form[:inserted_at].value}
-        />
+        <fragment :if={@action == :edit}>
+          <.input field={@form[:filename]} type="text" label={gettext("Filename")} />
+          <.input field={@form[:local_path]} type="text" label={gettext("Local Path")} />
+          <.input field={@form[:file_type]} type="text" label={gettext("File Type")} />
+          <.input field={@form[:byte_size]} type="number" label={gettext("Byte Size")} />
+          <.input field={@form[:status]} type="text" label={gettext("Status")} />
+          <.input field={@form[:resource_type]} type="text" label={gettext("Resource Type")} />
+          <.input field={@form[:resource_id]} type="text" label={gettext("Resource Id")} />
+          <.itsm_calendar
+            field={@form[:deleted_at]}
+            label={gettext("Deleted At")}
+            show_time
+            default_selected_date_time={@form[:deleted_at].value}
+          />
+          <.itsm_calendar
+            :if={@action == :edit}
+            field={@form[:inserted_at]}
+            label={gettext("Inserted At")}
+            show_time
+            default_selected_date_time={@form[:inserted_at].value}
+          />
+        </fragment>
+        <fragment :if={@action == :new}>
+          <div
+            :if={Enum.any?(@uploads.attachment.entries)}
+            class="mt-3 pt-2"
+          >
+            <p class="text-xs text-slate-400 mb-2 font-medium">Attachments</p>
+
+            <div class="flex flex-wrap gap-2">
+              <div
+                :for={attachment <- @uploads.attachment.entries}
+                class="group flex items-center gap-2 bg-white border border-slate-200 rounded px-2 py-1.5 hover:border-blue-400 hover:shadow-sm transition-all cursor-pointer"
+              >
+                <div class="bg-blue-50 text-blue-600 rounded p-0.5">
+                  <.icon name="hero-paper-clip" class="w-3 h-3" />
+                </div>
+
+                <span class="text-xs text-slate-600 group-hover:text-blue-600 max-w-[158px] truncate">
+                  {attachment.client_name}
+                </span>
+              </div>
+            </div>
+          </div>
+          <%!-- 파일업로드 --%>
+          <label class="block text-sm font-semibold text-zinc-700 mb-2">
+            {gettext("Attachments")}
+          </label>
+          <.live_file_input class="hidden" upload={@uploads.attachment} />
+          <label
+            class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 mt-2"
+            for={@uploads.attachment.ref}
+            phx-drop-target={@uploads.attachment.ref}
+          >
+            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+              <.icon name="hero-arrow-up-tray" class="w-8 h-8 mb-4 text-gray-500" />
+              <p class="mb-2 text-sm text-gray-500">
+                <spaxn class="font-semibold">Click to upload</spaxn>
+                or drag and drop
+              </p>
+
+              <p class="text-xs text-gray-500">
+                {@uploads.attachment.max_entries} photos max, up to {trunc(
+                  @uploads.attachment.max_file_size / (1 * 1024 * 1024)
+                )} MB each
+              </p>
+            </div>
+          </label>
+          <.error :for={err <- upload_errors(@uploads.attachment)}>
+            {Phoenix.Naming.humanize(err)}
+          </.error>
+        </fragment>
         <:actions>
           <.button :if={!@conflict} phx-disable-with="Saving...">Save Attachment</.button>
         </:actions>
       </.simple_form>
     </div>
     """
+  end
+
+  def handle_event(
+        "validate",
+        _target,
+        %{assigns: %{action: :new}} = socket
+      ) do
+    {:noreply, socket}
   end
 
   def handle_event("validate", %{"attachment" => attachment_params}, socket) do
@@ -83,6 +144,18 @@ defmodule ItsmWeb.Admin.AttachmentLive.FormComponent do
 
   def handle_event("save", %{"attachment" => attachment_params}, socket) do
     save_attachment(socket, socket.assigns.action, attachment_params)
+  end
+
+  def handle_event("save", %{}, socket) do
+    %{current_user: action_user} = socket.assigns
+
+    Attachments.create_attachments(
+      action_user,
+      %Itsm.Attachments.Attachment{id: Ecto.UUID.autogenerate()},
+      ItsmWeb.LiveUtils.build_attachment_consumer(socket)
+    )
+
+    {:noreply, socket |> push_patch(to: socket.assigns.patch)}
   end
 
   defp save_attachment(socket, :edit, attachment_params) do
@@ -96,17 +169,4 @@ defmodule ItsmWeb.Admin.AttachmentLive.FormComponent do
         {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
-
-  defp save_attachment(socket, :new, attachment_params) do
-    %{current_user: action_user} = socket.assigns
-
-    case Attachments.create_attachment(action_user, attachment_params) do
-      {:ok, _attachment} ->
-        {:noreply, socket |> push_patch(to: socket.assigns.patch)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, form: to_form(changeset))}
-    end
-  end
-
 end

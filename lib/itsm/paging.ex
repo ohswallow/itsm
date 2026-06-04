@@ -221,8 +221,12 @@ defmodule Itsm.Paging do
 
     results_params =
       if range_columns != [],
-        do: Map.merge(params, Map.merge(results_params, range_params)),
-        else: Map.merge(params, results_params)
+        do:
+          Map.merge(
+            converter_params(params),
+            Map.merge(results_params, range_params)
+          ),
+        else: Map.merge(converter_params(params), results_params)
 
     %{
       entries: entries,
@@ -373,7 +377,6 @@ defmodule Itsm.Paging do
       Enum.map(custom_label_columns, &{Map.get(column_custom_label, &1), flatten_value(&1)})
   end
 
-  # 또는 적절한 예외처리
   defp parse_columns(nil, default_columns), do: default_columns
   defp parse_columns("", default_columns), do: default_columns
   defp parse_columns([], default_columns), do: default_columns
@@ -535,4 +538,25 @@ defmodule Itsm.Paging do
 
   defp nest_atoms([last]), do: last
   defp nest_atoms([head | tail]), do: {head, nest_atoms(tail)}
+
+  def converter_params(params) do
+    params = params || %{}
+
+    params
+    |> Enum.reject(fn {k, _v} ->
+      key_str = if is_atom(k), do: Atom.to_string(k), else: to_string(k)
+      String.starts_with?(key_str, "_unused_") or String.starts_with?(key_str, "_target")
+    end)
+    |> Map.new(&converte_param(&1))
+  end
+
+  defp converte_param({k, v}) when is_binary(k) do
+    {String.to_atom(k), v}
+  end
+
+  defp converte_param({k, v}) when k in [:page, :page_size] and is_binary(v) do
+    {k, String.to_integer(v)}
+  end
+
+  defp converte_param(other), do: other
 end

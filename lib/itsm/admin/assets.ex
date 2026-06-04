@@ -12,7 +12,20 @@ defmodule Itsm.Admin.Assets do
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
   end
 
-  defdelegate create_asset(action_user, attrs), to: Itsm.Assets
+  def create_asset(%User{} = action_user, attrs) do
+    %Asset{}
+    |> Asset.changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, asset} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_asset, asset})
+
+        {:ok, asset}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
 
   def update_asset(%User{} = action_user, %Asset{} = asset, attrs) do
     asset
@@ -21,8 +34,9 @@ defmodule Itsm.Admin.Assets do
     |> Repo.update()
     |> case do
       {:ok, asset} ->
-        event = :update_asset
-        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, event, asset}, id: asset.id)
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_asset, asset},
+          id: asset.id
+        )
 
         {:ok, asset}
 
@@ -32,15 +46,20 @@ defmodule Itsm.Admin.Assets do
   end
 
   def delete_asset(%User{} = action_user, %{"id" => id}) do
-    Repo.delete(get_asset!(id))
+    get_asset!(id)
+    |> Repo.delete()
     |> case do
       {:ok, asset} ->
-        event = :delete_asset
-        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, event, asset}, id: asset.id)
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_asset, asset},
+          id: asset.id
+        )
+
         {:ok, asset}
 
       {:error, changeset} ->
         {:error, changeset}
     end
   end
+
+  def with_assoc(%Asset{} = asset, preloads), do: Repo.preload(asset, preloads)
 end

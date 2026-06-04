@@ -45,7 +45,8 @@ defmodule Itsm.Boards do
   end
 
   def delete_board(%User{} = action_user, %{"id" => id}) do
-    Repo.delete(get_board!(id))
+    get_board!(id)
+    |> Repo.delete()
     |> case do
       {:ok, board} ->
         Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_board, board},

@@ -21,7 +21,7 @@ defmodule ItsmWeb.Admin.RequestLive.Show do
      |> assign(:request, request)
      |> stream(:attachments, Attachments.list_attachments_by_resource(request), reset: true)
      |> stream(:comments, Comments.list_comments_by_resource(request), reset: true)
-     |> stream(:approvals, Approvals.list_approvals_by_request(request.id), reset: true)
+     |> stream(:approvals, Approvals.list_approvals_by_request(request), reset: true)
      |> Itsm.PubSub.Helper.subscribe(Requests, id: id, is_admin: true)}
   end
 

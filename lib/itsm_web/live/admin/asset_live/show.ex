@@ -11,7 +11,10 @@ defmodule ItsmWeb.Admin.AssetLive.Show do
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:asset, Assets.get_asset!(id))
+     |> assign(
+       :asset,
+       Assets.get_asset!(id) |> Assets.with_assoc([[service_crew: :users], [system_crew: :users]])
+     )
      |> Itsm.PubSub.Helper.subscribe(Assets, id: id, is_admin: true)}
   end
 

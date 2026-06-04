@@ -2,11 +2,15 @@ defmodule Itsm.Admin.Approvals do
   import Ecto.Query, warn: false
   alias Itsm.Accounts.User
   alias Itsm.Repo
-  alias Itsm.Service.Approval
+  alias Itsm.Service.{Approval, Request}
 
   def get_approval!(id), do: Repo.get!(Approval, id)
 
-  defdelegate list_approvals_by_request(request_id), to: Itsm.Approvals
+  def list_approvals_by_request(%Request{id: id}) do
+    Approval
+    |> where([a], a.request_id == ^id)
+    |> Repo.all()
+  end
 
   def change_approval(%Approval{} = approval, attrs \\ %{}) do
     Approval.changeset(approval, attrs)
@@ -31,7 +35,8 @@ defmodule Itsm.Admin.Approvals do
   end
 
   def delete_approval(%User{} = action_user, %{"id" => id}) do
-    Repo.delete(get_approval!(id))
+    get_approval!(id)
+    |> Repo.delete()
     |> case do
       {:ok, approval} ->
         event = :delete_approval

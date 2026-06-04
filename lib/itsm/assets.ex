@@ -129,7 +129,8 @@ defmodule Itsm.Assets do
 
   """
   def delete_asset(%User{} = action_user, %{"id" => id}) do
-    Repo.delete(get_asset!(id))
+    get_asset!(id)
+    |> Repo.delete()
     |> case do
       {:ok, asset} ->
         Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_asset, asset},

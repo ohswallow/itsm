@@ -1,7 +1,7 @@
 defmodule ItsmWeb.Admin.ApprovalLive.FormComponent do
   use ItsmWeb, :live_component
 
-  alias Itsm.Admin.Approvals
+  alias Itsm.Admin.{Approvals, Accounts, Requests}
 
   def update(%{conflict: {event, user}} = _assigns, socket) do
     msg = if String.contains?(to_string(event), "delete"), do: "삭제", else: "수정"
@@ -50,6 +50,12 @@ defmodule ItsmWeb.Admin.ApprovalLive.FormComponent do
         phx-submit="save"
       >
         <.input
+          field={@form[:request_id]}
+          type="select"
+          label={gettext("Request")}
+          options={@request_options}
+        />
+        <.input
           field={@form[:status]}
           type="select"
           label={gettext("Status")}
@@ -89,7 +95,8 @@ defmodule ItsmWeb.Admin.ApprovalLive.FormComponent do
 
   defp assign_new_options(socket) do
     socket
-    |> assign_new(:approver_options, fn -> Itsm.Admin.Accounts.get_select_options() end)
+    |> assign_new(:approver_options, fn -> Accounts.get_select_options() end)
+    |> assign_new(:request_options, fn -> Requests.get_select_options() end)
   end
 
   defp save_approval(socket, :edit, approval_params) do

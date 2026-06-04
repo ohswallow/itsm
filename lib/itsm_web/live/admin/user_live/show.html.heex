@@ -20,13 +20,9 @@
   <:item title={gettext("Employee Number")}>{@user.employee_number}</:item>
   <:item title={gettext("Display Name")}>{@user.display_name}</:item>
   <:item title={gettext("Organization")}>{@user.organization}</:item>
-  <:item title={gettext("Organization Code")}>
-    <.common_code_label group="계열사" code={@user.organization_code} />
-  </:item>
+  <:item title={gettext("Organization Code")}>{@user.organization_code}</:item>
   <:item title={gettext("Department")}>{@user.department}</:item>
-  <:item title={gettext("Department Code")}>
-    <.common_code_label group="부서" code={@user.department_code} />
-  </:item>
+  <:item title={gettext("Department Code")}>{@user.department_code}</:item>
   <:item title={gettext("Role")}><.common_code_label group="역할" code={@user.role} /></:item>
   <:item title={gettext("Inserted At")}>
     <span

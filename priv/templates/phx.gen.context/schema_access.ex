@@ -1,11 +1,23 @@
   alias Itsm.Accounts.User
   alias <%= inspect schema.module %>
 
-  defdelegate get_<%= schema.singular %>!(id), to: Itsm.<%= inspect context.alias %>
+  def get_<%= schema.singular %>!(id), do: Repo.get!(<%= inspect schema.alias %>, id)
 
-  defdelegate list_<%= schema.plural %>, to: Itsm.<%= inspect context.alias %>
+  def list_<%= schema.plural %>, do: Repo.all(<%= inspect schema.alias %>)
 
-  defdelegate create_<%= schema.singular %>(action_user, attrs), to: Itsm.<%= inspect context.alias %>
+  def create_<%= schema.singular %>(%User{} = action_user, attrs) do
+    %<%= inspect schema.alias %>{}
+    |> <%= inspect schema.alias %>.changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, <%= schema.singular %>} ->
+       Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_<%= schema.singular %>, <%= schema.singular %>})
+       {:ok, <%= schema.singular %>}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
 
   def update_<%= schema.singular %>(%User{} = action_user, %<%= inspect schema.alias %>{} = <%= schema.singular %>, attrs) do
     <%= schema.singular %>
@@ -22,7 +34,18 @@
     end
   end
 
-  defdelegate delete_<%= schema.singular %>(action_user, attrs), to: Itsm.<%= inspect context.alias %>
+  def delete_<%= schema.singular %>(%User{} = action_user, %{"id" => id}) do
+    get_<%= schema.singular %>!(id)
+    |> Repo.delete()
+    |> case do
+       {:ok, <%= schema.singular %>} ->
+        <%= schema.singular %>.broadcast(__MODULE__, {action_user, :delete_<%= schema.singular %>, <%= schema.singular %>}, id: <%= schema.singular %>.id)
+        {:ok, <%= schema.singular %>}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
 
   def change_<%= schema.singular %>(%<%= inspect schema.alias %>{} = <%= schema.singular %>, attrs \\ %{}) do
     <%= inspect schema.alias %>.changeset(<%= schema.singular %>, attrs)
