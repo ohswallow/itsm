@@ -106,7 +106,8 @@ defmodule Itsm.Evaluations do
 
   """
   def delete_evaluation(%User{} = action_user, %{"id" => id}) do
-    Repo.delete(get_evaluation!(id))
+    get_evaluation!(id)
+    |> Repo.delete()
     |> case do
       {:ok, evaluation} ->
         Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_evaluation, evaluation},

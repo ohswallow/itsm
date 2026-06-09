@@ -18,6 +18,8 @@ defmodule ItsmWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug :fetch_session
+    plug :fetch_current_user
   end
 
   scope "/", ItsmWeb do
@@ -252,5 +254,23 @@ defmodule ItsmWeb.Router do
       live "/users/confirm/:token", UserConfirmationLive, :edit
       live "/users/confirm", UserConfirmationInstructionsLive, :new
     end
+  end
+
+  scope "/api" do
+    pipe_through [:browser, :require_authenticated_user]
+
+    get "/graphiql", Absinthe.Plug.GraphiQL,
+      schema: Itsm.Graphql.Schema,
+      interface: :simple
+  end
+
+  scope "/api" do
+    pipe_through [:api, ItsmWeb.Plugs.ApiAuth]
+
+    forward "/graphql", Absinthe.Plug, schema: Itsm.Graphql.Schema
+
+    post "/graphiql", Absinthe.Plug.GraphiQL,
+      schema: Itsm.Graphql.Schema,
+      interface: :simple
   end
 end

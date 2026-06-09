@@ -35,6 +35,20 @@ defmodule Itsm.Attachments.Attachment do
     |> validate_required([:filename, :local_path, :resource_type])
   end
 
+  def create_changeset(attachment, resource, attrs \\ %{}) do
+    attachment
+    |> cast(attrs, [
+      :filename,
+      :local_path,
+      :file_type,
+      :byte_size,
+      :status
+    ])
+    |> put_change(:resource_type, Itsm.Utils.resource_name(resource))
+    |> put_change(:resource_id, resource.id)
+    |> validate_required([:filename, :local_path, :resource_type])
+  end
+
   def delete_changeset(attachment) do
     attachment
     |> change()

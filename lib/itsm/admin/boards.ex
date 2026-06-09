@@ -8,13 +8,23 @@ defmodule Itsm.Admin.Boards do
   alias Itsm.Repo
   alias Itsm.Boards.Board
 
-  defdelegate get_board!(id), to: Itsm.Boards
+  def get_board!(id), do: Repo.get!(Board, id)
 
   def get_board_by_slug(slug), do: Repo.get_by!(Board, slug: slug)
 
-  defdelegate list_boards, to: Itsm.Boards
+  def create_board(%User{} = action_user, attrs) do
+    %Board{}
+    |> Board.changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, board} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_board, board})
+        {:ok, board}
 
-  defdelegate create_board(action_user, attrs), to: Itsm.Boards
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
 
   def update_board(%User{} = action_user, %Board{} = board, attrs) do
     board
@@ -34,7 +44,21 @@ defmodule Itsm.Admin.Boards do
     end
   end
 
-  defdelegate delete_board(action_user, attrs), to: Itsm.Boards
+  def delete_board(%User{} = action_user, %{"id" => id}) do
+    get_board!(id)
+    |> Repo.delete()
+    |> case do
+      {:ok, board} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_board, board},
+          id: board.id
+        )
+
+        {:ok, board}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
 
   def change_board(%Board{} = board, attrs \\ %{}) do
     Board.changeset(board, attrs)

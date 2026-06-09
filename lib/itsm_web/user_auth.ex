@@ -187,6 +187,7 @@ defmodule ItsmWeb.UserAuth do
     locale = params["locale"] || session["locale"] || "ko"
 
     # 디버깅용
+    IO.inspect(self(), label: "PID: ")
     IO.puts("on_mount :set_locale called with locale: #{locale}")
 
     if locale in Gettext.known_locales(ItsmWeb.Gettext) do

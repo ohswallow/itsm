@@ -11,21 +11,9 @@ defmodule ItsmWeb.TableContainerComponent do
 
   def handle_event("update-filters", params, socket) do
     %{current_path: current_path, params: current_params} = socket.assigns.results
+    merge_params = Map.merge(current_params, Itsm.Paging.converter_params(params))
 
-    query_params =
-      params
-      |> Map.take(~w[search page_size search_columns range_column start_date end_date])
-      |> Map.put("page", @default_page)
-
-    merged_params =
-      current_params
-      |> Map.new(fn {k, v} -> {to_string(k), v} end)
-      |> Map.merge(query_params)
-
-    {:noreply,
-     push_patch(socket,
-       to: "#{current_path}?#{Plug.Conn.Query.encode(merged_params)}"
-     )}
+    {:noreply, push_patch(socket, to: "#{current_path}?#{Plug.Conn.Query.encode(merge_params)}")}
   end
 
   defp init_default_value(socket) do
@@ -37,17 +25,13 @@ defmodule ItsmWeb.TableContainerComponent do
 
   defp build_results(current_results) do
     Map.merge(current_results, %{
-      params: build_params(current_results[:params]),
+      params: Map.merge(default_params(), Itsm.Paging.converter_params(current_results[:params])),
       columns_options: current_results[:columns_options] || [],
       current_path: current_results[:current_path] || "",
       total_count: current_results[:total_count] || 0,
       total_pages: current_results[:total_pages] || 0,
       range_column_options: current_results[:range_column_options] || []
     })
-  end
-
-  defp build_params(existing_params) do
-    Map.merge(default_params(), existing_params || %{})
   end
 
   defp default_params do

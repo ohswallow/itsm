@@ -29,6 +29,19 @@ defmodule Itsm.Crews.Crew do
     |> validate_length(:description, min: 5, max: 30)
   end
 
+  def create_changeset(crew, %Itsm.Accounts.User{} = action_user, attrs \\ %{}) do
+    crew
+    |> cast(attrs, [:name, :description])
+    |> put_assoc(:leader, action_user)
+    |> put_assoc(:users, [action_user])
+    |> normalize_name()
+    |> validate_required([:name, :description])
+    |> unsafe_validate_unique(:name, Itsm.Repo)
+    |> unique_constraint(:name)
+    |> validate_format(:name, ~r/^[A-Za-z]{5}$/, message: "must be exactly 5 alphabetic letters")
+    |> validate_length(:description, min: 5, max: 30)
+  end
+
   def users_changeset(crew, users) do
     crew
     |> change()
