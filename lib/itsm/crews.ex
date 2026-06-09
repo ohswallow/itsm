@@ -42,6 +42,13 @@ defmodule Itsm.Crews do
     |> Map.get(:crews)
   end
 
+  def list_my_crews_ids(%User{} = user) do
+    CrewsUsers
+    |> where([cu], cu.user_id == ^user.id)
+    |> select([cu], cu.crew_id)
+    |> Repo.all()
+  end
+
   def list_regular_users(%Crew{} = crew) do
     List.delete(crew.users, crew.leader)
   end
@@ -117,14 +124,7 @@ defmodule Itsm.Crews do
     end
   end
 
-  def create_crew_references(
-        %User{} = action_user,
-        %_{id: id} = resource,
-        crews,
-        repo \\ Repo,
-        opts \\ []
-      )
-      when is_list(crews) do
+  def create_crew_references(%_{id: id} = resource, crews, repo) when is_list(crews) do
     Enum.reduce_while(crews, {:ok, []}, fn crew, {:ok, acc} ->
       %CrewReference{
         resource_type: Utils.resource_name(resource),
@@ -140,18 +140,6 @@ defmodule Itsm.Crews do
           {:halt, {:error, reason}}
       end
     end)
-    |> case do
-      {:ok, crew_references} ->
-        if Keyword.get(opts, :broadcast, true) do
-          Itsm.PubSub.Helper.broadcast(
-            __MODULE__,
-            {action_user, :create_crew_references, crew_references}
-          )
-        end
-
-      error ->
-        error
-    end
   end
 
   def add_users(%User{} = action_user, %Crew{} = crew, add_user_ids) do

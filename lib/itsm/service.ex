@@ -24,31 +24,25 @@ defmodule Itsm.Service do
       )
       when is_list(crews) and is_function(consumer_fn) do
     Multi.new()
-    |> Multi.run(:create_request, fn repo, _ ->
-      Requests.create_request(action_user, category, attrs, repo, broadcast: false)
-    end)
+    |> Multi.insert(:create_request, Requests.change_request(action_user, category, attrs))
     |> check_minimum_k_vms(attrs)
-    |> Multi.run(:create_approval, fn repo, %{create_request: request} ->
-      Approvals.create_approval(action_user, repo, request, broadcast: false)
-    end)
     |> Multi.run(:create_attachments, fn repo, %{create_request: request} ->
       Attachments.create_attachments(action_user, request, consumer_fn, repo, broadcast: false)
     end)
     |> Multi.run(:create_crew_references, fn repo, %{create_request: request} ->
-      Crews.create_crew_references(action_user, request, crews, repo, broadcast: false)
+      Crews.create_crew_references(request, crews, repo)
     end)
     |> Repo.transact()
     |> case do
       {:ok,
        %{
          create_request: request,
-         create_approval: approval,
          create_attachments: attachments
        }} ->
-        request = Repo.preload(request, [:category])
+        request =
+          Repo.preload(request, [:category, requestor_crew: [:users], assignee_crew: [:users]])
 
         Itsm.PubSub.Helper.broadcast(Requests, {action_user, :create_request, request})
-        Itsm.PubSub.Helper.broadcast(Approvals, {action_user, :create_approval, approval})
         Itsm.PubSub.Helper.broadcast(Attachments, {action_user, :create_attachments, attachments})
 
         {:ok, request}
@@ -71,7 +65,7 @@ defmodule Itsm.Service do
     |> Multi.run(:create_attachments, fn repo, %{update_request: request} ->
       Attachments.create_attachments(action_user, request, consumer_fn, repo, broadcast: false)
     end)
-    |> sync_crew_references(action_user, request, attrs["referenced_crews"])
+    |> sync_crew_references(request, attrs["referenced_crews"])
     |> Repo.transact()
     |> case do
       {:ok, %{update_request: request, create_attachments: attachment}} ->
@@ -144,7 +138,6 @@ defmodule Itsm.Service do
 
   defp sync_crew_references(
          %Ecto.Multi{} = mult,
-         %User{} = action_user,
          %_{} = resource,
          crews_ids
        ) do
@@ -174,9 +167,7 @@ defmodule Itsm.Service do
       end)
     end)
     |> Ecto.Multi.run(:create, fn repo, %{diff: %{add_id_list: add_id_list}} ->
-      Crews.create_crew_references(action_user, resource, Crews.get_crews(add_id_list), repo,
-        broadcast: false
-      )
+      Crews.create_crew_references(resource, Crews.get_crews(add_id_list), repo)
     end)
   end
 

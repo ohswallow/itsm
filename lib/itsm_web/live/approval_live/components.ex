@@ -13,27 +13,27 @@ defmodule ItsmWeb.ApprovalLive.Components do
         <span class="text-gray-400">closed</span>
       <% {:feedback, label} -> %>
         <.link
-          navigate={~p"/approvals/#{@request.id}/feedback"}
+          patch={~p"/approvals/#{@request.id}/feedback"}
           class="text-green-600 font-bold hover:underline"
         >
           {label}
         </.link>
       <% {:approve, label, true} -> %>
         <.link
-          navigate={~p"/approvals/#{@request.id}/approve"}
+          patch={~p"/approvals/#{@request.id}/approve"}
           class="text-blue-600 hover:underline font-bold"
         >
           {label}
         </.link>
         <.link
-          navigate={~p"/approvals/#{@request.id}/reject"}
+          patch={~p"/approvals/#{@request.id}/reject"}
           class="text-red-600 ml-2 hover:underline"
         >
           반려
         </.link>
       <% {:approve, label, false} -> %>
         <.link
-          navigate={~p"/approvals/#{@request.id}/approve"}
+          patch={~p"/approvals/#{@request.id}/approve"}
           class="text-indigo-600 font-bold hover:underline"
         >
           {label}

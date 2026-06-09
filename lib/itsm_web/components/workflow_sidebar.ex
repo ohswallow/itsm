@@ -1,15 +1,17 @@
 defmodule ItsmWeb.Components.WorkflowSidebar do
   @moduledoc """
-  워크플로우 진행 상태 사이드바 컴포넌트.
+  워크플로우 진행 상태 사이드바 LiveComponent.
 
   ## 사용 예시
-      <.workflow_sidebar
+      <.live_component
+        module={ItsmWeb.Components.WorkflowSidebar}
+        id="workflow-sidebar"
         workflow_type={:service_request}
         resource={@request}
       />
   """
 
-  use Phoenix.Component
+  use ItsmWeb, :live_component
   use Gettext, backend: ItsmWeb.Gettext
   import ItsmWeb.CoreComponents
 
@@ -17,28 +19,21 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
   alias Itsm.Approvals
   import ItsmWeb.CustomComponents
 
-  attr :workflow_type, :atom, required: true
-  attr :resource, :map, required: true
+  @impl true
+  def update(assigns, socket) do
+    step_data = build_step_data(assigns.workflow_type, assigns.resource)
+    {:ok, assign(socket, assigns) |> assign(:step_data, step_data)}
+  end
 
-  def workflow_sidebar(assigns) do
-    steps = Workflow.steps(assigns.workflow_type)
-    approvals_by_status = load_approvals_by_status(assigns.resource.id)
-
-    step_data =
-      build_step_data(assigns.workflow_type, approvals_by_status, steps, assigns.resource)
-
-    assigns =
-      assigns
-      |> assign(:steps, steps)
-      |> assign(:step_data, step_data)
-
+  @impl true
+  def render(assigns) do
     ~H"""
     <div class="w-64 flex-shrink-0">
       <div class="sticky top-4 bg-white rounded-xl shadow-lg border border-gray-100 p-5">
         <div class="text-center mb-5 pb-4 border-b border-gray-100">
           <.label>WorkFlow</.label>
         </div>
-
+        
         <div class="space-y-3">
           <.workflow_step
             :for={step <- @step_data}
@@ -55,7 +50,6 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
   # ==================================================
   # Private Components
   # ==================================================
-
   attr :step, :map, required: true
   attr :resource, :map, required: true
   attr :workflow_type, :atom, required: true
@@ -74,88 +68,96 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
               {@step.index + 1}
           <% end %>
         </div>
-
+        
         <div><span class={step_label_class(@step.status)}>{@step.label}</span></div>
       </div>
-
+      
       <div class="text-right">
-        <.step_info step={@step} resource={@resource} workflow_type={@workflow_type} />
+        <.step_detail step={@step} resource={@resource} workflow_type={@workflow_type} />
       </div>
     </div>
     """
   end
 
-  defp step_info(assigns) do
+  # 1. Workflow Step인 경우 요청자 정보와 생성 일시를 표시
+  defp step_detail(%{step: %{index: 0}} = assigns) do
     ~H"""
-    <.step_detail
-      status={@step.status}
-      approval={@step.approval}
-      step={@step.step}
-      workflow_type={@workflow_type}
-      requestor_crew={@resource.requestor_crew}
-      requestor_name={@resource.requestor_name}
-      assignee_crew={@resource.assignee_crew}
-    />
-    """
-  end
-
-  # 1. 완료된 단계 - 승인자 정보 표시
-  defp step_detail(%{status: :done, approval: approval} = assigns)
-       when not is_nil(approval) do
-    ~H"""
-    <div class="text-xs font-medium text-green-700">{@approval.approver_name}</div>
+    <div class="text-xs font-medium text-green-700">{@resource.requestor_name}</div>
 
     <div
-      id={"approval-#{@status}-date-#{@approval.id}"}
+      id={"approval-#{@step.status}-date-#{@resource.requestor_id}"}
       class="text-xs text-green-500"
       phx-hook="LocalTime.ToLocale"
       format="MM/DD HH:mm"
-      utc-value={@approval.inserted_at}
+      utc-value={@resource.inserted_at}
     />
     """
   end
 
-  # 2. :validation 단계 - 요청자 Crew
-  defp step_detail(%{status: :active, step: :validation, requestor_crew: crew} = assigns)
-       when not is_nil(crew) do
+  # 2. 완료된 단계 - 승인자 정보 표시
+  defp step_detail(%{step: %{status: :done}} = assigns) do
     ~H"""
-    <.crew_tooltip crew={@requestor_crew} />
-    """
-  end
-
-  # 3. :assignment, :check, :start, :finish - 담당 Crew
-  defp step_detail(%{status: :active, step: step, assignee_crew: crew} = assigns)
-       when step in [:assignment, :check, :start, :finish] and not is_nil(crew) do
-    ~H"""
-    <.crew_tooltip crew={@assignee_crew} />
-    """
-  end
-
-  # 4. :confirmation 단계 - 요청자
-  defp step_detail(%{status: :active, step: :confirmation, requestor_name: name} = assigns)
-       when not is_nil(name) do
-    ~H"""
-    <div class="text-xs font-semibold text-blue-600">{@requestor_name}</div>
-    """
-  end
-
-  # 5. rejected 단계 - 거부한 승인자 정보 표시
-  defp step_detail(%{status: :denied, approval: approval} = assigns)
-       when not is_nil(approval) do
-    ~H"""
-    <div class="text-xs font-medium text-red-700">{@approval.approver_name}</div>
+    <div class="text-xs font-medium text-green-700">{@step.approval.approver_name}</div>
 
     <div
-      id={"approval-#{@status}-date-#{@approval.id}"}
+      id={"approval-#{@step.approval.status}-date-#{@step.approval.id}"}
+      class="text-xs text-green-500"
+      phx-hook="LocalTime.ToLocale"
+      format="MM/DD HH:mm"
+      utc-value={@step.approval.inserted_at}
+    />
+    """
+  end
+
+  # 3. :validation 단계 - 요청자 Crew
+  defp step_detail(
+         %{step: %{status: :active, step: :validation}, resource: %{requestor_crew: crew}} =
+           assigns
+       )
+       when not is_nil(crew) do
+    ~H"""
+    <.crew_tooltip crew={@resource.requestor_crew} />
+    """
+  end
+
+  # 4. :assignment, :check, :start, :finish - 담당 Crew
+  defp step_detail(
+         %{step: %{status: :active, step: step}, resource: %{assignee_crew: crew}} = assigns
+       )
+       when step in [:assignment, :check, :start, :finish] and not is_nil(crew) do
+    ~H"""
+    <.crew_tooltip crew={@resource.assignee_crew} />
+    """
+  end
+
+  # 5. :confirmation 단계 - 요청자
+  defp step_detail(
+         %{step: %{status: :active, step: :confirmation}, resource: %{requestor_name: name}} =
+           assigns
+       )
+       when not is_nil(name) do
+    ~H"""
+    <div class="text-xs font-semibold text-blue-600">{@resource.requestor_name}</div>
+    """
+  end
+
+  # 6. rejected 단계 - 거부한 승인자 정보 표시
+  defp step_detail(%{step: %{status: :denied, approval: approval}} = assigns)
+       when not is_nil(approval) do
+    ~H"""
+    <div class="text-xs font-medium text-red-700">{@step.approval.approver_name}</div>
+
+    <div
+      id={"approval-#{@step.status}-date-#{@step.approval.id}"}
       class="text-xs text-red-500"
       phx-hook="LocalTime.ToLocale"
       format="MM/DD HH:mm"
-      utc-value={@approval.inserted_at}
+      utc-value={@step.approval.inserted_at}
     />
     """
   end
 
-  # 6. :active 외 pending 단계
+  # 7. :active 외 pending 단계
   defp step_detail(assigns) do
     ~H"""
     <span class="text-xs text-gray-400">-</span>
@@ -168,17 +170,20 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
     |> Map.new(&{&1.status, &1})
   end
 
-  defp build_step_data(workflow_type, approvals_by_status, steps, resource) do
-    steps
+  defp build_step_data(workflow_type, resource) do
+    approvals_by_status = load_approvals_by_status(resource.id)
+
+    workflow_type
+    |> Workflow.steps()
     |> Enum.with_index()
     |> Enum.map(fn {step, index} ->
       approval = Map.get(approvals_by_status, step)
 
       status =
         cond do
-          approval && approval.action == :reject -> :denied
-          approval && approval.action == :approve -> :done
           step == resource.status -> :active
+          approval && approval.action == :reject -> :denied
+          index == 0 || (approval && approval.action == :approve) -> :done
           true -> :waiting
         end
 

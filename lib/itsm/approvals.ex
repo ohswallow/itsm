@@ -3,11 +3,14 @@ defmodule Itsm.Approvals do
 
   alias Itsm.Repo
   alias Itsm.Accounts.User
+  alias Itsm.Comments
   alias Itsm.Service.Approval
   alias Itsm.Service.Request
-  alias Itsm.Crews.CrewsUsers
+  alias Itsm.Requests
+  alias Itsm.Crews
   alias Itsm.Workflow
   alias Itsm.Finalization
+  alias Ecto.Multi
 
   # ==================================================
   # 조회
@@ -21,17 +24,8 @@ defmodule Itsm.Approvals do
   end
 
   def list_pending_requests(%User{} = current_user) do
-    my_crew_ids =
-      from(m in CrewsUsers, where: m.user_id == ^current_user.id, select: m.crew_id)
-      |> Repo.all()
-
-    requests_i_assigned =
-      from(a in Approval,
-        where: a.approver_id == ^current_user.id,
-        where: a.status == :assignment,
-        select: a.request_id
-      )
-      |> Repo.all()
+    my_crew_ids = Crews.list_my_crews_ids(current_user)
+    assigned_request_ids = list_assigned_request_ids(current_user)
 
     Request
     |> where([r], r.status not in [:closed, :rejected])
@@ -44,7 +38,7 @@ defmodule Itsm.Approvals do
            r.assignee_crew_id in ^my_crew_ids) or
         (r.status == :check and
            r.assignee_crew_id in ^my_crew_ids and
-           r.id not in ^requests_i_assigned) or
+           r.id not in ^assigned_request_ids) or
         (r.status == :confirmation and
            r.requestor_id == ^current_user.id)
     )
@@ -53,67 +47,70 @@ defmodule Itsm.Approvals do
     |> Repo.preload([:category, :assignee_crew, :requestor_crew])
   end
 
-  # ==================================================
-  # 승인 / 반려
-  # ==================================================
-
-  def approve(%Request{} = request, %User{} = approver) do
-    process_approval(request, approver, :approve)
+  @doc """
+  현재 사용자가 담당자(접수자)로 할당된 요청 ID 목록을 조회합니다.
+  """
+  def list_assigned_request_ids(%User{} = user) do
+    Approval
+    |> where([a], a.approver_id == ^user.id and a.status == :assignment)
+    |> select([a], a.request_id)
+    |> Repo.all()
   end
 
-  def reject(%Request{} = request, %User{} = approver) do
-    process_approval(request, approver, :reject)
+  def change_approval(%Request{} = request, %User{} = approver, action) do
+    Approval.changeset(
+      %Approval{},
+      %{
+        request_id: request.id,
+        status: request.status,
+        action: action,
+        approver_id: approver.id,
+        approver_name: approver.display_name
+      }
+    )
   end
 
-  defp process_approval(%Request{} = request, %User{} = approver, action)
-       when action in [:approve, :reject] do
-    result =
-      Repo.transaction(fn ->
-        with {:ok, changeset} <- Workflow.transition(:service_request, request, action),
-             {:ok, updated_request} <- Repo.update(changeset),
-             {:ok, approval} <-
-               create_approval(approver, %{
-                 request_id: request.id,
-                 status: request.status,
-                 action: action,
-                 approver_id: approver.id,
-                 approver_name: approver.display_name
-               }) do
-          preloaded_request =
-            Repo.preload(updated_request, [
-              :category,
-              :attachments,
-              requestor_crew: [:users],
-              assignee_crew: [:users]
-            ])
+  @spec approve(%Request{}, %User{}, comment: map() | nil) :: tuple()
+  def approve(request, approver, opts \\ [])
 
-          {preloaded_request, approval}
-        else
-          {:error, reason} -> Repo.rollback(reason)
-        end
-      end)
+  def approve(%Request{} = request, %User{} = approver, opts) when is_list(opts) do
+    process_approval(request, approver, :approve, opts)
+  end
 
-    # 트랜잭션 커밋 후 broadcast
-    case result do
-      {:ok, {preloaded_request, _approval}} ->
-        # TODO : Sync 호출 (자산 한번에 10개 이상 신청 대응)
-        # 상태가 :finish(또는 워크플로우에 맞는 완료 상태)일 때 바로 실행
-        if preloaded_request.status == :confirmation do
-          Finalization.execute_after_finish(approver, preloaded_request)
+  @spec reject(%Request{}, %User{}, comment: map() | nil) :: tuple()
+  def reject(request, approver, opts \\ [])
+
+  def reject(%Request{} = request, %User{} = approver, opts) do
+    process_approval(request, approver, :reject, opts)
+  end
+
+  defp process_approval(%Request{} = request, %User{} = approver, action, opts) do
+    Multi.new()
+    |> Multi.insert(:create_approval, change_approval(request, approver, action))
+    |> Multi.update(:update_request, Workflow.transition(:service_request, request, action))
+    |> create_comment_mult(approver, request, opts)
+    |> Repo.transact()
+    |> case do
+      {:ok, %{update_request: request, create_approval: approval}} ->
+        request =
+          Repo.preload(request, [
+            :category,
+            :attachments,
+            requestor_crew: [:users],
+            assignee_crew: [:users]
+          ])
+
+        if request.status == :confirmation do
+          Finalization.execute_after_finish(approver, request)
         end
 
-        Itsm.PubSub.Helper.broadcast(__MODULE__, {approver, :request_updated, preloaded_request})
-
-        result
+        Itsm.PubSub.Helper.broadcast(Requests, {approver, :update_request, {request, approval}})
+        {:ok, %{request: request, approval: approval}}
 
       error ->
         error
     end
   end
-
-  # ==================================================
-  # CUD
-  # ==================================================
 
   def create_approval(%User{} = action_user, attrs) do
     %Approval{}
@@ -155,4 +152,16 @@ defmodule Itsm.Approvals do
     |> where([a], a.request_id == ^id)
     |> Repo.one()
   end
+
+  defp create_comment_mult(%Ecto.Multi{} = multi, %User{} = approver, %_{} = resource,
+         comment: comment
+       ) do
+    Multi.insert(
+      multi,
+      :create_comment,
+      Comments.change_comment_for_resource(approver, resource, comment)
+    )
+  end
+
+  defp create_comment_mult(multi, _action_user, _resource, _opts), do: multi
 end

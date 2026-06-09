@@ -1,7 +1,6 @@
 defmodule ItsmWeb.CommonKCreateVmLive.Show do
   use ItsmWeb, :live_view
 
-  import ItsmWeb.Components.WorkflowSidebar
   import ItsmWeb.CommonKCreateVmLive.Components
 
   alias Itsm.Comments

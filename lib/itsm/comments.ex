@@ -19,7 +19,9 @@ defmodule Itsm.Comments do
     |> Repo.all()
   end
 
-  def changeset_comment(%User{} = action_user, resource, attrs \\ %{}) do
+  def change_comment_for_resource(action_user, resource, attrs \\ %{})
+
+  def change_comment_for_resource(%User{} = action_user, resource, attrs) when is_map(attrs) do
     %Comment{
       user: action_user,
       resource_type: Utils.resource_name(resource),
@@ -34,7 +36,7 @@ defmodule Itsm.Comments do
 
   def create_comment(%User{} = action_user, resource, attrs, repo \\ Repo, opts \\ []) do
     action_user
-    |> changeset_comment(resource, attrs)
+    |> change_comment_for_resource(resource, attrs)
     |> repo.insert()
     |> case do
       {:ok, comment} ->

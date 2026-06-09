@@ -19,7 +19,7 @@
         attachment={attachment}
       />
     </.attachments_section>
-    <.comments_section streams={@streams} />
+     <.comments_section streams={@streams} />
     <.comment_form
       :if={@request.status not in [:closed, :rejected]}
       form={@form}
@@ -27,8 +27,10 @@
     />
     <.back navigate={~p"/requests"}>Back</.back>
   </div>
-  <%!-- Work Flow sidebar--%>
-  <.workflow_sidebar
+   <%!-- Work Flow sidebar--%>
+  <.live_component
+    module={ItsmWeb.Components.WorkflowSidebar}
+    id="workflow-sidebar"
     workflow_type={:service_request}
     resource={@request}
   />
