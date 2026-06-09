@@ -195,7 +195,7 @@ defmodule Itsm.Crews do
     with :ok <- ensure_leader(crew, action_user),
          {:ok, crew} <- Repo.update(changeset) do
       crew = Repo.preload(crew, [:leader, :users])
-      Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_crew, crew})
+      Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_crew, crew}, id: crew.id)
       {:ok, crew}
     else
       {:error, %Ecto.Changeset{} = changeset} ->

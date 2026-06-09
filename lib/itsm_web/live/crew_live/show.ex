@@ -21,7 +21,6 @@ defmodule ItsmWeb.CrewLive.Show do
      |> assign(:crew, crew)
      |> assign(:show_member_modal, false)
      |> stream(:users, Crews.list_regular_users(crew))
-     |> Itsm.PubSub.Helper.subscribe(Crews)
      |> Itsm.PubSub.Helper.subscribe(Crews, id: id)}
   end
 
