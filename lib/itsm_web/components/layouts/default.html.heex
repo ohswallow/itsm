@@ -69,6 +69,15 @@
         >
           {gettext("Boards")}
         </.sidebar_menu_link>
+
+        <.sidebar_menu_link
+          navigate={~p"/api/graphiql"}
+          icon_name="hero-"
+          menu_id="graphiql"
+          current_path={assigns[:current_path]}
+        >
+          {gettext("Graphiql")}
+        </.sidebar_menu_link>
         <div :if={@current_user && @current_user.role == "admin"} class="mt-8">
           <p class="px-4 text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">
             ADMIN SYSTEM

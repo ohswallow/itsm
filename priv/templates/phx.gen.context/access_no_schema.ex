@@ -34,7 +34,8 @@
   end
 
   def delete_<%= schema.singular %>(%User{} = action_user, %{"id" => id}) do
-    Repo.delete(get_<%= schema.singular %>!(id))
+    get_<%= schema.singular %>!(id)
+    |> Repo.delete()
     |> case do
        {:ok, <%= schema.singular %>} ->
         <%= schema.singular %>.broadcast(__MODULE__, {action_user, :delete_<%= schema.singular %>, <%= schema.singular %>}, id: <%= schema.singular %>.id)

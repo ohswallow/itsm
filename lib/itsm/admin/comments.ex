@@ -7,14 +7,19 @@ defmodule Itsm.Admin.Comments do
 
   def get_comment!(id), do: Repo.get!(Comment, id)
 
-  defdelegate list_comments_by_resource(resource), to: Itsm.Comments
+  def list_comments_by_resource(resource) do
+    Comment
+    |> where([c], c.resource_type == ^Itsm.Utils.resource_name(resource))
+    |> where([c], c.resource_id == ^resource.id)
+    |> order_by([c], asc: c.inserted_at)
+    |> preload([:user, :attachments])
+    |> Repo.all()
+  end
 
   def change_comment(comment, attrs \\ %{}) do
     Comment.changeset(comment, attrs)
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
   end
-
-  defdelegate create_comment(action_user, resource, attrs), to: Itsm.Comments
 
   def update_comment(%User{} = action_user, %Comment{} = comment, attrs) do
     comment
@@ -34,7 +39,8 @@ defmodule Itsm.Admin.Comments do
   end
 
   def delete_comment(%User{} = action_user, %{"id" => id}) do
-    Repo.delete(get_comment!(id))
+    get_comment!(id)
+    |> Repo.delete()
     |> case do
       {:ok, comment} ->
         event = :delete_comment
@@ -47,5 +53,5 @@ defmodule Itsm.Admin.Comments do
     end
   end
 
-  defdelegate with_assoc(comment, preloads), to: Itsm.Comments
+  def with_assoc(%Comment{} = comment, preloads), do: Repo.preload(comment, preloads)
 end

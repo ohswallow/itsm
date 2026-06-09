@@ -47,7 +47,8 @@ defmodule Itsm.Admin.CommonCodes do
   end
 
   def delete_common_code(%User{} = action_user, %{"id" => id}) do
-    Repo.delete(get_common_code!(id))
+    get_common_code!(id)
+    |> Repo.delete()
     |> case do
       {:ok, common_code} ->
         event = :delete_common_code

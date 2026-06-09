@@ -4,16 +4,16 @@ defmodule Itsm.Admin.Categories do
   alias Itsm.Repo
   alias Itsm.Service.Category
 
-  defdelegate get_category!(id), to: Itsm.Categories
+  def get_category!(id), do: Repo.get!(Category, id)
 
   def change_category(%Category{} = category, attrs \\ %{}) do
-    Category.changeset(category, attrs)
+    Category.admin_changeset(category, attrs)
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
   end
 
   def create_category(%User{} = action_user, attrs) do
     %Category{}
-    |> Category.changeset(attrs)
+    |> Category.admin_changeset(attrs)
     |> Repo.insert()
     |> case do
       {:ok, category} ->
@@ -28,7 +28,7 @@ defmodule Itsm.Admin.Categories do
 
   def update_category(%User{} = action_user, %Category{} = category, attrs) do
     category
-    |> Category.changeset(attrs)
+    |> Category.admin_changeset(attrs)
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
     |> Repo.update()
     |> case do
@@ -44,7 +44,8 @@ defmodule Itsm.Admin.Categories do
   end
 
   def delete_category(%User{} = action_user, %{"id" => id}) do
-    Repo.delete(get_category!(id))
+    get_category!(id)
+    |> Repo.delete()
     |> case do
       {:ok, category} ->
         event = :delete_category

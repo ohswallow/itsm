@@ -148,7 +148,7 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
     |> assign_new(:env_options, fn -> CommonCodes.get_select_options("운영_구분") end)
     |> assign_new(:location_options, fn -> CommonCodes.get_select_options("장소") end)
     |> assign_new(:crew_options, fn ->
-      Itsm.Crews.options_excluding_user(socket.assigns[:current_user])
+      Itsm.Crews.list_crews() |> Enum.map(fn crew -> {crew.name, crew.id} end)
     end)
   end
 

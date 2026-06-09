@@ -61,7 +61,10 @@ defmodule Itsm.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.5"},
       {:live_select, "~> 1.0"},
-      {:metamorphic_crypto, "~> 0.2"}
+      {:metamorphic_crypto, "~> 0.2"},
+      {:absinthe, "~> 1.7"},
+      {:absinthe_phoenix, "~> 2.0"},
+      {:absinthe_plug, "~> 1.5"}
     ]
   end
 

@@ -104,7 +104,8 @@ defmodule Itsm.Requests do
   def delete_request(%User{id: user_id} = action_user, %Request{requestor_id: user_id}, %{
         "id" => id
       }) do
-    Repo.delete(get_request!(id))
+    get_request!(id)
+    |> Repo.delete()
     |> case do
       {:ok, request} ->
         Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_request, request},

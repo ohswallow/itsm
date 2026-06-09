@@ -4,14 +4,15 @@ defmodule Itsm.Admin.Requests do
   alias Itsm.Repo
   alias Itsm.Service.Request
 
-  defdelegate get_request!(id), to: Itsm.Requests
+  def get_request!(id), do: Request |> Repo.get!(id)
 
-  defdelegate change_request(request, attrs \\ %{}), to: Itsm.Requests
+  def change_request(%Request{} = request, attrs \\ %{}),
+    do: Request.admin_changeset(request, attrs)
 
   def create_request(%User{} = action_user, attrs) do
     action_user
     |> Ecto.build_assoc(:requests)
-    |> Request.changeset(attrs)
+    |> Request.admin_changeset(attrs)
     |> Ecto.Changeset.put_change(:requestor_name, action_user.display_name)
     |> Repo.insert()
     |> case do
@@ -25,11 +26,11 @@ defmodule Itsm.Admin.Requests do
     end
   end
 
-  defdelegate with_assoc(request, preloads), to: Itsm.Requests
+  def with_assoc(%Request{} = request, preloads), do: Repo.preload(request, preloads)
 
   def update_request(%User{} = action_user, %Request{} = request, attrs) do
     request
-    |> Request.changeset(attrs)
+    |> Request.admin_changeset(attrs)
     |> Repo.update()
     |> case do
       {:ok, request} ->
@@ -65,5 +66,11 @@ defmodule Itsm.Admin.Requests do
        }} ->
         {:error, :foreign_approvals, message}
     end
+  end
+
+  def get_select_options do
+    Request
+    |> select([r], {r.title, r.id})
+    |> Repo.all()
   end
 end

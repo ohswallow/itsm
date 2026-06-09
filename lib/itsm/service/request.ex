@@ -117,4 +117,24 @@ defmodule Itsm.Service.Request do
     |> change()
     |> delete_changeset()
   end
+
+  def admin_changeset(request, attrs \\ %{}) do
+    request
+    |> cast(attrs, [
+      :title,
+      :description,
+      :env,
+      :due_date,
+      :category_id,
+      :requestor_crew_id
+    ])
+    |> validate_required([
+      :title,
+      :description,
+      :env,
+      :due_date,
+      :requestor_crew_id
+    ])
+    |> assoc_changeset(attrs)
+  end
 end

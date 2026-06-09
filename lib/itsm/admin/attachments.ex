@@ -8,11 +8,14 @@ defmodule Itsm.Admin.Attachments do
   alias Itsm.Accounts.User
   alias Itsm.Attachments.Attachment
 
-  defdelegate get_attachment!(id), to: Itsm.Attachments
-  defdelegate get_list_attachments(resource), to: Itsm.Attachments
+  def get_attachment!(id), do: Attachment |> Repo.get!(id)
 
   def list_attachments_by_resource_is_active(resource) do
-    get_list_attachments(resource)
+    Attachment
+    |> where([a], a.resource_type == ^Itsm.Utils.resource_name(resource))
+    |> where([a], a.resource_id == ^resource.id)
+    |> where([a], a.status == :active)
+    |> Repo.all()
   end
 
   def list_attachments_by_resource(resource) do
@@ -22,7 +25,47 @@ defmodule Itsm.Admin.Attachments do
     |> Repo.all()
   end
 
-  defdelegate create_attachment(action_user, attrs), to: Itsm.Attachments
+  def create_attachment(%User{} = action_user, attrs) do
+    %Attachment{}
+    |> Attachment.changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, attachment} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_attachments, attachment})
+
+        {:ok, attachment}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  def create_attachments(%User{} = action_user, resource, consumer_fn, repo \\ Repo, opts \\ []) do
+    consumer_fn.()
+    |> Enum.reduce_while({:ok, []}, fn attrs, {:ok, acc} ->
+      %Attachment{}
+      |> Attachment.create_changeset(resource, attrs)
+      |> repo.insert()
+      |> case do
+        {:ok, attachment} -> {:cont, {:ok, [attachment | acc]}}
+        {:error, reason} -> {:halt, {:error, reason}}
+      end
+    end)
+    |> case do
+      {:ok, attachments} ->
+        if Keyword.get(opts, :broadcast, true) do
+          Itsm.PubSub.Helper.broadcast(
+            __MODULE__,
+            {action_user, :create_attachments, attachments}
+          )
+        end
+
+        {:ok, attachments}
+
+      error ->
+        error
+    end
+  end
 
   def update_attachment(%User{} = action_user, %Attachment{} = attachment, attrs) do
     attachment
@@ -31,7 +74,7 @@ defmodule Itsm.Admin.Attachments do
     |> Repo.update()
     |> case do
       {:ok, attachment} ->
-        attachment.broadcast(__MODULE__, {action_user, :update_attachment, attachment},
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_attachment, attachment},
           id: attachment.id
         )
 
@@ -42,7 +85,22 @@ defmodule Itsm.Admin.Attachments do
     end
   end
 
-  defdelegate delete_attachment(action_user, attrs), to: Itsm.Attachments
+  def delete_attachment(%User{} = action_user, %{"id" => id}) do
+    get_attachment!(id)
+    |> Attachment.delete_changeset()
+    |> Repo.update()
+    |> case do
+      {:ok, attachment} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_attachment, attachment},
+          id: attachment.id
+        )
+
+        {:ok, attachment}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
 
   def change_attachment(%Attachment{} = attachment, attrs \\ %{}) do
     Attachment.changeset(attachment, attrs)

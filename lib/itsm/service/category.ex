@@ -48,4 +48,30 @@ defmodule Itsm.Service.Category do
     ])
     |> unique_constraint(:name)
   end
+
+  def admin_changeset(category, attrs \\ %{}) do
+    category
+    |> cast(attrs, [
+      :name,
+      :description,
+      :affiliate,
+      :request_name,
+      :group,
+      :active,
+      :category,
+      :duration,
+      :assignee_crew_id
+    ])
+    |> validate_required([
+      :name,
+      :description,
+      :affiliate,
+      :request_name,
+      :group,
+      :active,
+      :duration,
+      :assignee_crew_id
+    ])
+    |> unique_constraint(:name)
+  end
 end

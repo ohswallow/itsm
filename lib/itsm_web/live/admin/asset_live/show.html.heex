@@ -30,6 +30,12 @@
     <.common_code_label group="장소" code={@asset.location} />
   </:item>
   <:item title={gettext("Is Dmz Zone")}>{@asset.is_dmz_zone}</:item>
+  <:item title={gettext("Service Crew")}>
+    <ItsmWeb.CustomComponents.crew_tooltip crew={@asset.service_crew} />
+  </:item>
+  <:item title={gettext("System Crew")}>
+    <ItsmWeb.CustomComponents.crew_tooltip crew={@asset.system_crew} />
+  </:item>
   <:item title={gettext("Inserted At")}>
     <span
       id={"asset-inserted-at-#{@asset.id}"}

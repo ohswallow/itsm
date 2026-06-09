@@ -20,6 +20,14 @@ defmodule ItsmWeb.Admin.AttachmentLive.Index do
     {:noreply, stream_delete(socket, :attachments, attachment)}
   end
 
+  def handle_event("view_attachment", %{"id" => id, "filename" => filename}, socket) do
+    {:noreply, assign(socket, :selected_attachment, %{id: id, filename: filename})}
+  end
+
+  def handle_event("close_attachment", _, socket) do
+    {:noreply, assign(socket, :selected_attachment, nil)}
+  end
+
   def handle_info({:pubsub, {action_user, event, item}}, socket) do
     handle_pubsub(action_user, event, item, socket)
   end
