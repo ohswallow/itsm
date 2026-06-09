@@ -14,9 +14,7 @@ defmodule Itsm.Service.Approval do
       default: :request
 
     # 승인/거부
-    field :action, Ecto.Enum,
-      values: [:approve, :reject],
-      default: :approve
+    field :action, Ecto.Enum, values: [:approve, :reject]
 
     # field :approver_id, :string
     field :approver_name, :string

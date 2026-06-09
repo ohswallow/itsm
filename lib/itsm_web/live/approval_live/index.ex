@@ -5,15 +5,34 @@ defmodule ItsmWeb.ApprovalLive.Index do
 
   alias Phoenix.LiveView.JS
   alias Itsm.Requests
+  alias Itsm.Crews
   alias Itsm.Approvals
   alias Itsm.Workflow
 
   def mount(_params, _session, socket) do
-    {:ok, socket |> stream(:requests, []) |> Itsm.PubSub.Helper.subscribe(Approvals)}
+    {:ok,
+     initial_page(socket)
+     |> Itsm.PubSub.Helper.subscribe(Crews)
+     |> assign(:page_title, "Listing Approvals")
+     |> Itsm.PubSub.Helper.subscribe(Requests)}
   end
 
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+  end
+
+  def handle_info(
+        {ItsmWeb.CreateCommentDialog, {event, %{request: request, approval: approval}}},
+        %{assigns: %{current_user: current_user}} = socket
+      )
+      when event == :reject or approval.status == :assignment or
+             (request.status == :confirmation and request.requester_id != current_user.id) do
+    {:noreply, stream_delete(socket, :requests, request)}
+  end
+
+  def handle_info({ItsmWeb.CreateCommentDialog, {event, %{request: request}}}, socket)
+      when event == :approve do
+    {:noreply, stream_insert(socket, :requests, request)}
   end
 
   def handle_info({:pubsub, {action_user, event, item}}, socket) do
@@ -21,6 +40,17 @@ defmodule ItsmWeb.ApprovalLive.Index do
   end
 
   def handle_info(_event, socket), do: {:noreply, socket}
+
+  defp initial_page(socket) do
+    %{current_user: current_user} = socket.assigns
+    my_crews_ids = Crews.list_my_crews_ids(current_user)
+
+    Enum.reduce(my_crews_ids, socket, fn crew_id, acc_socket ->
+      Itsm.PubSub.Helper.subscribe(acc_socket, Crews, id: crew_id)
+    end)
+    |> assign(:my_crew_ids, my_crews_ids)
+    |> stream(:requests, Approvals.list_pending_requests(current_user), reset: true)
+  end
 
   defp apply_action(socket, :approve, %{"request_id" => id}) do
     request = Requests.get_request!(id)
@@ -42,23 +72,105 @@ defmodule ItsmWeb.ApprovalLive.Index do
     |> assign(:request, Requests.get_request!(id))
   end
 
-  defp apply_action(socket, :index, _params) do
-    %{current_user: current_user} = socket.assigns
+  defp apply_action(socket, :index, _params), do: socket
 
-    socket
-    |> assign(:page_title, "Listing Approvals")
-    |> stream(:requests, Approvals.list_pending_requests(current_user), reset: true)
-  end
-
-  defp handle_pubsub(action_user, event, item, socket) do
-    opts = [
-      resource_name: gettext("Approval"),
-      target_key: :requests,
-      push_patch: [to: "#{socket.assigns.current_path}"]
-    ]
+  defp handle_pubsub(action_user, event, request, socket)
+       when event in [:update_crew, :delete_crew] do
+    opts = [resource_name: gettext("Crew")]
 
     {:noreply,
      socket
-     |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}
+     |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, request, opts)
+     |> initial_page()}
+  end
+
+  defp handle_pubsub(action_user, :create_request = event, request, socket) do
+    %{current_user: current_user, my_crew_ids: my_crew_ids} = socket.assigns
+
+    my_crew? = request.requestor_crew_id in my_crew_ids
+    opts = [resource_name: gettext("Approval")]
+
+    socket
+    |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, request, opts)
+    |> stream_where_requests(request, nil, current_user, my_crew?)
+  end
+
+  defp handle_pubsub(action_user, :update_request = event, {request, approval}, socket) do
+    %{current_user: current_user, my_crew_ids: my_crew_ids} = socket.assigns
+
+    my_crew? = request.requestor_crew_id in my_crew_ids
+
+    opts = [resource_name: gettext("Approval")]
+
+    socket
+    |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, request, opts)
+    |> stream_where_requests(request, approval, current_user, my_crew?)
+  end
+
+  defp handle_pubsub(_action_user, _event, _item, socket), do: {:noreply, socket}
+
+  defp stream_where_requests(
+         socket,
+         request,
+         _approval,
+         _current_user,
+         _my_crew?
+       )
+       when request.status in [:closed, :rejected] do
+    {:noreply, stream_delete(socket, :requests, request)}
+  end
+
+  defp stream_where_requests(
+         socket,
+         request,
+         _approval,
+         current_user,
+         my_crew?
+       )
+       when request.status == :validation and request.requestor_id != current_user.id and my_crew? do
+    {:noreply, stream_insert(socket, :requests, request)}
+  end
+
+  defp stream_where_requests(
+         socket,
+         request,
+         _approval,
+         _current_user,
+         my_crew?
+       )
+       when request.status in [:assignment, :start, :finish] and my_crew? do
+    {:noreply, stream_insert(socket, :requests, request)}
+  end
+
+  defp stream_where_requests(
+         socket,
+         request,
+         approval,
+         current_user,
+         my_crew?
+       )
+       when request.status == :check and approval.approver_id != current_user.id and my_crew? do
+    {:noreply, stream_insert(socket, :requests, request)}
+  end
+
+  defp stream_where_requests(
+         socket,
+         request,
+         _approval,
+         current_user,
+         _my_crew?
+       )
+       when request.status == :confirmation and request.requester_id == current_user.id do
+    {:noreply, stream_insert(socket, :requests, request)}
+  end
+
+  defp stream_where_requests(
+         socket,
+         request,
+         _approval,
+         _current_user,
+         _my_crew?
+       ) do
+    {:noreply, stream_delete(socket, :requests, request)}
   end
 end

@@ -2,7 +2,7 @@
   :if={@live_action in [:approve, :reject]}
   id="approval-modal"
   show
-  on_cancel={JS.navigate(~p"/approvals")}
+  on_cancel={JS.patch(~p"/approvals")}
 >
   <.live_component
     module={ItsmWeb.CreateCommentDialog}
@@ -11,6 +11,7 @@
     action={@live_action}
     request={@request}
     current_user={@current_user}
+    patch={~p"/approvals"}
   />
 </.modal>
 
@@ -18,7 +19,7 @@
   :if={@live_action == :feedback}
   id="feedback-modal"
   show
-  on_cancel={JS.navigate(~p"/approvals")}
+  on_cancel={JS.patch(~p"/approvals")}
 >
   <.live_component
     module={ItsmWeb.EvaluationDialog}
@@ -28,6 +29,7 @@
     request={@request}
     crew_id={@request.assignee_crew_id}
     current_user={@current_user}
+    patch={~p"/approvals"}
   />
 </.modal>
 
@@ -43,28 +45,28 @@
   <:col :let={{_id, request}} label={gettext("Title")}>
     <div class="w-[90px] truncate">{request.title}</div>
   </:col>
-
+  
   <:col :let={{_id, request}} label={gettext("Environment")}>
     <.common_code_label group="운영_구분" code={request.env} />
   </:col>
-
+  
   <:col :let={{id, request}} label={gettext("Due Date")}>
     <span id={"due-date-#{id}"} phx-hook="LocalTime.ToLocale" utc-value={request.due_date}></span>
   </:col>
-
+  
   <:col :let={{_id, request}} label={gettext("Request Name")}>{request.category.name}</:col>
-
+  
   <:col :let={{_id, request}} label={gettext("Requestor Crew")}>
     {request.requestor_crew.name}
   </:col>
-
+  
   <:col :let={{_id, request}} label={gettext("Assignee Crew")}>{request.assignee_crew.name}</:col>
-
+  
   <:col :let={{_id, request}} label={gettext("Requestor Name")}>{request.requestor_name}</:col>
-
+  
   <:col :let={{_id, request}} label={gettext("Status")}>
     {Workflow.status_label(:service_request, request)}
   </:col>
-
+  
   <:action :let={{_id, request}}><.action_cell request={request} /></:action>
 </.table>

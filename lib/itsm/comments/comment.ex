@@ -27,7 +27,7 @@ defmodule Itsm.Comments.Comment do
   @doc false
   def changeset(comment, attrs \\ %{}) do
     comment
-    |> cast(attrs, [:comment, :resource_type, :resource_id])
+    |> cast(attrs, [:comment])
     |> validate_required([:comment, :resource_type, :resource_id])
     |> validate_length(:comment, min: 1, max: 1000)
     |> assoc_constraint(:user)

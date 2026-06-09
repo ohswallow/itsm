@@ -149,7 +149,7 @@ defmodule Itsm.Workflow do
 
   # reject: 상태 유지 (거부 이력은 Approval에서 관리)
   def transition(_workflow_type, resource, _action = :reject) do
-    {:ok, Ecto.Changeset.change(resource, status: :rejected)}
+    Ecto.Changeset.change(resource, status: :rejected)
   end
 
   # approve: 다음 상태로 전이
@@ -160,25 +160,24 @@ defmodule Itsm.Workflow do
 
   # service_request: validation → Assignment (승인 시 담당 Crew 할당 단계로)
   defp do_transition(:service_request, resource, :validation, :assignment) do
-    {:ok, Ecto.Changeset.change(resource, status: :assignment)}
+    Ecto.Changeset.change(resource, status: :assignment)
   end
 
   # service_request: finish → verify (요청자에게 검증 요청)
   defp do_transition(:service_request, resource, :finish, :confirmation) do
-    {:ok,
-     Ecto.Changeset.change(resource,
-       status: :confirmation
-     )}
+    Ecto.Changeset.change(resource,
+      status: :confirmation
+    )
   end
 
   # service_request: verify → closed (완료, assignee 초기화)
   defp do_transition(:service_request, resource, :confirmation, :closed) do
-    {:ok, Ecto.Changeset.change(resource, status: :closed)}
+    Ecto.Changeset.change(resource, status: :closed)
   end
 
   # 기본 전이: status만 변경
   defp do_transition(_workflow_type, resource, _from, to) do
-    {:ok, Ecto.Changeset.change(resource, status: to)}
+    Ecto.Changeset.change(resource, status: to)
   end
 
   # Crew 담당 단계 조회
