@@ -1,42 +1,21 @@
 defmodule Itsm.Graphql.Resolver do
   alias Itsm.Posts
 
-  def list_posts(_parent, _args, %Absinthe.Resolution{} = resolution) do
-    resolution
-    |> check_auth()
-    |> case do
-      {:ok, _role} -> {:ok, Posts.list_posts()}
-      {:error, message} -> {:error, message}
-    end
+  def get_post!(_parent, %{id: id}, %Absinthe.Resolution{}) do
+    {:ok, Posts.get_post!(id)}
   end
 
-  def get_post!(_parent, args, %Absinthe.Resolution{} = resolution) do
-    resolution
-    |> check_auth()
-    |> case do
-      {:ok, _role} -> {:ok, Posts.get_post!(args)}
-      {:error, message} -> {:error, message}
-    end
+  def list_posts(_parent, args, resolution) do
+    Itsm.Graphql.PagingHelper.paginate(Posts.Post, args, resolution,
+      default_columns: get_meta(resolution, :default_columns, []),
+      range_columns: get_meta(resolution, :range_columns, [])
+    )
   end
 
-  defp check_auth(%Absinthe.Resolution{} = resolution) do
-    required_roles =
-      Map.get(resolution, :meta, %{})
-      |> Map.get(:required_role, [])
-
-    current_user = resolution.context[:current_user]
-    verify_user_role(current_user, required_roles)
-  end
-
-  defp verify_user_role(nil, _required_roles) do
-    {:error, "인증되지 않은 사용자입니다. 로그인 후 요청해주세요."}
-  end
-
-  defp verify_user_role(%Itsm.Accounts.User{role: role}, required_roles) do
-    if required_roles == [] or role in required_roles do
-      {:ok, role}
-    else
-      {:error, "#{role} 권한으로는 부족합니다. 추가 권한을 요청해주세요."}
+  defp get_meta(%Absinthe.Resolution{} = resolution, atom, default) do
+    case resolution.definition.schema_node do
+      %{__private__: _store} = schema_node -> Absinthe.Type.meta(schema_node, atom) || default
+      _ -> default
     end
   end
 end

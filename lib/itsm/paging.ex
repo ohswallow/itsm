@@ -267,24 +267,28 @@ defmodule Itsm.Paging do
     s_dt = to_beginning_of_day(start_date)
     e_dt = to_end_of_day(end_date)
 
-    {query_base, _module} = build_query_base(query, column)
+    if is_nil(column) do
+      query
+    else
+      {query_base, _module} = build_query_base(query, column)
 
-    cond do
-      s_dt && e_dt ->
-        query_base |> where([q], field(q, ^column) >= ^s_dt and field(q, ^column) <= ^e_dt)
+      cond do
+        s_dt && e_dt ->
+          query_base |> where([q], field(q, ^column) >= ^s_dt and field(q, ^column) <= ^e_dt)
 
-      s_dt ->
-        query_base |> where([q], field(q, ^column) >= ^s_dt)
+        s_dt ->
+          query_base |> where([q], field(q, ^column) >= ^s_dt)
 
-      e_dt ->
-        query_base |> where([q], field(q, ^column) <= ^e_dt)
+        e_dt ->
+          query_base |> where([q], field(q, ^column) <= ^e_dt)
 
-      true ->
-        now = DateTime.utc_now() |> DateTime.truncate(:second)
-        past = DateTime.add(now, -30, :day)
-        future = DateTime.add(now, 30, :day)
+        true ->
+          now = DateTime.utc_now() |> DateTime.truncate(:second)
+          past = DateTime.add(now, -30, :day)
+          future = DateTime.add(now, 30, :day)
 
-        query_base |> where([q], field(q, ^column) >= ^past and field(q, ^column) <= ^future)
+          query_base |> where([q], field(q, ^column) >= ^past and field(q, ^column) <= ^future)
+      end
     end
   end
 
@@ -305,7 +309,7 @@ defmodule Itsm.Paging do
   defp to_end_of_day(val) do
     case to_date(val) do
       %Date{} = d ->
-        DateTime.new!(d, ~T[23:59:59], "Etc/UTC") |> DateTime.add(1, :day)
+        DateTime.new!(d, ~T[23:59:59], "Etc/UTC")
 
       %DateTime{} = dt ->
         dt |> DateTime.add(1, :day)
