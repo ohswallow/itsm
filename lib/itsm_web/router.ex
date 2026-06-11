@@ -259,18 +259,12 @@ defmodule ItsmWeb.Router do
   scope "/api" do
     pipe_through [:browser, :require_authenticated_user]
 
-    get "/graphiql", Absinthe.Plug.GraphiQL,
-      schema: Itsm.Graphql.Schema,
-      interface: :simple
+    get "/graphiql", ItsmWeb.GraphiqlController, :index
   end
 
   scope "/api" do
     pipe_through [:api, ItsmWeb.Plugs.ApiAuth]
 
     forward "/graphql", Absinthe.Plug, schema: Itsm.Graphql.Schema
-
-    post "/graphiql", Absinthe.Plug.GraphiQL,
-      schema: Itsm.Graphql.Schema,
-      interface: :simple
   end
 end
