@@ -68,6 +68,7 @@ defmodule ItsmWeb.CreateCommentDialog do
   defp approve_or_reject(socket, :reject, params) do
     %{request: request, current_user: action_user} = socket.assigns
 
+    # 거부시 댓글 필수 체크 안해도 되도록, 빈 문자열이면 nil로 전달
     params = if params["comment"] == "", do: nil, else: params
 
     case Approvals.reject(request, action_user, comment: params) do

@@ -10,8 +10,10 @@ defmodule Itsm.Crews.Crew do
     # field :organization, :string
     # field :department, :string
 
+    field :leader_updated_at, :utc_datetime
     belongs_to :leader, Itsm.Accounts.User, foreign_key: :leader_id
 
+    has_many :crews_users, Itsm.Crews.CrewsUsers
     many_to_many :users, Itsm.Accounts.User, join_through: Itsm.Crews.CrewsUsers
 
     timestamps(type: :utc_datetime)
@@ -48,10 +50,12 @@ defmodule Itsm.Crews.Crew do
     |> put_assoc(:users, users)
   end
 
-  def leader_changeset(crew, %{id: leader_id}) do
+  def leader_changeset(crew, leader) do
     crew
-    |> cast(%{leader_id: leader_id}, [:leader_id])
-    |> validate_required([:leader_id])
+    |> change()
+    |> put_change(:leader_updated_at, DateTime.utc_now() |> DateTime.truncate(:second))
+    |> put_change(:leader_id, leader.id)
+    |> validate_required([:leader_id, :leader_updated_at])
   end
 
   # Crew 이름을 대문자로 변환

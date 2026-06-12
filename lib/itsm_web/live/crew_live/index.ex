@@ -3,7 +3,7 @@ defmodule ItsmWeb.CrewLive.Index do
 
   alias Itsm.Crews
   alias Itsm.Crews.Crew
-  alias Itsm.Accounts.User
+  alias Itsm.Crews.CrewsUsers
   alias ItsmWeb.LiveUtils
 
   # 공통 컴포넌트 임포트
@@ -65,22 +65,17 @@ defmodule ItsmWeb.CrewLive.Index do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp handle_pubsub(action_user, event, %Crew{} = item, socket)
-       when event in [:update_crew, :add_users, :switch_leader] do
-    %{current_user: user} = socket.assigns
+       when event in [:update_crew, :switch_leader] do
+    modify_crew(socket, action_user, event, item)
+  end
 
-    if(Enum.any?(item.users, &(&1.id == user.id)) || user.id == item.leader.id) do
-      opts = [
-        resource_name: get_resource_name(event),
-        target_key: :crews
-      ]
-
-      {:noreply,
-       socket
-       |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)
-       |> stream_insert(:crews, item)}
-    else
-      {:noreply, socket}
-    end
+  defp handle_pubsub(
+         action_user,
+         :add_crews_users = event,
+         {%Crew{} = item, _crews_users},
+         socket
+       ) do
+    modify_crew(socket, action_user, event, item)
   end
 
   defp handle_pubsub(action_user, :delete_crew = event, %Crew{} = item, socket) do
@@ -96,19 +91,18 @@ defmodule ItsmWeb.CrewLive.Index do
 
   defp handle_pubsub(
          action_user,
-         :delete_user = event,
-         {%Crew{} = item, %User{} = deleted_user},
+         :delete_crews_users = event,
+         {%Crew{} = item, %CrewsUsers{} = crews_users},
          socket
        ) do
     %{current_user: user} = socket.assigns
 
-    if(user.id == deleted_user.id) do
-      opts = [
-        resource_name: gettext("Member"),
-        target_key: :crews
-      ]
+    if(user.id == crews_users.user_id) do
+      opts = [resource_name: gettext("Member")]
 
-      {:noreply, ItsmWeb.LiveUtils.handle_standard_pubsub(socket, action_user, event, item, opts)}
+      {:noreply,
+       ItsmWeb.LiveUtils.handle_standard_pubsub(socket, action_user, event, item, opts)
+       |> stream_delete(:crews, item)}
     else
       {:noreply, socket}
     end
@@ -118,7 +112,22 @@ defmodule ItsmWeb.CrewLive.Index do
     {:noreply, socket}
   end
 
+  defp modify_crew(socket, action_user, event, %Crew{} = item) do
+    %{current_user: user} = socket.assigns
+
+    if(Enum.any?(item.crews_users, &(&1.user_id == user.id)) || user.id == item.leader.id) do
+      opts = [resource_name: get_resource_name(event)]
+
+      {:noreply,
+       socket
+       |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)
+       |> stream_insert(:crews, item)}
+    else
+      {:noreply, socket}
+    end
+  end
+
   defp get_resource_name(:update_crew), do: gettext("Crew")
-  defp get_resource_name(:add_users), do: gettext("Members")
+  defp get_resource_name(:add_crews_users), do: gettext("Members")
   defp get_resource_name(:switch_leader), do: gettext("Crew Leader")
 end

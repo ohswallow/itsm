@@ -3,6 +3,7 @@ defmodule ItsmWeb.CrewLive.Show do
   use ItsmWeb, :live_view
 
   alias Itsm.Crews
+  alias Itsm.Crews.CrewsUsers
   alias Itsm.Accounts
   alias ItsmWeb.LiveUtils
 
@@ -20,8 +21,8 @@ defmodule ItsmWeb.CrewLive.Show do
      |> assign(:page_title, "Show Crew")
      |> assign(:crew, crew)
      |> assign(:show_member_modal, false)
-     |> stream(:users, Crews.list_regular_users(crew))
-     |> Itsm.PubSub.Helper.subscribe(Crews, id: id)}
+     |> stream(:crews_userses, Crews.list_regular_users(crew), reset: true)
+     |> Itsm.PubSub.Helper.subscribe(Crews, id: crew.id)}
   end
 
   def handle_event("switch_leader", %{"user-id" => user_id}, socket) do
@@ -35,8 +36,8 @@ defmodule ItsmWeb.CrewLive.Show do
 
     target_user = Accounts.get_user!(user_id)
 
-    case Crews.delete_user(action_user, crew, target_user) do
-      {:ok, _target_user} ->
+    case Crews.delete_crews_users(action_user, crew, target_user) do
+      {:ok, crews_users} ->
         msg =
           if action_user == target_user,
             do: "You have left the crew",
@@ -45,7 +46,7 @@ defmodule ItsmWeb.CrewLive.Show do
         socket =
           socket
           |> assign(:show_member_modal, false)
-          |> stream_delete(:users, target_user)
+          |> stream_delete(:crews_userses, crews_users)
           |> put_flash(:info, msg)
 
         {:noreply, socket}
@@ -59,7 +60,7 @@ defmodule ItsmWeb.CrewLive.Show do
     %{crew: crew, current_user: action_user} = socket.assigns
 
     # 리더가 없을경우 현재 로그인 사람 리더가 됨
-    if Enum.empty?(crew.users) and crew.leader in ["", nil] do
+    if Enum.empty?(crew.crews_users) and crew.leader in ["", nil] do
       switch_leader(socket, action_user)
     else
       {:noreply, assign(socket, :show_member_modal, true)}
@@ -69,14 +70,14 @@ defmodule ItsmWeb.CrewLive.Show do
   def handle_info({ItsmWeb.SearchUsersDialog, :users_selected, user_ids}, socket) do
     %{crew: crew, current_user: action_user} = socket.assigns
 
-    case Crews.add_users(action_user, crew, user_ids) do
-      {:ok, users} ->
+    case Crews.add_crews_users(action_user, crew, user_ids) do
+      {:ok, crews_userses} ->
         {:noreply,
-         stream(socket, :users, users)
+         stream(socket, :crews_userses, crews_userses)
          |> assign(:show_member_modal, false)
          |> put_flash(:info, "Members added successfully")}
 
-      {:error, step} ->
+      {:error, step, _changeset, _so_far_changeset} ->
         {:noreply, put_flash(socket, :error, LiveUtils.translate_error(step, :crew))}
     end
   end
@@ -99,24 +100,34 @@ defmodule ItsmWeb.CrewLive.Show do
     {:noreply, ItsmWeb.LiveUtils.handle_standard_pubsub(socket, action_user, event, crew, opts)}
   end
 
-  defp handle_pubsub(_action_user, :add_users = _event, {add_users}, socket) do
+  defp handle_pubsub(
+         _action_user,
+         :add_crews_users = _event,
+         {_crew, %CrewsUsers{} = crews_userses},
+         socket
+       ) do
     {:noreply,
      socket
-     |> stream(:users, add_users)
+     |> stream(:crews_userses, crews_userses)
      |> assign(:show_member_modal, false)}
   end
 
-  defp handle_pubsub(action_user, :delete_user = event, {_crew, target_user}, socket) do
+  defp handle_pubsub(
+         action_user,
+         :delete_crews_users = event,
+         {_crew, %CrewsUsers{} = crews_users},
+         socket
+       ) do
     %{back_path: back_path, current_user: user} = socket.assigns
 
     opts =
-      [resource_name: gettext("Member"), target_key: :users]
-      |> add_back_path(user.id == target_user.id, back_path)
+      [resource_name: gettext("Member")]
+      |> add_back_path(user.id == crews_users.user_id, back_path)
 
     {:noreply,
      socket
-     |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, target_user, opts)
-     |> stream_delete(:users, target_user)
+     |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, crews_users, opts)
+     |> stream_delete(:crews_userses, crews_users)
      |> assign(:show_member_modal, false)}
   end
 
@@ -164,7 +175,7 @@ defmodule ItsmWeb.CrewLive.Show do
           socket
           |> assign(:show_member_modal, false)
           |> assign(:crew, crew)
-          |> stream(:users, Crews.list_regular_users(crew), reset: true)
+          |> stream(:crews_userses, Crews.list_regular_users(crew), reset: true)
           |> put_flash(:info, "Leader changed successfully")
 
         {:noreply, socket}

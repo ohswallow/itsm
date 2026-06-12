@@ -111,7 +111,7 @@ defmodule Itsm.Posts do
       update_post(action_user, post, attrs, selected_board_metadata, repo, broadcast: false)
     end)
     |> Ecto.Multi.run(:create_attachments, fn repo, %{update_post: post} ->
-      Attachments.create_attachments(action_user, post, consumer_fn, repo, broadcast: false)
+      Attachments.create_attachments(repo, post, consumer_fn)
     end)
     |> Repo.transact()
     |> case do
@@ -136,7 +136,7 @@ defmodule Itsm.Posts do
       create_post(action_user, attrs, selected_board_metadata, repo, broadcast: false)
     end)
     |> Ecto.Multi.run(:create_attachments, fn repo, %{create_post: post} ->
-      Attachments.create_attachments(action_user, post, consumer_fn, repo, broadcast: false)
+      Attachments.create_attachments(repo, post, consumer_fn)
     end)
     |> Repo.transact()
     |> case do
