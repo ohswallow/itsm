@@ -2,7 +2,7 @@
   {@crew.name}
   <:subtitle>{@crew.description}</:subtitle>
    <%!-- 리더만 멤버추가 가능 --%>
-  <:actions :if={@current_user == @crew.leader or Enum.empty?(@crew.users)}>
+  <:actions :if={Enum.empty?(@crew.crews_users) or @current_user.id == @crew.leader.id}>
     <.button phx-click="show_member_modal">Add Member</.button>
   </:actions>
 </.header>
@@ -25,7 +25,7 @@
             <span
               id="leader-updated-at"
               phx-hook="LocalTime.ToLocale"
-              utc-value={if @crew.leader, do: @crew.leader.updated_at, else: ""}
+              utc-value={if @crew.leader, do: @crew.leader_updated_at, else: ""}
             >
             </span>
           </p>
@@ -46,28 +46,30 @@
     
     <div id="members" phx-update="stream" class="space-y-1">
       <div
-        :for={{dom_id, user} <- @streams.users}
+        :for={{dom_id, crews_users} <- @streams.crews_userses}
         id={dom_id}
         class="flex items-center justify-between py-2 transition-all duration-500 animate-in fade-in slide-in-from-top-2"
         phx-remove={JS.transition("duration-300 opacity-0 scale-95")}
       >
         <div class="flex items-center gap-3">
           <div>
-            <p class="text-sm text-gray-900 break-all">{user.display_name} ({user.email})</p>
+            <p class="text-sm text-gray-900 break-all">
+              {crews_users.user.display_name} ({crews_users.user.email})
+            </p>
             
             <p class="text-xs text-gray-500">
               Added
               <span
-                id={"member-inserted-at-#{user.id}"}
+                id={"member-inserted-at-#{crews_users.user.id}"}
                 phx-hook="LocalTime.ToLocale"
-                utc-value={user.inserted_at}
+                utc-value={crews_users.inserted_at}
               >
               </span>
             </p>
           </div>
            <%!-- 접속한 본인 you 표시 --%>
           <span
-            :if={user == @current_user}
+            :if={crews_users.user == @current_user}
             class="ml-12 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full"
           >
             You
@@ -77,18 +79,18 @@
         <div class="flex gap-1">
           <%!-- leader 위임 버튼 --%>
           <button
-            :if={@current_user == @crew.leader or @crew.leader in ["", nil]}
+            :if={@current_user.id == @crew.leader.id or @crew.leader in ["", nil]}
             phx-click="switch_leader"
-            phx-value-user-id={user.id}
+            phx-value-user-id={crews_users.user_id}
             class="text-gray-400 hover:text-gray-600 px-2 py-1"
             data-confirm="Are you sure you want to change the crew leader?"
           >
             <.icon name="hero-trophy" class="w-4 h-4" />
           </button>
           <button
-            :if={@current_user == @crew.leader or @current_user == user}
+            :if={@current_user.id == @crew.leader.id or @current_user.id == crews_users.user_id}
             phx-click="remove_member"
-            phx-value-user-id={user.id}
+            phx-value-user-id={crews_users.user_id}
             class="text-gray-400 hover:text-gray-600 px-2 py-1"
             data-confirm="Are you sure you want to remove the member?"
           >

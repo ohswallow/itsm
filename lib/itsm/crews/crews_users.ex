@@ -2,8 +2,7 @@ defmodule Itsm.Crews.CrewsUsers do
   use Ecto.Schema
   import Ecto.Changeset
 
-  # @primary_key {:id, :binary_id, autogenerate: true}
-  @primary_key false
+  @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "crews_users" do
     belongs_to :crew, Itsm.Crews.Crew, type: :binary_id, primary_key: true

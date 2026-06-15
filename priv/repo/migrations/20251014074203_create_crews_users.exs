@@ -3,11 +3,9 @@ defmodule Itsm.Repo.Migrations.CreateCrewsUsers do
 
   def change do
     create table(:crews_users, primary_key: false) do
-      add :crew_id, references(:crews, on_delete: :delete_all, type: :binary_id),
-        primary_key: true
-
-      add :user_id, references(:users, on_delete: :delete_all, type: :binary_id),
-        primary_key: true
+      add :id, :binary_id, primary_key: true
+      add :crew_id, references(:crews, on_delete: :delete_all, type: :binary_id)
+      add :user_id, references(:users, on_delete: :delete_all, type: :binary_id)
 
       timestamps(type: :utc_datetime)
     end

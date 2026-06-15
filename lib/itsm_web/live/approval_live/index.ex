@@ -12,8 +12,8 @@ defmodule ItsmWeb.ApprovalLive.Index do
   def mount(_params, _session, socket) do
     {:ok,
      initial_page(socket)
-     |> Itsm.PubSub.Helper.subscribe(Crews)
      |> assign(:page_title, "Listing Approvals")
+     |> Itsm.PubSub.Helper.subscribe(Crews)
      |> Itsm.PubSub.Helper.subscribe(Requests)}
   end
 
@@ -43,14 +43,27 @@ defmodule ItsmWeb.ApprovalLive.Index do
 
   defp initial_page(socket) do
     %{current_user: current_user} = socket.assigns
+
     my_crews_ids = Crews.list_my_crews_ids(current_user)
 
     Enum.reduce(my_crews_ids, socket, fn crew_id, acc_socket ->
-      Itsm.PubSub.Helper.subscribe(acc_socket, Crews, id: crew_id)
+      Itsm.PubSub.Helper.subscribe(acc_socket, Crews, id: crew_id, only: :detail)
     end)
+    |> unsubscribe_my_crews(my_crews_ids)
     |> assign(:my_crew_ids, my_crews_ids)
     |> stream(:requests, Approvals.list_pending_requests(current_user), reset: true)
   end
+
+  defp unsubscribe_my_crews(
+         %{assigns: %{my_crew_ids: previous_my_crew_ids}} = socket,
+         my_crews_ids
+       ) do
+    Enum.reduce(previous_my_crew_ids -- my_crews_ids, socket, fn crew_id, acc_socket ->
+      Itsm.PubSub.Helper.unsubscribe(acc_socket, Crews, id: crew_id, only: :detail)
+    end)
+  end
+
+  defp unsubscribe_my_crews(socket, _my_crews_ids), do: socket
 
   defp apply_action(socket, :approve, %{"request_id" => id}) do
     request = Requests.get_request!(id)
@@ -74,14 +87,9 @@ defmodule ItsmWeb.ApprovalLive.Index do
 
   defp apply_action(socket, :index, _params), do: socket
 
-  defp handle_pubsub(action_user, event, request, socket)
-       when event in [:update_crew, :delete_crew] do
-    opts = [resource_name: gettext("Crew")]
-
-    {:noreply,
-     socket
-     |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, request, opts)
-     |> initial_page()}
+  defp handle_pubsub(_action_user, event, _item, socket)
+       when event in [:update_crew, :delete_crew, :add_crews_users, :delete_crews_users] do
+    {:noreply, initial_page(socket)}
   end
 
   defp handle_pubsub(action_user, :create_request = event, request, socket) do

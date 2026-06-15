@@ -80,24 +80,13 @@ defmodule Itsm.Requests do
     end
   end
 
-  def update_request(%User{} = action_user, %Request{} = request, attrs, repo \\ Repo, opts \\ []) do
+  def update_request(repo, %Request{} = request, attrs) do
     request
     |> Request.changeset(attrs)
     |> repo.update()
     |> case do
-      {:ok, request} ->
-        request = request |> repo.preload(:category)
-
-        if Keyword.get(opts, :broadcast, true) do
-          Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_request, request},
-            id: request.id
-          )
-        end
-
-        {:ok, request}
-
-      {:error, changeset} ->
-        {:error, changeset}
+      {:ok, request} -> {:ok, request}
+      {:error, changeset} -> {:error, changeset}
     end
   end
 
