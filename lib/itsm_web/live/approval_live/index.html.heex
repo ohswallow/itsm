@@ -1,50 +1,72 @@
-<.header>
-  Listing Approvals
-  <:actions>
-    <.link patch={~p"/admin/approvals/new"}>
-      <.button>New Approval</.button>
-    </.link>
-  </:actions>
-</.header>
-
-<.table
-  id="approvals"
-  rows={@streams.approvals}
-  row_click={fn {_id, approval} -> JS.navigate(~p"/admin/approvals/#{approval}") end}
->
-  <:col :let={{_id, approval}} label="Status">{approval.status}</:col>
-  <:col :let={{_id, approval}} label="Approver">{approval.approver_id}</:col>
-  <:col :let={{_id, approval}} label="Approver name">{approval.approver_name}</:col>
-  <:col :let={{_id, approval}} label="Comment">{approval.comment}</:col>
-  <:col :let={{_id, approval}} label="Approved at">{approval.approved_at}</:col>
-  <:action :let={{_id, approval}}>
-    <div class="sr-only">
-      <.link navigate={~p"/admin/approvals/#{approval}"}>Show</.link>
-    </div>
-    <.link patch={~p"/admin/approvals/#{approval}/edit"}>Edit</.link>
-  </:action>
-  <:action :let={{id, approval}}>
-    <.link
-      phx-click={JS.push("delete", value: %{id: approval.id}) |> hide("##{id}")}
-      data-confirm="Are you sure?"
-    >
-      Delete
-    </.link>
-  </:action>
-</.table>
-
 <.modal
-  :if={@live_action in [:new, :edit]}
+  :if={@live_action in [:approve, :reject]}
   id="approval-modal"
   show
-  on_cancel={JS.patch(~p"/admin/approvals")}
+  on_cancel={JS.patch(~p"/approvals")}
 >
   <.live_component
-    module={ItsmWeb.ApprovalLive.FormComponent}
-    id={@approval.id || :new}
+    module={ItsmWeb.CreateCommentDialog}
+    id={@request.id}
     title={@page_title}
     action={@live_action}
-    approval={@approval}
-    patch={~p"/admin/approvals"}
+    request={@request}
+    current_user={@current_user}
+    patch={~p"/approvals"}
   />
 </.modal>
+
+<.modal
+  :if={@live_action == :feedback}
+  id="feedback-modal"
+  show
+  on_cancel={JS.patch(~p"/approvals")}
+>
+  <.live_component
+    module={ItsmWeb.EvaluationDialog}
+    id={@request.id}
+    title={@page_title}
+    action={@live_action}
+    request={@request}
+    crew_id={@request.assignee_crew_id}
+    current_user={@current_user}
+    patch={~p"/approvals"}
+  />
+</.modal>
+
+<.header>Listing Approvals</.header>
+
+<.table
+  id="requests"
+  rows={@streams.requests}
+  row_click={
+    fn {_id, request} -> JS.navigate("/#{request.category.request_name}/#{request.id}") end
+  }
+>
+  <:col :let={{_id, request}} label={gettext("Title")}>
+    <div class="w-[90px] truncate">{request.title}</div>
+  </:col>
+  
+  <:col :let={{_id, request}} label={gettext("Environment")}>
+    <.common_code_label group="운영_구분" code={request.env} />
+  </:col>
+  
+  <:col :let={{id, request}} label={gettext("Due Date")}>
+    <span id={"due-date-#{id}"} phx-hook="LocalTime.ToLocale" utc-value={request.due_date}></span>
+  </:col>
+  
+  <:col :let={{_id, request}} label={gettext("Request Name")}>{request.category.name}</:col>
+  
+  <:col :let={{_id, request}} label={gettext("Requestor Crew")}>
+    {request.requestor_crew.name}
+  </:col>
+  
+  <:col :let={{_id, request}} label={gettext("Assignee Crew")}>{request.assignee_crew.name}</:col>
+  
+  <:col :let={{_id, request}} label={gettext("Requestor Name")}>{request.requestor_name}</:col>
+  
+  <:col :let={{_id, request}} label={gettext("Status")}>
+    {Workflow.status_label(:service_request, request)}
+  </:col>
+  
+  <:action :let={{_id, request}}><.action_cell request={request} /></:action>
+</.table>

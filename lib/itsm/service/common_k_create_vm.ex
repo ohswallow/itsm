@@ -4,17 +4,40 @@ defmodule Itsm.Service.CommonKCreateVm do
 
   embedded_schema do
     field :ip, :string
-    field :description, :string
+    field :service_name, :string
     field :hostname, :string
-    field :os_image, Ecto.Enum, values: [:Linux, :Windows]
+    # group_code: "운영체제"
+    field :os_image, :string
     field :os_version, :string
-    field :cpu_memory, :string
+    # field :cpu_memory, :string
+    field :cpu, :integer
+    field :memory, :integer
+    field :is_dmz_zone, :boolean, default: false
+    field :location, :string
   end
 
   @doc false
-  def changeset(common_k_create_vm, attrs) do
+  def changeset(common_k_create_vm, attrs \\ %{}) do
     common_k_create_vm
-    |> cast(attrs, [:hostname, :os_image, :cpu_memory, :description, :os_version])
-    |> validate_required([:hostname, :os_image, :cpu_memory, :description, :os_version])
+    |> cast(attrs, [
+      :hostname,
+      :os_image,
+      :cpu,
+      :memory,
+      :service_name,
+      :os_version,
+      :is_dmz_zone,
+      :location
+    ])
+    |> validate_required([
+      :hostname,
+      :os_image,
+      :cpu,
+      :memory,
+      :service_name,
+      :os_version,
+      :is_dmz_zone,
+      :location
+    ])
   end
 end

@@ -1,28 +1,58 @@
 defmodule ItsmWeb.DelegationLive.FormComponent do
   use ItsmWeb, :live_component
 
-  import LiveSelect
   alias Itsm.Delegations
   alias Itsm.Accounts
+  alias Itsm.CommonCodes
 
-  @impl true
+  def update(%{conflict: {event, user}} = _assigns, socket) do
+    msg = if String.contains?(to_string(event), "delete"), do: "삭제", else: "수정"
+
+    {:ok,
+     socket
+     |> assign(:conflict, true)
+     |> assign(:conflict_msg, "#{user.display_name}님이 데이터를 #{msg}했습니다.")}
+  end
+
   def update(%{delegation: delegation} = assigns, socket) do
+    # 새 delegation이면 start_date를 오늘로 기본 설정
+    delegation =
+      if is_nil(delegation.id) and is_nil(delegation.start_date) do
+        %{delegation | start_date: Date.utc_today()}
+      else
+        delegation
+      end
+
     {:ok,
      socket
      |> assign(assigns)
+     |> assign(:conflict, false)
      |> assign_new(:form, fn ->
        to_form(Delegations.change_delegation(delegation))
-     end)}
+     end)
+     |> assign_new_options()}
   end
 
-  @impl true
   def render(assigns) do
     ~H"""
     <div>
       <.header>
         {@title}
-        <:subtitle>Use this form to manage delegation records in your database.</:subtitle>
+        <:subtitle>
+          {gettext("Use this form to manage delegation records in your database.")}
+        </:subtitle>
       </.header>
+
+      <div
+        :if={@conflict}
+        class="p-4 mb-4 bg-red-50 border border-red-200 text-red-800 rounded animate-pulse"
+      >
+        <div class="flex items-center gap-2 font-bold">
+          <span>⚠️ 충돌 발생!</span>
+        </div>
+        <p class="mt-1 text-sm">{@conflict_msg}</p>
+        <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
+      </div>
 
       <.simple_form
         for={@form}
@@ -31,213 +61,125 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
-        <input
-          type="hidden"
-          name="delegation[delegator_name]"
-          value={@form[:delegator_name].value}
+        <.live_select
+          field={@form[:delegator_id]}
+          phx-target={@myself}
+          label={gettext("Delegator name")}
+          placeholder={gettext("Search by name")}
+        >
+          <:option :let={option}>
+            <%!-- 이름 외 옵션 표출 --%>
+            <div class="flex flex-col">
+              <span class="font-bold">{option.label}</span>
+              <span class="text-sm text-gray-600">
+                ID: {option.value} | Email: {option.email} | Organization: {option.organization} | Department: {option.department}
+              </span>
+            </div>
+          </:option>
+        </.live_select>
+
+        <.live_select
+          field={@form[:delegatee_id]}
+          label={gettext("Delegatee name")}
+          phx-target={@myself}
+          placeholder={gettext("Search by name")}
+        >
+          <:option :let={option}>
+            <%!-- 이름 외 옵션 표출 --%>
+            <div class="flex flex-col">
+              <span class="font-bold">{option.label}</span>
+              <span class="text-sm text-gray-600">
+                ID: {option.value} | Email: {option.email} | Organization: {option.organization} | Department: {option.department}
+              </span>
+            </div>
+          </:option>
+        </.live_select>
+        <.itsm_calendar
+          id="start_date_calendar"
+          field={@form[:start_date]}
+          label={gettext("Start date")}
+          min={Date.utc_today()}
         />
-        <div class="mb-4">
-          <label class="mb-2 block text-sm font-semibold leading-6 text-zinc-800">
-            Delegator Name
-          </label>
-          <.live_select
-            field={@form[:delegator_id]}
-            phx-target={@myself}
-            allow_clear={true}
-            mode={:single}
-            placeholder="사용자 이름을 입력하세요"
-            container_extra_class="flex-grow"
-            dropdown_extra_class="bg-white shadow-lg w-full max-h-60 overflow-y-auto"
-            option_extra_class="text-gray-800 border-b border-gray-200 hover:bg-blue-100 py-2 px-4"
-            active_option_class="bg-blue-500 text-white"
-          >
-            <:clear_button>&times;</:clear_button>
-            <:option :let={option}>
-              <%!-- 이름 외 옵션 표출 --%>
-              <div class="flex flex-col">
-                <span class="font-bold">{option.label}</span>
-                <span class="text-sm text-gray-600">
-                  ID: {option.value} | Email: {option.email} | Organization: {option.organization}
-                </span>
-              </div>
-            </:option>
-          </.live_select>
-        </div>
-
-        <input
-          type="hidden"
-          name="delegation[delegatee_name]"
-          value={@form[:delegatee_name].value}
+        <.itsm_calendar
+          id="end_date_calendar"
+          field={@form[:end_date]}
+          label={gettext("End date")}
+          min={Date.utc_today()}
         />
-
-        <div class="mb-4">
-          <label class="mb-2 block text-sm font-semibold leading-6 text-zinc-800">
-            Delegatee Name
-          </label>
-          <.live_select
-            field={@form[:delegatee_id]}
-            phx-target={@myself}
-            allow_clear={true}
-            mode={:single}
-            placeholder="사용자 이름을 입력하세요"
-            container_extra_class="flex-grow"
-            dropdown_extra_class="bg-white shadow-lg w-full max-h-60 overflow-y-auto"
-            option_extra_class="text-gray-800 border-b border-gray-200 hover:bg-blue-100 py-2 px-4"
-            active_option_class="bg-blue-500 text-white"
-          >
-            <:clear_button>&times;</:clear_button>
-            <:option :let={option}>
-              <%!-- 이름 외 옵션 표출 --%>
-              <div class="flex flex-col">
-                <span class="font-bold">{option.label}</span>
-                <span class="text-sm text-gray-600">
-                  ID: {option.value} | Email: {option.email} | Organization: {option.organization}
-                </span>
-              </div>
-            </:option>
-          </.live_select>
-        </div>
-
-        <%!-- <.input field={@form[:delegator_name]} type="text" label="Delegator name" /> --%>
-        <%!-- <.input field={@form[:delegatee_name]} type="text" label="Delegatee name" /> --%>
-        <.input field={@form[:start_date]} type="date" label="Start date" />
-        <.input field={@form[:end_date]} type="date" label="End date" />
         <.input
           field={@form[:reason]}
           type="select"
-          label="Reason"
+          label={gettext("Reason")}
           prompt="Choose a value"
-          options={Ecto.Enum.values(Itsm.Delegations.Delegation, :reason)}
+          options={@reason_options}
         />
         <:actions>
-          <.button phx-disable-with="Saving...">Save Delegation</.button>
+          <.button :if={!@conflict} phx-disable-with="Saving...">Save Delegation</.button>
         </:actions>
       </.simple_form>
     </div>
     """
   end
 
-  def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
-    IO.inspect(text, label: "Searching for")
-    users = Accounts.search_users(%{"q" => text})
+  def handle_event("live_select_change", %{"text" => keyword, "id" => live_select_id}, socket) do
+    %{current_user: current_user} = socket.assigns
 
+    # 본인 선택이 가능한 화면에서 호출 시
     options =
-      Enum.map(users, fn user ->
-        %{
-          label: user.display_name,
-          # LiveSelect의 value는 ID(UUID)로 설정
-          value: user.id,
-          email: user.email,
-          organization: user.organization,
-          employee_number: user.employee_number
-        }
-      end)
+      Accounts.live_select_by_name(current_user, keyword)
 
-    send_update(LiveSelect.Component,
-      id: live_select_id,
-      options: options
-    )
+    send_update(LiveSelect.Component, id: live_select_id, options: options)
 
     {:noreply, socket}
   end
 
-  @impl true
   def handle_event("validate", %{"delegation" => delegation_params}, socket) do
-    IO.inspect(delegation_params, label: "validate event - before")
-
-    delegation_params =
-      delegation_params
-      |> update_delegator_params()
-      |> update_delegatee_params()
-
-    IO.inspect(delegation_params, label: "validate event - after")
-
     changeset =
       socket.assigns.delegation
       |> Delegations.change_delegation(delegation_params)
       |> Map.put(:action, :validate)
 
-    IO.inspect(changeset.changes, label: "validate event - changeset changes")
-
     {:noreply, assign(socket, form: to_form(changeset))}
   end
 
   def handle_event("save", %{"delegation" => delegation_params}, socket) do
-    IO.inspect(delegation_params, label: "Saving delegation with params")
     save_delegation(socket, socket.assigns.action, delegation_params)
   end
 
-  defp save_delegation(socket, :edit, delegation_params) do
-    case Delegations.update_delegation(socket.assigns.delegation, delegation_params) do
-      {:ok, delegation} ->
-        notify_parent({:saved, delegation})
-
-        {:noreply,
-         socket
-         |> put_flash(:info, "Delegation updated successfully")
-         |> push_patch(to: socket.assigns.patch)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, form: to_form(changeset))}
-    end
+  defp assign_new_options(socket) do
+    socket
+    |> assign_new(:reason_options, fn -> CommonCodes.get_select_options("사유") end)
   end
 
   defp save_delegation(socket, :new, delegation_params) do
-    case Delegations.create_delegation(delegation_params) do
-      {:ok, delegation} ->
-        notify_parent({:saved, delegation})
+    %{current_user: action_user} = socket.assigns
+    %{"delegator_id" => delegator_id, "delegatee_id" => delegatee_id} = delegation_params
 
-        {:noreply,
-         socket
-         |> put_flash(:info, "Delegation created successfully")
-         |> push_patch(to: socket.assigns.patch)}
+    delegator = Accounts.get_user!(delegator_id)
+    delegatee = Accounts.get_user!(delegatee_id)
+
+    correct_delegation_params =
+      Map.new(delegation_params, fn {k, v} ->
+        if k == "start_date" || k == "end_date" do
+          {:ok, dt, _} = DateTime.from_iso8601(v)
+          new_val = dt |> DateTime.add(9, :hour) |> DateTime.to_iso8601()
+          {k, new_val}
+        else
+          {k, v}
+        end
+      end)
+
+    case Delegations.create_delegation(
+           action_user,
+           delegator,
+           delegatee,
+           correct_delegation_params
+         ) do
+      {:ok, _delegation} ->
+        {:noreply, socket |> push_patch(to: socket.assigns.patch)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
-
-  defp update_delegator_params(params) do
-    if params["delegator_id"] do
-      Map.put(params, "delegator_name", params["delegator_id_text_input"])
-    else
-      Map.put(params, "delegator_name", nil)
-    end
-  end
-
-  defp update_delegatee_params(params) do
-    if params["delegatee_id"] do
-      Map.put(params, "delegatee_name", params["delegatee_id_text_input"])
-    else
-      Map.put(params, "delegatee_name", nil)
-    end
-  end
-
-  # defp update_delegator_params(delegation_params) do
-  #   if delegation_params["delegator_id"] do
-  #     delegator_id = delegation_params["delegator_id"]
-  #     delegator_name = delegation_params["delegator_id_text_input"]
-
-  #     delegation_params
-  #     |> Map.put("delegator_id", delegator_id)
-  #     |> Map.put("delegator_name", delegator_name)
-  #   else
-  #     Map.put(delegation_params, "delegator_name", nil)
-  #   end
-  # end
-
-  # defp update_delegatee_params(delegation_params) do
-  #   if delegation_params["delegatee_id"] do
-  #     delegatee_id = delegation_params["delegatee_id"]
-  #     delegatee_name = delegation_params["delegatee_id_text_input"]
-
-  #     delegation_params
-  #     |> Map.put("delegatee_id", delegatee_id)
-  #     |> Map.put("delegatee_name", delegatee_name)
-  #   else
-  #     Map.put(delegation_params, "delegatee_name", nil)
-  #   end
-  # end
-
-  defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end

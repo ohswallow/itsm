@@ -4,7 +4,7 @@ defmodule Itsm.Service.Approval do
 
   alias Itsm.Service.Request
 
-  @status_values [:request, :check, :plan, :review, :start, :finish, :verify]
+  @status_values [:request, :validation, :assignment, :check, :start, :finish, :confirmation]
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -14,16 +14,13 @@ defmodule Itsm.Service.Approval do
       default: :request
 
     # 승인/거부
-    field :action, Ecto.Enum,
-      values: [:approve, :reject],
-      default: :approve
+    field :action, Ecto.Enum, values: [:approve, :reject]
 
     # field :approver_id, :string
     field :approver_name, :string
     # 선택사항
-    field :comment, :string
+    # field :comment, :string
 
-    # field :approved_at, :utc_datetime
     # field :request_id, :binary_id
 
     belongs_to :approver, Itsm.Accounts.User
@@ -36,24 +33,30 @@ defmodule Itsm.Service.Approval do
   def status_values, do: @status_values
 
   @doc false
-  def changeset(approval, attrs) do
+  def changeset(approval, attrs \\ %{}) do
     approval
     |> cast(attrs, [
       :status,
-      :approver_id,
       :approver_name,
-      :comment,
-      # :approved_at,
-      :request_id,
-      :action
+      :action,
+      :approver_id,
+      :request_id
     ])
     |> validate_required([
       :status,
-      :approver_id,
       :approver_name,
-      # :approved_at, # 승인 시각은 나중에 설정
-      :request_id,
-      :action
+      :action,
+      :approver_id,
+      :request_id
     ])
+    |> assoc_constraint(:approver)
+    |> assoc_constraint(:request)
+  end
+
+  def admin_changeset(approval, attrs) do
+    approval
+    |> changeset(attrs)
+    |> cast(attrs, [:inserted_at])
+    |> validate_required([:inserted_at])
   end
 end

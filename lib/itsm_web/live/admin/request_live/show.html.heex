@@ -1,0 +1,138 @@
+<.header>
+  Request {@request.id}
+  <:subtitle>This is a request record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/admin/requests/#{@request}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit request</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title={gettext("Title")}>{@request.title}</:item>
+  <:item title={gettext("Description")}>
+    <div class="w-[90px] truncate">{@request.description}</div>
+  </:item>
+  <:item title={gettext("Environment")}>
+    <.common_code_label group="운영_구분" code={@request.env} />
+  </:item>
+  <:item title={gettext("Due Date")}>
+    <span
+      id={"due-date-#{@request.id}"}
+      phx-hook="LocalTime.ToLocale"
+      utc-value={@request.due_date}
+    />
+  </:item>
+  <:item title={gettext("Request Type")}>
+    {@request.category.request_name}
+  </:item>
+  <:item title={gettext("Request Name")}>{@request.category.name}</:item>
+  <:item title={gettext("Requestor Crew")}>{@request.requestor_crew.name}</:item>
+  <:item title={gettext("Requestor Name")}>{@request.requestor.display_name}</:item>
+</.list>
+<br />
+
+<div class="text-lg font-bold">
+  Attachments
+</div>
+<.table
+  id="attachments"
+  rows={@streams.attachments}
+  row_click={fn {_id, attachment} -> JS.navigate(~p"/admin/attachments/#{attachment}") end}
+>
+  <:col :let={{_id, attachment}} label={gettext("Filename")}>{attachment.filename}</:col>
+  <:col :let={{_id, attachment}} label={gettext("Local Path")}>{attachment.local_path}</:col>
+  <:col :let={{_id, attachment}} label={gettext("File Type")}>{attachment.file_type}</:col>
+  <:col :let={{_id, attachment}} label={gettext("Byte Size")}>{attachment.byte_size}</:col>
+  <:col :let={{_id, attachment}} label={gettext("Status")}>{attachment.status}</:col>
+  <:col :let={{id, attachment}} label={gettext("Deleted At")}>
+    <div id={"deleted_at-#{id}"} phx-hook="LocalTime.ToLocale" utc-value={attachment.deleted_at} />
+  </:col>
+  <:action :let={{_id, attachment}}>
+    <div class="sr-only">
+      <.link navigate={~p"/admin/attachments/#{attachment}"}>Show</.link>
+    </div>
+    <.link patch={~p"/admin/attachments/#{attachment}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{_id, attachment}}>
+    <.link
+      id={attachment.id}
+      phx-click={JS.push("delete", value: %{schema: :attachments, id: attachment.id})}
+      class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+<br />
+<div class="text-lg font-bold">
+  Approvals
+</div>
+<.table
+  id="approvals"
+  rows={@streams.approvals}
+  row_click={fn {_id, approval} -> JS.navigate(~p"/admin/approvals/#{approval}") end}
+>
+  <:col :let={{_id, approval}} label={gettext("Status")}>{approval.status}</:col>
+  <:col :let={{_id, approval}} label={gettext("Approver")}>{approval.approver_name}</:col>
+  <:action :let={{_id, approval}}>
+    <div class="sr-only"><.link navigate={~p"/admin/approvals/#{approval}"}>Show</.link></div>
+    <.link patch={~p"/admin/approvals/#{approval}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{_id, approval}}>
+    <.link
+      id={approval.id}
+      phx-click={JS.push("delete", value: %{schema: :approvals, id: approval.id})}
+      class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+<br />
+<div class="text-lg font-bold">
+  Comments
+</div>
+<.table
+  id="comments"
+  rows={@streams.comments}
+  row_click={fn {_id, comment} -> JS.navigate(~p"/admin/comments/#{comment}") end}
+>
+  <:col :let={{_id, comment}} label={gettext("Comment")}>{comment.comment}</:col>
+  <:col :let={{_id, comment}} label={gettext("User")}>{comment.user.display_name}</:col>
+  <:action :let={{_id, comment}}>
+    <div class="sr-only"><.link navigate={~p"/admin/comments/#{comment}"}>Show</.link></div>
+    <.link patch={~p"/admin/comments/#{comment}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{_id, comment}}>
+    <.link
+      id={comment.id}
+      phx-click={JS.push("delete", value: %{schema: :comments, id: comment.id})}
+      class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.back navigate={~p"/admin/requests"}>Back to requests</.back>
+
+<.modal
+  :if={@live_action == :edit}
+  id="request-modal"
+  show
+  on_cancel={JS.patch(~p"/admin/requests/#{@request}")}
+>
+  <.live_component
+    module={ItsmWeb.Admin.RequestLive.FormComponent}
+    id={@request.id}
+    title={@page_title}
+    action={@live_action}
+    request={@request}
+    current_user={@current_user}
+    patch={~p"/admin/requests/#{@request}"}
+  />
+</.modal>

@@ -1,47 +1,49 @@
 defmodule ItsmWeb.CategoryLive.Index do
   use ItsmWeb, :live_view
 
-  alias Itsm.Service
-  alias Itsm.Service.Category
+  import ItsmWeb.CategoryLive.Components
 
-  @impl true
+  alias Itsm.Categories
+  alias Itsm.CommonCodes
+
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :categories, Service.list_categories())}
+    {:ok, socket |> stream(:categories, []) |> Itsm.PubSub.Helper.subscribe(Categories)}
   end
 
-  @impl true
-  def handle_params(params, _url, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+  def handle_params(params, _uri, socket) do
+    {:noreply,
+     socket
+     |> stream(:categories, Categories.filter_categories(params), reset: true)
+     |> assign(:current_params, params)
+     |> assign(:filtered_category_groups, Categories.get_category_groups(params))
+     |> assign(:group_select_options, [{"그룹", ""}] ++ CommonCodes.get_select_options("지역_유형"))
+     |> assign(:form, to_form(params))}
   end
 
-  defp apply_action(socket, :edit, %{"id" => id}) do
-    socket
-    |> assign(:page_title, "Edit Category")
-    |> assign(:category, Service.get_category!(id))
+  def handle_event("filter", params, socket) do
+    params =
+      params
+      |> Map.take(~w(keyword group sort_by))
+      |> Map.reject(fn {_, v} -> v == "" end)
+
+    socket = push_patch(socket, to: ~p"/categories?#{params}")
+
+    {:noreply, socket}
   end
 
-  defp apply_action(socket, :new, _params) do
-    socket
-    |> assign(:page_title, "New Category")
-    |> assign(:category, %Category{})
+  def handle_info({:pusbusb, {action_user, event, item}}, socket) do
+    handle_pubsub(action_user, event, item, socket)
   end
 
-  defp apply_action(socket, :index, _params) do
-    socket
-    |> assign(:page_title, "Listing Categories")
-    |> assign(:category, nil)
-  end
+  def handle_info(_event, socket), do: {:noreply, socket}
 
-  @impl true
-  def handle_info({ItsmWeb.CategoryLive.FormComponent, {:saved, category}}, socket) do
-    {:noreply, stream_insert(socket, :categories, category)}
-  end
+  defp handle_pubsub(action_user, event, item, socket) do
+    opts = [
+      resource_name: gettext("Category"),
+      target_key: :categories,
+      push_patch: [to: "#{socket.assigns.current_path}"]
+    ]
 
-  @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    category = Service.get_category!(id)
-    {:ok, _} = Service.delete_category(category)
-
-    {:noreply, stream_delete(socket, :categories, category)}
+    {:noreply, socket |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}
   end
 end

@@ -1,9 +1,7 @@
 <.header>
-  Listing Delegations
+  {gettext("Listing Delegations")}
   <:actions>
-    <.link patch={~p"/delegations/new"}>
-      <.button>New Delegation</.button>
-    </.link>
+    <.link patch={~p"/delegations/new"}><.button>{gettext("New Delegation")}</.button></.link>
   </:actions>
 </.header>
 
@@ -12,29 +10,52 @@
   rows={@streams.delegations}
   row_click={fn {_id, delegation} -> JS.navigate(~p"/delegations/#{delegation}") end}
 >
-  <:col :let={{_id, delegation}} label="Delegator name">{delegation.delegator_name}</:col>
-  <:col :let={{_id, delegation}} label="Delegatee name">{delegation.delegatee_name}</:col>
-  <:col :let={{_id, delegation}} label="Start date">{delegation.start_date}</:col>
-  <:col :let={{_id, delegation}} label="End date">{delegation.end_date}</:col>
-  <:col :let={{_id, delegation}} label="Reason">{delegation.reason}</:col>
-  <%!-- <:action :let={{_id, delegation}}>
-    <div class="sr-only">
-      <.link navigate={~p"/delegations/#{delegation}"}>Show</.link>
-    </div>
-    <.link patch={~p"/delegations/#{delegation}/edit"}>Edit</.link>
-  </:action> --%>
-  <:action :let={{id, delegation}}>
-    <.link
-      phx-click={JS.push("delete", value: %{id: delegation.id}) |> hide("##{id}")}
-      data-confirm="Are you sure?"
-    >
-      Delete
-    </.link>
+  <:col :let={{_id, delegation}} label={gettext("Delegator Name")}>
+    {delegation.delegator_name}
+  </:col>
+
+  <:col :let={{_id, delegation}} label={gettext("Delegatee Name")}>
+    {delegation.delegatee_name}
+  </:col>
+
+  <:col :let={{id, delegation}} label={gettext("Start Date")}>
+    <div
+      id={"delegation-start-date-#{id}"}
+      phx-hook="LocalTime.ToLocale"
+      format="date"
+      utc-value={delegation.start_date}
+    />
+  </:col>
+
+  <:col :let={{id, delegation}} label={gettext("End Date")}>
+    <div
+      id={"delegation-end-date-#{id}"}
+      phx-hook="LocalTime.ToLocale"
+      format="date"
+      utc-value={delegation.end_date}
+    />
+  </:col>
+
+  <:col :let={{_id, delegation}} label={gettext("Reason")}>{delegation.reason}</:col>
+
+  <:col :let={{_id, delegation}} label={gettext("Created By")}>{delegation.created_by_name}</:col>
+
+  <:action :let={{_id, delegation}}>
+    <%= if can_delete?(@current_user, delegation) do %>
+      <.link
+        id={delegation.id}
+        phx-click={JS.push("delete", value: %{id: delegation.id})}
+        class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
+        data-confirm={gettext("Do you want to delete this item?")}
+      >
+        {gettext("Delete")}
+      </.link>
+    <% end %>
   </:action>
 </.table>
 
 <.modal
-  :if={@live_action in [:new, :edit]}
+  :if={@live_action in [:new]}
   id="delegation-modal"
   show
   on_cancel={JS.patch(~p"/delegations")}
@@ -45,6 +66,7 @@
     title={@page_title}
     action={@live_action}
     delegation={@delegation}
+    current_user={@current_user}
     patch={~p"/delegations"}
   />
 </.modal>

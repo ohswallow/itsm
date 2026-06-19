@@ -1,0 +1,69 @@
+<.header>
+  Listing Assets
+  <:actions>
+    <.link patch={~p"/assets/new"}>
+      <.button>New Asset</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="assets"
+  rows={@streams.assets}
+  row_click={fn {_id, asset} -> JS.navigate(~p"/assets/#{asset}") end}
+>
+  <:col :let={{_id, asset}} label={gettext("Name")}>{asset.name}</:col>
+  <:col :let={{_id, asset}} label={gettext("Description")}>{asset.description}</:col>
+  <:col :let={{_id, asset}} label={gettext("Affiliate")}>
+    <.common_code_label group="계열사" code={asset.affiliate} />
+  </:col>
+  <:col :let={{_id, asset}} label={gettext("Category")}>
+    <.common_code_label group="카테고리" code={asset.category} />
+  </:col>
+  <:col :let={{_id, asset}} label={gettext("Region type")}>
+    <.common_code_label group="지역_유형" code={asset.region_type} />
+  </:col>
+  <:col :let={{_id, asset}} label={gettext("Infra type")}>
+    <.common_code_label group="인프라_유형" code={asset.infra_type} />
+  </:col>
+  <:col :let={{_id, asset}} label={gettext("Environment")}>
+    <.common_code_label group="운영_구분" code={asset.env} />
+  </:col>
+  <:col :let={{_id, asset}} label={gettext("Location")}>
+    <.common_code_label group="장소" code={asset.location} />
+  </:col>
+  <:col :let={{_id, asset}} label={gettext("Is dmz zone")}>{asset.is_dmz_zone}</:col>
+  <:action :let={{_id, asset}}>
+    <div class="sr-only">
+      <.link navigate={~p"/assets/#{asset}"}>Show</.link>
+    </div>
+    <.link patch={~p"/assets/#{asset}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{_id, asset}}>
+    <.link
+      id={asset.id}
+      phx-click={JS.push("delete", value: %{id: asset.id})}
+      class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="asset-modal"
+  show
+  on_cancel={JS.patch(~p"/assets")}
+>
+  <.live_component
+    module={ItsmWeb.AssetLive.FormComponent}
+    id={@asset.id || :new}
+    title={@page_title}
+    action={@live_action}
+    asset={@asset}
+    current_user={@current_user}
+    patch={~p"/assets"}
+  />
+</.modal>

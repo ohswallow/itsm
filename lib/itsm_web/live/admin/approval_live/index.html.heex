@@ -1,0 +1,50 @@
+<.header>
+  Listing Approvals
+</.header>
+<.itsm_table_container results={assigns[:results]}>
+  <.table
+    id="approvals"
+    rows={@streams.approvals}
+    row_click={fn {_id, approval} -> JS.navigate(~p"/admin/approvals/#{approval}") end}
+  >
+    <:col :let={{_id, approval}} label={gettext("request")}>
+      {approval.request.title}
+    </:col>
+    <:col :let={{_id, approval}} label={gettext("Category")}>
+      {approval.request.category.name}
+    </:col>
+    <:col :let={{_id, approval}} label={gettext("Status")}>{approval.status}</:col>
+    <:col :let={{_id, approval}} label={gettext("Approver")}>{approval.approver_name}</:col>
+    <:action :let={{_id, approval}}>
+      <div class="sr-only"><.link navigate={~p"/admin/approvals/#{approval}"}>Show</.link></div>
+      <.link patch={~p"/admin/approvals/#{approval}/edit"}>Edit</.link>
+    </:action>
+    <:action :let={{_id, approval}}>
+      <.link
+        id={approval.id}
+        phx-click={JS.push("delete", value: %{id: approval.id})}
+        class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
+  </.table>
+</.itsm_table_container>
+
+<.modal
+  :if={@live_action == :edit}
+  id="approval-modal"
+  show
+  on_cancel={JS.patch(~p"/admin/approvals?#{assigns[:results][:params] || %{}}")}
+>
+  <.live_component
+    module={ItsmWeb.Admin.ApprovalLive.FormComponent}
+    id={@approval.id}
+    title={@page_title}
+    action={@live_action}
+    approval={@approval}
+    current_user={@current_user}
+    patch={~p"/admin/approvals?#{assigns[:results][:params] || %{}}"}
+  />
+</.modal>

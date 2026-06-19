@@ -1,0 +1,48 @@
+<.header>
+  Listing Comments
+</.header>
+<.itsm_table_container results={assigns[:results]}>
+  <.table
+    id="comments"
+    rows={@streams.comments}
+    row_click={fn {_id, comment} -> JS.navigate(~p"/admin/comments/#{comment}") end}
+  >
+    <:col :let={{_id, comment}} label={gettext("Resource ID")}>
+      <.copyable_text label={gettext("ID")} value={comment.resource_id} />
+    </:col>
+    <:col :let={{_id, comment}} label={gettext("Resource")}>{comment.resource_type}</:col>
+    <:col :let={{_id, comment}} label={gettext("Comment")}>{comment.comment}</:col>
+    <:col :let={{_id, comment}} label={gettext("User")}>{comment.user.display_name}</:col>
+    <:action :let={{_id, comment}}>
+      <div class="sr-only"><.link navigate={~p"/admin/comments/#{comment}"}>Show</.link></div>
+      <.link patch={~p"/admin/comments/#{comment}/edit"}>Edit</.link>
+    </:action>
+    <:action :let={{_id, comment}}>
+      <.link
+        id={comment.id}
+        phx-click={JS.push("delete", value: %{id: comment.id})}
+        class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
+  </.table>
+</.itsm_table_container>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="comment-modal"
+  show
+  on_cancel={JS.patch(~p"/admin/comments?#{assigns[:results][:params] || %{}}")}
+>
+  <.live_component
+    module={ItsmWeb.Admin.CommentLive.FormComponent}
+    id={@comment.id || :new}
+    title={@page_title}
+    action={@live_action}
+    comment={@comment}
+    current_user={@current_user}
+    patch={~p"/admin/comments?#{assigns[:results][:params] || %{}}"}
+  />
+</.modal>

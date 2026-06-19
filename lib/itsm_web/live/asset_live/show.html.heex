@@ -1,0 +1,157 @@
+<div class="mx-auto max-w-5xl">
+  <div class="flex flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
+    <div class="border-b border-zinc-200 bg-white p-6">
+      <div class="flex items-start gap-4">
+        <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-50 ring-1 ring-blue-200">
+          <.icon name="hero-server-solid" class="h-7 w-7 text-blue-600" />
+        </div>
+
+        <div class="flex-1">
+          <div class="flex justify-between items-start">
+            <div>
+              <h2 class="text-xl font-semibold text-zinc-900">{@asset.name}</h2>
+
+              <p class="mt-0.5 font-mono text-sm text-zinc-500">{@asset.id}</p>
+            </div>
+
+            <div class="flex gap-2">
+              <.link patch={~p"/assets/#{@asset}/show/edit"} phx-click={JS.push_focus()}>
+                <.button class="flex items-center gap-2 bg-white text-zinc-700 border border-zinc-300 hover:bg-zinc-50">
+                  <.icon name="hero-pencil-square" class="h-4 w-4" /> Edit Asset
+                </.button>
+              </.link>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-wrap gap-2">
+            <span class="inline-flex items-center rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
+              <.common_code_label group="카테고리" code={@asset.category} />
+            </span>
+            <span class="inline-flex items-center rounded-md border border-zinc-200 bg-zinc-50 px-2 py-1 text-xs font-medium text-zinc-700">
+              <.common_code_label group="운영_구분" code={@asset.env} />
+            </span>
+            <span class="inline-flex items-center rounded-md border border-zinc-200 bg-zinc-50 px-2 py-1 text-xs font-medium text-zinc-700">
+              <.common_code_label group="계열사" code={@asset.affiliate} />
+            </span>
+            <%= if @asset.is_dmz_zone do %>
+              <span class="inline-flex items-center gap-1 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs font-medium text-red-700">
+                <.icon name="hero-shield-check-solid" class="h-3 w-3" /> DMZ Zone
+              </span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <div class="my-6 border-t border-zinc-100"></div>
+
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div class="flex items-center gap-2">
+          <.icon name="hero-map-pin" class="h-5 w-5 text-zinc-400" />
+          <div>
+            <p class="text-xs text-zinc-500 mb-0.5">Location</p>
+
+            <p class="text-sm font-medium text-zinc-900">
+              <.common_code_label group="장소" code={@asset.location} />
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <.icon name="hero-building-office-2" class="h-5 w-5 text-zinc-400" />
+          <div>
+            <p class="text-xs text-zinc-500 mb-0.5">Region</p>
+
+            <p class="text-sm font-medium text-zinc-900">
+              <.common_code_label group="지역_유형" code={@asset.region_type} />
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <.icon name="hero-cloud" class="h-5 w-5 text-zinc-400" />
+          <div>
+            <p class="text-xs text-zinc-500 mb-0.5">Infrastructure</p>
+
+            <p class="text-sm font-medium text-zinc-900">
+              <.common_code_label group="인프라_유형" code={@asset.infra_type} />
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <.icon name="hero-calendar" class="h-5 w-5 text-zinc-400" />
+          <div>
+            <p class="text-xs text-zinc-500 mb-0.5">Created Date</p>
+
+            <p class="text-sm font-medium text-zinc-900">
+              {Calendar.strftime(@asset.inserted_at, "%Y-%m-%d %H:%M")}
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <.icon name="hero-user-group" class="h-5 w-5 text-zinc-400" />
+          <div>
+            <p class="text-xs text-zinc-500 mb-0.5">Service Crew</p>
+
+            <%= if @asset.service_crew do %>
+              <ItsmWeb.CustomComponents.crew_tooltip crew={@asset.service_crew} />
+            <% else %>
+              <span class="text-sm font-medium text-zinc-400">Unassigned</span>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <.icon name="hero-wrench-screwdriver" class="h-5 w-5 text-zinc-400" />
+          <div>
+            <p class="text-xs text-zinc-500 mb-0.5">System Crew</p>
+
+            <%= if @asset.system_crew do %>
+              <ItsmWeb.CustomComponents.crew_tooltip crew={@asset.system_crew} />
+            <% else %>
+              <span class="text-sm font-medium text-zinc-400">Unassigned</span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-1 bg-zinc-50 p-6">
+      <h3 class="mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-500">
+        Connected Resources
+      </h3>
+
+      <div class="grid gap-4 lg:grid-cols-2">
+        <.resource_card
+          :for={section <- resource_sections(@asset)}
+          title={section.title}
+          icon={section.icon}
+          icon_class={section.icon_class}
+          items={section.items}
+        />
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-6">
+    <.back navigate={~p"/assets"}>Back to assets</.back>
+  </div>
+</div>
+
+<.modal
+  :if={@live_action == :edit}
+  id="asset-modal"
+  show
+  on_cancel={JS.patch(~p"/assets/#{@asset}")}
+>
+  <.live_component
+    module={ItsmWeb.AssetLive.FormComponent}
+    id={@asset.id}
+    title={@page_title}
+    action={@live_action}
+    asset={@asset}
+    current_user={@current_user}
+    patch={~p"/assets/#{@asset}"}
+  />
+</.modal>

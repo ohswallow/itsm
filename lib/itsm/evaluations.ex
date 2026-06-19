@@ -4,6 +4,7 @@ defmodule Itsm.Evaluations do
   """
 
   import Ecto.Query, warn: false
+  alias Itsm.Accounts.User
   alias Itsm.Repo
 
   alias Itsm.Evaluations.Evaluation
@@ -49,10 +50,18 @@ defmodule Itsm.Evaluations do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_evaluation(attrs \\ %{}) do
+  def create_evaluation(%User{} = action_user, attrs) do
     %Evaluation{}
     |> Evaluation.changeset(attrs)
     |> Repo.insert()
+    |> case do
+      {:ok, evaluation} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_evaluation, evaluation})
+        {:ok, evaluation}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   @doc """
@@ -67,10 +76,21 @@ defmodule Itsm.Evaluations do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_evaluation(%Evaluation{} = evaluation, attrs) do
+  def update_evaluation(%User{} = action_user, %Evaluation{} = evaluation, attrs) do
     evaluation
     |> Evaluation.changeset(attrs)
     |> Repo.update()
+    |> case do
+      {:ok, evaluation} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_evaluation, evaluation},
+          id: evaluation.id
+        )
+
+        {:ok, evaluation}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   @doc """
@@ -85,8 +105,20 @@ defmodule Itsm.Evaluations do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_evaluation(%Evaluation{} = evaluation) do
-    Repo.delete(evaluation)
+  def delete_evaluation(%User{} = action_user, %{"id" => id}) do
+    get_evaluation!(id)
+    |> Repo.delete()
+    |> case do
+      {:ok, evaluation} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_evaluation, evaluation},
+          id: evaluation.id
+        )
+
+        {:ok, evaluation}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   @doc """

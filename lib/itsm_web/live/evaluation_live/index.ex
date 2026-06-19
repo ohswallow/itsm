@@ -4,14 +4,31 @@ defmodule ItsmWeb.EvaluationLive.Index do
   alias Itsm.Evaluations
   alias Itsm.Evaluations.Evaluation
 
-  @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :evaluations, Evaluations.list_evaluations())}
+    {:ok, socket |> stream(:evaluations, []) |> Itsm.PubSub.Helper.subscribe(Evaluations)}
   end
 
-  @impl true
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+  end
+
+  def handle_event("delete", %{"id" => _id} = evaluation_params, socket) do
+    %{current_user: action_user} = socket.assigns
+    {:ok, evaluation} = Evaluations.delete_evaluation(action_user, evaluation_params)
+
+    {:noreply, stream_delete(socket, :evaluations, evaluation)}
+  end
+
+  def handle_info({ItsmWeb.EvaluationLive.FormComponent, {:saved, evaluation}}, socket) do
+    {:noreply, stream_insert(socket, :evaluations, evaluation)}
+  end
+
+  def handle_info({:pubsub, {action_user, event, item}}, socket) do
+    handle_pubsub(action_user, event, item, socket)
+  end
+
+  def handle_info(_event, socket) do
+    {:noreply, socket}
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
@@ -29,19 +46,18 @@ defmodule ItsmWeb.EvaluationLive.Index do
   defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, "Listing Evaluations")
-    |> assign(:evaluation, nil)
+    |> stream(:evaluation, Evaluations.list_evaluations(), reset: true)
   end
 
-  @impl true
-  def handle_info({ItsmWeb.EvaluationLive.FormComponent, {:saved, evaluation}}, socket) do
-    {:noreply, stream_insert(socket, :evaluations, evaluation)}
-  end
+  defp handle_pubsub(action_user, event, item, socket) do
+    opts = [
+      resource_name: gettext("Evaluation"),
+      target_key: :evaluations,
+      push_patch: [to: "#{socket.assigns.current_path}"]
+    ]
 
-  @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    evaluation = Evaluations.get_evaluation!(id)
-    {:ok, _} = Evaluations.delete_evaluation(evaluation)
-
-    {:noreply, stream_delete(socket, :evaluations, evaluation)}
+    {:noreply,
+     socket
+     |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}
   end
 end

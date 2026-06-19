@@ -1,0 +1,75 @@
+<.header>
+  Post {@post.id}
+  <:subtitle>This is a post record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/admin/posts/#{@post}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit post</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title={gettext("Board")}>{@post.board.name}</:item>
+  <:item title={gettext("Title")}>{@post.title}</:item>
+  <:item title={gettext("Content")}>{@post.content}</:item>
+  <:item title={gettext("Metadata")}>{Jason.encode!(@post.metadata, pretty: true)}</:item>
+  <:item title={gettext("Author")}>{@post.author.display_name}</:item>
+  <:item title={gettext("Inserted At")}>
+    <span
+      id={"post-inserted-at-#{@post.id}"}
+      phx-hook="LocalTime.ToLocale"
+      utc-value={@post.inserted_at}
+    />
+  </:item>
+  <:item title={gettext("Updated At")}>
+    <span
+      id={"post-updated-at-#{@post.id}"}
+      phx-hook="LocalTime.ToLocale"
+      utc-value={@post.updated_at}
+    />
+  </:item>
+</.list>
+
+<.attachments_section
+  :if={@attachments_count > 0}
+  id="attachments"
+  attachments_count={@attachments_count}
+>
+  <.attachment
+    :for={{dom_id, attachment} <- @streams.attachments}
+    id={dom_id}
+    attachment={attachment}
+  />
+</.attachments_section>
+
+<div :if={@post.metadata["allow_comment"] in ["true", true]}>
+  <.comments_section streams={@streams} />
+  <.comment_form
+    form={@form}
+    uploads={@uploads}
+  />
+</div>
+
+<.back navigate={~p"/admin/posts"}>Back to posts</.back>
+
+<.modal
+  :if={@live_action == :edit}
+  id="post-modal"
+  show
+  on_cancel={JS.patch(~p"/admin/posts/#{@post}")}
+>
+  <.live_component
+    module={ItsmWeb.Admin.PostLive.FormComponent}
+    id={@post.id}
+    title={@page_title}
+    action={@live_action}
+    post={@post}
+    current_user={@current_user}
+    patch={~p"/admin/posts/#{@post}"}
+  />
+</.modal>
+
+<.attachment_modal
+  :if={@selected_attachment}
+  attachment={@selected_attachment}
+/>

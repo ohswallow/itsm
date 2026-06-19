@@ -1,35 +1,26 @@
 <.header>
   Delegation {@delegation.id}
   <:subtitle>This is a delegation record from your database.</:subtitle>
-  <%!-- <:actions>
-    <.link patch={~p"/delegations/#{@delegation}/show/edit"} phx-click={JS.push_focus()}>
-      <.button>Edit delegation</.button>
-    </.link>
-  </:actions> --%>
 </.header>
 
 <.list>
-  <:item title="Delegator name">{@delegation.delegator_name} ({@delegation.delegator_id})</:item>
-  <:item title="Delegatee name">{@delegation.delegatee_name} ({@delegation.delegatee_id})</:item>
-  <:item title="Start date">{@delegation.start_date}</:item>
-  <:item title="End date">{@delegation.end_date}</:item>
-  <:item title="Reason">{@delegation.reason}</:item>
+  <:item title={gettext("Delegator name")}>
+    {@delegation.delegator_name} ({@delegation.delegator_id})
+  </:item>
+  
+  <:item title={gettext("Delegatee name")}>
+    {@delegation.delegatee_name} ({@delegation.delegatee_id})
+  </:item>
+  
+  <:item title={gettext("Start date")}>{@delegation.start_date}</:item>
+  
+  <:item title={gettext("End date")}>{@delegation.end_date}</:item>
+  
+  <:item title={gettext("Reason")}>{@delegation.reason}</:item>
+  
+  <:item title={gettext("Created_by")}>
+    {@delegation.created_by_name} ({@delegation.created_by_id})
+  </:item>
 </.list>
 
 <.back navigate={~p"/delegations"}>Back to delegations</.back>
-
-<.modal
-  :if={@live_action == :edit}
-  id="delegation-modal"
-  show
-  on_cancel={JS.patch(~p"/delegations/#{@delegation}")}
->
-  <.live_component
-    module={ItsmWeb.DelegationLive.FormComponent}
-    id={@delegation.id}
-    title={@page_title}
-    action={@live_action}
-    delegation={@delegation}
-    patch={~p"/delegations/#{@delegation}"}
-  />
-</.modal>

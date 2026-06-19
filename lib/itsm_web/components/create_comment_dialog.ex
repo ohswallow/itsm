@@ -2,9 +2,9 @@ defmodule ItsmWeb.CreateCommentDialog do
   use ItsmWeb, :live_component
   alias Itsm.Comments
   alias Itsm.Comments.Comment
-  alias Itsm.Service
+  alias Itsm.Approvals
+  alias ItsmWeb.LiveUtils
 
-  @impl true
   def update(assigns, socket) do
     {:ok,
      socket
@@ -14,7 +14,6 @@ defmodule ItsmWeb.CreateCommentDialog do
      end)}
   end
 
-  @impl true
   def render(assigns) do
     ~H"""
     <div>
@@ -37,62 +36,54 @@ defmodule ItsmWeb.CreateCommentDialog do
     """
   end
 
-  @impl true
   def handle_event("validate", %{"comment" => comment_params}, socket) do
     changeset = Comments.change_comment(%Comment{}, comment_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
-  # def handle_event("save", %{"comment" => comment_params}, socket) do
-  #   %{request: request, action: action, current_user: user} = socket.assigns
-
-  #   case Comments.create_comment(request, user, comment_params) do
-  #     {:ok, _comment} ->
-  #       case action do
-  #         :approve ->
-  #           Service.approve_request(request, user)
-  #           # :reject -> Service.reject_request(request, user)
-  #       end
-
-  #       {:noreply, push_navigate(socket, to: ~p"/approvals")}
-
-  #     {:error, changeset} ->
-  #       {:noreply, assign(socket, form: to_form(changeset))}
-  #   end
-  # end
-
-  # def handle_event("save", %{"comment" => comment_params}, socket) do
-  #   %{request: request, action: action, current_user: user} = socket.assigns
-
-  #   with {:ok, _comment} <- Comments.create_comment(request, user, comment_params),
-  #        {:ok, _} <- Service.approve_or_reject_request(request, user, action) do
-  #     {:noreply, push_navigate(socket, to: ~p"/approvals")}
-  #   else
-  #     {:error, _} ->
-  #       {:noreply, put_flash(socket, :error, "Failed")}
-  #   end
-  # end
-
   def handle_event("save", %{"comment" => comment_params}, socket) do
-    %{request: request, action: action, current_user: user} = socket.assigns
+    approve_or_reject(socket, socket.assigns.action, comment_params)
+  end
 
-    with {:ok, _comment} <- Comments.create_comment(request, user, comment_params),
-         {:ok, _} <- do_action(action, request, user) do
-      {:noreply, push_navigate(socket, to: ~p"/approvals")}
-    else
-      {:error, changeset} ->
-        IO.inspect(changeset, label: "Approval Error")
-        {:noreply, put_flash(socket, :error, "Failed")}
+  defp approve_or_reject(socket, :approve, params) do
+    %{request: request, current_user: action_user} = socket.assigns
+
+    case Approvals.approve(request, action_user, comment: params) do
+      {:ok, result} ->
+        notify_parent({:approve, result})
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "request approved")
+         |> push_patch(to: socket.assigns.patch)}
+
+      {:error, :create_comment, %Ecto.Changeset{} = changeset, _so_far_changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
+
+      {:error, step, _changeset, _so_far_changeset} ->
+        {:noreply, put_flash(socket, :error, LiveUtils.translate_error(step))}
     end
   end
 
-  defp do_action(:approve, request, user), do: Service.approve_request(request, user)
-  defp do_action(:reject, request, user), do: Service.reject_request(request, user)
-  # defp perform_action(:approve, request, user) do
-  #   Service.approve_or_reject_request(request, user, :approve)
-  # end
+  defp approve_or_reject(socket, :reject, params) do
+    %{request: request, current_user: action_user} = socket.assigns
 
-  # defp perform_action(:reject, request, user) do
-  #   Service.approve_or_reject_request(request, user, :reject)
-  # end
+    # 거부시 댓글 필수 체크 안해도 되도록, 빈 문자열이면 nil로 전달
+    params = if params["comment"] == "", do: nil, else: params
+
+    case Approvals.reject(request, action_user, comment: params) do
+      {:ok, result} ->
+        notify_parent({:reject, result})
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "request rejected")
+         |> push_patch(to: socket.assigns.patch)}
+
+      {:error, step, _changeset, _so_far_changeset} ->
+        {:noreply, put_flash(socket, :error, LiveUtils.translate_error(step))}
+    end
+  end
+
+  defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end

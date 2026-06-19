@@ -3,6 +3,7 @@ defmodule Itsm.ServiceFixtures do
   This module defines test helpers for creating
   entities via the `Itsm.Service` context.
   """
+  alias Itsm.Accounts.User
 
   @doc """
   Generate a unique category name.
@@ -13,7 +14,7 @@ defmodule Itsm.ServiceFixtures do
   Generate a category.
   """
   def category_fixture(attrs \\ %{}) do
-    {:ok, category} =
+    attrs =
       attrs
       |> Enum.into(%{
         active: true,
@@ -23,43 +24,46 @@ defmodule Itsm.ServiceFixtures do
         name: unique_category_name(),
         request_name: "some request_name"
       })
-      |> Itsm.Service.create_category()
+
+    {:ok, category} = Itsm.Admin.Categories.create_category(%User{}, attrs)
 
     category
   end
 
-  @doc """
-  Generate a request.
-  """
-  def request_fixture(attrs \\ %{}) do
-    {:ok, request} =
-      attrs
-      |> Enum.into(%{
-        common_k_create_vms: %{},
-        description: "some description",
-        due_date: ~D[2025-09-28],
-        env: :prod,
-        title: "some title"
-      })
-      |> Itsm.Service.create_request()
+  # @doc """
+  # Generate a request.
+  # """
 
-    request
-  end
+  # def request_fixture(attrs \\ %{}) do
+
+  #   {:ok, request} =
+  #     attrs
+  #     |> Enum.into(%{
+  #       common_k_create_vms: %{},
+  #       description: "some description",
+  #       due_date: ~D[2025-09-28],
+  #       env: :prod,
+  #       title: "some title"
+  #     })
+  #     |> Itsm.Service.create_request()
+
+  #   request
+  # end
 
   @doc """
   Generate a approval.
   """
   def approval_fixture(attrs \\ %{}) do
-    {:ok, approval} =
+    attrs =
       attrs
       |> Enum.into(%{
-        approved_at: ~U[2025-10-09 10:41:00Z],
         approver_id: "some approver_id",
         approver_name: "some approver_name",
         opnion: "some opnion",
         status: :request
       })
-      |> Itsm.Service.create_approval()
+
+    {:ok, approval} = Itsm.Approvals.create_approval(%User{}, attrs)
 
     approval
   end

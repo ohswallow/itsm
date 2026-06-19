@@ -1,0 +1,142 @@
+defmodule ItsmWeb.Admin.CategoryLive.FormComponent do
+  use ItsmWeb, :live_component
+
+  alias Itsm.Admin.Categories
+  alias Itsm.Admin.CommonCodes
+  alias Itsm.Admin.Crews
+
+  def update(%{conflict: {event, user}} = _assigns, socket) do
+    msg = if String.contains?(to_string(event), "delete"), do: "삭제", else: "수정"
+
+    {:ok,
+     socket
+     |> assign(:conflict, true)
+     |> assign(:conflict_msg, "#{user.display_name}님이 데이터를 #{msg}했습니다.")}
+  end
+
+  def update(%{category: category} = assigns, socket) do
+    {:ok,
+     socket
+     |> assign(assigns)
+     |> assign(:conflict, false)
+     |> assign_new(:form, fn ->
+       to_form(Categories.change_category(category))
+     end)
+     |> assign_new_options()}
+  end
+
+  def render(assigns) do
+    ~H"""
+    <div>
+      <.header>
+        {@title}
+        <:subtitle>Use this form to manage category records in your database.</:subtitle>
+      </.header>
+
+      <div
+        :if={@conflict}
+        class="p-4 mb-4 bg-red-50 border border-red-200 text-red-800 rounded animate-pulse"
+      >
+        <div class="flex items-center gap-2 font-bold">
+          <span>⚠️ 충돌 발생!</span>
+        </div>
+        <p class="mt-1 text-sm">{@conflict_msg}</p>
+        <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
+      </div>
+
+      <.simple_form
+        for={@form}
+        id="category-form"
+        phx-target={@myself}
+        phx-change="validate"
+        phx-submit="save"
+      >
+        <.input field={@form[:name]} type="text" label={gettext("Name")} />
+        <.input field={@form[:description]} type="text" label={gettext("Description")} />
+        <.input
+          field={@form[:affiliate]}
+          type="select"
+          label={gettext("Affiliate")}
+          prompt="Choose a value"
+          options={@affiliate_options}
+        /> <.input field={@form[:request_name]} type="text" label={gettext("Request name")} />
+        <.input
+          field={@form[:group]}
+          type="select"
+          label={gettext("Group")}
+          prompt="Choose a value"
+          options={@region_type_options}
+        />
+        <.input field={@form[:category]} type="text" label={gettext("Category")} />
+        <.input
+          field={@form[:duration]}
+          type="number"
+          label={gettext("Duration")}
+        />
+        <.input field={@form[:active]} type="checkbox" label={gettext("Active")} />
+        <.input
+          field={@form[:assignee_crew_id]}
+          type="select"
+          label={gettext("Assignee Crew")}
+          prompt="Choose a value"
+          options={@assignee_crews_options}
+        />
+        <.itsm_calendar
+          :if={@action == :edit}
+          field={@form[:inserted_at]}
+          label={gettext("Inserted At")}
+          show_time
+          default_selected_date_time={@form[:inserted_at].value}
+        />
+        <:actions>
+          <.button :if={!@conflict} phx-disable-with="Saving...">Save Category</.button>
+        </:actions>
+      </.simple_form>
+    </div>
+    """
+  end
+
+  def handle_event("validate", %{"category" => category_params}, socket) do
+    changeset = Categories.change_category(socket.assigns.category, category_params)
+    {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
+  end
+
+  def handle_event("save", %{"category" => category_params}, socket) do
+    save_category(socket, socket.assigns.action, category_params)
+  end
+
+  defp assign_new_options(socket) do
+    socket
+    |> assign_new(:assignee_crews_options, fn -> Crews.get_crew_options() end)
+    |> assign_new(:affiliate_options, fn -> CommonCodes.get_select_options("계열사") end)
+    |> assign_new(:region_type_options, fn -> CommonCodes.get_select_options("지역_유형") end)
+  end
+
+  defp save_category(socket, :edit, category_params) do
+    %{current_user: action_user} = socket.assigns
+
+    case Categories.update_category(
+           action_user,
+           socket.assigns.category,
+           category_params
+         ) do
+      {:ok, _category} ->
+        {:noreply, socket |> push_patch(to: socket.assigns.patch)}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
+    end
+  end
+
+  defp save_category(socket, :new, category_params) do
+    %{current_user: action_user} = socket.assigns
+
+    case Categories.create_category(action_user, category_params) do
+      {:ok, _category} ->
+        {:noreply, socket |> push_patch(to: socket.assigns.patch)}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
+    end
+  end
+end

@@ -1,0 +1,64 @@
+<.header>
+  Listing Common codes
+  <:actions>
+    <.link patch={~p"/admin/common_codes/new"}>
+      <.button>New Code</.button>
+    </.link>
+  </:actions>
+</.header>
+<.itsm_table_container results={assigns[:results]}>
+  <.table
+    id="common_codes_table"
+    rows={@streams.common_codes}
+    row_click={fn {_id, common_code} -> JS.navigate(~p"/admin/common_codes/#{common_code}") end}
+  >
+    <:col :let={{_id, common_code}} label={gettext("Group code")}>{common_code.group_code}</:col>
+    <:col :let={{_id, common_code}} label={gettext("Code")}>{common_code.code}</:col>
+    <:col :let={{_id, common_code}} label={gettext("Label")}>{common_code.label}</:col>
+    <:col :let={{_id, common_code}} label={gettext("Description")}>
+      {common_code.description}
+    </:col>
+    <:col :let={{_id, common_code}} label={gettext("Sort order")}>{common_code.sort_order}</:col>
+    <:col :let={{_id, common_code}} label={gettext("Is active")}>{common_code.is_active}</:col>
+    <:col :let={{_id, common_code}} label={gettext("Updated at")}>
+      <span
+        id={"common-code-updated-at-#{common_code.id}"}
+        phx-hook="LocalTime.ToLocale"
+        utc-value={common_code.updated_at}
+      />
+    </:col>
+    <:action :let={{_id, common_code}}>
+      <div class="sr-only">
+        <.link navigate={~p"/admin/common_codes/#{common_code}"}>Show</.link>
+      </div>
+      <.link patch={~p"/admin/common_codes/#{common_code}/edit"}>Edit</.link>
+    </:action>
+    <:action :let={{_id, common_code}}>
+      <.link
+        id={common_code.id}
+        phx-click={JS.push("delete", value: %{id: common_code.id})}
+        class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
+  </.table>
+</.itsm_table_container>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="codes-modal"
+  show
+  on_cancel={JS.patch(~p"/admin/common_codes?#{assigns[:results][:params] || %{}}")}
+>
+  <.live_component
+    module={ItsmWeb.Admin.CommonCodeLive.FormComponent}
+    id={@common_code.id || :new}
+    title={@page_title}
+    action={@live_action}
+    common_code={@common_code}
+    current_user={@current_user}
+    patch={~p"/admin/common_codes?#{assigns[:results][:params] || %{}}"}
+  />
+</.modal>

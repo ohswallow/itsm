@@ -5,102 +5,136 @@ defmodule Itsm.Service.Request do
   alias Itsm.Service.CommonKCreateVm
   alias Itsm.Service.Category
   alias Itsm.Service.Approval
+  alias Itsm.Attachments.Attachment
+  alias Itsm.Service.BankKResizeVm
 
-  @status_values [:request, :check, :plan, :review, :start, :finish, :verify, :closed]
+  @status_values [
+    :request,
+    :validation,
+    :assignment,
+    :check,
+    :start,
+    :finish,
+    :confirmation,
+    :closed,
+    :rejected
+  ]
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "requests" do
     field :title, :string
     field :description, :string
-    field :env, Ecto.Enum, values: [:prod, :stg, :dev, :dr]
+    # group_code: "운영_구분"
+    field :env, :string
     field :due_date, :utc_datetime
-    # field :requestor_id, :binary_id
-
     field :requestor_name, :string
-    # field :requestor_id, :string
+    field :status, Ecto.Enum, values: @status_values
 
-    # field :assignee_id, :string
-    field :assignee_name, :string
-    # field :assignee_crew_name, :string
-
-    field :status, Ecto.Enum,
-      values: @status_values,
-      default: :request
-
-    belongs_to :assignee, Itsm.Accounts.User
-    belongs_to :assignee_crew, Itsm.Team.Crew, type: :binary_id
+    belongs_to :assignee_crew, Itsm.Crews.Crew, type: :binary_id
     belongs_to :requestor, Itsm.Accounts.User
-    belongs_to :requestor_crew, Itsm.Team.Crew, type: :binary_id
+    belongs_to :requestor_crew, Itsm.Crews.Crew, type: :binary_id
     belongs_to :category, Category, type: :integer
     embeds_many :common_k_create_vms, CommonKCreateVm, on_replace: :delete
+    embeds_many :bank_k_resize_vms, BankKResizeVm, on_replace: :delete
 
     has_many :approvals, Approval
-    has_many :comments, Itsm.Comments.Comment
 
-    # has_many :referenced_crews, Itsm.Team.Reference, foreign_key: :reference_id, where: [reference_type: "Request"]
-    has_many :references, Itsm.Team.Reference,
-      foreign_key: :reference_id,
-      where: [reference_type: "Request"]
+    has_many :comments, Itsm.Comments.Comment,
+      foreign_key: :resource_id,
+      where: [resource_type: "Request"]
 
-    # has_many :referenced_crews, through: [:references, :crew]
+    has_many :attachments, Itsm.Attachments.Attachment,
+      foreign_key: :resource_id,
+      where: [resource_type: "Request"],
+      on_replace: :delete
+
+    has_many :crew_references, Itsm.Crews.CrewReference,
+      foreign_key: :resource_id,
+      where: [resource_type: "Request"]
+
+    field :referenced_crews, {:array, :binary_id}, virtual: true
 
     timestamps(type: :utc_datetime)
   end
 
-  @doc false
-  def changeset(request, attrs) do
+  def changeset(request, attrs \\ %{}) do
     request
     |> cast(attrs, [
       :title,
       :description,
       :env,
       :due_date,
-      :requestor_id,
-      :requestor_name,
-      :requestor_crew_id,
-      :category_id,
-      :assignee_id,
-      :assignee_name,
-      :assignee_crew_id,
-      # :assignee_crew_name,
-      :status
+      :requestor_crew_id
     ])
     |> validate_required([
       :title,
       :description,
       :env,
       :due_date,
-      :requestor_id,
-      :requestor_name,
-      :requestor_crew_id,
-      :category_id,
-      :assignee_crew_id,
-      # :assignee_crew_name,
-      # 선택사항
-      # :assignee_id,
-      # :assignee_name,
-      :status
+      :requestor_crew_id
     ])
+    |> assoc_changeset(attrs)
+  end
+
+  @doc false
+  defp assoc_changeset(request, _attrs) do
+    request
     |> cast_embed(:common_k_create_vms,
       with: &CommonKCreateVm.changeset/2,
       drop_param: :common_k_create_vms_drop,
       sort_param: :common_k_create_vms_sort
     )
-    |> validate_assignee_not_requestor()
+    |> cast_embed(:bank_k_resize_vms,
+      with: &BankKResizeVm.changeset/2,
+      drop_param: :bank_k_resize_vms_drop,
+      sort_param: :bank_k_resize_vms_sort
+    )
+    # |> assoc_constraint(:assignee)
+    |> assoc_constraint(:category)
+    |> cast_assoc(:attachments, with: &Attachment.changeset/2)
   end
 
-  # 👇 가장 단순한 검증기 (옵션 없이, if만 사용)
-  defp validate_assignee_not_requestor(changeset) do
-    validate_change(changeset, :assignee_id, fn :assignee_id, assignee_id ->
-      requestor_id = get_field(changeset, :requestor_id)
-      status = get_field(changeset, :status)
+  def delete_changeset(%Ecto.Changeset{} = request) do
+    request
+    |> foreign_key_constraint(:id,
+      name: :approvals_request_id_fkey,
+      message: "결제를 먼저 지워주세요"
+    )
 
-      if (status != :verify and requestor_id) && assignee_id && requestor_id == assignee_id do
-        [assignee_id: "요청자와 승인자는 같을 수 없습니다"]
-      else
-        []
-      end
-    end)
+    # |> foreign_key_constraint(:id,
+    #   name: :comments_request_id_fkey,
+    #   message: "댓글을 먼저 지워주세요"
+    # )
+    # |> foreign_key_constraint(:id,
+    #   name: :attachments_request_id_fkey,
+    #   message: "첨부파일을 먼저 지워주세요"
+    # )
+  end
+
+  def delete_changeset(%__MODULE__{} = request) do
+    request
+    |> change()
+    |> delete_changeset()
+  end
+
+  def admin_changeset(request, attrs \\ %{}) do
+    request
+    |> cast(attrs, [
+      :title,
+      :description,
+      :env,
+      :due_date,
+      :category_id,
+      :requestor_crew_id
+    ])
+    |> validate_required([
+      :title,
+      :description,
+      :env,
+      :due_date,
+      :requestor_crew_id
+    ])
+    |> assoc_changeset(attrs)
   end
 end

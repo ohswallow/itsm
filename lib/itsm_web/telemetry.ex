@@ -6,7 +6,6 @@ defmodule ItsmWeb.Telemetry do
     Supervisor.start_link(__MODULE__, arg, name: __MODULE__)
   end
 
-  @impl true
   def init(_arg) do
     children = [
       # Telemetry poller will execute the given period measurements

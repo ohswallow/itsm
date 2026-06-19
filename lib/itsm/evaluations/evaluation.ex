@@ -9,13 +9,13 @@ defmodule Itsm.Evaluations.Evaluation do
     field :rating, :float
     # field :crew_id, :binary_id
 
-    belongs_to :crew, Itsm.Team.Crew, type: :binary_id
+    belongs_to :crew, Itsm.Crews.Crew, type: :binary_id
 
     timestamps(type: :utc_datetime)
   end
 
   @doc false
-  def changeset(evaluation, attrs) do
+  def changeset(evaluation, attrs \\ %{}) do
     evaluation
     |> cast(attrs, [:comment, :rating, :crew_id])
     |> validate_required([:comment, :crew_id])

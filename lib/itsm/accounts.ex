@@ -7,6 +7,7 @@ defmodule Itsm.Accounts do
   alias Itsm.Repo
 
   alias Itsm.Accounts.{User, UserToken, UserNotifier}
+  alias Itsm.Crews.{Crew, CrewsUsers}
 
   ## Database getters
 
@@ -44,6 +45,16 @@ defmodule Itsm.Accounts do
     if User.valid_password?(user, password), do: user
   end
 
+  def get_user(id) when id in ["", nil], do: %User{}
+
+  def get_user(id), do: Repo.get(User, id)
+
+  def get_users(ids) when is_list(ids) do
+    User
+    |> where([u], u.id in ^ids)
+    |> Repo.all()
+  end
+
   @doc """
   Gets a single user.
 
@@ -78,6 +89,28 @@ defmodule Itsm.Accounts do
     %User{}
     |> User.registration_changeset(attrs)
     |> Repo.insert()
+    |> case do
+      {:ok, user} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {user, :register_user, user})
+        {:ok, user}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  def register_user(%User{} = action_user, attrs) do
+    %User{}
+    |> User.registration_changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, user} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :register_user, user})
+        {:ok, user}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   @doc """
@@ -351,15 +384,140 @@ defmodule Itsm.Accounts do
     end
   end
 
-  def search_users(keyword) do
+  @spec live_select_by_name(
+          user :: User.t(),
+          keyword :: String.t(),
+          opt :: [{:exclude_crew, Crew.t()}]
+        ) :: [map()]
+  def live_select_by_name(%User{} = user, keyword, opt \\ []) do
     User
-    |> search_by(keyword["q"])
+    |> search_by(keyword)
+    |> exclude_crew(opt)
+    |> where([u], u.organization_code == ^user.organization_code)
+    |> where([u], u.department_code == ^user.department_code)
+    |> order_by(:display_name)
+    |> select([u], %{
+      value: u.id,
+      label: u.display_name,
+      tag_label: fragment("? || '(' || ? || ')'", u.display_name, u.employee_number),
+      email: u.email,
+      organization: u.organization,
+      employee_number: u.employee_number,
+      department: u.department
+    })
     |> Repo.all()
   end
 
-  defp search_by(query, q) when q in ["", nil], do: query
+  defp exclude_crew(query, exclude_crew: crew) do
+    crew_member_query =
+      CrewsUsers
+      |> where([cu], cu.crew_id == ^crew.id)
+      |> select([cu], cu.user_id)
 
-  defp search_by(query, q) do
-    where(query, [c], ilike(c.display_name, ^"%#{q}%"))
+    where(query, [u], u.id not in subquery(crew_member_query))
+  end
+
+  defp exclude_crew(query, _), do: query
+
+  # 1. 이름 검색
+  # 검색어가 없으면("") -> 전체 검색
+  defp search_by(query, keyword) when keyword in ["", nil], do: query
+
+  defp search_by(query, keyword) do
+    where(query, [c], ilike(c.display_name, ^"%#{keyword}%"))
+  end
+
+  @doc """
+  Lists crews that the user belongs to.
+  """
+  def crew_ids_names(user) do
+    user
+    |> Ecto.assoc(:crews)
+    |> order_by(:name)
+    |> select([c], {c.name, c.id})
+    |> Repo.all()
+  end
+
+  # 계열사 리스트를 가져오는 쿼리
+  def list_organization_options do
+    from(u in User,
+      # select: {보여줄값(Label), 실제값(Value)}
+      select: {u.organization, u.organization_code},
+      distinct: true,
+      # 혹시 모를 null 데이터나 빈 값 제외
+      where: not is_nil(u.organization) and u.organization != "",
+      order_by: [asc: u.organization]
+    )
+    |> Repo.all()
+  end
+
+  def list_users, do: Repo.all(User)
+
+  def create_user(attrs) do
+    %User{}
+    |> User.registration_changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, user} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {user, :create_user, user})
+        {:ok, user}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  def create_user(%User{} = action_user, attrs) do
+    %User{}
+    |> User.registration_changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, user} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_user, user})
+        {:ok, user}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  def update_user(%User{} = action_user, %User{} = user, attrs) do
+    user
+    |> User.changeset(attrs)
+    |> Repo.update()
+    |> case do
+      {:ok, user} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_user, user}, id: user.id)
+        {:ok, user}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  def delete_user(%User{} = action_user, %{"id" => id}) do
+    get_user!(id)
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.foreign_key_constraint(:id, name: :requests_requestor_id_fkey)
+    |> Repo.delete()
+    |> case do
+      {:ok, user} ->
+        Itsm.Accounts.UserToken.by_user_and_contexts_query(user, :all) |> Repo.delete_all()
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_user, user}, id: user.id)
+        {:ok, user}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  def change_user(%User{} = user, attrs \\ %{}) do
+    User.changeset(user, attrs)
+  end
+
+  def get_select_options() do
+    User
+    |> select([c], {c.display_name, c.id})
+    |> Repo.all()
   end
 end

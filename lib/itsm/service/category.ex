@@ -9,21 +9,22 @@ defmodule Itsm.Service.Category do
     field :name, :string
     field :description, :string
     field :group, :string
-
-    field :affiliate, Ecto.Enum,
-      values: [:A0, :B0, :C0, :D0, :FG, :I0, :L0, :M0, :N4, :N1, :S2, :T0, :V0]
-
+    # group_code: "계열사"
+    field :affiliate, :string
     field :request_name, :string
+    # 용도 : SLA 계산용
     field :duration, :integer, default: 60
-    # field :assignee_crew, :string
 
-    belongs_to :assignee_crew, Itsm.Team.Crew, type: :binary_id
+    # 용도 : 서비스 요청 시 카테고리 구분 (서버, 네트워크, 보안, 미들웨어, 인터페이스 등)
+    field :category, :string
+
+    belongs_to :assignee_crew, Itsm.Crews.Crew, type: :binary_id
 
     timestamps(type: :utc_datetime)
   end
 
   @doc false
-  def changeset(category, attrs) do
+  def changeset(category, attrs \\ %{}) do
     category
     |> cast(attrs, [
       :name,
@@ -32,6 +33,32 @@ defmodule Itsm.Service.Category do
       :request_name,
       :group,
       :active,
+      :duration,
+      :assignee_crew_id
+    ])
+    |> validate_required([
+      :name,
+      :description,
+      :affiliate,
+      :request_name,
+      :group,
+      :active,
+      :duration,
+      :assignee_crew_id
+    ])
+    |> unique_constraint(:name)
+  end
+
+  def admin_changeset(category, attrs \\ %{}) do
+    category
+    |> cast(attrs, [
+      :name,
+      :description,
+      :affiliate,
+      :request_name,
+      :group,
+      :active,
+      :category,
       :duration,
       :assignee_crew_id
     ])

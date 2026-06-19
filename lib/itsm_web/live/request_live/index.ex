@@ -1,75 +1,86 @@
 defmodule ItsmWeb.RequestLive.Index do
   use ItsmWeb, :live_view
 
+  alias Itsm.Requests
+  alias Itsm.Service.Request
   alias Itsm.Service
+  alias Itsm.Paging
+  alias ItsmWeb.LiveUtils
 
-  @impl true
   def mount(_params, _session, socket) do
     {:ok,
      socket
-     |> assign(:page_title, "Listing Requests")
-     |> stream(:requests, Service.list_requests())}
+     |> stream(:requests, [])
+     |> Itsm.PubSub.Helper.subscribe(Requests)}
   end
 
-  @impl true
-  def render(assigns) do
-    ~H"""
-    <.header>
-      Listing Requests
-      <:actions>
-        <.button phx-click={JS.dispatch("click", to: {:inner, "a"})}>
-          <.link navigate={~p"/requests/new"}>New Request</.link>
-        </.button>
-      </:actions>
-    </.header>
-
-    <.table
-      id="requests"
-      rows={@streams.requests}
-      row_click={
-        fn {_id, request} -> JS.navigate(~p"/#{request.category.request_name}/#{request.id}") end
-      }
-    >
-      <:col :let={{_id, request}} label="Title">{request.title}</:col>
-      
-      <:col
-        :let={{_id, request}}
-        label="Description"
-      >
-        <div class="w-[90px] truncate">{request.description}</div>
-      </:col>
-      
-      <:col :let={{_id, request}} label="Env">{request.env}</:col>
-      
-      <:col :let={{_id, request}} label="Due date">{request.due_date}</:col>
-      
-      <:col :let={{_id, request}} label="Request Type">{request.category.request_name}</:col>
-      
-      <:col :let={{_id, request}} label="Request Name">{request.category.name}</:col>
-      
-      <%!-- <:col :let={{_id, request}} label="Create vm common k">{request.common_k_create_vms}</:col> --%>
-      <:action :let={{_id, request}}>
-        <div class="sr-only"><.link navigate={~p"/requests/#{request}"}>Show</.link></div>
-         <.link navigate={~p"/requests/#{request}/edit"}>Edit</.link>
-      </:action>
-      
-      <:action :let={{id, request}}>
-        <.link
-          phx-click={JS.push("delete", value: %{id: request.id}) |> hide("##{id}")}
-          data-confirm="Are you sure?"
-        >
-          Delete
-        </.link>
-      </:action>
-    </.table>
-    """
+  def handle_params(params, url, socket) do
+    {:noreply, apply_action(socket, socket.assigns.live_action, url, params)}
   end
 
-  @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    request = Service.get_request!(id)
-    {:ok, _} = Service.delete_request(request)
+    %{current_user: user} = socket.assigns
 
-    {:noreply, stream_delete(socket, :requests, request)}
+    case Service.delete_request(user, id) do
+      {:ok, request} ->
+        {:noreply, stream_delete(socket, :requests, request)}
+
+      {:error, step, _changeset, _so_far_changeset} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, LiveUtils.translate_error(step, :request))}
+    end
+  end
+
+  def handle_info({:pubsub, {action_user, event, item}}, socket) do
+    handle_pubsub(action_user, event, item, socket)
+  end
+
+  def handle_info(_event, socket) do
+    {:noreply, socket}
+  end
+
+  defp apply_action(socket, :index, url, params) do
+    socket
+    |> assign_paged_stream(:requests, Request, params, url)
+    |> assign(:page_title, "Listing Requests")
+  end
+
+  defp apply_action(socket, :edit, _url, %{"id" => id}) do
+    socket
+    |> assign(:page_title, "Edit Requests")
+    |> assign(:request, Requests.get_request!(id))
+  end
+
+  defp assign_paged_stream(socket, stream_key, schema, params, url) do
+    %{current_user: %{organization_code: organization_code}} = socket.assigns
+
+    opts = [
+      default_columns: [:title, :description, :env, :requestor_name],
+      preloads: [:category, :requestor, :assignee_crew]
+    ]
+
+    %{entries: entries, results: results} =
+      schema
+      |> Paging.filter_status([requestor: :organization_code], ["CM", "FG", organization_code],
+        query_cond: :in
+      )
+      |> Paging.search_and_pagination(params, url, opts)
+
+    socket
+    |> assign(:results, results)
+    |> stream(stream_key, entries, reset: true)
+  end
+
+  defp handle_pubsub(action_user, event, item, socket) do
+    opts = [
+      resource_name: gettext("Request"),
+      target_key: :requests,
+      push_patch: [to: "#{socket.assigns.current_path}"]
+    ]
+
+    {:noreply,
+     socket
+     |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}
   end
 end

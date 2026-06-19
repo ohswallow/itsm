@@ -3,7 +3,25 @@ defmodule ItsmWeb.EvaluationLive.FormComponent do
 
   alias Itsm.Evaluations
 
-  @impl true
+  def update(%{conflict: {event, user}} = _assigns, socket) do
+    msg = if String.contains?(to_string(event), "delete"), do: "삭제", else: "수정"
+
+    {:ok,
+     socket
+     |> assign(:conflict, true)
+     |> assign(:conflict_msg, "#{user.display_name}님이 데이터를 #{msg}했습니다.")}
+  end
+
+  def update(%{evaluation: evaluation} = assigns, socket) do
+    {:ok,
+     socket
+     |> assign(assigns)
+     |> assign(:conflict, false)
+     |> assign_new(:form, fn ->
+       to_form(Evaluations.change_evaluation(evaluation))
+     end)}
+  end
+
   def render(assigns) do
     ~H"""
     <div>
@@ -11,6 +29,17 @@ defmodule ItsmWeb.EvaluationLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage evaluation records in your database.</:subtitle>
       </.header>
+
+      <div
+        :if={@conflict}
+        class="p-4 mb-4 bg-red-50 border border-red-200 text-red-800 rounded animate-pulse"
+      >
+        <div class="flex items-center gap-2 font-bold">
+          <span>⚠️ 충돌 발생!</span>
+        </div>
+        <p class="mt-1 text-sm">{@conflict_msg}</p>
+        <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
+      </div>
 
       <.simple_form
         for={@form}
@@ -33,26 +62,15 @@ defmodule ItsmWeb.EvaluationLive.FormComponent do
           >
           </div>
         </fieldset>
-        <.input field={@form[:comment]} type="text" label="Comment" />
+        <.input field={@form[:comment]} type="text" label={gettext("Comment")} />
         <:actions>
-          <.button phx-disable-with="Saving...">Save Evaluation</.button>
+          <.button :if={!@conflict} phx-disable-with="Saving...">Save Evaluation</.button>
         </:actions>
       </.simple_form>
     </div>
     """
   end
 
-  @impl true
-  def update(%{evaluation: evaluation} = assigns, socket) do
-    {:ok,
-     socket
-     |> assign(assigns)
-     |> assign_new(:form, fn ->
-       to_form(Evaluations.change_evaluation(evaluation))
-     end)}
-  end
-
-  @impl true
   def handle_event("validate", %{"evaluation" => evaluation_params}, socket) do
     changeset = Evaluations.change_evaluation(socket.assigns.evaluation, evaluation_params)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
@@ -63,14 +81,11 @@ defmodule ItsmWeb.EvaluationLive.FormComponent do
   end
 
   defp save_evaluation(socket, :edit, evaluation_params) do
-    case Evaluations.update_evaluation(socket.assigns.evaluation, evaluation_params) do
-      {:ok, evaluation} ->
-        notify_parent({:saved, evaluation})
+    %{current_user: action_user, evaluation: evaluation} = socket.assigns
 
-        {:noreply,
-         socket
-         |> put_flash(:info, "Evaluation updated successfully")
-         |> push_patch(to: socket.assigns.patch)}
+    case Evaluations.update_evaluation(action_user, evaluation, evaluation_params) do
+      {:ok, _evaluation} ->
+        {:noreply, socket |> push_patch(to: socket.assigns.patcg)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -78,19 +93,14 @@ defmodule ItsmWeb.EvaluationLive.FormComponent do
   end
 
   defp save_evaluation(socket, :new, evaluation_params) do
-    case Evaluations.create_evaluation(evaluation_params) do
-      {:ok, evaluation} ->
-        notify_parent({:saved, evaluation})
+    %{current_user: action_user} = socket.assigns
 
-        {:noreply,
-         socket
-         |> put_flash(:info, "Evaluation created successfully")
-         |> push_patch(to: socket.assigns.patch)}
+    case Evaluations.create_evaluation(action_user, evaluation_params) do
+      {:ok, _evaluation} ->
+        {:noreply, socket |> push_patch(to: socket.assigns.patcg)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
-
-  defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end

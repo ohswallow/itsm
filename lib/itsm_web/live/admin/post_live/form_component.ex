@@ -1,0 +1,346 @@
+defmodule ItsmWeb.Admin.PostLive.FormComponent do
+  use ItsmWeb, :live_component
+
+  import ItsmWeb.CommonKCreateVmLive.Components
+  alias Itsm.Admin.Posts
+
+  def update(%{conflict: {event, user}} = _assigns, socket) do
+    msg = if String.contains?(to_string(event), "delete"), do: "삭제", else: "수정"
+
+    {:ok,
+     socket
+     |> assign(:conflict, true)
+     |> assign(:conflict_msg, "#{user.display_name}님이 데이터를 #{msg}했습니다.")}
+  end
+
+  def update(%{post: post} = assigns, socket) do
+    {:ok,
+     socket
+     |> assign(assigns)
+     |> ItsmWeb.LiveUtils.allow_uploads()
+     |> assign(:conflict, false)
+     |> assign_new(:form, fn ->
+       to_form(Posts.change_post(post))
+     end)
+     |> assign_new_options()
+     |> apply_action(post, assigns.action)}
+  end
+
+  defp apply_action(socket, post, :edit) do
+    selected_board = Itsm.Admin.Boards.get_board!(post.board_id)
+    attachments = Itsm.Admin.Attachments.list_attachments_by_resource_is_active(post)
+
+    socket
+    |> assign(:attachments_count, length(attachments))
+    |> stream(:form_attachments, attachments, reset: true)
+    |> assign(:selected_board, selected_board)
+  end
+
+  defp apply_action(socket, _post, _action) do
+    socket
+    |> assign(:selected_board, %{})
+  end
+
+  def render(assigns) do
+    ~H"""
+    <div>
+      <.header>
+        {@title}
+        <:subtitle>Use this form to manage post records in your database.</:subtitle>
+      </.header>
+
+      <div
+        :if={@conflict}
+        class="p-4 mb-4 bg-red-50 border border-red-200 text-red-800 rounded animate-pulse"
+      >
+        <div class="flex items-center gap-2 font-bold">
+          <span>⚠️ 충돌 발생!</span>
+        </div>
+        <p class="mt-1 text-sm">{@conflict_msg}</p>
+        <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
+      </div>
+
+      <.simple_form
+        for={@form}
+        id="post-form"
+        phx-target={@myself}
+        phx-change="validate"
+        phx-submit="save"
+      >
+        <.input
+          field={@form[:board_id]}
+          type="select"
+          label={gettext("Board")}
+          prompt="선택해주세요"
+          options={@board_options}
+        />
+        <.input
+          field={@form[:title]}
+          type="text"
+          label={gettext("Title")}
+        />
+        <.input field={@form[:content]} type="textarea" label={gettext("Content")} />
+        <div
+          :if={assigns[:selected_board] && Map.get(@selected_board, :metadata, %{})["fields"]}
+          class="space-y-4"
+        >
+          <fragment :for={field <- @selected_board.metadata["fields"] || []}>
+            <.input
+              :if={field && field["type"] !== "date"}
+              field={
+                ItsmWeb.LiveUtils.get_sub_field(
+                  field["name"],
+                  @form[:metadata],
+                  @form.params["metadata"],
+                  field["default"]
+                )
+              }
+              type={field["type"]}
+              label={field["label"]}
+              autocomplete={if field["type"] == "password", do: "new-password", else: "one-time-code"}
+              options={Map.get(field, "options", [])}
+            />
+            <.itsm_calendar
+              :if={field && field["type"] === "date"}
+              field={
+                ItsmWeb.LiveUtils.get_sub_field(
+                  field["name"],
+                  @form[:metadata],
+                  @form.params["metadata"],
+                  field["default"]
+                )
+              }
+              label={field["label"]}
+              show_time
+              default_selected_date_time={
+                @form[:metadata].value != [""] && @form[:metadata].value[field["name"]]
+              }
+              rests={%{hour: %{name: ""}, minute: %{name: ""}}}
+            />
+            <br />
+          </fragment>
+
+          <fragment :if={@selected_board.metadata && @selected_board.metadata["is_attachments"]}>
+            <.attachments_section
+              :if={@action == :edit and @attachments_count > 0}
+              id="attachments"
+              attachments_count={@attachments_count}
+            >
+              <.attachment
+                :for={{dom_id, attachment} <- @streams.form_attachments}
+                id={dom_id}
+                attachment={attachment}
+                live_action={@action}
+                target={@myself}
+              />
+            </.attachments_section>
+            <%!-- 파일업로드 --%>
+            <label class="block text-sm font-semibold text-zinc-700 mb-2">
+              {gettext("Attachments")}
+            </label>
+            <.live_file_input class="hidden" upload={@uploads.attachment} />
+            <label
+              class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 mt-2"
+              for={@uploads.attachment.ref}
+              phx-drop-target={@uploads.attachment.ref}
+            >
+              <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                <.icon name="hero-arrow-up-tray" class="w-8 h-8 mb-4 text-gray-500" />
+                <p class="mb-2 text-sm text-gray-500">
+                  <spaxn class="font-semibold">Click to upload</spaxn>
+                  or drag and drop
+                </p>
+
+                <p class="text-xs text-gray-500">
+                  {@uploads.attachment.max_entries} photos max, up to {trunc(
+                    @uploads.attachment.max_file_size / (1 * 1024 * 1024)
+                  )} MB each
+                </p>
+              </div>
+            </label>
+            <.error :for={err <- upload_errors(@uploads.attachment)}>
+              {Phoenix.Naming.humanize(err)}
+            </.error>
+
+            <div
+              :if={length(@uploads.attachment.entries) > 0}
+              class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-4"
+            >
+              <div
+                :for={entry <- @uploads.attachment.entries}
+                class="relative group border border-zinc-200 rounded-lg p-2 bg-white shadow-sm"
+              >
+                <div class="aspect-square bg-zinc-100 rounded-md overflow-hidden mb-2">
+                  <.live_img_preview entry={entry} class="w-full h-full object-cover" />
+                </div>
+
+                <p class="text-xs text-zinc-600 truncate px-1">{entry.client_name}</p>
+
+                <p class="text-xs text-zinc-400">{format_file_size(entry.client_size)}</p>
+
+                <button
+                  type="button"
+                  phx-click="cancel-upload"
+                  phx-value-ref={entry.ref}
+                  class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-md hover:bg-red-600 transition-colors"
+                >
+                  <.icon name="hero-x-mark" class="w-3 h-3" />
+                </button>
+                <.error :for={err <- upload_errors(@uploads.attachment, entry)}>
+                  {Phoenix.Naming.humanize(err)}
+                </.error>
+              </div>
+            </div>
+          </fragment>
+        </div>
+        <.itsm_calendar
+          :if={@action == :edit}
+          field={@form[:inserted_at]}
+          label={gettext("Inserted At")}
+          show_time
+          default_selected_date_time={@form[:inserted_at].value}
+        />
+        <:actions>
+          <.button :if={!@conflict} phx-disable-with="Saving...">Save Post</.button>
+        </:actions>
+      </.simple_form>
+    </div>
+    """
+  end
+
+  def handle_event("validate", %{"post" => post_params}, socket) do
+    %{current_user: action_user, post: post} = socket.assigns
+
+    selected_board =
+      get_effective_board(
+        post_params["board_id"],
+        Map.get(socket.assigns[:post], :board_id),
+        socket.assigns[:selected_board]
+      )
+
+    changeset =
+      Posts.change_post(
+        post,
+        action_user: action_user,
+        attrs: post_params,
+        selected_board_metadata: Map.get(selected_board, :metadata, %{}),
+        call_back: &Itsm.Utils.maybe_put_change(&1, :inserted_at, post_params["inserted_at"])
+      )
+
+    {:noreply,
+     socket
+     |> assign(:selected_board, selected_board)
+     |> assign(form: to_form(changeset, action: :validate))}
+  end
+
+  def handle_event("save", %{"post" => post_params}, socket) do
+    selected_board =
+      get_effective_board(
+        post_params["board_id"],
+        Map.get(socket.assigns[:post], :board_id),
+        socket.assigns[:selected_board]
+      )
+
+    save_post(
+      socket,
+      socket.assigns.action,
+      post_params,
+      Map.get(selected_board, :metadata, %{})
+    )
+  end
+
+  def handle_event("delete_attachment", %{"id" => id}, socket) do
+    %{current_user: action_user} = socket.assigns
+
+    case Itsm.Admin.Attachments.delete_attachment(action_user, id) do
+      {:ok, attachment} ->
+        {:noreply, stream_delete(socket, :form_attachments, attachment)}
+
+      {:error, _} ->
+        {:noreply, socket |> put_flash(:error, "Failed to delete attachment.")}
+    end
+  end
+
+  defp assign_new_options(socket) do
+    socket
+    |> assign_new(:board_options, fn -> Itsm.Admin.Boards.get_select_options() end)
+    |> assign_new(:author_options, fn -> Itsm.Admin.Accounts.get_select_options() end)
+  end
+
+  defp save_post(
+         %{assigns: %{uploads: %{attachment: %{entries: [_ | _]}}}} = socket,
+         action,
+         post_params,
+         selected_board_metadata
+       ) do
+    %{current_user: action_user, post: post} = socket.assigns
+
+    case Posts.save_with_attachment(
+           action,
+           action_user,
+           post || %{},
+           post_params,
+           selected_board_metadata,
+           ItsmWeb.LiveUtils.build_attachment_consumer(socket)
+         ) do
+      {:ok, _post} ->
+        {:noreply, socket |> push_patch(to: socket.assigns.patch)}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
+    end
+  end
+
+  defp save_post(socket, :edit, post_params, selected_board_metadata) do
+    %{current_user: action_user, post: post} = socket.assigns
+
+    case Posts.update_post(
+           action_user,
+           post,
+           post_params,
+           selected_board_metadata
+         ) do
+      {:ok, _post} ->
+        {:noreply, socket |> push_patch(to: socket.assigns.patch)}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
+    end
+  end
+
+  defp save_post(socket, :new, post_params, selected_board_metadata) do
+    %{current_user: action_user} = socket.assigns
+
+    case Posts.create_post(action_user, post_params, selected_board_metadata) do
+      {:ok, _post} ->
+        {:noreply, socket |> push_patch(to: socket.assigns.patch)}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
+    end
+  end
+
+  defp get_effective_board(new_id, current_board_id, current_board) do
+    cond do
+      Itsm.Utils.blank?(new_id) ->
+        %{}
+
+      is_nil(current_board) && !Itsm.Utils.blank?(current_board_id) ->
+        Itsm.Admin.Boards.get_board!(current_board_id)
+
+      !Itsm.Utils.blank?(new_id) &&
+          (is_nil(current_board) || current_board == %{} || new_id != current_board.id) ->
+        Itsm.Admin.Boards.get_board!(new_id)
+
+      is_nil(current_board) && !Itsm.Utils.blank?(current_board_id) ->
+        Itsm.Admin.Boards.get_board!(current_board_id)
+
+      true ->
+        current_board
+    end
+  end
+
+  defp format_file_size(bytes) when bytes < 1024, do: "#{bytes} B"
+  defp format_file_size(bytes) when bytes < 1024 * 1024, do: "#{round(bytes / 1024)} KB"
+  defp format_file_size(bytes), do: "#{round(bytes / (1024 * 1024))} MB"
+end

@@ -1,0 +1,63 @@
+<.header>
+  Listing Requests
+</.header>
+<.itsm_table_container results={assigns[:results]}>
+  <.table
+    id="requests"
+    rows={@streams.requests}
+    row_click={fn {_id, request} -> JS.navigate(~p"/admin/requests/#{request.id}") end}
+  >
+    <:col :let={{_id, request}} label={gettext("Title")}>{request.title}</:col>
+    <:col :let={{_id, request}} label={gettext("Description")}>
+      <div class="w-[90px] truncate">{request.description}</div>
+    </:col>
+    <:col :let={{_id, request}} label={gettext("Environment")}>
+      <.common_code_label group="운영_구분" code={request.env} />
+    </:col>
+    <:col :let={{id, request}} label={gettext("Due Date")}>
+      <div id={"due-date-#{id}"} phx-hook="LocalTime.ToLocale" utc-value={request.due_date} />
+    </:col>
+    <:col :let={{_id, request}} label={gettext("Request Type")}>
+      {request.category.request_name}
+    </:col>
+    <:col :let={{_id, request}} label={gettext("Request Name")}>{request.category.name}</:col>
+    <:col :let={{_id, request}} label={gettext("Requestor Affiliate")}>
+      <.common_code_label group="계열사" code={request.requestor.organization_code} />
+    </:col>
+    <:col :let={{_id, request}} label={gettext("Category Affiliate")}>
+      <.common_code_label group="계열사" code={request.category.affiliate} />
+    </:col>
+
+    <:action :let={{_id, request}}>
+      <div class="sr-only"><.link navigate={~p"/admin/requests/#{request}"}>Show</.link></div>
+      <.link patch={~p"/admin/requests/#{request.id}/edit"}>Edit</.link>
+    </:action>
+    <:action :let={{_id, request}}>
+      <.link
+        id={request.id}
+        phx-click={JS.push("delete", value: %{id: request.id})}
+        class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
+  </.table>
+</.itsm_table_container>
+
+<.modal
+  :if={@live_action == :edit}
+  id="request-modal"
+  show
+  on_cancel={JS.patch(~p"/admin/requests?#{assigns[:results][:params] || %{}}")}
+>
+  <.live_component
+    module={ItsmWeb.Admin.RequestLive.FormComponent}
+    id={@request.id}
+    title={@page_title}
+    action={@live_action}
+    request={@request}
+    current_user={@current_user}
+    patch={~p"/admin/requests?#{assigns[:results][:params] || %{}}"}
+  />
+</.modal>

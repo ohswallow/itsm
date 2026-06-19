@@ -8,6 +8,13 @@ defmodule Itsm.Repo.Migrations.CreateUsersAuthTables do
       add :id, :binary_id, primary_key: true
       add :email, :citext, null: false
       add :hashed_password, :string, null: false
+      add :employee_number, :string
+      add :display_name, :string
+      add :organization, :string
+      add :organization_code, :string
+      add :department, :string
+      add :department_code, :string
+      add :role, :string, default: "general", null: false
       add :confirmed_at, :utc_datetime
 
       timestamps(type: :utc_datetime)

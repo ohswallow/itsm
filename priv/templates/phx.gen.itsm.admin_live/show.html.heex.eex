@@ -1,0 +1,43 @@
+<.header>
+  <%= schema.human_singular %> {@<%= schema.singular %>.id}
+  <:subtitle>This is a <%= schema.singular %> record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"<%= schema.route_prefix %>/#{@<%= schema.singular %>}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit <%= schema.singular %></.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list><%= for {k, type} <- schema.attrs do %>
+  <%= if type == :utc_datetime do %><:item title={<%= "gettext(\"#{ItsmWeb.LiveUtils.titleize(k)}\")" %>}>
+    <span id={"<%= schema.singular %>-<%= k %>-#{@<%= schema.singular %>.id}"} phx-hook="LocalTime.ToLocale" utc-value={@<%= schema.singular %>.<%= k %>} />
+  </:item><% else %><:item title={<%= "gettext(\"#{ItsmWeb.LiveUtils.titleize(k)}\")" %>}>{@<%= schema.singular %>.<%= k %>}</:item><% end %><% end %>
+  <:item title={gettext("Inserted At")}>
+    <span
+      id={"<%= schema.singular %>-inserted-at-#{@<%= schema.singular %>.id}"}
+      phx-hook="LocalTime.ToLocale"
+      utc-value={@<%= schema.singular %>.inserted_at}
+    />
+  </:item>
+  <:item title={gettext("Updated At")}>
+    <span
+      id={"<%= schema.singular %>-updated-at-#{@<%= schema.singular %>.id}"}
+      phx-hook="LocalTime.ToLocale"
+      utc-value={@<%= schema.singular %>.updated_at}
+    />
+  </:item>
+</.list>
+
+<.back navigate={~p"<%= schema.route_prefix %>"}>Back to <%= schema.plural %></.back>
+
+<.modal :if={@live_action == :edit} id="<%= schema.singular %>-modal" show on_cancel={JS.patch(~p"<%= schema.route_prefix %>/#{@<%= schema.singular %>}")}>
+  <.live_component
+    module={<%= inspect context.web_module %>.<%= inspect Module.concat(schema.web_namespace, schema.alias) %>Live.FormComponent}
+    id={@<%= schema.singular %>.id}
+    title={@page_title}
+    action={@live_action}
+    <%= schema.singular %>={@<%= schema.singular %>}
+    current_user={@current_user}
+    patch={~p"<%= schema.route_prefix %>/#{@<%= schema.singular %>}"}
+  />
+</.modal>

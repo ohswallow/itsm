@@ -1,115 +1,68 @@
 defmodule Itsm.Comments do
-  @moduledoc """
-  The Comments context.
-  """
-
   import Ecto.Query, warn: false
+  alias Itsm.Requests
   alias Itsm.Repo
 
   alias Itsm.Comments.Comment
-  alias Itsm.Service.Request
   alias Itsm.Accounts.User
-  alias Itsm.Service
+  alias Itsm.Utils
 
-  @doc """
-  Returns the list of comments.
-
-  ## Examples
-
-      iex> list_comments()
-      [%Comment{}, ...]
-
-  """
-  def list_comments do
-    Repo.all(Comment)
+  def list_comments_by_resource(resource) do
+    Comment
+    # "Request"
+    |> where([c], c.resource_type == ^Utils.resource_name(resource))
+    # ID 매칭
+    |> where([c], c.resource_id == ^resource.id)
+    |> order_by([c], asc: c.inserted_at)
+    # 첨부파일/작성자 로딩
+    |> preload([:user, :attachments])
+    |> Repo.all()
   end
 
-  @doc """
-  Gets a single comment.
+  def change_comment_for_resource(action_user, resource, attrs \\ %{})
 
-  Raises `Ecto.NoResultsError` if the Comment does not exist.
-
-  ## Examples
-
-      iex> get_comment!(123)
-      %Comment{}
-
-      iex> get_comment!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_comment!(id), do: Repo.get!(Comment, id)
-
-  @doc """
-  Creates a comment.
-
-  ## Examples
-
-      iex> create_comment(%{field: value})
-      {:ok, %Comment{}}
-
-      iex> create_comment(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_comment(%Request{} = request, %User{} = user, attrs \\ %{}) do
-    %Comment{request: request, user: user}
+  def change_comment_for_resource(%User{} = action_user, resource, attrs) when is_map(attrs) do
+    %Comment{
+      user: action_user,
+      resource_type: Utils.resource_name(resource),
+      resource_id: resource.id
+    }
     |> Comment.changeset(attrs)
-    |> Repo.insert()
+  end
+
+  def change_comment(%Comment{} = comment, attrs \\ %{}) do
+    Comment.changeset(comment, attrs)
+  end
+
+  def create_comment(%User{} = action_user, resource, attrs, repo \\ Repo, opts \\ []) do
+    action_user
+    |> change_comment_for_resource(resource, attrs)
+    |> repo.insert()
     |> case do
       {:ok, comment} ->
-        Service.broadcast_request(request.id, {:comment_created, comment})
-        {:ok, comment}
+        # 🌟 1. Show.ex 화면을 위해 :user와 :attachments 둘 다 Preload!
+        # 이후에 attachments를 저장하는 Mulit 로직이 있으면 Preload가 안되여 :attachments는 제외
+        preloaded_comment = repo.preload(comment, [:user])
 
-      {:error, _} = error ->
-        error
+        if Keyword.get(opts, :broadcast, true) do
+          Itsm.PubSub.Helper.broadcast(
+            Requests,
+            {action_user, :create_comment, preloaded_comment},
+            id: resource.id,
+            only: :detail
+          )
+
+          Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_comment, comment})
+        end
+
+        {:ok, preloaded_comment}
+
+      {:error, changeset} ->
+        {:error, changeset}
     end
   end
 
-  @doc """
-  Updates a comment.
-
-  ## Examples
-
-      iex> update_comment(comment, %{field: new_value})
-      {:ok, %Comment{}}
-
-      iex> update_comment(comment, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_comment(%Comment{} = comment, attrs) do
-    comment
-    |> Comment.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Deletes a comment.
-
-  ## Examples
-
-      iex> delete_comment(comment)
-      {:ok, %Comment{}}
-
-      iex> delete_comment(comment)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_comment(%Comment{} = comment) do
-    Repo.delete(comment)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking comment changes.
-
-  ## Examples
-
-      iex> change_comment(comment)
-      %Ecto.Changeset{data: %Comment{}}
-
-  """
-  def change_comment(%Comment{} = comment, attrs \\ %{}) do
-    Comment.changeset(comment, attrs)
+  def with_assoc(%Comment{} = comment, preloads) do
+    Repo.preload(comment, preloads)
   end
 end

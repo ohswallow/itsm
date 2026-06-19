@@ -4,55 +4,46 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
-    <.live_title default="Itsm" suffix=" · Phoenix Framework">
+    <.live_title default="KB ITSM" suffix=" · Service Management">
       {assigns[:page_title]}
     </.live_title>
-    <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
+     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
     </script>
   </head>
+  
   <body class="bg-white">
-    <ul class="relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
-      <%= if @current_user do %>
-        <li class="text-[0.8125rem] leading-6 text-zinc-900">
-          {@current_user.email}
-        </li>
-        <li>
-          <.link
-            href={~p"/users/settings"}
-            class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
-          >
-            Settings
-          </.link>
-        </li>
-        <li>
-          <.link
-            href={~p"/users/log_out"}
-            method="delete"
-            class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
-          >
-            Log out
-          </.link>
-        </li>
-      <% else %>
-        <li>
-          <.link
-            href={~p"/users/register"}
-            class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
-          >
-            Register
-          </.link>
-        </li>
-        <li>
-          <.link
-            href={~p"/users/log_in"}
-            class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
-          >
-            Log in
-          </.link>
-        </li>
-      <% end %>
-    </ul>
-    {@inner_content}
+    <div
+      id="toast-container"
+      class="fixed top-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none"
+    >
+      <div
+        id="copy-toast"
+        class="hidden items-start p-4 w-auto min-w-[300px] max-w-md bg-white border border-gray-100 rounded-lg shadow-2xl pointer-events-auto transition-all duration-300 ease-in-out transform translate-y-[-20px] opacity-0"
+        role="alert"
+      >
+        <div class="flex items-center gap-3">
+          <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-[#FFBC00]/10 text-[#FFBC00]">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 13l4 4L19 7"
+              >
+              </path>
+            </svg>
+          </div>
+          
+          <div class="flex-col">
+            <h3 class="text-sm font-semibold text-gray-900">{gettext("Info")}</h3>
+            
+            <p class="text-xs text-gray-600 mt-1">{gettext("copied to clipboard.")}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div>{@inner_content}</div>
   </body>
 </html>

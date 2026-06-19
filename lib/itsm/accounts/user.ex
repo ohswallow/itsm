@@ -13,8 +13,20 @@ defmodule Itsm.Accounts.User do
     field :display_name, :string
     field :organization, :string
     field :organization_code, :string
+    field :department, :string
+    field :department_code, :string
+    # group_code: "역할"
+    field :role, :string, default: "general"
+
+    # has_many through :  CrewsUsers에 N:N 조인 컬럼목적 컬럼 아닌 컬럼 존재시 CrewsUsers 에 접근할수 있게 사용하는 목적
+    # many_to_many join_through : 순수 조인 컬럼 있다면 join_through 사용해야함
+    # has_many :members, Itsm.Crews.CrewsUsers
+    # has_many :crews, through: [:members, :crew]
+
+    many_to_many :crews, Itsm.Crews.Crew, join_through: Itsm.Crews.CrewsUsers
 
     has_many :comments, Itsm.Comments.Comment
+    has_many :requests, Itsm.Service.Request, foreign_key: :requestor_id
 
     timestamps(type: :utc_datetime)
   end
@@ -50,11 +62,22 @@ defmodule Itsm.Accounts.User do
       :employee_number,
       :display_name,
       :organization,
-      :organization_code
+      :organization_code,
+      :department,
+      :department_code,
+      :role
     ])
     |> validate_email(opts)
     |> validate_password(opts)
-    |> validate_required([:employee_number, :display_name, :organization, :organization_code])
+    |> validate_required([
+      :employee_number,
+      :display_name,
+      :organization,
+      :organization_code,
+      :department,
+      :department_code,
+      :role
+    ])
   end
 
   defp validate_email(changeset, opts) do
@@ -171,4 +194,30 @@ defmodule Itsm.Accounts.User do
       add_error(changeset, :current_password, "is not valid")
     end
   end
+
+  def changeset(user, attrs \\ %{}) do
+    user
+    |> cast(attrs, [
+      :email,
+      :password,
+      :employee_number,
+      :display_name,
+      :organization,
+      :organization_code,
+      :department,
+      :department_code,
+      :role
+    ])
+    |> validate_required([
+      :employee_number,
+      :display_name,
+      :organization,
+      :organization_code,
+      :department,
+      :department_code,
+      :role
+    ])
+  end
+
+  @type t :: %__MODULE__{}
 end

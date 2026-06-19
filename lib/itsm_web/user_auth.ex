@@ -164,6 +164,41 @@ defmodule ItsmWeb.UserAuth do
     end
   end
 
+  def on_mount(:ensure_is_admin_authenticated, _params, session, socket) do
+    socket = mount_current_user(socket, session)
+
+    if socket.assigns.current_user && socket.assigns.current_user.role == "admin" do
+      {:cont, socket}
+    else
+      socket =
+        socket
+        |> Phoenix.LiveView.put_flash(
+          :error,
+          "You must log in and be an admin to access this page."
+        )
+        |> Phoenix.LiveView.redirect(to: ~p"/users/log_in")
+
+      {:halt, socket}
+    end
+  end
+
+  # on_mount 콜백 추가
+  def on_mount(:set_locale, params, session, socket) do
+    locale = params["locale"] || session["locale"] || "ko"
+
+    # 디버깅용
+    IO.inspect(self(), label: "PID: ")
+    IO.puts("on_mount :set_locale called with locale: #{locale}")
+
+    if locale in Gettext.known_locales(ItsmWeb.Gettext) do
+      Gettext.put_locale(ItsmWeb.Gettext, locale)
+      # 디버깅용
+      IO.puts("Locale set to: #{locale} in on_mount")
+    end
+
+    {:cont, socket}
+  end
+
   def on_mount(:redirect_if_user_is_authenticated, _params, session, socket) do
     socket = mount_current_user(socket, session)
 
@@ -174,11 +209,37 @@ defmodule ItsmWeb.UserAuth do
     end
   end
 
+  def on_mount(:log_menu_access, _params, session, socket) do
+    if Phoenix.LiveView.connected?(socket) do
+      access_log =
+        Itsm.AccessLogger.log_access(
+          socket,
+          session,
+          socket.assigns[:current_user],
+          :menu_view
+        )
+
+      {:cont,
+       socket
+       |> Phoenix.Component.assign(:access_log, access_log)
+       |> Phoenix.LiveView.attach_hook(
+         :log_after_routing,
+         :handle_params,
+         fn _params, _url, socket -> {:cont, Itsm.AccessLogger.save_use_supervisor(socket)} end
+       )}
+    else
+      {:cont, socket}
+    end
+  end
+
   defp mount_current_user(socket, session) do
-    Phoenix.Component.assign_new(socket, :current_user, fn ->
-      if user_token = session["user_token"] do
-        Accounts.get_user_by_session_token(user_token)
-      end
+    socket
+    |> Phoenix.Component.assign_new(:current_user, fn ->
+      if user_token = session["user_token"], do: Accounts.get_user_by_session_token(user_token)
+    end)
+    |> then(fn %{assigns: %{current_user: user}} = socket ->
+      if user, do: Process.put(:current_user_id, user.id)
+      socket
     end)
   end
 
