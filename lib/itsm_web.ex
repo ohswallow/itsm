@@ -17,7 +17,7 @@ defmodule ItsmWeb do
   those modules here.
   """
 
-  def static_paths, do: ~w(assets css js fonts images favicon.ico robots.txt uploads)
+  def static_paths, do: ~w(assets fonts images favicon.ico robots.txt)
 
   def router do
     quote do
@@ -38,9 +38,7 @@ defmodule ItsmWeb do
 
   def controller do
     quote do
-      use Phoenix.Controller,
-        formats: [:html, :json],
-        layouts: [html: ItsmWeb.Layouts]
+      use Phoenix.Controller, formats: [:html, :json]
 
       use Gettext, backend: ItsmWeb.Gettext
 
@@ -52,10 +50,7 @@ defmodule ItsmWeb do
 
   def live_view do
     quote do
-      use Phoenix.LiveView,
-        layout: {ItsmWeb.Layouts, :app}
-
-      use ItsmWeb.LiveHelpers
+      use Phoenix.LiveView
 
       unquote(html_helpers())
     end
@@ -64,8 +59,6 @@ defmodule ItsmWeb do
   def live_component do
     quote do
       use Phoenix.LiveComponent
-
-      use ItsmWeb.LiveHelpers, only_common: true
 
       unquote(html_helpers())
     end
@@ -94,11 +87,9 @@ defmodule ItsmWeb do
       # Core UI components
       import ItsmWeb.CoreComponents
 
-      # Itsm Components
-      import ItsmWeb.ItsmComponents
-
-      # Shortcut for generating JS commands
+      # Common modules used in templates
       alias Phoenix.LiveView.JS
+      alias ItsmWeb.Layouts
 
       # Routes generation with the ~p sigil
       unquote(verified_routes())

@@ -24,7 +24,7 @@ defmodule Itsm.PubSub.Helper do
 
   def subscribe(%Phoenix.LiveView.Socket{} = socket, domain, opts) do
     if connected?(socket) do
-      current_user = socket.assigns.current_user
+      current_user = socket.assigns.current_scope.user
       affiliate = Keyword.get(opts, :affiliate, find_affiliate(current_user))
 
       subscribe(nil, domain, Keyword.put(opts, :affiliate, affiliate))
@@ -91,7 +91,7 @@ defmodule Itsm.PubSub.Helper do
 
   def unsubscribe(%Phoenix.LiveView.Socket{} = socket, domain, opts) do
     if connected?(socket) do
-      current_user = socket.assigns.current_user
+      current_user = socket.assigns.current_scope.user
       affiliate = Keyword.get(opts, :affiliate, find_affiliate(current_user))
 
       unsubscribe(nil, domain, Keyword.put(opts, :affiliate, affiliate))

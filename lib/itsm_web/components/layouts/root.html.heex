@@ -1,49 +1,64 @@
 <!DOCTYPE html>
-<html lang="en" class="[scrollbar-gutter:stable]">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
-    <.live_title default="KB ITSM" suffix=" · Service Management">
-      {assigns[:page_title]}
-    </.live_title>
-     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
-    <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
+    <.live_title default="Itsm" suffix=" · Phoenix Framework" phx-no-format>{assigns[:page_title]}</.live_title>
+    <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
+    <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
+    </script>
+    <script>
+      (() => {
+        const systemTheme = () => matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+
+        const setTheme = (theme) => {
+          if (theme === "system") {
+            localStorage.removeItem("phx:theme");
+            document.documentElement.setAttribute("data-theme", systemTheme());
+            document.documentElement.setAttribute("data-theme-source", "system");
+          } else {
+            localStorage.setItem("phx:theme", theme);
+            document.documentElement.setAttribute("data-theme", theme);
+            document.documentElement.setAttribute("data-theme-source", "user");
+          }
+        };
+        if (!document.documentElement.hasAttribute("data-theme")) {
+          setTheme(localStorage.getItem("phx:theme") || "system");
+        }
+        window.addEventListener("storage", (e) => e.key === "phx:theme" && setTheme(e.newValue || "system"));
+        
+        window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
+
+        matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+          if (document.documentElement.getAttribute("data-theme-source") === "system") {
+            document.documentElement.setAttribute("data-theme", systemTheme());
+          }
+        });
+      })();
     </script>
   </head>
-  
-  <body class="bg-white">
-    <div
-      id="toast-container"
-      class="fixed top-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none"
-    >
-      <div
-        id="copy-toast"
-        class="hidden items-start p-4 w-auto min-w-[300px] max-w-md bg-white border border-gray-100 rounded-lg shadow-2xl pointer-events-auto transition-all duration-300 ease-in-out transform translate-y-[-20px] opacity-0"
-        role="alert"
-      >
-        <div class="flex items-center gap-3">
-          <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-[#FFBC00]/10 text-[#FFBC00]">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M5 13l4 4L19 7"
-              >
-              </path>
-            </svg>
-          </div>
-          
-          <div class="flex-col">
-            <h3 class="text-sm font-semibold text-gray-900">{gettext("Info")}</h3>
-            
-            <p class="text-xs text-gray-600 mt-1">{gettext("copied to clipboard.")}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <div>{@inner_content}</div>
+  <body>
+    <ul class="menu menu-horizontal w-full relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
+      <%= if @current_scope do %>
+        <li>
+          {@current_scope.user.email}
+        </li>
+        <li>
+          <.link href={~p"/users/settings"}>Settings</.link>
+        </li>
+        <li>
+          <.link href={~p"/users/log-out"} method="delete">Log out</.link>
+        </li>
+      <% else %>
+        <li>
+          <.link href={~p"/users/register"}>Register</.link>
+        </li>
+        <li>
+          <.link href={~p"/users/log-in"}>Log in</.link>
+        </li>
+      <% end %>
+    </ul>
+    {@inner_content}
   </body>
 </html>

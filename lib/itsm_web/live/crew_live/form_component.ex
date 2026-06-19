@@ -20,8 +20,8 @@ defmodule ItsmWeb.CrewLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage crew records in your database.</:subtitle>
       </.header>
-
-      <.simple_form
+      
+      <.form
         for={@form}
         id="crew-form"
         phx-target={@myself}
@@ -31,7 +31,7 @@ defmodule ItsmWeb.CrewLive.FormComponent do
         <.input field={@form[:name]} type="text" label="Name" />
         <.input field={@form[:description]} type="text" label="Description" />
         <:actions><.button phx-disable-with="Saving...">Save Crew</.button></:actions>
-      </.simple_form>
+      </.form>
     </div>
     """
   end

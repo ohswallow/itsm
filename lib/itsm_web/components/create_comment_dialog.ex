@@ -22,7 +22,7 @@ defmodule ItsmWeb.CreateCommentDialog do
         <:subtitle>Add a comment for this approval</:subtitle>
       </.header>
       
-      <.simple_form
+      <.form
         for={@form}
         id="approval-comment-form"
         phx-target={@myself}
@@ -31,7 +31,7 @@ defmodule ItsmWeb.CreateCommentDialog do
       >
         <.input field={@form[:comment]} type="textarea" label="Comment" phx-hook="MaintainHeight" />
         <:actions><.button type="submit">{@title}</.button></:actions>
-      </.simple_form>
+      </.form>
     </div>
     """
   end

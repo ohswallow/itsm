@@ -18,11 +18,11 @@ defmodule ItsmWeb.CrewLive.Index do
   end
 
   defp apply_action(socket, :index, _params) do
-    %{current_user: current_user} = socket.assigns
+    %{current_scope: current_scope} = socket.assigns
 
     socket
     |> assign(:page_title, "My Crews")
-    |> stream(:crews, Crews.list_my_crews(current_user), reset: true)
+    |> stream(:crews, Crews.list_my_crews(current_scope.user), reset: true)
   end
 
   defp apply_action(socket, :new, _params) do
@@ -38,10 +38,10 @@ defmodule ItsmWeb.CrewLive.Index do
   end
 
   def handle_event("delete", %{"id" => id}, socket) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: current_scope} = socket.assigns
     crew = Crews.get_crew!(id)
 
-    case Crews.delete_crew(action_user, crew) do
+    case Crews.delete_crew(current_scope.user, crew) do
       {:ok, crew} ->
         {:noreply,
          socket
@@ -95,9 +95,9 @@ defmodule ItsmWeb.CrewLive.Index do
          {%Crew{} = item, %CrewsUsers{} = crews_users},
          socket
        ) do
-    %{current_user: user} = socket.assigns
+    %{current_scope: current_scope} = socket.assigns
 
-    if(user.id == crews_users.user_id) do
+    if(current_scope.user.id == crews_users.user_id) do
       opts = [resource_name: gettext("Member")]
 
       {:noreply,
@@ -113,9 +113,12 @@ defmodule ItsmWeb.CrewLive.Index do
   end
 
   defp modify_crew(socket, action_user, event, %Crew{} = item) do
-    %{current_user: user} = socket.assigns
+    %{current_scope: current_scope} = socket.assigns
 
-    if(Enum.any?(item.crews_users, &(&1.user_id == user.id)) || user.id == item.leader.id) do
+    if(
+      Enum.any?(item.crews_users, &(&1.user_id == current_scope.user.id)) ||
+        current_scope.user.id == item.leader.id
+    ) do
       opts = [resource_name: get_resource_name(event)]
 
       {:noreply,

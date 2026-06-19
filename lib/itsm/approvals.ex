@@ -126,7 +126,7 @@ defmodule Itsm.Approvals do
     end
   end
 
-  def create_approval(%User{} = action_user, %Request{} = request, repo \\ Repo, opts \\ []) do
+  def create_approval(%User{} = action_user, %Request{} = request, repo, opts \\ []) do
     %Approval{
       approver: action_user,
       approver_name: action_user.display_name,

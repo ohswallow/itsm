@@ -30,7 +30,7 @@ defmodule ItsmWeb.Admin.AttachmentLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage attachment records in your database.</:subtitle>
       </.header>
-
+      
       <div
         :if={@conflict}
         class="p-4 mb-4 bg-red-50 border border-red-200 text-red-800 rounded animate-pulse"
@@ -38,11 +38,13 @@ defmodule ItsmWeb.Admin.AttachmentLive.FormComponent do
         <div class="flex items-center gap-2 font-bold">
           <span>⚠️ 충돌 발생!</span>
         </div>
+        
         <p class="mt-1 text-sm">{@conflict_msg}</p>
+        
         <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
       </div>
-
-      <.simple_form
+      
+      <.form
         for={@form}
         id="attachment-form"
         phx-target={@myself}
@@ -71,13 +73,14 @@ defmodule ItsmWeb.Admin.AttachmentLive.FormComponent do
             default_selected_date_time={@form[:inserted_at].value}
           />
         </fragment>
+        
         <fragment :if={@action == :new}>
           <div
             :if={Enum.any?(@uploads.attachment.entries)}
             class="mt-3 pt-2"
           >
             <p class="text-xs text-slate-400 mb-2 font-medium">Attachments</p>
-
+            
             <div class="flex flex-wrap gap-2">
               <div
                 :for={attachment <- @uploads.attachment.entries}
@@ -86,18 +89,18 @@ defmodule ItsmWeb.Admin.AttachmentLive.FormComponent do
                 <div class="bg-blue-50 text-blue-600 rounded p-0.5">
                   <.icon name="hero-paper-clip" class="w-3 h-3" />
                 </div>
-
+                
                 <span class="text-xs text-slate-600 group-hover:text-blue-600 max-w-[158px] truncate">
                   {attachment.client_name}
                 </span>
               </div>
             </div>
           </div>
-          <%!-- 파일업로드 --%>
+           <%!-- 파일업로드 --%>
           <label class="block text-sm font-semibold text-zinc-700 mb-2">
             {gettext("Attachments")}
           </label>
-          <.live_file_input class="hidden" upload={@uploads.attachment} />
+           <.live_file_input class="hidden" upload={@uploads.attachment} />
           <label
             class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 mt-2"
             for={@uploads.attachment.ref}
@@ -109,7 +112,7 @@ defmodule ItsmWeb.Admin.AttachmentLive.FormComponent do
                 <spaxn class="font-semibold">Click to upload</spaxn>
                 or drag and drop
               </p>
-
+              
               <p class="text-xs text-gray-500">
                 {@uploads.attachment.max_entries} photos max, up to {trunc(
                   @uploads.attachment.max_file_size / (1 * 1024 * 1024)
@@ -117,14 +120,19 @@ defmodule ItsmWeb.Admin.AttachmentLive.FormComponent do
               </p>
             </div>
           </label>
-          <.error :for={err <- upload_errors(@uploads.attachment)}>
-            {Phoenix.Naming.humanize(err)}
-          </.error>
+          
+          <p
+            :for={err <- upload_errors(@uploads.attachment)}
+            class="mt-1.5 flex gap-2 items-center text-sm text-error"
+          >
+            <.icon name="hero-exclamation-circle" class="size-5" /> {Phoenix.Naming.humanize(err)}
+          </p>
         </fragment>
+        
         <:actions>
           <.button :if={!@conflict} phx-disable-with="Saving...">Save Attachment</.button>
         </:actions>
-      </.simple_form>
+      </.form>
     </div>
     """
   end

@@ -29,7 +29,7 @@ defmodule ItsmWeb.Admin.UserLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage user records in your database.</:subtitle>
       </.header>
-
+      
       <div
         :if={@conflict}
         class="p-4 mb-4 bg-red-50 border border-red-200 text-red-800 rounded animate-pulse"
@@ -37,11 +37,13 @@ defmodule ItsmWeb.Admin.UserLive.FormComponent do
         <div class="flex items-center gap-2 font-bold">
           <span>⚠️ 충돌 발생!</span>
         </div>
+        
         <p class="mt-1 text-sm">{@conflict_msg}</p>
+        
         <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
       </div>
-
-      <.simple_form
+      
+      <.form
         for={@form}
         id="user-form"
         phx-target={@myself}
@@ -60,8 +62,7 @@ defmodule ItsmWeb.Admin.UserLive.FormComponent do
           label={gettext("Confirmed At")}
           show_time
           default_selected_date_time={@form[:confirmed_at].value}
-        />
-        <.input field={@form[:employee_number]} type="text" label={gettext("Employee Number")} />
+        /> <.input field={@form[:employee_number]} type="text" label={gettext("Employee Number")} />
         <.input field={@form[:display_name]} type="text" label={gettext("Display Name")} />
         <.input
           field={@form[:organization_code]}
@@ -76,8 +77,7 @@ defmodule ItsmWeb.Admin.UserLive.FormComponent do
           label={gettext("Department")}
           prompt="Choose a value"
           options={@department_options}
-        />
-        <.input field={@form[:role]} type="text" label={gettext("Role")} />
+        /> <.input field={@form[:role]} type="text" label={gettext("Role")} />
         <.itsm_calendar
           :if={@action == :edit}
           field={@form[:inserted_at]}
@@ -88,7 +88,7 @@ defmodule ItsmWeb.Admin.UserLive.FormComponent do
         <:actions>
           <.button :if={!@conflict} phx-disable-with="Saving...">Save User</.button>
         </:actions>
-      </.simple_form>
+      </.form>
     </div>
     """
   end

@@ -20,7 +20,7 @@ config :itsm, Itsm.Repo,
 # you can enable the server option below.
 config :itsm, ItsmWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
-  secret_key_base: "hRvDg4c0+Y0UsQJeaBY24NHgRYFPwE/hX2OK8/7rQBUJ999Iaf0y1ljRgaPS3fFc",
+  secret_key_base: "fkejEbEg4/NvJPTTOapcStx8Tz21tzJPp4ggKmjtQycjP28eL/dkuUlvPE9CRjwK",
   server: false
 
 # In test we don't send emails
@@ -38,3 +38,7 @@ config :phoenix, :plug_init_mode, :runtime
 # Enable helpful, but potentially expensive runtime checks
 config :phoenix_live_view,
   enable_expensive_runtime_checks: true
+
+# Sort query params output of verified routes for robust url comparisons
+config :phoenix,
+  sort_verified_routes_query_params: true

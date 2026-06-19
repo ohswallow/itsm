@@ -91,15 +91,3 @@ msgstr ""
 
 msgid "must be equal to %{number}"
 msgstr ""
-
-msgid "This user is already assigned as a delegate during this period."
-msgstr "해당 사용자는 이 기간에 이미 대결등록 되어있습니다."
-
-msgid "Only the leader can edit this crew."
-msgstr "리더만 이 crew를 변경할 수 있습니다."
-
-msgid "Only the leader can delete this crew."
-msgstr "리더만 이 crew를 삭제할 수 있습니다."
-
-msgid "Only the creator can delete this delegation."
-msgstr "등록자만 이 위임을 삭제할 수 있습니다."

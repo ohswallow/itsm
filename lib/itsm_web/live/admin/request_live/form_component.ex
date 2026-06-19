@@ -30,7 +30,7 @@ defmodule ItsmWeb.Admin.RequestLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage request records in your database.</:subtitle>
       </.header>
-
+      
       <div
         :if={@conflict}
         class="p-4 mb-4 bg-red-50 border border-red-200 text-red-800 rounded animate-pulse"
@@ -38,11 +38,13 @@ defmodule ItsmWeb.Admin.RequestLive.FormComponent do
         <div class="flex items-center gap-2 font-bold">
           <span>⚠️ 충돌 발생!</span>
         </div>
+        
         <p class="mt-1 text-sm">{@conflict_msg}</p>
+        
         <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
       </div>
-
-      <.simple_form
+      
+      <.form
         for={@form}
         id="request-form"
         phx-target={@myself}
@@ -75,7 +77,7 @@ defmodule ItsmWeb.Admin.RequestLive.FormComponent do
         <:actions>
           <.button :if={!@conflict} phx-disable-with="Saving...">Save Request</.button>
         </:actions>
-      </.simple_form>
+      </.form>
     </div>
     """
   end

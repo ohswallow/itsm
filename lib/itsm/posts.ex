@@ -87,11 +87,12 @@ defmodule Itsm.Posts do
     attrs = Keyword.get(opts, :attrs, %{})
     action_user = Keyword.get(opts, :action_user, %{})
     selected_board_metadata = Keyword.get(opts, :selected_board_metadata, %{})
-    call_back = Keyword.get(opts, :call_back, & &1)
+    #  call_back = Keyword.get(opts, :call_back, & &1)
 
     post
     |> Post.changeset(attrs, action_user, selected_board_metadata)
-    |> call_back.()
+
+    #  |> call_back.()
   end
 
   def with_assoc(%Post{} = post, preloads) do

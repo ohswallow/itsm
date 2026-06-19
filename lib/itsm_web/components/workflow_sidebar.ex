@@ -31,7 +31,7 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
     <div class="w-64 flex-shrink-0">
       <div class="sticky top-4 bg-white rounded-xl shadow-lg border border-gray-100 p-5">
         <div class="text-center mb-5 pb-4 border-b border-gray-100">
-          <.label>WorkFlow</.label>
+          <label>WorkFlow</label>
         </div>
         
         <div class="space-y-3">

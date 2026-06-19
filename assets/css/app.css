@@ -1,504 +1,108 @@
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
+/* See the Tailwind configuration guide for advanced usage
+   https://tailwindcss.com/docs/configuration */
+
+@import "tailwindcss" source(none);
+@import "phoenix-colocated/itsm/colocated.css";
+@source "../css";
+@source "../js";
+@source "../../lib/itsm_web";
+/* Required for Tailwind to automatically pick up changes in colocated CSS files in dev */
+@source "../../_build/dev/phoenix-colocated/itsm/*/";
+
+/* A Tailwind plugin that makes "hero-#{ICON}" classes available.
+   The heroicons installation itself is managed by your mix.exs */
+@plugin "../vendor/heroicons";
+
+/* daisyUI Tailwind Plugin. You can update this file by fetching the latest version with:
+   curl -sLO https://github.com/saadeghi/daisyui/releases/latest/download/daisyui.js
+   Make sure to look at the daisyUI changelog: https://daisyui.com/docs/changelog/ */
+@plugin "../vendor/daisyui" {
+  themes: false;
+}
+
+/* daisyUI theme plugin. You can update this file by fetching the latest version with:
+  curl -sLO https://github.com/saadeghi/daisyui/releases/latest/download/daisyui-theme.js
+  We ship with two themes, a light one inspired on Phoenix colors and a dark one inspired
+  on Elixir colors. Build your own at: https://daisyui.com/theme-generator/ */
+@plugin "../vendor/daisyui-theme" {
+  name: "dark";
+  default: false;
+  prefersdark: true;
+  color-scheme: "dark";
+  --color-base-100: oklch(30.33% 0.016 252.42);
+  --color-base-200: oklch(25.26% 0.014 253.1);
+  --color-base-300: oklch(20.15% 0.012 254.09);
+  --color-base-content: oklch(97.807% 0.029 256.847);
+  --color-primary: oklch(58% 0.233 277.117);
+  --color-primary-content: oklch(96% 0.018 272.314);
+  --color-secondary: oklch(58% 0.233 277.117);
+  --color-secondary-content: oklch(96% 0.018 272.314);
+  --color-accent: oklch(60% 0.25 292.717);
+  --color-accent-content: oklch(96% 0.016 293.756);
+  --color-neutral: oklch(37% 0.044 257.287);
+  --color-neutral-content: oklch(98% 0.003 247.858);
+  --color-info: oklch(58% 0.158 241.966);
+  --color-info-content: oklch(97% 0.013 236.62);
+  --color-success: oklch(60% 0.118 184.704);
+  --color-success-content: oklch(98% 0.014 180.72);
+  --color-warning: oklch(66% 0.179 58.318);
+  --color-warning-content: oklch(98% 0.022 95.277);
+  --color-error: oklch(58% 0.253 17.585);
+  --color-error-content: oklch(96% 0.015 12.422);
+  --radius-selector: 0.25rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.21875rem;
+  --size-field: 0.21875rem;
+  --border: 1.5px;
+  --depth: 1;
+  --noise: 0;
+}
+
+@plugin "../vendor/daisyui-theme" {
+  name: "light";
+  default: true;
+  prefersdark: false;
+  color-scheme: "light";
+  --color-base-100: oklch(98% 0 0);
+  --color-base-200: oklch(96% 0.001 286.375);
+  --color-base-300: oklch(92% 0.004 286.32);
+  --color-base-content: oklch(21% 0.006 285.885);
+  --color-primary: oklch(70% 0.213 47.604);
+  --color-primary-content: oklch(98% 0.016 73.684);
+  --color-secondary: oklch(55% 0.027 264.364);
+  --color-secondary-content: oklch(98% 0.002 247.839);
+  --color-accent: oklch(0% 0 0);
+  --color-accent-content: oklch(100% 0 0);
+  --color-neutral: oklch(44% 0.017 285.786);
+  --color-neutral-content: oklch(98% 0 0);
+  --color-info: oklch(62% 0.214 259.815);
+  --color-info-content: oklch(97% 0.014 254.604);
+  --color-success: oklch(70% 0.14 182.503);
+  --color-success-content: oklch(98% 0.014 180.72);
+  --color-warning: oklch(66% 0.179 58.318);
+  --color-warning-content: oklch(98% 0.022 95.277);
+  --color-error: oklch(58% 0.253 17.585);
+  --color-error-content: oklch(96% 0.015 12.422);
+  --radius-selector: 0.25rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.21875rem;
+  --size-field: 0.21875rem;
+  --border: 1.5px;
+  --depth: 1;
+  --noise: 0;
+}
+
+/* Add variants based on LiveView classes */
+@custom-variant phx-click-loading (.phx-click-loading&, .phx-click-loading &);
+@custom-variant phx-submit-loading (.phx-submit-loading&, .phx-submit-loading &);
+@custom-variant phx-change-loading (.phx-change-loading&, .phx-change-loading &);
+
+/* Use the data attribute for dark mode  */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+/* Make LiveView wrapper divs transparent for layout */
+[data-phx-session], [data-phx-teleported-src] { display: contents }
 
 /* This file is for your main application CSS */
-.lds-spinner {
-  position: relative;
-  transform: scale(0.4);
-}
-.lds-spinner div {
-  transform-origin: 40px 40px;
-  animation: lds-spinner 1.2s linear infinite;
-}
-.lds-spinner div:after {
-  content: " ";
-  display: block;
-  position: absolute;
-  top: 3px;
-  left: 37px;
-  width: 6px;
-  height: 18px;
-  border-radius: 20%;
-  background: #444;
-}
-.lds-spinner div:nth-child(1) {
-  transform: rotate(0deg);
-  animation-delay: -1.1s;
-}
-.lds-spinner div:nth-child(2) {
-  transform: rotate(30deg);
-  animation-delay: -1s;
-}
-.lds-spinner div:nth-child(3) {
-  transform: rotate(60deg);
-  animation-delay: -0.9s;
-}
-.lds-spinner div:nth-child(4) {
-  transform: rotate(90deg);
-  animation-delay: -0.8s;
-}
-.lds-spinner div:nth-child(5) {
-  transform: rotate(120deg);
-  animation-delay: -0.7s;
-}
-.lds-spinner div:nth-child(6) {
-  transform: rotate(150deg);
-  animation-delay: -0.6s;
-}
-.lds-spinner div:nth-child(7) {
-  transform: rotate(180deg);
-  animation-delay: -0.5s;
-}
-.lds-spinner div:nth-child(8) {
-  transform: rotate(210deg);
-  animation-delay: -0.4s;
-}
-.lds-spinner div:nth-child(9) {
-  transform: rotate(240deg);
-  animation-delay: -0.3s;
-}
-.lds-spinner div:nth-child(10) {
-  transform: rotate(270deg);
-  animation-delay: -0.2s;
-}
-.lds-spinner div:nth-child(11) {
-  transform: rotate(300deg);
-  animation-delay: -0.1s;
-}
-.lds-spinner div:nth-child(12) {
-  transform: rotate(330deg);
-  animation-delay: 0s;
-}
-@keyframes lds-spinner {
-  0% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-/* This file is for your main application CSS */
-/* ==========================================================================
-   1. Tailwind Directives & Base Styles
-   ========================================================================== */
-@layer base {
-    body {
-        font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
-        @apply bg-kb-light-gray text-kb-dark-gray;
-    }
-}
-
-/* ==========================================================================
-   2. Custom Utility Colors (for use with @apply)
-   ========================================================================== */
-@layer utilities {
-    .text-kb-yellow { @apply text-[#FFCC00]; }
-    .text-kb-dark-gray { @apply text-[#333333]; }
-    .text-kb-medium-gray { @apply text-[#666666]; }
-    .text-kb-blue { @apply text-[#0067AC]; }
-
-    .bg-kb-yellow { @apply bg-[#FFCC00]; }
-    .bg-kb-yellow-dark { @apply bg-[#F2C000]; }
-    .bg-kb-light-gray { @apply bg-[#F5F5F5]; }
-
-    .border-kb-yellow { @apply border-[#FFCC00]; }
-    .border-kb-border-gray { @apply border-[#E0E0E0]; }
-    .border-kb-blue { @apply border-[#0067AC]; }
-    /* 스크롤바를 숨기는 헬퍼 클래스 (선택 사항) */
-    .no-scrollbar::-webkit-scrollbar {
-        display: none; /* Chrome, Safari, Opera*/
-    }
-    .no-scrollbar {
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;  /* Firefox */
-    }
-
-     /* ✅ Ring 색상 (이 부분을 추가) */
-    .ring-kb-yellow {
-        --tw-ring-color: #FFCC00;
-    }
-    .ring-kb-blue {
-        --tw-ring-color: #0067AC;
-    }
-
-    /* 사이드바 배경색 (국민은행 관리자 페이지 특유의 어두운 그레이/네이비 조합) */
-    .bg-kb-sidebar { @apply bg-[#2D3136]; }
-
-    /* 메뉴 활성화 상태 커스텀 */
-    .nav-active-item {
-        @apply bg-kb-yellow text-kb-dark-gray shadow-md;
-    }
-
-    /* 부드러운 호버 효과 */
-    .nav-hover-item {
-        @apply hover:bg-gray-700 hover:text-white transition-all duration-200;
-    }
-    /* KB 스타일의 슬림 스크롤바 */
-    .custom-scrollbar::-webkit-scrollbar {
-        height: 6px; /* 가로 스크롤 두께 */
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-        @apply bg-kb-light-gray;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        @apply bg-gray-300 rounded-full;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        @apply bg-kb-yellow; /* 호버 시 KB 포인트 컬러 */
-    }
-
-    /* 텍스트 생략 유틸리티 강화 */
-    .truncate {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-}
-
-/* 스크롤바 커스텀: 사이드바 내부 스크롤을 깔끔하게 */
-.no-scrollbar::-webkit-scrollbar {
-    width: 4px;
-}
-.no-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-}
-.no-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-gray-600 rounded-full;
-}
-
-/* ==========================================================================
-   3. Component Classes
-   ========================================================================== */
-@layer components {
-
-  /* ----------------------------------
-       Alerts (알림 메시지 박스)
-       ---------------------------------- */
-    /* 기본 알림 박스 스타일 */
-    .alert {
-        @apply flex items-center p-4 rounded-md border text-sm;
-    }
-    .alert-icon {
-        @apply h-5 w-5 mr-3;
-    }
-
-    /* 성공 알림 (파란색) */
-    .alert-success {
-        @apply bg-blue-50 border-blue-200 text-kb-blue;
-    }
-
-    /* 위험/에러 알림 (빨간색) */
-    .alert-danger {
-        @apply bg-red-50 border-red-200 text-red-700;
-    }
-
-    /* 경고 알림 (노란색) */
-    .alert-warning {
-        @apply bg-yellow-50 border-yellow-200 text-yellow-800;
-    }
-
-    /* ----------------------------------
-       Badges & Tags (뱃지 및 태그)
-       ---------------------------------- */
-    /* 기본 뱃지 스타일 */
-    .badge {
-        @apply inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold;
-    }
-
-    /* 노란색 뱃지 (예: 인기상품) */
-    .badge-yellow {
-        @apply bg-yellow-100 text-yellow-800;
-    }
-
-    /* 파란색 뱃지 (예: NEW) */
-    .badge-blue {
-        @apply bg-blue-100 text-kb-blue;
-    }
-
-    /* 회색 뱃지 (예: 마감임박) */
-    .badge-gray {
-        @apply bg-gray-100 text-kb-medium-gray;
-    }
-
-    /* ----------------------------------
-       Tables (테이블)
-       ---------------------------------- */
-    /* 테이블을 감싸는 div에 적용하여 반응형 스크롤 생성 */
-    .table-wrapper {
-        @apply w-full overflow-x-auto;
-    }
-
-    /* 기본 테이블 스타일 */
-    .table-kb {
-        @apply w-full text-left text-sm;
-    }
-
-    /* 테이블 aheada */
-    .table-kb thead th {
-        @apply p-3 font-semibold bg-kb-light-gray text-kb-medium-gray border-b-2 border-kb-border-gray;
-    }
-
-    /* 테이블 body */
-    .table-kb tbody td {
-        @apply p-3 border-b border-kb-border-gray;
-    }
-
-    /* 테이블 행 호버 효과 */
-    .table-kb tbody tr:hover {
-        @apply bg-gray-50;
-    }
-
-    /* ----------------------------------
-       Advanced Form Elements (고급 폼 요소)
-       ---------------------------------- */
-    /* 체크박스 커스텀 스타일 */
-    .form-checkbox {
-        @apply rounded border-kb-border-gray text-kb-blue shadow-sm;
-        @apply focus:border-kb-blue focus:ring focus:ring-offset-0 focus:ring-blue-200 focus:ring-opacity-50;
-    }
-
-    /* 라디오 버튼 커스텀 스타일 */
-    .form-radio {
-        @apply rounded-full border-kb-border-gray text-kb-blue shadow-sm;
-        @apply focus:border-kb-blue focus:ring focus:ring-offset-0 focus:ring-blue-200 focus:ring-opacity-50;
-    }
-
-    /* 체크박스/라디오와 라벨을 함께 묶는 컨테이너 */
-    .form-control-group {
-        @apply flex items-center space-x-2;
-    }
-
-
-    /* ----------------------------------
-       Buttons
-       ---------------------------------- */
-    /* 가장 중요한 노란색 버튼 */
-    .btn-primary {
-        @apply inline-flex items-center justify-center px-6 py-3 rounded-md font-bold transition-colors;
-        @apply bg-kb-yellow text-kb-dark-gray;
-    }
-    .btn-primary:hover {
-        @apply bg-kb-yellow-dark;
-    }
-
-    /* 두 번째로 중요한 흰색 버튼 */
-    .btn-secondary {
-        @apply inline-flex items-center justify-center px-6 py-3 rounded-md font-bold transition-colors;
-        @apply bg-white text-kb-dark-gray border border-kb-border-gray;
-    }
-    .btn-secondary:hover {
-        @apply bg-kb-light-gray;
-    }
-
-    /* 텍스트만 있는 작은 버튼 */
-    .btn-text {
-        @apply text-sm font-semibold text-kb-medium-gray hover:text-kb-dark-gray transition-colors;
-    }
-
-    /* ----------------------------------
-       Cards & Containers
-       ---------------------------------- */
-    /* 기본 카드 (상품, 콘텐츠 등) */
-    .card-base {
-        @apply bg-white rounded-lg shadow-sm border border-transparent p-6 transition-all;
-    }
-    .card-base:hover {
-        @apply shadow-md border-kb-border-gray;
-    }
-
-    /* 호버 시 노란색 테두리가 생기는 카드 */
-    .card-interactive {
-        @apply bg-white rounded-lg border border-kb-border-gray p-5 transition-colors;
-    }
-    .card-interactive:hover {
-        @apply border-kb-yellow;
-    }
-    .focus\:ring-kb-yellow:focus {
-    --tw-ring-color: #FFCC00;
-    }
-    /* ----------------------------------
-       Forms & Inputs
-       ---------------------------------- */
-    /* 기본 입력 필드 */
-    .form-input {
-        @apply block w-full px-4 py-2 rounded-md border-kb-border-gray shadow-sm;
-        @apply focus:border-kb-yellow focus:ring focus:ring-kb-yellow focus:ring-opacity-50;
-    }
-
-    /* 폼 라벨 */
-    .form-label {
-        @apply block mb-1 text-sm font-semibold text-kb-medium-gray;
-    }
-
-    /* ----------------------------------
-       Typography (텍스트 스타일)
-       ---------------------------------- */
-    /* 메인 타이틀 (가장 큰 제목) */
-    .text-title-h1 {
-        @apply text-3xl lg:text-4xl font-bold text-kb-dark-gray leading-tight;
-    }
-
-    /* 서브 타이틀 */
-    .text-title-h2 {
-        @apply text-xl lg:text-2xl font-bold text-kb-dark-gray;
-    }
-
-    /* 카드나 섹션 내부의 작은 제목 */
-    .text-title-h3 {
-        @apply text-lg font-bold text-kb-dark-gray;
-    }
-
-    /* 본문 텍스트 */
-    .text-body {
-        @apply text-base text-kb-dark-gray;
-    }
-
-    /* 설명, 부가 정보 등 흐린 텍스트 */
-    .text-caption {
-        @apply text-sm text-kb-medium-gray;
-    }
-
-    /* ----------------------------------
-       Navigation & Tabs
-       ---------------------------------- */
-    /* 헤더 네비게이션 링크 */
-    .nav-link {
-        @apply font-semibold text-kb-dark-gray hover:text-kb-yellow transition-colors;
-    }
-
-    /* 탭 메뉴 아이템 */
-    .tab-item {
-        @apply shrink-0 border-b-2 px-1 py-3 text-base font-medium;
-        @apply border-transparent text-kb-medium-gray hover:border-gray-300 hover:text-gray-700;
-    }
-
-    /* 활성화된 탭 메뉴 아이템 */
-    .tab-item-active {
-        @apply border-kb-yellow text-kb-dark-gray font-bold;
-    }
-
-    /* ----------------------------------
-       Quick Menu Icons (빠른 메뉴)
-       ---------------------------------- */
-    /* 아이콘을 감싸는 동그란 배경 */
-    .quick-menu-icon-wrapper {
-        @apply w-12 h-12 rounded-full flex items-center justify-center;
-    }
-
-    /* 빠른 메뉴 전체 아이템 박스 */
-    .quick-menu-item {
-        @apply p-4 bg-white rounded-lg shadow-sm flex flex-col items-center justify-center text-center;
-        @apply hover:shadow-md transition-shadow;
-    }
-   /* ----------------------------------
-       Accordion (아코디언, FAQ 등에 사용)
-       - JavaScript로 열고 닫는 기능 구현이 필요합니다.
-       ---------------------------------- */
-    .accordion-item {
-        @apply border-b border-kb-border-gray;
-    }
-    .accordion-button {
-        @apply flex w-full items-center justify-between py-4 text-left font-semibold text-kb-dark-gray;
-        @apply hover:bg-gray-50;
-    }
-    .accordion-content {
-        @apply pb-4 text-kb-medium-gray;
-    }
-
-    /* ----------------------------------
-       Modal (모달창/팝업)
-       - JavaScript로 보이거나 숨기는 기능 구현이 필요합니다.
-       ---------------------------------- */
-    /* 화면 전체를 덮는 반투명 배경 */
-    .modal-overlay {
-        @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4;
-    }
-    /* 모달창 본체 */
-    .modal-content {
-        @apply bg-white rounded-lg shadow-xl w-full max-w-md;
-    }
-    /* 모달 헤더 (제목) */
-    .modal-header {
-        @apply p-5 border-b border-kb-border-gray flex justify-between items-center;
-    }
-    /* 모달 바디 (내용) */
-    .modal-body {
-        @apply p-5;
-    }
-    /* 모달 푸터 (버튼 영역) */
-    .modal-footer {
-        @apply p-4 bg-kb-light-gray rounded-b-lg flex justify-end space-x-3;
-    }
-
-    /* ----------------------------------
-       Pagination (페이지네이션)
-       ---------------------------------- */
-    .pagination {
-        @apply flex items-center justify-center space-x-2 text-sm;
-    }
-    .pagination-item {
-        @apply flex items-center justify-center h-9 w-9 rounded-md transition-colors;
-        @apply text-kb-medium-gray hover:bg-kb-light-gray;
-    }
-    /* 현재 페이지 */
-    .pagination-item-active {
-        @apply bg-kb-yellow font-bold text-kb-dark-gray;
-        @apply hover:bg-kb-yellow-dark;
-    }
-    /* 비활성화된 버튼 (예: 이전/다음) */
-    .pagination-item-disabled {
-        @apply text-gray-300 cursor-not-allowed;
-        @apply hover:bg-transparent;
-    }
-
-
-    /* 카드들을 가로로 나열하고 스크롤 가능하게 만드는 컨테이너 */
-    .scroll-container {
-        @apply flex overflow-x-auto pb-4 gap-4;
-    }
-
-    /* 기본 뱃지 스타일 */
-    .badge {
-        @apply inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold;
-    }
-
-    /* 펀드 뱃지 (초록색 계열) */
-    .badge-fund {
-        @apply bg-emerald-100 text-emerald-800;
-    }
-
-    /* 예금 뱃지 (하늘색 계열) */
-    .badge-deposit {
-        @apply bg-sky-100 text-sky-800;
-    }
-
-    /* 카드/대출 뱃지 (파란색 계열) */
-    .badge-loan {
-        @apply bg-blue-100 text-blue-800;
-    }
-
-    /* 외환 뱃지 (보라색 계열) */
-    .badge-exchange {
-        @apply bg-violet-100 text-violet-800;
-    }
-
-    /* 검색 영역을 위한 전용 컨테이너 */
-    .filter-section {
-        @apply card-base !p-6 mb-8 bg-white border-b-2 border-kb-yellow;
-    }
-
-    /* 검색에서 초기화 화살표 아이콘 */
-    .filter-arrow-path {
-        @apply mr-2 h-4 w-4 group-hover:rotate-180 transition-transform duration-500
-    }
-
-    /* link 태그 검색 버튼 */
-    .filter-link-btn {
-        @apply btn-secondary !py-2 !px-4 text-sm flex items-center w-full justify-center
-    }
-}
-
-

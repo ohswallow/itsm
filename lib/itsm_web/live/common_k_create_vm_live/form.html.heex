@@ -68,6 +68,7 @@
     >
       <.icon name="hero-plus-circle" class="h-5 w-5 relative top-[-1px]" /> add more
     </button>
+    
     <div id="request-inputs" class="p-4 space-y-6">
       <.inputs_for :let={common_k_create_vm_f} field={@form[:common_k_create_vms]}>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -176,7 +177,13 @@
       </p>
     </div>
   </label>
-  <.error :for={err <- upload_errors(@uploads.attachment)}>{Phoenix.Naming.humanize(err)}</.error>
+  
+  <p
+    :for={err <- upload_errors(@uploads.attachment)}
+    class="mt-1.5 flex gap-2 items-center text-sm text-error"
+  >
+    <.icon name="hero-exclamation-circle" class="size-5" /> {Phoenix.Naming.humanize(err)}
+  </p>
   
   <div
     :if={length(@uploads.attachment.entries) > 0}
@@ -202,9 +209,13 @@
       >
         <.icon name="hero-x-mark" class="w-3 h-3" />
       </button>
-      <.error :for={err <- upload_errors(@uploads.attachment, entry)}>
-        {Phoenix.Naming.humanize(err)}
-      </.error>
+      
+      <p
+        :for={err <- upload_errors(@uploads.attachment)}
+        class="mt-1.5 flex gap-2 items-center text-sm text-error"
+      >
+        <.icon name="hero-exclamation-circle" class="size-5" /> {Phoenix.Naming.humanize(err)}
+      </p>
     </div>
   </div>
   

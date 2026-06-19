@@ -48,5 +48,8 @@
     "deps": true,
     "_build": true,
     ".elixir_ls": true
-  }
+  },
+  "elixirLS.dialyzerWarnOpts": [
+	"no_opaque"
+  ]
 }
