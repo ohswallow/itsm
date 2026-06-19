@@ -11,6 +11,15 @@
 <.list>
   <:item title={gettext("Name")}>{@asset.name}</:item>
   <:item title={gettext("Description")}>{@asset.description}</:item>
+  <:item title={gettext("Detail")}>
+    <div class="flex flex-wrap gap-2 mt-1">
+      <%= for {key, value} <- @asset.metadata do %>
+        <span class="inline-flex items-center gap-x-1.5 rounded-md bg-zinc-50 px-2 py-1 text-xs font-medium text-zinc-600 ring-1 ring-inset ring-zinc-500/10">
+          <strong class="text-zinc-950">{key}:</strong> {to_string(value)}
+        </span>
+      <% end %>
+    </div>
+  </:item>
   <:item title={gettext("Affiliate")}>
     <.common_code_label group="계열사" code={@asset.affiliate} />
   </:item>
@@ -52,6 +61,69 @@
   </:item>
 </.list>
 
+<.form for={%{}} phx-change="update_selection" phx-submit="batch_action">
+  <.table
+    id="assets"
+    rows={@streams.assets}
+  >
+    <:col
+      :let={{_id, asset}}
+      label={
+        ~H"""
+        <input
+          type="checkbox"
+          name="toggle_all"
+          checked={@all_selected}
+          class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
+          onchange="
+            const isChecked = this.checked;
+            document.querySelectorAll('input[name=\'selected_ids[]\']').forEach(el => el.checked = isChecked);
+            "
+        />
+        """
+      }
+    >
+      <input
+        type="checkbox"
+        name="selected_ids[]"
+        value={asset.id}
+        checked={asset.id in @selected_ids}
+        class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
+      />
+    </:col>
+
+    <:col :let={{_id, asset}} label={gettext("Name")}>{asset.name}</:col>
+    <:col :let={{_id, asset}} label={gettext("Description")}>{asset.description}</:col>
+    <:col :let={{_id, asset}} label={gettext("Affiliate")}>
+      <.common_code_label group="계열사" code={asset.affiliate} />
+    </:col>
+    <:col :let={{_id, asset}} label={gettext("Category")}>
+      <.common_code_label group="카테고리" code={asset.category} />
+    </:col>
+    <:col :let={{_id, asset}} label={gettext("Region Type")}>
+      <.common_code_label group="지역_유형" code={asset.region_type} />
+    </:col>
+    <:col :let={{_id, asset}} label={gettext("Infra Type")}>
+      <.common_code_label group="인프라_유형" code={asset.infra_type} />
+    </:col>
+    <:col :let={{_id, asset}} label={gettext("Environment")}>
+      <.common_code_label group="운영_구분" code={asset.env} />
+    </:col>
+    <:col :let={{_id, asset}} label={gettext("Location")}>
+      <.common_code_label group="장소" code={asset.location} />
+    </:col>
+    <:col :let={{_id, asset}} label={gettext("Is Dmz Zone")}>{asset.is_dmz_zone}</:col>
+    <:col :let={{_id, asset}} label={gettext("Service Crew")}>{asset.service_crew.name}</:col>
+    <:col :let={{_id, asset}} label={gettext("System Crew")}>{asset.system_crew.name}</:col>
+  </.table>
+
+  <div class="mt-4 flex justify-end">
+    <.button type="submit" disabled={Enum.empty?(@selected_ids)}>
+      선택한 {Enum.count(@selected_ids)}개 자산 연결
+    </.button>
+  </div>
+</.form>
+
 <.back navigate={~p"/admin/assets"}>Back to assets</.back>
 
 <.modal
@@ -66,7 +138,7 @@
     title={@page_title}
     action={@live_action}
     asset={@asset}
-    current_scope={@current_scope}
+    current_user={@current_user}
     patch={~p"/admin/assets/#{@asset}"}
   />
 </.modal>
