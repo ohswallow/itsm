@@ -2,7 +2,7 @@ defmodule Itsm.Graphql.Middlewares.Authorize do
   @behaviour Absinthe.Middleware
 
   def call(%Absinthe.Resolution{} = resolution, required_roles) do
-    current_user = resolution.context[:current_user]
+    current_user = resolution.context.current_scope.user
 
     case verify_user_role(current_user, required_roles) do
       :ok ->

@@ -29,7 +29,7 @@ defmodule ItsmWeb.Admin.UserLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage user records in your database.</:subtitle>
       </.header>
-      
+
       <div
         :if={@conflict}
         class="p-4 mb-4 bg-red-50 border border-red-200 text-red-800 rounded animate-pulse"
@@ -37,12 +37,12 @@ defmodule ItsmWeb.Admin.UserLive.FormComponent do
         <div class="flex items-center gap-2 font-bold">
           <span>⚠️ 충돌 발생!</span>
         </div>
-        
+
         <p class="mt-1 text-sm">{@conflict_msg}</p>
-        
+
         <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
       </div>
-      
+
       <.form
         for={@form}
         id="user-form"
@@ -109,7 +109,7 @@ defmodule ItsmWeb.Admin.UserLive.FormComponent do
   end
 
   defp save_user(socket, :edit, user_params) do
-    %{current_user: action_user, user: user} = socket.assigns
+    %{current_scope: %{user: action_user}, user: user} = socket.assigns
 
     case Accounts.update_user(action_user, user, user_params) do
       {:ok, user} ->
@@ -124,7 +124,7 @@ defmodule ItsmWeb.Admin.UserLive.FormComponent do
   end
 
   defp save_user(socket, :new, user_params) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
 
     case Accounts.create_user(action_user, user_params) do
       {:ok, user} ->

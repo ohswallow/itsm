@@ -67,7 +67,7 @@
     title={@page_title}
     action={@live_action}
     asset={@asset}
-    current_user={@current_user}
+    current_scope={@current_scope}
     patch={~p"/admin/assets?#{assigns[:results][:params] || %{}}"}
   />
 </.modal>

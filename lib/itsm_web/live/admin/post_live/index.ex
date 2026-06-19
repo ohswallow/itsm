@@ -14,7 +14,7 @@ defmodule ItsmWeb.Admin.PostLive.Index do
   end
 
   def handle_event("delete", %{"id" => _id} = post_params, socket) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
     {:ok, post} = Posts.delete_post(action_user, post_params)
 
     {:noreply, stream_delete(socket, :posts, post)}

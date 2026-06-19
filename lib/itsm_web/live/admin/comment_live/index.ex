@@ -15,7 +15,7 @@ defmodule ItsmWeb.Admin.CommentLive.Index do
   end
 
   def handle_event("delete", %{"id" => _id} = comment_params, socket) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
     {:ok, comment} = Comments.delete_comment(action_user, comment_params)
 
     {:noreply, stream_delete(socket, :comments, comment)}

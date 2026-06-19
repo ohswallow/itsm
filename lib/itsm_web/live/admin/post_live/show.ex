@@ -45,7 +45,7 @@ defmodule ItsmWeb.Admin.PostLive.Show do
   end
 
   def handle_event("save", %{"comment" => comment_params}, socket) do
-    %{post: post, current_user: action_user} = socket.assigns
+    %{post: post, current_scope: %{user: action_user}} = socket.assigns
 
     case Service.create_comment(
            action_user,

@@ -21,7 +21,7 @@ defmodule ItsmWeb.EvaluationDialog do
         {@title}
         <:subtitle>Use this form to manage evaluation records in your database.</:subtitle>
       </.header>
-      
+
       <.form
         for={@form}
         id="evaluation-form"
@@ -43,7 +43,7 @@ defmodule ItsmWeb.EvaluationDialog do
           >
           </div>
         </fieldset>
-         <.input field={@form[:comment]} type="textarea" label="Comment" phx-hook="MaintainHeight" />
+        <.input field={@form[:comment]} type="textarea" label="Comment" phx-hook="MaintainHeight" />
         <:actions><.button phx-disable-with="Saving...">Save Evaluation</.button></:actions>
       </.form>
     </div>
@@ -76,7 +76,7 @@ defmodule ItsmWeb.EvaluationDialog do
   # end
 
   def handle_event("save", %{"evaluation" => evaluation_params}, socket) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
     evaluation_params = Map.put(evaluation_params, "crew_id", socket.assigns.crew_id)
 
     case Evaluations.create_evaluation(action_user, evaluation_params) do

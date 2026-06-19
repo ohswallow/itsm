@@ -75,10 +75,10 @@ defmodule ItsmWeb.CoreComponents do
         <.icon :if={@kind == :error} name="hero-exclamation-circle" class="size-5 shrink-0" />
         <div>
           <p :if={@title} class="font-semibold">{@title}</p>
-          
+
           <p>{msg}</p>
         </div>
-         <div class="flex-1" />
+        <div class="flex-1" />
         <button type="button" class="group self-start cursor-pointer" aria-label={gettext("close")}>
           <.icon name="hero-x-mark" class="size-5 opacity-40 group-hover:opacity-70" />
         </button>
@@ -234,7 +234,7 @@ defmodule ItsmWeb.CoreComponents do
           />{@label}
         </span>
       </label>
-      
+
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -253,10 +253,10 @@ defmodule ItsmWeb.CoreComponents do
           {@rest}
         >
           <option :if={@prompt} value="">{@prompt}</option>
-           {Phoenix.HTML.Form.options_for_select(@options, @value)}
+          {Phoenix.HTML.Form.options_for_select(@options, @value)}
         </select>
       </label>
-      
+
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -276,7 +276,7 @@ defmodule ItsmWeb.CoreComponents do
           {@rest}
         >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
       </label>
-      
+
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -300,7 +300,7 @@ defmodule ItsmWeb.CoreComponents do
           {@rest}
         />
       </label>
-      
+
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -329,12 +329,12 @@ defmodule ItsmWeb.CoreComponents do
         <h1 class="text-lg font-semibold leading-8">
           {render_slot(@inner_block)}
         </h1>
-        
+
         <p :if={@subtitle != []} class="text-sm text-base-content/70">
           {render_slot(@subtitle)}
         </p>
       </div>
-      
+
       <div class="flex-none">{render_slot(@actions)}</div>
     </header>
     """
@@ -376,13 +376,13 @@ defmodule ItsmWeb.CoreComponents do
       <thead>
         <tr>
           <th :for={col <- @col}>{col[:label]}</th>
-          
+
           <th :if={@action != []}>
             <span class="sr-only">{gettext("Actions")}</span>
           </th>
         </tr>
       </thead>
-      
+
       <tbody id={@id} phx-update={is_struct(@rows, Phoenix.LiveView.LiveStream) && "stream"}>
         <tr :for={row <- @rows} id={@row_id && @row_id.(row)}>
           <td
@@ -392,7 +392,7 @@ defmodule ItsmWeb.CoreComponents do
           >
             {render_slot(col, @row_item.(row))}
           </td>
-          
+
           <td :if={@action != []} class="w-0 font-semibold">
             <div class="flex gap-4">
               <%= for action <- @action do %>
@@ -426,7 +426,7 @@ defmodule ItsmWeb.CoreComponents do
       <li :for={item <- @item} class="list-row">
         <div class="list-col-grow">
           <div class="font-bold">{item.title}</div>
-          
+
           <div>{render_slot(item)}</div>
         </div>
       </li>
@@ -576,7 +576,7 @@ defmodule ItsmWeb.CoreComponents do
                   <.icon name="hero-x-mark-solid" class="h-5 w-5" />
                 </button>
               </div>
-              
+
               <div id={"#{@id}-content"}>{render_slot(@inner_block)}</div>
             </.focus_wrap>
           </div>
@@ -726,7 +726,7 @@ defmodule ItsmWeb.CoreComponents do
         >
           {@label}
         </div>
-        
+
         <div
           id={"datepicker-input-#{@id}"}
           class="flex items-center border rounded-lg px-3 py-2 cursor-pointer hover:border-indigo-500 bg-white"
@@ -756,12 +756,12 @@ defmodule ItsmWeb.CoreComponents do
             format={if @show_time, do: "datetime", else: "date"}
           >
           </div>
-           <span class="text-gray-400">📅</span>
+          <span class="text-gray-400">📅</span>
         </div>
-        
+
         <.error :for={msg <- @errors}>{msg}</.error>
       </div>
-      
+
       <div
         {@rests[:popup]}
         id={"#{@id}-calendar-popup"}
@@ -780,7 +780,7 @@ defmodule ItsmWeb.CoreComponents do
             >
               ≪
             </button>
-            
+
             <button
               type="button"
               phx-click="shift"
@@ -792,9 +792,9 @@ defmodule ItsmWeb.CoreComponents do
               ◀
             </button>
           </div>
-          
+
           <div class="font-bold text-lg">{"#{@view_date.year}년 #{@view_date.month}월"}</div>
-          
+
           <div class="flex gap-1">
             <button
               type="button"
@@ -806,7 +806,7 @@ defmodule ItsmWeb.CoreComponents do
             >
               ▶
             </button>
-            
+
             <button
               type="button"
               phx-click="shift"
@@ -819,7 +819,7 @@ defmodule ItsmWeb.CoreComponents do
             </button>
           </div>
         </div>
-        
+
         <div
           {@rests[:grid]}
           id={"#{@id}-calendar-grid"}
@@ -833,7 +833,7 @@ defmodule ItsmWeb.CoreComponents do
           <div :for={day_name <- ~w(일 월 화 수 목 금 토)} class="text-xs text-gray-400 pb-2">
             {day_name}
           </div>
-          
+
           <div
             :for={{date, index} <- Enum.with_index(@days)}
             {@rests[:date]}
@@ -849,7 +849,7 @@ defmodule ItsmWeb.CoreComponents do
             {date.day}
           </div>
         </div>
-        
+
         <div
           :if={@show_time}
           class="flex items-center justify-center gap-2 mt-4 pt-4 border-t border-gray-100"
@@ -936,7 +936,7 @@ defmodule ItsmWeb.CoreComponents do
               value={@results.params.range_column}
             />
           </div>
-          
+
           <div class="md:col-span-8">
             <label class="form-label">날짜 범위</label>
             <div class="flex justify-start items-center">
@@ -954,7 +954,7 @@ defmodule ItsmWeb.CoreComponents do
                 default_selected_date_time={@results.params.start_date}
               />
               <div class="mx-1">-</div>
-              
+
               <.itsm_calendar
                 field={
                   %Phoenix.HTML.FormField{
@@ -971,7 +971,7 @@ defmodule ItsmWeb.CoreComponents do
             </div>
           </div>
         </div>
-        
+
         <div
           :if={
             @results.columns_options != [] and @results.columns_options != [""] and
@@ -992,7 +992,7 @@ defmodule ItsmWeb.CoreComponents do
               value={@results.params.search_columns}
             />
           </div>
-          
+
           <div class="md:col-span-6">
             <label class="form-label">검색</label>
             <.input
@@ -1003,7 +1003,7 @@ defmodule ItsmWeb.CoreComponents do
               phx-debounce="300"
             />
           </div>
-          
+
           <div class="md:col-span-2 flex justify-end pb-1">
             <.link
               patch={@results.current_path}
@@ -1024,7 +1024,7 @@ defmodule ItsmWeb.CoreComponents do
     <div class="grid grid-cols-3 items-center w-full mt-6">
       <div class="justify-self-start flex items-center">
         <div class="text-sm text-zinc-600">Total: {@results.total_count}</div>
-        
+
         <form phx-change="update-filters" phx-target={@target} class="ml-4">
           <input
             type="number"
@@ -1035,7 +1035,7 @@ defmodule ItsmWeb.CoreComponents do
           />
         </form>
       </div>
-      
+
       <nav class="justify-self-center flex gap-2 items-center">
         <div class="pagination flex items-center">
           <.link
@@ -1045,11 +1045,11 @@ defmodule ItsmWeb.CoreComponents do
           >
             &lt;
           </.link>
-          
+
           <span :if={@results.params.page <= 1} class="pagination-item pagination-item-disabled">
             &lt;
           </span>
-          
+
           <div class="pagination flex items-center">
             <span
               :for={
@@ -1073,7 +1073,7 @@ defmodule ItsmWeb.CoreComponents do
               >
                 ...
               </span>
-              
+
               <.link
                 patch={"#{@results.current_path}?#{Plug.Conn.Query.encode(Map.put(@results.params, :page, page_num))}"}
                 class={[
@@ -1083,7 +1083,7 @@ defmodule ItsmWeb.CoreComponents do
               >
                 {page_num}
               </.link>
-              
+
               <span
                 :if={page_num == 1 and @results.params.page > 3}
                 class="pagination-item border-none"
@@ -1092,7 +1092,7 @@ defmodule ItsmWeb.CoreComponents do
               </span>
             </span>
           </div>
-          
+
           <.link
             :if={@results.params.page < @results.total_pages}
             patch={"#{@results.current_path}?#{Plug.Conn.Query.encode(Map.put(@results.params, :page, @results.params.page + 1))}"}
@@ -1100,7 +1100,7 @@ defmodule ItsmWeb.CoreComponents do
           >
             &gt;
           </.link>
-          
+
           <span
             :if={@results.params.page >= @results.total_pages}
             class="pagination-item pagination-item-disabled"
@@ -1176,7 +1176,7 @@ defmodule ItsmWeb.CoreComponents do
       >
         <.icon name="hero-ellipsis-vertical" class="h-6 w-6" />
       </button>
-      
+
       <div
         id={"dropdown-#{@id}-body"}
         class="hidden absolute right-12 bottom-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10"
@@ -1193,27 +1193,27 @@ defmodule ItsmWeb.CoreComponents do
     ~H"""
     <div class={["lds-spinner", @class]}>
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
-      
+
       <div></div>
     </div>
     """
@@ -1284,7 +1284,7 @@ defmodule ItsmWeb.CoreComponents do
     ~H"""
     <.live_component
       id={@id}
-      current_user={@current_user}
+      current_scope={@current_scope}
       opts={@opts}
       module={ItsmWeb.SearchUsersDialog}
     />

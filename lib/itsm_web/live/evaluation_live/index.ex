@@ -13,7 +13,7 @@ defmodule ItsmWeb.EvaluationLive.Index do
   end
 
   def handle_event("delete", %{"id" => _id} = evaluation_params, socket) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
     {:ok, evaluation} = Evaluations.delete_evaluation(action_user, evaluation_params)
 
     {:noreply, stream_delete(socket, :evaluations, evaluation)}

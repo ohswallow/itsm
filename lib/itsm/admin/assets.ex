@@ -22,8 +22,8 @@ defmodule Itsm.Admin.Assets do
 
         {:ok, asset}
 
-      {:error, changeset} ->
-        {:error, changeset}
+      error ->
+        error
     end
   end
 

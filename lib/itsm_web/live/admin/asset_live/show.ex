@@ -19,7 +19,7 @@ defmodule ItsmWeb.Admin.AssetLive.Show do
   end
 
   def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
-    %{current_user: user} = socket.assigns
+    %{current_scope: %{user: user}} = socket.assigns
 
     send_update(LiveSelect.Component,
       id: live_select_id,

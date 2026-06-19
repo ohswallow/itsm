@@ -17,7 +17,7 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Index do
   end
 
   def handle_event("delete", %{"id" => _id} = common_code_params, socket) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
     {:ok, common_code} = CommonCodes.delete_common_code(action_user, common_code_params)
 
     {:noreply, stream_delete(socket, :common_codes, common_code)}

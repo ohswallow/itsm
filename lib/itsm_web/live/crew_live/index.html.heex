@@ -23,7 +23,7 @@
       >
         <.icon name="hero-pencil" class="w-4 h-4" /> Edit Crew
       </.link>
-      
+
       <.link
         phx-click={JS.push("delete", value: %{id: crew.id})}
         data-confirm="Are you sure?"
@@ -47,7 +47,7 @@
     title={@page_title}
     action={@live_action}
     crew={@crew}
-    current_user={@current_user}
+    current_scope={@current_scope}
     patch={~p"/crews?menu_id=crews"}
   />
 </.modal>

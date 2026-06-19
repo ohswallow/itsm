@@ -14,7 +14,7 @@ defmodule ItsmWeb.Admin.UserLive.Index do
   end
 
   def handle_event("delete", %{"id" => _id} = user_params, socket) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
 
     case Accounts.delete_user(action_user, user_params) do
       {:ok, user} ->

@@ -14,7 +14,7 @@ defmodule ItsmWeb.Admin.AttachmentLive.Index do
   end
 
   def handle_event("delete", %{"id" => _id} = attachment_params, socket) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
     {:ok, attachment} = Attachments.delete_attachment(action_user, attachment_params)
 
     {:noreply, stream_delete(socket, :attachments, attachment)}

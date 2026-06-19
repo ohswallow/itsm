@@ -39,7 +39,7 @@
     title={@page_title}
     action={@live_action}
     crew={@crew}
-    current_user={@current_user}
+    current_scope={@current_scope}
     patch={~p"/admin/crews?#{assigns[:results][:params] || %{}}"}
   />
 </.modal>

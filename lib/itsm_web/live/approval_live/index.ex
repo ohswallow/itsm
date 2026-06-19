@@ -23,7 +23,7 @@ defmodule ItsmWeb.ApprovalLive.Index do
 
   def handle_info(
         {ItsmWeb.CreateCommentDialog, {event, %{request: request, approval: approval}}},
-        %{assigns: %{current_user: current_user}} = socket
+        %{assigns: %{current_scope: %{user: current_user}}} = socket
       )
       when event == :reject or approval.status == :assignment or
              (request.status == :confirmation and request.requester_id != current_user.id) do
@@ -42,7 +42,7 @@ defmodule ItsmWeb.ApprovalLive.Index do
   def handle_info(_event, socket), do: {:noreply, socket}
 
   defp initial_page(socket) do
-    %{current_user: current_user} = socket.assigns
+    %{current_scope: %{user: current_user}} = socket.assigns
 
     my_crews_ids = Crews.list_my_crews_ids(current_user)
 
@@ -93,7 +93,7 @@ defmodule ItsmWeb.ApprovalLive.Index do
   end
 
   defp handle_pubsub(action_user, :create_request = event, request, socket) do
-    %{current_user: current_user, my_crew_ids: my_crew_ids} = socket.assigns
+    %{current_scope: %{user: current_user}, my_crew_ids: my_crew_ids} = socket.assigns
 
     my_crew? = request.requestor_crew_id in my_crew_ids
     opts = [resource_name: gettext("Approval")]
@@ -104,7 +104,7 @@ defmodule ItsmWeb.ApprovalLive.Index do
   end
 
   defp handle_pubsub(action_user, :update_request = event, {request, approval}, socket) do
-    %{current_user: current_user, my_crew_ids: my_crew_ids} = socket.assigns
+    %{current_scope: %{user: current_user}, my_crew_ids: my_crew_ids} = socket.assigns
 
     my_crew? = request.requestor_crew_id in my_crew_ids
 

@@ -71,7 +71,8 @@ defmodule Itsm.MixProject do
       {:metamorphic_crypto, "~> 0.2"},
       {:absinthe, "~> 1.7"},
       {:absinthe_phoenix, "~> 2.0"},
-      {:absinthe_plug, "~> 1.5"}
+      {:absinthe_plug, "~> 1.5"},
+      {:ecto_psql_extras, "~> 0.6"}
     ]
   end
 

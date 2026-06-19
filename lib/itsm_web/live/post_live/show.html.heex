@@ -86,7 +86,7 @@
     title={@page_title}
     action={@live_action}
     post={@post}
-    current_user={@current_user}
+    current_scope={@current_scope}
     patch={~p"/posts/#{@post}?board_id=#{assigns[:board_id] || ""}&menu_id=boards"}
     board_id={assigns[:board_id]}
     board_name={assigns[:board_name]}

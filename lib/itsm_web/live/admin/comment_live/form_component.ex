@@ -29,7 +29,7 @@ defmodule ItsmWeb.Admin.CommentLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage comment records in your database.</:subtitle>
       </.header>
-      
+
       <div
         :if={@conflict}
         class="p-4 mb-4 bg-red-50 border border-red-200 text-red-800 rounded animate-pulse"
@@ -37,12 +37,12 @@ defmodule ItsmWeb.Admin.CommentLive.FormComponent do
         <div class="flex items-center gap-2 font-bold">
           <span>⚠️ 충돌 발생!</span>
         </div>
-        
+
         <p class="mt-1 text-sm">{@conflict_msg}</p>
-        
+
         <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
       </div>
-      
+
       <.form
         for={@form}
         id="comment-form"
@@ -78,7 +78,7 @@ defmodule ItsmWeb.Admin.CommentLive.FormComponent do
   end
 
   defp save_comment(socket, :edit, comment_params) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
 
     case Comments.update_comment(
            action_user,

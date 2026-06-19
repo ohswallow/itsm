@@ -85,7 +85,7 @@ defmodule ItsmWeb.Admin.BoardLive.FormComponent do
   end
 
   defp save_board(socket, :edit, board_params) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
 
     case Boards.update_board(action_user, socket.assigns.board, board_params) do
       {:ok, _board} ->
@@ -97,7 +97,7 @@ defmodule ItsmWeb.Admin.BoardLive.FormComponent do
   end
 
   defp save_board(socket, :new, board_params) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
 
     case Boards.create_board(action_user, board_params) do
       {:ok, _board} ->

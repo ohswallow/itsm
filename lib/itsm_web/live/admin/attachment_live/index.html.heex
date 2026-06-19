@@ -62,7 +62,7 @@
     title={@page_title}
     action={@live_action}
     attachment={@attachment}
-    current_user={@current_user}
+    current_scope={@current_scope}
     patch={~p"/admin/attachments?#{assigns[:results][:params] || %{}}"}
   />
 </.modal>

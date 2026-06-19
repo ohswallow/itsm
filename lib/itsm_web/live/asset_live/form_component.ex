@@ -31,7 +31,7 @@ defmodule ItsmWeb.AssetLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage asset records in your database.</:subtitle>
       </.header>
-      
+
       <div
         :if={@conflict}
         class="p-4 mb-4 bg-red-50 border border-red-200 text-red-800 rounded animate-pulse"
@@ -39,12 +39,12 @@ defmodule ItsmWeb.AssetLive.FormComponent do
         <div class="flex items-center gap-2 font-bold">
           <span>⚠️ 충돌 발생!</span>
         </div>
-        
+
         <p class="mt-1 text-sm">{@conflict_msg}</p>
-        
+
         <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
       </div>
-      
+
       <.form
         for={@form}
         id="asset-form"
@@ -136,12 +136,12 @@ defmodule ItsmWeb.AssetLive.FormComponent do
     |> assign_new(:env_options, fn -> CommonCodes.get_select_options("운영_구분") end)
     |> assign_new(:location_options, fn -> CommonCodes.get_select_options("장소") end)
     |> assign_new(:crew_options, fn ->
-      Itsm.Crews.options_excluding_user(socket.assigns[:current_user])
+      Itsm.Crews.options_excluding_user(socket.assigns[:current_scope].user)
     end)
   end
 
   defp save_asset(socket, :new, asset_params) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
 
     case Assets.create_asset(action_user, asset_params) do
       {:ok, _asset} ->
@@ -153,7 +153,7 @@ defmodule ItsmWeb.AssetLive.FormComponent do
   end
 
   defp save_asset(socket, :edit, asset_params) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
 
     case Assets.update_asset(action_user, socket.assigns.asset, asset_params) do
       {:ok, _asset} ->
