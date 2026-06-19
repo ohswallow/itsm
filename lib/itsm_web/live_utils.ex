@@ -99,9 +99,17 @@ defmodule ItsmWeb.LiveUtils do
 
   def get_sub_field(key, %Phoenix.HTML.FormField{} = form_field, params, default_value)
       when is_atom(key) do
-    current_value =
-      params[key] || params[Atom.to_string(key)] ||
-        (form_field.value[key] || form_field.value[Atom.to_string(key)]) || default_value
+    param_value = params[key] || params[Atom.to_string(key)]
+
+    form_value =
+      if is_struct(form_field.value) do
+        Map.get(form_field.value, key)
+      else
+        Map.get(form_field.value || %{}, key) ||
+          Map.get(form_field.value || %{}, Atom.to_string(key))
+      end
+
+    current_value = param_value || form_value || default_value
 
     form_field
     |> to_sub_form(params)
@@ -111,9 +119,16 @@ defmodule ItsmWeb.LiveUtils do
 
   def get_sub_field(key, %Phoenix.HTML.FormField{} = form_field, params, default_value)
       when is_binary(key) do
-    current_value =
-      params[key] || params[String.to_atom(key)] ||
-        (form_field.value[key] || form_field.value[String.to_atom(key)]) || default_value
+    param_value = params[key]
+
+    form_value =
+      if is_struct(form_field.value) do
+        Map.get(form_field.value, key)
+      else
+        Map.get(form_field.value || %{}, key)
+      end
+
+    current_value = param_value || form_value || default_value
 
     form_field
     |> to_sub_form(params)

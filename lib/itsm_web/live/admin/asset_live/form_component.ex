@@ -22,6 +22,7 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
      |> assign_new(:form, fn ->
        to_form(Assets.change_asset(asset))
      end)
+     |> assign_new(:dynamic_fields, fn -> %{} end)
      |> assign_new_options()}
   end
 
@@ -119,18 +120,37 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
           options={@crew_options}
         />
 
+        <div class="grid grid-cols-2 gap-4">
+          <.input
+            :for={{field_name, type} <- @dynamic_fields}
+            field={
+              ItsmWeb.LiveUtils.get_sub_field(
+                field_name,
+                @form[:metadata],
+                @form.params["metadata"]
+              )
+            }
+            type={if type in [:integer, :float], do: "number", else: "text"}
+            label={field_name |> Atom.to_string() |> String.capitalize()}
+          />
+        </div>
+
         <.button :if={!@conflict} phx-disable-with="Saving...">Save Asset</.button>
       </.form>
     </div>
     """
   end
 
-  def handle_event("validate", %{"asset" => request_params}, socket) do
-    changeset = Assets.change_asset(%Asset{}, request_params)
+  def handle_event("validate", %{"asset" => asset_params}, socket) do
+    changeset = Assets.change_asset(%Asset{}, asset_params)
+
+    current_category = asset_params["category"]
+    dynamic_fields = Assets.metadata_fields_for_category(current_category)
 
     {:noreply,
      socket
-     |> assign(form: to_form(changeset, action: :validate))}
+     |> assign(form: to_form(changeset, action: :validate))
+     |> assign(dynamic_fields: dynamic_fields)}
   end
 
   def handle_event("save", %{"asset" => asset_params}, socket) do
