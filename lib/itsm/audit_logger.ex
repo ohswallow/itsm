@@ -74,7 +74,6 @@ defmodule Itsm.AuditLogger do
 
   defp is_uuid?(val), do: is_binary(val) and byte_size(val) == 16
 
-  defp ensure_string_id(nil), do: nil
   defp ensure_string_id(id) when is_binary(id) and byte_size(id) == 16, do: Ecto.UUID.load!(id)
   defp ensure_string_id(id) when is_binary(id), do: id
   defp ensure_string_id(id), do: to_string(id)

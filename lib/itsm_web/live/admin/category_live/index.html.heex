@@ -1,10 +1,8 @@
 <.header>
   Listing Categories
-  <:actions>
-    <.link patch={~p"/admin/categories/new"}>
-      <.button>New Category</.button>
-    </.link>
-  </:actions>
+  <.link patch={~p"/admin/categories/new"}>
+    <.button>New Category</.button>
+  </.link>
 </.header>
 <.itsm_table_container results={assigns[:results]}>
   <.table

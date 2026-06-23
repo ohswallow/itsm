@@ -1,10 +1,8 @@
 <.header>
   Listing Posts
-  <:actions>
-    <.link patch={~p"/admin/posts/new"}>
-      <.button>New Post</.button>
-    </.link>
-  </:actions>
+  <.link patch={~p"/admin/posts/new"}>
+    <.button>New Post</.button>
+  </.link>
 </.header>
 
 <.itsm_table_container results={assigns[:results]}>

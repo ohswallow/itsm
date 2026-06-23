@@ -59,9 +59,8 @@ defmodule ItsmWeb.Admin.CrewLive.FormComponent do
           show_time
           default_selected_date_time={@form[:inserted_at].value}
         />
-        <:actions>
-          <.button :if={!@conflict} phx-disable-with="Saving...">Save Crew</.button>
-        </:actions>
+
+        <.button :if={!@conflict} phx-disable-with="Saving...">Save Crew</.button>
       </.form>
     </div>
     """

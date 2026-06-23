@@ -110,9 +110,8 @@ defmodule ItsmWeb.AssetLive.FormComponent do
           prompt="Choose a value"
           options={@crew_options}
         />
-        <:actions>
-          <.button :if={!@conflict} phx-disable-with="Saving...">Save Asset</.button>
-        </:actions>
+
+        <.button :if={!@conflict} phx-disable-with="Saving...">Save Asset</.button>
       </.form>
     </div>
     """

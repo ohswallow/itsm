@@ -66,11 +66,13 @@ defmodule ItsmWeb.PostLive.FormComponent do
         <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
       </div>
 
-      <.form>
-        for={@form} id="post-form"
-        phx-target={@myself} phx-change="validate"
+      <.form
+        for={@form}
+        id="post-form"
+        phx-target={@myself}
+        phx-change="validate"
         phx-submit="save"
-        >
+      >
         <.input
           field={@form[:title]}
           type="text"
@@ -199,9 +201,7 @@ defmodule ItsmWeb.PostLive.FormComponent do
           </fragment>
         </div>
 
-        <:actions>
-          <.button :if={!@conflict} phx-disable-with="Saving...">Save Post</.button>
-        </:actions>
+        <.button :if={!@conflict} phx-disable-with="Saving...">Save Post</.button>
 
         <p
           :for={{msg, opts} <- Map.get(@form[:board_id], :errors) || []}

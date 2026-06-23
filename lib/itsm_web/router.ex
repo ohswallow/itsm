@@ -15,6 +15,8 @@ defmodule ItsmWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug :fetch_session
+    plug :fetch_current_scope_for_user
   end
 
   scope "/", ItsmWeb do

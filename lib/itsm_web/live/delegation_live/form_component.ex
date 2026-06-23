@@ -116,9 +116,8 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
           prompt="Choose a value"
           options={@reason_options}
         />
-        <:actions>
-          <.button :if={!@conflict} phx-disable-with="Saving...">Save Delegation</.button>
-        </:actions>
+
+        <.button :if={!@conflict} phx-disable-with="Saving...">Save Delegation</.button>
       </.form>
     </div>
     """

@@ -129,9 +129,7 @@ defmodule ItsmWeb.Admin.AttachmentLive.FormComponent do
           </p>
         </fragment>
 
-        <:actions>
-          <.button :if={!@conflict} phx-disable-with="Saving...">Save Attachment</.button>
-        </:actions>
+        <.button :if={!@conflict} phx-disable-with="Saving...">Save Attachment</.button>
       </.form>
     </div>
     """

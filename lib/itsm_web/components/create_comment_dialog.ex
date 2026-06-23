@@ -30,7 +30,7 @@ defmodule ItsmWeb.CreateCommentDialog do
         phx-submit="save"
       >
         <.input field={@form[:comment]} type="textarea" label="Comment" phx-hook="MaintainHeight" />
-        <:actions><.button type="submit">{@title}</.button></:actions>
+        <.button>{@title}</.button>
       </.form>
     </div>
     """

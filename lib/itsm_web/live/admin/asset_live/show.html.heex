@@ -1,11 +1,10 @@
 <.header>
   Asset {@asset.id}
   <:subtitle>This is a asset record from your database.</:subtitle>
-  <:actions>
-    <.link patch={~p"/admin/assets/#{@asset}/show/edit"} phx-click={JS.push_focus()}>
-      <.button>Edit asset</.button>
-    </.link>
-  </:actions>
+
+  <.link patch={~p"/admin/assets/#{@asset}/show/edit"} phx-click={JS.push_focus()}>
+    <.button>Edit asset</.button>
+  </.link>
 </.header>
 
 <.list>
@@ -118,7 +117,7 @@
   </.table>
 
   <div class="mt-4 flex justify-end">
-    <.button type="submit" disabled={Enum.empty?(@selected_ids)}>
+    <.button disabled={Enum.empty?(@selected_ids)}>
       선택한 {Enum.count(@selected_ids)}개 자산 연결
     </.button>
   </div>

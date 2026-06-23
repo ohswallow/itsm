@@ -19,7 +19,7 @@ defmodule ItsmWeb.Admin.UserLive.Index do
     case Accounts.delete_user(action_user, user_params) do
       {:ok, user} ->
         socket =
-          if action_user.id == user.id, do: redirect(socket, to: ~p"/users/log_out"), else: socket
+          if action_user.id == user.id, do: redirect(socket, to: ~p"/"), else: socket
 
         {:noreply, stream_delete(socket, :users, user)}
 

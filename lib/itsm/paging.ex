@@ -256,11 +256,9 @@ defmodule Itsm.Paging do
 
   defp ensure_row_column(params, _val, _range_columns), do: params
 
-  defp apply_range_filter(
-         query,
-         %{"row_column" => row_column, "start_date" => start_date, "end_date" => end_date},
-         opts
-       ) do
+  defp apply_range_filter(query, %{"row_column" => row_column} = params, opts) do
+    start_date = Map.get(params, "start_date")
+    end_date = Map.get(params, "end_date")
     range_columns = Keyword.get(opts, :range_columns, [])
     column = parse_columns(row_column, range_columns) |> List.first()
 

@@ -65,9 +65,8 @@ defmodule ItsmWeb.EvaluationLive.FormComponent do
           </div>
         </fieldset>
         <.input field={@form[:comment]} type="text" label={gettext("Comment")} />
-        <:actions>
-          <.button :if={!@conflict} phx-disable-with="Saving...">Save Evaluation</.button>
-        </:actions>
+
+        <.button :if={!@conflict} phx-disable-with="Saving...">Save Evaluation</.button>
       </.form>
     </div>
     """

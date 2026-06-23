@@ -1,11 +1,10 @@
 <.header>
   Request {@request.id}
   <:subtitle>This is a request record from your database.</:subtitle>
-  <:actions>
-    <.link patch={~p"/admin/requests/#{@request}/show/edit"} phx-click={JS.push_focus()}>
-      <.button>Edit request</.button>
-    </.link>
-  </:actions>
+
+  <.link patch={~p"/admin/requests/#{@request}/show/edit"} phx-click={JS.push_focus()}>
+    <.button>Edit request</.button>
+  </.link>
 </.header>
 
 <.list>

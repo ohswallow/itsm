@@ -64,4 +64,29 @@ defmodule Itsm.Admin.Crews do
     |> select([c], {c.name, c.id})
     |> Repo.all()
   end
+
+  def search_live_select_crews(name, %User{} = exclude_user) do
+    user_crew_ids =
+      CrewsUsers
+      |> where([m], m.user_id == ^exclude_user.id)
+      |> select([m], m.crew_id)
+
+    Crew
+    |> join(:inner, [c], u in assoc(c, :users))
+    |> where([c], c.id not in subquery(user_crew_ids))
+    |> where(
+      [c, u],
+      ilike(c.name, ^"%#{name}%") or
+        ilike(c.description, ^"%#{name}%") or
+        ilike(u.display_name, ^"%#{name}%")
+    )
+    |> distinct(true)
+    |> select([c], %{
+      label: c.name,
+      tag_label: c.name,
+      value: c.id,
+      description: c.description
+    })
+    |> Repo.all()
+  end
 end

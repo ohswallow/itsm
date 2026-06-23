@@ -49,6 +49,52 @@ defmodule ItsmWeb.GraphiqlController do
           }),
           document.getElementById("root")
         );
+
+        const addHomeButton = function() {
+          const sidebarSection = document.getElementsByClassName("graphiql-sidebar-section")[0];
+          if (sidebarSection) {
+            const customButton = document.createElement("button");
+            customButton.type = "button";
+            customButton.className = "graphiql-un-styled test-check-button";
+            customButton.setAttribute("aria-label", "Custom Setting");
+
+            customButton.innerHTML = `
+              <svg height="1.2em" viewBox="0 0 60 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: auto; max-width: 100%;">
+                <text
+                  x="50%"
+                  y="55%"
+                  dominant-baseline="middle"
+                  text-anchor="middle"
+                  fill="currentColor"
+                  font-size="9"
+                  font-weight="bold"
+                  font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+                  letter-spacing="-0.5px"
+                >
+                  KB ITSM
+                </text>
+              </svg>
+            `;
+
+            Object.assign(customButton.style, {
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "100%",
+              height: "44px",
+              cursor: "pointer",
+              color: "var(--color-neutral-60, currentColor)"
+            });
+
+            customButton.addEventListener("click", function() {
+              window.location.href = "/";
+            });
+
+            sidebarSection.insertBefore(customButton, sidebarSection.firstChild);
+          }
+        };
+
+        window.addEventListener("load", addHomeButton);
       </script>
     </body>
     </html>

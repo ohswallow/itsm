@@ -1,10 +1,8 @@
 <.header>
   Listing Common codes
-  <:actions>
-    <.link patch={~p"/admin/common_codes/new"}>
-      <.button>New Code</.button>
-    </.link>
-  </:actions>
+  <.link patch={~p"/admin/common_codes/new"}>
+    <.button>New Code</.button>
+  </.link>
 </.header>
 <.itsm_table_container results={assigns[:results]}>
   <.table

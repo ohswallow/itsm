@@ -17,7 +17,7 @@ defmodule ItsmWeb do
   those modules here.
   """
 
-  def static_paths, do: ~w(assets fonts images favicon.ico robots.txt)
+  def static_paths, do: ~w(assets fonts images favicon.ico robots.txt css js)
 
   def router do
     quote do

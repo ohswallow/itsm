@@ -85,9 +85,8 @@ defmodule ItsmWeb.Admin.UserLive.FormComponent do
           show_time
           default_selected_date_time={@form[:inserted_at].value}
         />
-        <:actions>
-          <.button :if={!@conflict} phx-disable-with="Saving...">Save User</.button>
-        </:actions>
+
+        <.button :if={!@conflict} phx-disable-with="Saving...">Save User</.button>
       </.form>
     </div>
     """

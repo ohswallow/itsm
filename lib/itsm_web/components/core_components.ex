@@ -1276,7 +1276,7 @@ defmodule ItsmWeb.CoreComponents do
   사용자 검색을 위한 라이브 컴포넌트입니다.
   """
   attr :id, :string, required: true
-  attr :current_user, :any, required: true
+  attr :current_scope, :any, required: true
   attr :opts, :list, default: [], doc: "{:exclude_crew, Crew.t()} 크루원을 제외하고 검색한다"
   attr :rest, :global
 

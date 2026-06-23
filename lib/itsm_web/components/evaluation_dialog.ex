@@ -44,7 +44,7 @@ defmodule ItsmWeb.EvaluationDialog do
           </div>
         </fieldset>
         <.input field={@form[:comment]} type="textarea" label="Comment" phx-hook="MaintainHeight" />
-        <:actions><.button phx-disable-with="Saving...">Save Evaluation</.button></:actions>
+        <.button phx-disable-with="Saving...">Save Evaluation</.button>
       </.form>
     </div>
     """

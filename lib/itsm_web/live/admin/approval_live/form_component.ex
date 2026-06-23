@@ -77,9 +77,8 @@ defmodule ItsmWeb.Admin.ApprovalLive.FormComponent do
           show_time
           default_selected_date_time={@form[:inserted_at].value}
         />
-        <:actions>
-          <.button :if={!@conflict} phx-disable-with="Saving...">Save Approval</.button>
-        </:actions>
+
+        <.button :if={!@conflict} phx-disable-with="Saving...">Save Approval</.button>
       </.form>
     </div>
     """

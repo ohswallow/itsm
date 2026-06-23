@@ -1,4 +1,4 @@
-import  LocalTime  from './LocalTime';
+import  LocalTime  from './LocalTime.hooks';
 
 const Calendar = {};
 

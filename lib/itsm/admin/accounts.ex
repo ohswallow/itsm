@@ -11,6 +11,20 @@ defmodule Itsm.Admin.Accounts do
 
   def get_user!(id), do: Repo.get!(User, id)
 
+  def create_user(%User{} = action_user, attrs) do
+    %User{}
+    |> User.registration_changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, user} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_user, user})
+        {:ok, user}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
   def update_user(%User{} = action_user, %User{} = user, attrs) do
     user
     |> User.changeset(attrs)
@@ -29,5 +43,19 @@ defmodule Itsm.Admin.Accounts do
   def change_user(%User{} = user, attrs \\ %{}) do
     User.changeset(user, attrs)
     |> Itsm.Utils.maybe_put_change(:inserted_at, attrs["inserted_at"])
+  end
+
+  def delete_user(%User{} = action_user, %{"id" => id}) do
+    get_user!(id)
+    |> User.delete_changeset()
+    |> Repo.delete()
+    |> case do
+      {:ok, user} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_user, user}, id: user.id)
+        {:ok, user}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 end
