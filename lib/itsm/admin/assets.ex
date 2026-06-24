@@ -119,9 +119,39 @@ defmodule Itsm.Admin.Assets do
       )
 
     Repo.delete_all(query)
+    |> case do
+      {0, _} -> {:error, "해제된 자산이 없습니다."}
+      {nil, error} -> {:error, error}
+      {count, _} -> {:ok, count}
+    end
   end
+
+  def metadata_fields_for_category(nil), do: %{}
 
   def metadata_fields_for_category(category) do
     Asset.metadata_fields_for_category(category)
+  end
+
+  def filter_assets_for_relation(all_assets, %Itsm.Assets.Asset{} = target_asset) do
+    excluded_ids =
+      target_asset.relation_assets
+      |> Enum.map(& &1.id)
+      |> MapSet.new()
+
+    {assets, all_ids} =
+      Enum.reduce(all_assets, {[], []}, fn asset, {assets_acc, ids_acc} ->
+        cond do
+          asset.id == target_asset.id ->
+            {assets_acc, ids_acc}
+
+          MapSet.member?(excluded_ids, asset.id) ->
+            {[asset | assets_acc], ids_acc}
+
+          true ->
+            {[asset | assets_acc], [asset.id | ids_acc]}
+        end
+      end)
+
+    {Enum.reverse(assets), Enum.reverse(all_ids)}
   end
 end

@@ -10,26 +10,14 @@ defmodule ItsmWeb.Admin.AssetLive.Show do
   end
 
   def handle_params(%{"id" => id}, _, socket) do
-    {assets, all_ids} =
-      Assets.list_assets_with_crew()
-      |> Enum.reduce({[], []}, fn asset, {assets_acc, ids_acc} ->
-        if asset.id != id,
-          do: {[asset | assets_acc], [asset.id | ids_acc]},
-          else: {assets_acc, ids_acc}
-      end)
-
-    assets = Enum.reverse(assets)
-    all_ids = Enum.reverse(all_ids)
+    asset =
+      Assets.get_asset!(id) |> Assets.with_assoc([[service_crew: :users], [system_crew: :users]])
 
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(
-       :asset,
-       Assets.get_asset!(id) |> Assets.with_assoc([[service_crew: :users], [system_crew: :users]])
-     )
-     |> stream(:assets, assets)
-     |> assign(all_ids: all_ids, selected_ids: [], all_selected: false)
+     |> assign(:asset, asset)
+     |> setup_relation_assets(asset)
      |> Itsm.PubSub.Helper.subscribe(Assets, id: id, is_admin: true)}
   end
 
@@ -66,10 +54,15 @@ defmodule ItsmWeb.Admin.AssetLive.Show do
 
     case Assets.connect_assets(asset, selected_ids) do
       {:ok, _results} ->
+        new_asset =
+          Assets.get_asset!(asset.id)
+          |> Assets.with_assoc([[service_crew: :users], [system_crew: :users]])
+
         {:noreply,
          socket
          |> put_flash(:info, "#{length(selected_ids)}건의 자산이 모두 성공적으로 연결되었습니다.")
-         |> assign(selected_ids: [], all_selected: false)}
+         |> assign(:asset, new_asset)
+         |> setup_relation_assets(new_asset)}
 
       {:error, {:connect, failed_id}, %Ecto.Changeset{} = changeset, _changes_so_far} ->
         {:noreply,
@@ -77,12 +70,32 @@ defmodule ItsmWeb.Admin.AssetLive.Show do
          |> put_flash(:error, "자산(ID: #{failed_id}) 연동 중 오류 발생")
          |> assign(:form, to_form(changeset))}
 
-      result ->
-        IO.inspect(result, label: "result")
-
+      _ ->
         {:noreply,
          socket
          |> put_flash(:info, "result")}
+    end
+  end
+
+  def handle_event("disconnect_asset", %{"id" => asset_id}, socket) do
+    %{assigns: %{asset: asset}} = socket
+
+    case Assets.disconnect_assets(asset.id, asset_id) do
+      {:ok, _} ->
+        new_asset =
+          Assets.get_asset!(asset.id)
+          |> Assets.with_assoc([[service_crew: :users], [system_crew: :users]])
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "자산이 성공적으로 연결 해제되었습니다.")
+         |> assign(:asset, new_asset)
+         |> setup_relation_assets(new_asset)}
+
+      {:error, reason} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "자산 연결 해제 중 오류 발생: #{inspect(reason)}")}
     end
   end
 
@@ -118,4 +131,14 @@ defmodule ItsmWeb.Admin.AssetLive.Show do
     do: [push_navigate: [to: "#{socket.assigns.current_path}"]]
 
   defp push_event_action(_socket, _), do: []
+
+  defp setup_relation_assets(socket, asset) do
+    {assets, all_ids} =
+      Assets.filter_assets_for_relation(Assets.list_assets_with_crew(), asset)
+
+    socket
+    |> stream(:assets, assets)
+    |> assign(all_ids: all_ids)
+    |> assign(selected_ids: [], all_selected: false)
+  end
 end

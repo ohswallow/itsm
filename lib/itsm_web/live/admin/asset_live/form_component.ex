@@ -23,7 +23,7 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
      |> assign_new(:form, fn ->
        to_form(Assets.change_asset(asset))
      end)
-     |> assign_new(:dynamic_fields, fn -> %{} end)
+     |> assign_new(:dynamic_fields, fn -> Assets.metadata_fields_for_category(asset.category) end)
      |> assign_new_options()}
   end
 

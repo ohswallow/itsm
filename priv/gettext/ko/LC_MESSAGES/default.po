@@ -769,7 +769,7 @@ msgstr "이름검색"
 #: lib/itsm_web/live/admin/asset_live/show.html.heex:33
 #, elixir-autogen, elixir-format
 msgid "Service Crew"
-msgstr "서비스 Crew"
+msgstr "서비스Crew"
 
 #: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:87
 #, elixir-autogen, elixir-format
