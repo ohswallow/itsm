@@ -87,7 +87,7 @@ msgstr "첨부"
 
 #: lib/itsm_web/live/admin/attachment_live/form_component.ex:101
 #: lib/itsm_web/live/admin/post_live/form_component.ex:139
-#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:159
+#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:159
 #: lib/itsm_web/live/post_live/form_component.ex:134
 #, elixir-autogen, elixir-format
 msgid "Attachments"
@@ -164,7 +164,7 @@ msgstr "코드"
 #: lib/itsm_web/live/admin/comment_live/show.html.heex:13
 #: lib/itsm_web/live/admin/post_live/show.ex:102
 #: lib/itsm_web/live/admin/request_live/show.html.heex:103
-#: lib/itsm_web/live/common_k_create_vm_live/show.ex:133
+#: lib/itsm_web/live/common-k-create-vm_live/show.ex:133
 #: lib/itsm_web/live/evaluation_live/form_component.ex:67
 #: lib/itsm_web/live/evaluation_live/index.html.heex:15
 #: lib/itsm_web/live/post_live/show.ex:111
@@ -230,7 +230,7 @@ msgstr "Crew 삭제 성공"
 msgid "Crew updated successfully"
 msgstr "Crew 업데이트 성공"
 
-#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:223
+#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:223
 #, elixir-autogen, elixir-format
 msgid "Crews to reference"
 msgstr "참조할 Crew"
@@ -312,8 +312,8 @@ msgstr "부서코드"
 #: lib/itsm_web/live/asset_live/index.html.heex:16
 #: lib/itsm_web/live/board_live/index.html.heex:16
 #: lib/itsm_web/live/board_live/show.html.heex:9
-#: lib/itsm_web/live/common_k_create_vm_live/components.ex:37
-#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:38
+#: lib/itsm_web/live/common-k-create-vm_live/components.ex:37
+#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:38
 #: lib/itsm_web/live/crew_live/table_components.ex:13
 #, elixir-autogen, elixir-format
 msgid "Description"
@@ -335,8 +335,8 @@ msgstr ""
 #: lib/itsm_web/live/admin/request_live/index.html.heex:17
 #: lib/itsm_web/live/admin/request_live/show.html.heex:19
 #: lib/itsm_web/live/approval_live/index.html.heex:53
-#: lib/itsm_web/live/common_k_create_vm_live/components.ex:45
-#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:54
+#: lib/itsm_web/live/common-k-create-vm_live/components.ex:45
+#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:54
 #: lib/itsm_web/live/request_live/index.html.heex:21
 #, elixir-autogen, elixir-format
 msgid "Due Date"
@@ -388,8 +388,8 @@ msgstr "운영상태"
 #: lib/itsm_web/live/approval_live/index.html.heex:49
 #: lib/itsm_web/live/asset_live/form_component.ex:88
 #: lib/itsm_web/live/asset_live/index.html.heex:29
-#: lib/itsm_web/live/common_k_create_vm_live/components.ex:39
-#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:46
+#: lib/itsm_web/live/common-k-create-vm_live/components.ex:39
+#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:46
 #, elixir-autogen, elixir-format
 msgid "Environment"
 msgstr "운영상태"
@@ -434,7 +434,7 @@ msgstr "그룹코드"
 msgid "Group code"
 msgstr "그룹코드"
 
-#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:82
+#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:82
 #, elixir-autogen, elixir-format
 msgid "Hostname"
 msgstr "호스트이름"
@@ -493,8 +493,8 @@ msgstr "기입일시"
 msgid "Is Active"
 msgstr "활성화여부"
 
-#: lib/itsm_web/live/common_k_create_vm_live/components.ex:119
-#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:127
+#: lib/itsm_web/live/common-k-create-vm_live/components.ex:119
+#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:127
 #, elixir-autogen, elixir-format
 msgid "Is DMZ?"
 msgstr "DMZ여부"
@@ -558,8 +558,8 @@ msgstr "로컬경로"
 #: lib/itsm_web/live/admin/asset_live/show.html.heex:29
 #: lib/itsm_web/live/asset_live/form_component.ex:95
 #: lib/itsm_web/live/asset_live/index.html.heex:32
-#: lib/itsm_web/live/common_k_create_vm_live/components.ex:113
-#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:121
+#: lib/itsm_web/live/common-k-create-vm_live/components.ex:113
+#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:121
 #, elixir-autogen, elixir-format
 msgid "Location"
 msgstr "장소"
@@ -585,7 +585,7 @@ msgstr "멤버"
 msgid "Metadata"
 msgstr "메타데이터"
 
-#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:24
+#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:24
 #, elixir-autogen, elixir-format
 msgid "My Crew"
 msgstr "나의 Crew"
@@ -682,7 +682,7 @@ msgstr "요청일시"
 #: lib/itsm_web/live/admin/approval_live/form_component.ex:57
 #: lib/itsm_web/live/admin/request_live/index.ex:70
 #: lib/itsm_web/live/admin/request_live/show.ex:62
-#: lib/itsm_web/live/common_k_create_vm_live/show.ex:116
+#: lib/itsm_web/live/common-k-create-vm_live/show.ex:116
 #: lib/itsm_web/live/request_live/index.ex:77
 #, elixir-autogen, elixir-format
 msgid "Request"
@@ -771,7 +771,7 @@ msgstr "이름검색"
 msgid "Service Crew"
 msgstr "서비스Crew"
 
-#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:87
+#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:87
 #, elixir-autogen, elixir-format
 msgid "Service Name"
 msgstr "서비스명"
@@ -821,7 +821,7 @@ msgstr "시작일시"
 #: lib/itsm_web/live/admin/request_live/show.html.heex:47
 #: lib/itsm_web/live/admin/request_live/show.html.heex:77
 #: lib/itsm_web/live/approval_live/index.html.heex:67
-#: lib/itsm_web/live/common_k_create_vm_live/components.ex:43
+#: lib/itsm_web/live/common-k-create-vm_live/components.ex:43
 #: lib/itsm_web/live/request_live/index.html.heex:25
 #, elixir-autogen, elixir-format
 msgid "Status"
@@ -840,8 +840,8 @@ msgstr "시스템Crew"
 #: lib/itsm_web/live/admin/request_live/index.html.heex:10
 #: lib/itsm_web/live/admin/request_live/show.html.heex:12
 #: lib/itsm_web/live/approval_live/index.html.heex:45
-#: lib/itsm_web/live/common_k_create_vm_live/components.ex:35
-#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:31
+#: lib/itsm_web/live/common-k-create-vm_live/components.ex:35
+#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:31
 #: lib/itsm_web/live/post_live/form_component.ex:77
 #: lib/itsm_web/live/post_live/index.html.heex:19
 #: lib/itsm_web/live/post_live/show.html.heex:16
@@ -891,7 +891,7 @@ msgstr "사용자"
 msgid "We can't find the internet"
 msgstr ""
 
-#: lib/itsm_web/live/common_k_create_vm_live/show.ex:93
+#: lib/itsm_web/live/common-k-create-vm_live/show.ex:93
 #, elixir-autogen, elixir-format
 msgid "attachment"
 msgstr "첨부"

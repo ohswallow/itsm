@@ -23,7 +23,7 @@ defmodule Itsm.Assets.AssetShadow do
 
     field :metadata, :map
 
-    belongs_to :assets, Itsm.Assets.Asset, type: :binary_id
+    belongs_to :asset, Itsm.Assets.Asset, type: :binary_id
 
     belongs_to :service_crew, Itsm.Crews.Crew, type: :binary_id
     belongs_to :system_crew, Itsm.Crews.Crew, type: :binary_id
@@ -44,7 +44,7 @@ defmodule Itsm.Assets.AssetShadow do
       :env,
       :location,
       :is_dmz_zone,
-      :assets_id,
+      :asset_id,
       :system_crew_id,
       :service_crew_id
     ])
@@ -61,6 +61,6 @@ defmodule Itsm.Assets.AssetShadow do
       :system_crew_id,
       :service_crew_id
     ])
-    |> unique_constraint(:assets_id)
+    |> Itsm.Assets.Asset.validate_metadata(attrs)
   end
 end

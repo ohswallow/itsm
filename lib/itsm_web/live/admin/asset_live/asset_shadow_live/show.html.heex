@@ -1,0 +1,87 @@
+<.header>
+  AssetShadow {@asset_shadow.id}
+  <:subtitle>This is a asset shadow record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/admin/assets-shadow/#{@asset_shadow}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit asset shadow</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title={gettext("Origin Asset Id")}>
+    <.link navigate={~p"/admin/assets/#{@asset_shadow.asset}"}>
+      {@asset_shadow.asset.id}
+    </.link>
+  </:item>
+  <:item title={gettext("Origin Asset Name")}>{@asset_shadow.asset.name}</:item>
+  <:item title={gettext("Name")}>{@asset_shadow.name}</:item>
+  <:item title={gettext("Description")}>{@asset_shadow.description}</:item>
+  <:item title={gettext("Detail")}>
+    <div class="flex flex-wrap gap-2 mt-1">
+      <%= for {key, value} <- @asset_shadow.metadata do %>
+        <span class="inline-flex items-center gap-x-1.5 rounded-md bg-zinc-50 px-2 py-1 text-xs font-medium text-zinc-600 ring-1 ring-inset ring-zinc-500/10">
+          <strong class="text-zinc-950">{key}:</strong> {to_string(value)}
+        </span>
+      <% end %>
+    </div>
+  </:item>
+  <:item title={gettext("Affiliate")}>
+    <.common_code_label group="계열사" code={@asset_shadow.affiliate} />
+  </:item>
+  <:item title={gettext("Category")}>
+    <.common_code_label group="카테고리" code={@asset_shadow.category} />
+  </:item>
+  <:item title={gettext("Region Type")}>
+    <.common_code_label group="지역_유형" code={@asset_shadow.region_type} />
+  </:item>
+  <:item title={gettext("Infra Type")}>
+    <.common_code_label group="인프라_유형" code={@asset_shadow.infra_type} />
+  </:item>
+  <:item title={gettext("Environment")}>
+    <.common_code_label group="운영_구분" code={@asset_shadow.env} />
+  </:item>
+  <:item title={gettext("Location")}>
+    <.common_code_label group="장소" code={@asset_shadow.location} />
+  </:item>
+  <:item title={gettext("Is Dmz Zone")}>{@asset_shadow.is_dmz_zone}</:item>
+  <:item title={gettext("Service Crew")}>
+    <ItsmWeb.CustomComponents.crew_tooltip crew={@asset_shadow.service_crew} />
+  </:item>
+  <:item title={gettext("System Crew")}>
+    <ItsmWeb.CustomComponents.crew_tooltip crew={@asset_shadow.system_crew} />
+  </:item>
+  <:item title={gettext("Inserted At")}>
+    <span
+      id={"asset-inserted-at-#{@asset_shadow.id}"}
+      phx-hook="LocalTime.ToLocale"
+      utc-value={@asset_shadow.inserted_at}
+    />
+  </:item>
+  <:item title={gettext("Updated At")}>
+    <span
+      id={"asset-updated-at-#{@asset_shadow.id}"}
+      phx-hook="LocalTime.ToLocale"
+      utc-value={@asset_shadow.updated_at}
+    />
+  </:item>
+</.list>
+
+<.back navigate={~p"/admin/assets-shadow"}>Back to assets shadow</.back>
+
+<.modal
+  :if={@live_action == :edit}
+  id="asset-modal"
+  show
+  on_cancel={JS.patch(~p"/admin/assets-shadow/#{@asset_shadow}")}
+>
+  <.live_component
+    module={ItsmWeb.Admin.AssetLive.AssetShadowLive.FormComponent}
+    id={@asset_shadow.id}
+    title={@page_title}
+    action={@live_action}
+    asset_shadow={@asset_shadow}
+    current_scope={@current_scope}
+    patch={~p"/admin/assets-shadow/#{@asset_shadow}"}
+  />
+</.modal>

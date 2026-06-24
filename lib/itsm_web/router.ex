@@ -84,10 +84,10 @@ defmodule ItsmWeb.Router do
       live "/requests/:id/edit", RequestLive.Index, :edit
 
       # VM 생성
-      live "/categories/:id/common_k_create_vm/new", CommonKCreateVmLive.Form, :new
-      live "/common_k_create_vm/:id", CommonKCreateVmLive.Show, :show
-      live "/common_k_create_vm/:id/edit", CommonKCreateVmLive.Form, :edit
-      live "/common_k_create_vm/:id/copy", CommonKCreateVmLive.Form, :copy
+      live "/categories/:id/common-k-create-vm/new", CommonKCreateVmLive.Form, :new
+      live "/common-k-create-vm/:id", CommonKCreateVmLive.Show, :show
+      live "/common-k-create-vm/:id/edit", CommonKCreateVmLive.Form, :edit
+      live "/common-k-create-vm/:id/copy", CommonKCreateVmLive.Form, :copy
 
       # 대결
       live "/delegations", DelegationLive.Index, :index
@@ -197,12 +197,12 @@ defmodule ItsmWeb.Router do
       live "/comments/:id", Admin.CommentLive.Show, :show
       live "/comments/:id/show/edit", Admin.CommentLive.Show, :edit
 
-      live "/common_codes", Admin.CommonCodeLive.Index, :index
-      live "/common_codes/new", Admin.CommonCodeLive.Index, :new
-      live "/common_codes/:id/edit", Admin.CommonCodeLive.Index, :edit
+      live "/common-codes", Admin.CommonCodeLive.Index, :index
+      live "/common-codes/new", Admin.CommonCodeLive.Index, :new
+      live "/common-codes/:id/edit", Admin.CommonCodeLive.Index, :edit
 
-      live "/common_codes/:id", Admin.CommonCodeLive.Show, :show
-      live "/common_codes/:id/show/edit", Admin.CommonCodeLive.Show, :edit
+      live "/common-codes/:id", Admin.CommonCodeLive.Show, :show
+      live "/common-codes/:id/show/edit", Admin.CommonCodeLive.Show, :edit
 
       live "/assets", Admin.AssetLive.Index, :index
       live "/assets/new", Admin.AssetLive.Index, :new
@@ -231,6 +231,13 @@ defmodule ItsmWeb.Router do
 
       live "/attachments/:id", Admin.AttachmentLive.Show, :show
       live "/attachments/:id/show/edit", Admin.AttachmentLive.Show, :edit
+
+      live "/assets-shadow", Admin.AssetLive.AssetShadowLive.Index, :index
+      live "/assets-shadow/new", Admin.AssetLive.AssetShadowLive.Index, :new
+      live "/assets-shadow/:id/edit", Admin.AssetLive.AssetShadowLive.Index, :edit
+
+      live "/assets-shadow/:id", Admin.AssetLive.AssetShadowLive.Show, :show
+      live "/assets-shadow/:id/show/edit", Admin.AssetLive.AssetShadowLive.Show, :edit
     end
   end
 

@@ -54,13 +54,14 @@ defmodule Itsm.Repo.Migrations.CreateAssets do
       add :is_dmz_zone, :boolean, default: false, null: false
       add :metadata, :map, default: %{}, null: false
 
-      add :assets_id, references(:assets, on_delete: :nothing, type: :binary_id)
+      add :asset_id, references(:assets, on_delete: :nothing, type: :binary_id)
       add :service_crew_id, references(:crews, on_delete: :nothing, type: :binary_id)
       add :system_crew_id, references(:crews, on_delete: :nothing, type: :binary_id)
 
       timestamps(type: :utc_datetime)
     end
 
+    create index(:assets_shadow, [:asset_id])
     create index(:assets_shadow, [:service_crew_id])
     create index(:assets_shadow, [:system_crew_id])
 

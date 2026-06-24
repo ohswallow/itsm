@@ -94,15 +94,18 @@ defmodule Itsm.Assets.Asset do
     end
   end
 
-  defp validate_metadata(changeset, attrs) do
+  def get_metadata_registry, do: @metadata_registry
+
+  def validate_metadata(changeset, attrs) do
     category = get_field(changeset, :category)
     metadata_attrs = Map.get(attrs, "metadata", %{})
 
-    case category do
-      "서버" -> inner_changeset(changeset, Itsm.Assets.Metadata.Server, metadata_attrs)
-      "네트워크" -> inner_changeset(changeset, Itsm.Assets.Metadata.Network, metadata_attrs)
-      "스토리지" -> inner_changeset(changeset, Itsm.Assets.Metadata.Storage, metadata_attrs)
-      _ -> put_change(changeset, :metadata, %{})
+    case Map.get(@metadata_registry, category) do
+      nil ->
+        put_change(changeset, :metadata, %{})
+
+      module ->
+        inner_changeset(changeset, module, metadata_attrs)
     end
   end
 
@@ -123,16 +126,4 @@ defmodule Itsm.Assets.Asset do
       %{changeset | errors: combined, valid?: false}
     end
   end
-
-  # defp cast_dynamic_metadata(changeset) do
-  #   category = get_field(changeset, :category)
-
-  #   case Map.get(@metadata_registry, category) do
-  #     nil ->
-  #       changeset
-
-  #     metadata_module ->
-  #       cast_embed(changeset, :metadata, with: &metadata_module.changeset/2, required: true)
-  #   end
-  # end
 end

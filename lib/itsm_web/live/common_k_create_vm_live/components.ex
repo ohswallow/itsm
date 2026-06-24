@@ -13,13 +13,13 @@ defmodule ItsmWeb.CommonKCreateVmLive.Components do
 
         <.link
           :if={@show_edit}
-          navigate={~p"/common_k_create_vm/#{@request}/edit"}
+          navigate={~p"/common-k-create-vm/#{@request}/edit"}
           class="text-sm text-zinc-700"
         >
           Edit
         </.link>
 
-        <.link navigate={~p"/common_k_create_vm/#{@request}/copy"} class="text-sm text-zinc-700">
+        <.link navigate={~p"/common-k-create-vm/#{@request}/copy"} class="text-sm text-zinc-700">
           Copy
         </.link>
       </.header>

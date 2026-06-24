@@ -154,7 +154,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
         {:noreply,
          socket
          |> put_flash(:info, "Request updated successfully")
-         |> push_navigate(to: ~p"/common_k_create_vm/#{request}")}
+         |> push_navigate(to: ~p"/common-k-create-vm/#{request}")}
 
       {:error, :request, %Ecto.Changeset{} = changeset, _so_far_changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -183,7 +183,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
         {:noreply,
          socket
          |> put_flash(:info, "Request created successfully")
-         |> push_navigate(to: ~p"/common_k_create_vm/#{request.id}")}
+         |> push_navigate(to: ~p"/common-k-create-vm/#{request.id}")}
 
       {:error, :request, %Ecto.Changeset{} = changeset, _so_far_changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
