@@ -16,7 +16,8 @@ defmodule ItsmWeb.Admin.BoardLive.FormComponent do
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(:conflict, false)
+     |> assign_new(:conflict, fn -> false end)
+     |> assign_new(:conflict_msg, fn -> nil end)
      |> assign_new(:form, fn ->
        to_form(Boards.change_board(board))
      end)}

@@ -1,11 +1,13 @@
 <.header>
   Listing {Map.get(assigns, :board_name, "Not Found")} Posts
-  <.link
-    :if={assigns[:board_name] not in ["공지사항", "FAQ"]}
-    patch={~p"/posts/new?board_id=#{assigns[:board_id] || ""}&menu_id=boards"}
-  >
-    <.button>New Post</.button>
-  </.link>
+  <:actions>
+    <.link
+      :if={assigns[:board_name] not in ["공지사항", "FAQ"]}
+      patch={~p"/posts/new?board_id=#{assigns[:board_id] || ""}&menu_id=boards"}
+    >
+      <.button>New Post</.button>
+    </.link>
+  </:actions>
 </.header>
 
 <.table

@@ -1,5 +1,10 @@
 <.header>
-  Listing Crews <.link patch={~p"/admin/crews/new"}><.button>New Crew</.button></.link>
+  Listing Crews
+  <:actions>
+    <.link patch={~p"/admin/crews/new"}>
+      <.button>New Crew</.button>
+    </.link>
+  </:actions>
 </.header>
 <.itsm_table_container results={assigns[:results]}>
   <.table

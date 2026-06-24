@@ -1,10 +1,11 @@
 <.header>
   Asset {@asset.id}
   <:subtitle>This is a asset record from your database.</:subtitle>
-
-  <.link patch={~p"/admin/assets/#{@asset}/show/edit"} phx-click={JS.push_focus()}>
-    <.button>Edit asset</.button>
-  </.link>
+  <:actions>
+    <.link patch={~p"/admin/assets/#{@asset}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit asset</.button>
+    </.link>
+  </:actions>
 </.header>
 
 <.list>

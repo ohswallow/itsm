@@ -1,8 +1,10 @@
 <.header>
   Listing Boards
-  <.link patch={~p"/admin/boards/new"}>
-    <.button>New Board</.button>
-  </.link>
+  <:actions>
+    <.link patch={~p"/admin/boards/new"}>
+      <.button>New Board</.button>
+    </.link>
+  </:actions>
 </.header>
 
 <.itsm_table_container results={assigns[:results]}>

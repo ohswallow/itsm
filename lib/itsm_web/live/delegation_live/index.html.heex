@@ -1,7 +1,10 @@
 <.header>
   {gettext("Listing Delegations")}
-
-  <.link patch={~p"/delegations/new"}><.button>{gettext("New Delegation")}</.button></.link>
+  <:actions>
+    <.link patch={~p"/delegations/new"}>
+      <.button>{gettext("New Delegation")}</.button>
+    </.link>
+  </:actions>
 </.header>
 
 <.table

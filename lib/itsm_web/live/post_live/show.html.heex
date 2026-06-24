@@ -2,12 +2,14 @@
   {assigns[:board_name] || "Not Found"} Post {@post.id}
   <:subtitle>This is a post record from your database.</:subtitle>
 
-  <.link
-    patch={~p"/posts/#{@post}/show/edit?board_id=#{assigns[:board_id] || ""}&menu_id=boards"}
-    phx-click={JS.push_focus()}
-  >
-    <.button>Edit post</.button>
-  </.link>
+  <:actions>
+    <.link
+      patch={~p"/posts/#{@post}/show/edit?board_id=#{assigns[:board_id] || ""}&menu_id=boards"}
+      phx-click={JS.push_focus()}
+    >
+      <.button>Edit post</.button>
+    </.link>
+  </:actions>
 </.header>
 
 <.list>

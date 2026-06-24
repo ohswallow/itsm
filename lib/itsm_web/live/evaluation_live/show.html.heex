@@ -2,9 +2,11 @@
   Evaluation {@evaluation.id}
   <:subtitle>This is a evaluation record from your database.</:subtitle>
 
-  <.link patch={~p"/evaluations/#{@evaluation}/show/edit"} phx-click={JS.push_focus()}>
-    <.button>Edit evaluation</.button>
-  </.link>
+  <:actions>
+    <.link patch={~p"/evaluations/#{@evaluation}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit evaluation</.button>
+    </.link>
+  </:actions>
 </.header>
 
 <.list>

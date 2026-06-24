@@ -923,11 +923,11 @@ defmodule ItsmWeb.CoreComponents do
         phx-target={@target}
       >
         <div
-          :if={@results.range_column_options != [] and @results.range_column_options != [""]}
+          :if={@results.range_column_options not in [[], [""]]}
           class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end"
         >
           <div class="md:col-span-4">
-            <label class="form-label">조건 날짜</label>
+            <label>조건 날짜</label>
             <.input
               id={"#{@id}-util-filters-range-column"}
               type="select"
@@ -938,7 +938,7 @@ defmodule ItsmWeb.CoreComponents do
           </div>
 
           <div class="md:col-span-8">
-            <label class="form-label">날짜 범위</label>
+            <label>날짜 범위</label>
             <div class="flex justify-start items-center">
               <.itsm_calendar
                 field={
@@ -973,14 +973,11 @@ defmodule ItsmWeb.CoreComponents do
         </div>
 
         <div
-          :if={
-            @results.columns_options != [] and @results.columns_options != [""] and
-              @results.columns_options != ["전체"]
-          }
-          class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end"
+          :if={@results.columns_options not in [[], [""], ["전체"]]}
+          class="flex justify-between gap-4 items-center"
         >
-          <div class="md:col-span-4">
-            <label class="form-label">검색 컬럼 선택</label>
+          <div class="flex-2">
+            <label>검색 컬럼 선택</label>
             <.input
               id={"#{@id}-util-filters-search-columns"}
               type="select"
@@ -993,8 +990,8 @@ defmodule ItsmWeb.CoreComponents do
             />
           </div>
 
-          <div class="md:col-span-6">
-            <label class="form-label">검색</label>
+          <div class="flex-2">
+            <label>검색</label>
             <.input
               type="text"
               name="search"
@@ -1004,11 +1001,8 @@ defmodule ItsmWeb.CoreComponents do
             />
           </div>
 
-          <div class="md:col-span-2 flex justify-end pb-1">
-            <.link
-              patch={@results.current_path}
-              class="btn-secondary py-2 px-4 text-sm group flex items-center w-full justify-center"
-            >
+          <div class="flex-1 w-full">
+            <.link patch={@results.current_path}>
               <.icon
                 name="hero-arrow-path"
                 class="mr-2 h-4 w-4 group-hover:rotate-180 transition-transform duration-500"
@@ -1385,5 +1379,45 @@ defmodule ItsmWeb.CoreComponents do
 
   ###############################################################
   # ITSM Custom Compoents  종료
+  ##############################################################
+
+  #################################################################
+  # ITSM Custom Compoents Main 이후 추가
+  #################################################################
+
+  attr :visible, :boolean, default: true
+  attr :state, :atom, default: :default, values: [:default, :error]
+  attr :title, :string, default: nil
+  attr :body, :string, default: nil
+  slot :inner_block
+
+  def card(assigns) do
+    assigns =
+      assigns
+      |> assign_new(:title, fn -> if assigns.state == :error, do: "⚠️ 충돌 발생", else: "" end)
+      |> assign_new(:body, fn ->
+        if assigns.state == :error, do: "현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.", else: ""
+      end)
+
+    ~H"""
+    <div
+      :if={@visible}
+      class={[
+        "card border",
+        @state == :default && "bg-base-100 text-base-content border-base-200 shadow-sm",
+        @state == :error && "bg-error/10 text-error border-error/20 animate-pulse"
+      ]}
+    >
+      <div class="card-body">
+        <h2 :if={@title != ""} class="card-title">{@title}</h2>
+        <p :if={@body != ""}>{@body}</p>
+        {render_slot(@inner_block)}
+      </div>
+    </div>
+    """
+  end
+
+  ###############################################################
+  # ITSM Custom Compoents Main 이후 추가 종료
   ##############################################################
 end

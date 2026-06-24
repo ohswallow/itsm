@@ -1,9 +1,11 @@
 <.header>
   {@page_title}
 
-  <.link patch={~p"/crews/new"}>
-    <.button>New Crew</.button>
-  </.link>
+  <:actions>
+    <.link patch={~p"/crews/new"}>
+      <.button>New Crew</.button>
+    </.link>
+  </:actions>
 </.header>
 
 <.crew_table

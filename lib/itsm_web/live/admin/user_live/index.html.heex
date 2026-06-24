@@ -1,8 +1,10 @@
 <.header>
   Listing Users
-  <.link patch={~p"/admin/users/new"}>
-    <.button>New User</.button>
-  </.link>
+  <:actions>
+    <.link patch={~p"/admin/users/new"}>
+      <.button>New User</.button>
+    </.link>
+  </:actions>
 </.header>
 
 <.itsm_table_container results={assigns[:results]}>

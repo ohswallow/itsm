@@ -2,9 +2,11 @@
   Attachment {@attachment.id}
   <:subtitle>This is a attachment record from your database.</:subtitle>
 
-  <.link patch={~p"/admin/attachments/#{@attachment}/show/edit"} phx-click={JS.push_focus()}>
-    <.button>Edit attachment</.button>
-  </.link>
+  <:actions>
+    <.link patch={~p"/admin/attachments/#{@attachment}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit attachment</.button>
+    </.link>
+  </:actions>
 </.header>
 
 <.list>

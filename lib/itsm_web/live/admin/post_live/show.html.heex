@@ -2,9 +2,11 @@
   Post {@post.id}
   <:subtitle>This is a post record from your database.</:subtitle>
 
-  <.link patch={~p"/admin/posts/#{@post}/show/edit"} phx-click={JS.push_focus()}>
-    <.button>Edit post</.button>
-  </.link>
+  <:actions>
+    <.link patch={~p"/admin/posts/#{@post}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit post</.button>
+    </.link>
+  </:actions>
 </.header>
 
 <.list>

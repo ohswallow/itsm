@@ -17,7 +17,8 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     {:ok,
      socket
      |> LiveUtils.allow_uploads()
-     |> assign(:conflict, false)
+     |> assign_new(:conflict, fn -> false end)
+     |> assign_new(:conflict_msg, fn -> nil end)
      |> assign(:form, to_form(Requests.change_request(%Request{})))
      |> assign(:selected_attachment, nil)
      |> assign_new_options()}

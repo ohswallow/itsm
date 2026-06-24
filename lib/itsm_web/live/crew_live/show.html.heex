@@ -3,10 +3,12 @@
   <:subtitle>{@crew.description}</:subtitle>
   <%!-- 리더만 멤버추가 가능 --%>
 
-  <.button
-    :if={Enum.empty?(@crew.crews_users) or @current_scope.user.id == @crew.leader.id}
-    phx-click="show_member_modal"
-  >Add Member</.button>
+  <:actions>
+    <.button
+      :if={Enum.empty?(@crew.crews_users) or @current_scope.user.id == @crew.leader.id}
+      phx-click="show_member_modal"
+    >Add Member</.button>
+  </:actions>
 </.header>
 
 <div class="mt-6 mb-6 p-6 space-y-6">

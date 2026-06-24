@@ -2,9 +2,11 @@
   User {@user.id}
   <:subtitle>This is a user record from your database.</:subtitle>
 
-  <.link patch={~p"/admin/users/#{@user}/show/edit"} phx-click={JS.push_focus()}>
-    <.button>Edit user</.button>
-  </.link>
+  <:actions>
+    <.link patch={~p"/admin/users/#{@user}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit user</.button>
+    </.link>
+  </:actions>
 </.header>
 
 <.list>

@@ -1,8 +1,10 @@
 <.header>
   Listing Assets
-  <.link patch={~p"/admin/assets/new"}>
-    <.button>New Asset</.button>
-  </.link>
+  <:actions>
+    <.link patch={~p"/admin/assets/new"}>
+      <.button>New Asset</.button>
+    </.link>
+  </:actions>
 </.header>
 
 <.itsm_table_container results={assigns[:results]}>
