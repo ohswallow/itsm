@@ -65,6 +65,12 @@ defmodule Itsm.Admin.Crews do
     |> Repo.all()
   end
 
+  def get_select_options() do
+    Crew
+    |> select([c], {c.name, c.id})
+    |> Repo.all()
+  end
+
   def search_live_select_crews(name, %User{} = exclude_user) do
     user_crew_ids =
       CrewsUsers
