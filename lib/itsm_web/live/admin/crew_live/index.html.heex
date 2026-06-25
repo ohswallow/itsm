@@ -1,6 +1,10 @@
 <.header>
   Listing Crews
-  <:actions><.link patch={~p"/admin/crews/new"}><.button>New Crew</.button></.link></:actions>
+  <:actions>
+    <.link patch={~p"/admin/crews/new"}>
+      <.button>New Crew</.button>
+    </.link>
+  </:actions>
 </.header>
 <.itsm_table_container results={assigns[:results]}>
   <.table
@@ -39,7 +43,7 @@
     title={@page_title}
     action={@live_action}
     crew={@crew}
-    current_user={@current_user}
+    current_scope={@current_scope}
     patch={~p"/admin/crews?#{assigns[:results][:params] || %{}}"}
   />
 </.modal>

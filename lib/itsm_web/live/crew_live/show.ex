@@ -32,7 +32,7 @@ defmodule ItsmWeb.CrewLive.Show do
   end
 
   def handle_event("remove_member", %{"user-id" => user_id}, socket) do
-    %{crew: crew, current_user: action_user} = socket.assigns
+    %{crew: crew, current_scope: %{user: action_user}} = socket.assigns
 
     target_user = Accounts.get_user!(user_id)
 
@@ -57,7 +57,7 @@ defmodule ItsmWeb.CrewLive.Show do
   end
 
   def handle_event("show_member_modal", _params, socket) do
-    %{crew: crew, current_user: action_user} = socket.assigns
+    %{crew: crew, current_scope: %{user: action_user}} = socket.assigns
 
     # 리더가 없을경우 현재 로그인 사람 리더가 됨
     if Enum.empty?(crew.crews_users) and crew.leader in ["", nil] do
@@ -68,7 +68,7 @@ defmodule ItsmWeb.CrewLive.Show do
   end
 
   def handle_info({ItsmWeb.SearchUsersDialog, :users_selected, user_ids}, socket) do
-    %{crew: crew, current_user: action_user} = socket.assigns
+    %{crew: crew, current_scope: %{user: action_user}} = socket.assigns
 
     case Crews.add_crews_users(action_user, crew, user_ids) do
       {:ok, crews_userses} ->
@@ -118,7 +118,7 @@ defmodule ItsmWeb.CrewLive.Show do
          {_crew, %CrewsUsers{} = crews_users},
          socket
        ) do
-    %{back_path: back_path, current_user: user} = socket.assigns
+    %{back_path: back_path, current_scope: %{user: user}} = socket.assigns
 
     opts =
       [resource_name: gettext("Member")]
@@ -167,7 +167,7 @@ defmodule ItsmWeb.CrewLive.Show do
   end
 
   defp switch_leader(socket, leader) do
-    %{crew: crew, current_user: action_user} = socket.assigns
+    %{crew: crew, current_scope: %{user: action_user}} = socket.assigns
 
     case Crews.switch_leader(action_user, crew, leader) do
       {:ok, crew} ->

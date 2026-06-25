@@ -16,7 +16,7 @@ defmodule ItsmWeb.SearchUsersDialog do
     ~H"""
     <div class="dialog">
       <h1 class="mb-2">멤버 추가</h1>
-      
+
       <.form
         for={@form}
         id="search-users-form"
@@ -42,17 +42,18 @@ defmodule ItsmWeb.SearchUsersDialog do
             <div class="flex flex-col">
               <span class="font-bold">
                 {option.label} <span class="text-xs font-normal">({option.employee_number})</span>
-              </span> <span class="text-xs text-gray-500">{option.department} | {option.email}</span>
+              </span>
+               <span class="text-xs text-gray-500">{option.department} | {option.email}</span>
             </div>
           </:option>
-           <%!-- 선택된 태그 디자인 (tag_label 사용) --%>
+          <%!-- 선택된 태그 디자인 (tag_label 사용) --%>
           <:tag :let={option}>
             <div class="flex items-center bg-blue-100 text-blue-800 mb-1 border border-blue-200 px-2 py-1 rounded-full text-sm">
               <span class="font-medium mr-1">{option.tag_label}</span>
             </div>
           </:tag>
         </LiveSelect.live_select>
-         <.button phx-disable-with="Adding...">Add</.button>
+        <.button phx-disable-with="Adding...">Add</.button>
       </.form>
     </div>
     """
@@ -60,7 +61,7 @@ defmodule ItsmWeb.SearchUsersDialog do
 
   # 1. [검색] Context가 이미 포맷팅된 Map 리스트를 줍니다. 그대로 넘기면 됩니다.
   def handle_event("live_select_change", %{"text" => keyword, "id" => live_select_id}, socket) do
-    %{current_user: user, opts: opts} = socket.assigns
+    %{current_scope: %{user: user}, opts: opts} = socket.assigns
 
     options = Accounts.live_select_by_name(user, keyword, opts)
 

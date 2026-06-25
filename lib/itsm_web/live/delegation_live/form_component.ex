@@ -26,7 +26,8 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(:conflict, false)
+     |> assign_new(:conflict, fn -> false end)
+     |> assign_new(:conflict_msg, fn -> nil end)
      |> assign_new(:form, fn ->
        to_form(Delegations.change_delegation(delegation))
      end)
@@ -42,20 +43,16 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
           {gettext("Use this form to manage delegation records in your database.")}
         </:subtitle>
       </.header>
-      
-      <div
-        :if={@conflict}
-        class="p-4 mb-4 bg-red-50 border border-red-200 text-red-800 rounded animate-pulse"
+
+      <.card
+        visible={@conflict}
+        state={:error}
+        title="⚠️ 충돌 발생!"
       >
-        <div class="flex items-center gap-2 font-bold">
-          <span>⚠️ 충돌 발생!</span>
-        </div>
-        
-        <p class="mt-1 text-sm">{@conflict_msg}</p>
-        
-        <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
-      </div>
-      
+        <p>{@conflict_msg}</p>
+        <p>현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
+      </.card>
+
       <.form
         for={@form}
         id="delegation-form"
@@ -79,7 +76,7 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
             </div>
           </:option>
         </.live_select>
-        
+
         <.live_select
           field={@form[:delegatee_id]}
           label={gettext("Delegatee name")}
@@ -96,7 +93,7 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
             </div>
           </:option>
         </.live_select>
-        
+
         <.itsm_calendar
           id="start_date_calendar"
           field={@form[:start_date]}
@@ -116,16 +113,15 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
           prompt="Choose a value"
           options={@reason_options}
         />
-        <:actions>
-          <.button :if={!@conflict} phx-disable-with="Saving...">Save Delegation</.button>
-        </:actions>
+
+        <.button :if={!@conflict} phx-disable-with="Saving...">Save Delegation</.button>
       </.form>
     </div>
     """
   end
 
   def handle_event("live_select_change", %{"text" => keyword, "id" => live_select_id}, socket) do
-    %{current_user: current_user} = socket.assigns
+    %{current_scope: %{user: current_user}} = socket.assigns
 
     # 본인 선택이 가능한 화면에서 호출 시
     options =
@@ -155,7 +151,7 @@ defmodule ItsmWeb.DelegationLive.FormComponent do
   end
 
   defp save_delegation(socket, :new, delegation_params) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
     %{"delegator_id" => delegator_id, "delegatee_id" => delegatee_id} = delegation_params
 
     delegator = Accounts.get_user!(delegator_id)

@@ -11,34 +11,34 @@
     <:col :let={{_id, request}} label={gettext("ID")}>
       <.copyable_text label={gettext("ID")} value={request.id} />
     </:col>
-    
+
     <:col :let={{_id, request}} label={gettext("Request Name")}>{request.category.name}</:col>
-    
+
     <:col :let={{id, request}} label={gettext("Reqeust Date")}>
       <div id={"due-date-#{id}"} phx-hook="LocalTime.ToLocale" utc-value={request.inserted_at} />
     </:col>
-    
+
     <:col :let={{id, request}} label={gettext("Due Date")}>
       <div id={"due-date-#{id}"} phx-hook="LocalTime.ToLocale" utc-value={request.due_date} />
     </:col>
-    
+
     <:col :let={{_id, request}} label={gettext("Status")}>{request.status}</:col>
-    
+
     <:col :let={{_id, request}} label={gettext("Title")}>{request.title}</:col>
-    
+
     <:col :let={{_id, request}} label={gettext("Env")}>
       <.common_code_label group="운영_구분" code={request.env} />
     </:col>
-    
+
     <:col :let={{_id, request}} label={gettext("Requestor Name")}>
       {request.requestor.display_name}
     </:col>
-    
+
     <:col :let={{_id, request}} label={gettext("Action Crew")}>{request.assignee_crew.name}</:col>
-    
+
     <:action :let={{_id, request}}>
       <.dropdown_menu
-        :if={request.requestor_id == @current_user.id and request.status == :validation}
+        :if={request.requestor_id == @current_scope.user.id and request.status == :validation}
         id={"#{request.id}-menu"}
       >
         <.link

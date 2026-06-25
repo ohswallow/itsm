@@ -16,7 +16,8 @@ defmodule ItsmWeb.Admin.CrewLive.FormComponent do
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(:conflict, false)
+     |> assign_new(:conflict, fn -> false end)
+     |> assign_new(:conflict_msg, fn -> nil end)
      |> assign_new(:form, fn ->
        to_form(Crews.change_crew(crew))
      end)}
@@ -29,20 +30,16 @@ defmodule ItsmWeb.Admin.CrewLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage crew records in your database.</:subtitle>
       </.header>
-      
-      <div
-        :if={@conflict}
-        class="p-4 mb-4 bg-red-50 border border-red-200 text-red-800 rounded animate-pulse"
+
+      <.card
+        visible={@conflict}
+        state={:error}
+        title="⚠️ 충돌 발생!"
       >
-        <div class="flex items-center gap-2 font-bold">
-          <span>⚠️ 충돌 발생!</span>
-        </div>
-        
-        <p class="mt-1 text-sm">{@conflict_msg}</p>
-        
-        <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
-      </div>
-      
+        <p>{@conflict_msg}</p>
+        <p>현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
+      </.card>
+
       <.form
         for={@form}
         id="crew-form"
@@ -59,9 +56,8 @@ defmodule ItsmWeb.Admin.CrewLive.FormComponent do
           show_time
           default_selected_date_time={@form[:inserted_at].value}
         />
-        <:actions>
-          <.button :if={!@conflict} phx-disable-with="Saving...">Save Crew</.button>
-        </:actions>
+
+        <.button :if={!@conflict} phx-disable-with="Saving...">Save Crew</.button>
       </.form>
     </div>
     """
@@ -77,7 +73,7 @@ defmodule ItsmWeb.Admin.CrewLive.FormComponent do
   end
 
   defp save_crew(socket, :edit, crew_params) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
 
     case Crews.update_crew(action_user, socket.assigns.crew, crew_params) do
       {:ok, _crew} ->
@@ -89,7 +85,7 @@ defmodule ItsmWeb.Admin.CrewLive.FormComponent do
   end
 
   defp save_crew(socket, :new, crew_params) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
 
     case Crews.create_crew(action_user, crew_params) do
       {:ok, _crew} ->

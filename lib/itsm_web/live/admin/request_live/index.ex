@@ -15,7 +15,7 @@ defmodule ItsmWeb.Admin.RequestLive.Index do
   end
 
   def handle_event("delete", %{"id" => _id} = request_params, socket) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
 
     case Requests.delete_request(action_user, request_params) do
       {:ok, request} ->

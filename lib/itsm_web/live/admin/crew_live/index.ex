@@ -14,7 +14,7 @@ defmodule ItsmWeb.Admin.CrewLive.Index do
   end
 
   def handle_event("delete", %{"id" => _id} = crew_params, socket) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
     {:ok, crew} = Crews.delete_crew(action_user, crew_params)
 
     {:noreply, stream_delete(socket, :crews, crew)}

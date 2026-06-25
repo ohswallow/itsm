@@ -18,7 +18,8 @@ defmodule ItsmWeb.Admin.PostLive.FormComponent do
      socket
      |> assign(assigns)
      |> ItsmWeb.LiveUtils.allow_uploads()
-     |> assign(:conflict, false)
+     |> assign_new(:conflict, fn -> false end)
+     |> assign_new(:conflict_msg, fn -> nil end)
      |> assign_new(:form, fn ->
        to_form(Posts.change_post(post))
      end)
@@ -48,20 +49,16 @@ defmodule ItsmWeb.Admin.PostLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage post records in your database.</:subtitle>
       </.header>
-      
-      <div
-        :if={@conflict}
-        class="p-4 mb-4 bg-red-50 border border-red-200 text-red-800 rounded animate-pulse"
+
+      <.card
+        visible={@conflict}
+        state={:error}
+        title="⚠️ 충돌 발생!"
       >
-        <div class="flex items-center gap-2 font-bold">
-          <span>⚠️ 충돌 발생!</span>
-        </div>
-        
-        <p class="mt-1 text-sm">{@conflict_msg}</p>
-        
-        <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
-      </div>
-      
+        <p>{@conflict_msg}</p>
+        <p>현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
+      </.card>
+
       <.form
         for={@form}
         id="post-form"
@@ -119,7 +116,7 @@ defmodule ItsmWeb.Admin.PostLive.FormComponent do
               rests={%{hour: %{name: ""}, minute: %{name: ""}}}
             /> <br />
           </fragment>
-          
+
           <fragment :if={@selected_board.metadata && @selected_board.metadata["is_attachments"]}>
             <.attachments_section
               :if={@action == :edit and @attachments_count > 0}
@@ -134,11 +131,11 @@ defmodule ItsmWeb.Admin.PostLive.FormComponent do
                 target={@myself}
               />
             </.attachments_section>
-             <%!-- 파일업로드 --%>
+            <%!-- 파일업로드 --%>
             <label class="block text-sm font-semibold text-zinc-700 mb-2">
               {gettext("Attachments")}
             </label>
-             <.live_file_input class="hidden" upload={@uploads.attachment} />
+            <.live_file_input class="hidden" upload={@uploads.attachment} />
             <label
               class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 mt-2"
               for={@uploads.attachment.ref}
@@ -150,7 +147,7 @@ defmodule ItsmWeb.Admin.PostLive.FormComponent do
                   <spaxn class="font-semibold">Click to upload</spaxn>
                   or drag and drop
                 </p>
-                
+
                 <p class="text-xs text-gray-500">
                   {@uploads.attachment.max_entries} photos max, up to {trunc(
                     @uploads.attachment.max_file_size / (1 * 1024 * 1024)
@@ -158,14 +155,14 @@ defmodule ItsmWeb.Admin.PostLive.FormComponent do
                 </p>
               </div>
             </label>
-            
+
             <p
               :for={err <- upload_errors(@uploads.attachment)}
               class="mt-1.5 flex gap-2 items-center text-sm text-error"
             >
               <.icon name="hero-exclamation-circle" class="size-5" /> {Phoenix.Naming.humanize(err)}
             </p>
-            
+
             <div
               :if={length(@uploads.attachment.entries) > 0}
               class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-4"
@@ -177,11 +174,11 @@ defmodule ItsmWeb.Admin.PostLive.FormComponent do
                 <div class="aspect-square bg-zinc-100 rounded-md overflow-hidden mb-2">
                   <.live_img_preview entry={entry} class="w-full h-full object-cover" />
                 </div>
-                
+
                 <p class="text-xs text-zinc-600 truncate px-1">{entry.client_name}</p>
-                
+
                 <p class="text-xs text-zinc-400">{format_file_size(entry.client_size)}</p>
-                
+
                 <button
                   type="button"
                   phx-click="cancel-upload"
@@ -190,7 +187,7 @@ defmodule ItsmWeb.Admin.PostLive.FormComponent do
                 >
                   <.icon name="hero-x-mark" class="w-3 h-3" />
                 </button>
-                
+
                 <p
                   :for={err <- upload_errors(@uploads.attachment, entry)}
                   class="mt-1.5 flex gap-2 items-center text-sm text-error"
@@ -203,7 +200,7 @@ defmodule ItsmWeb.Admin.PostLive.FormComponent do
             </div>
           </fragment>
         </div>
-        
+
         <.itsm_calendar
           :if={@action == :edit}
           field={@form[:inserted_at]}
@@ -211,16 +208,15 @@ defmodule ItsmWeb.Admin.PostLive.FormComponent do
           show_time
           default_selected_date_time={@form[:inserted_at].value}
         />
-        <:actions>
-          <.button :if={!@conflict} phx-disable-with="Saving...">Save Post</.button>
-        </:actions>
+
+        <.button :if={!@conflict} phx-disable-with="Saving...">Save Post</.button>
       </.form>
     </div>
     """
   end
 
   def handle_event("validate", %{"post" => post_params}, socket) do
-    %{current_user: action_user, post: post} = socket.assigns
+    %{current_scope: %{user: action_user}, post: post} = socket.assigns
 
     selected_board =
       get_effective_board(
@@ -261,7 +257,7 @@ defmodule ItsmWeb.Admin.PostLive.FormComponent do
   end
 
   def handle_event("delete_attachment", %{"id" => id}, socket) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
 
     case Itsm.Admin.Attachments.delete_attachment(action_user, id) do
       {:ok, attachment} ->
@@ -284,7 +280,7 @@ defmodule ItsmWeb.Admin.PostLive.FormComponent do
          post_params,
          selected_board_metadata
        ) do
-    %{current_user: action_user, post: post} = socket.assigns
+    %{current_scope: %{user: action_user}, post: post} = socket.assigns
 
     case Posts.save_with_attachment(
            action,
@@ -303,7 +299,7 @@ defmodule ItsmWeb.Admin.PostLive.FormComponent do
   end
 
   defp save_post(socket, :edit, post_params, selected_board_metadata) do
-    %{current_user: action_user, post: post} = socket.assigns
+    %{current_scope: %{user: action_user}, post: post} = socket.assigns
 
     case Posts.update_post(
            action_user,
@@ -320,7 +316,7 @@ defmodule ItsmWeb.Admin.PostLive.FormComponent do
   end
 
   defp save_post(socket, :new, post_params, selected_board_metadata) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
 
     case Posts.create_post(action_user, post_params, selected_board_metadata) do
       {:ok, _post} ->

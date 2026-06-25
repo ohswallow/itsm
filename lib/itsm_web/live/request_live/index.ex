@@ -19,7 +19,7 @@ defmodule ItsmWeb.RequestLive.Index do
   end
 
   def handle_event("delete", %{"id" => id}, socket) do
-    %{current_user: user} = socket.assigns
+    %{current_scope: %{user: user}} = socket.assigns
 
     case Service.delete_request(user, id) do
       {:ok, request} ->
@@ -53,7 +53,7 @@ defmodule ItsmWeb.RequestLive.Index do
   end
 
   defp assign_paged_stream(socket, stream_key, schema, params, url) do
-    %{current_user: %{organization_code: organization_code}} = socket.assigns
+    %{current_scope: %{user: %{organization_code: organization_code}}} = socket.assigns
 
     opts = [
       default_columns: [:title, :description, :env, :requestor_name],

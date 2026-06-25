@@ -21,7 +21,7 @@ defmodule ItsmWeb.CreateCommentDialog do
         {@title} Request
         <:subtitle>Add a comment for this approval</:subtitle>
       </.header>
-      
+
       <.form
         for={@form}
         id="approval-comment-form"
@@ -30,7 +30,7 @@ defmodule ItsmWeb.CreateCommentDialog do
         phx-submit="save"
       >
         <.input field={@form[:comment]} type="textarea" label="Comment" phx-hook="MaintainHeight" />
-        <:actions><.button type="submit">{@title}</.button></:actions>
+        <.button>{@title}</.button>
       </.form>
     </div>
     """
@@ -46,7 +46,7 @@ defmodule ItsmWeb.CreateCommentDialog do
   end
 
   defp approve_or_reject(socket, :approve, params) do
-    %{request: request, current_user: action_user} = socket.assigns
+    %{request: request, current_scope: %{user: action_user}} = socket.assigns
 
     case Approvals.approve(request, action_user, comment: params) do
       {:ok, result} ->
@@ -66,7 +66,7 @@ defmodule ItsmWeb.CreateCommentDialog do
   end
 
   defp approve_or_reject(socket, :reject, params) do
-    %{request: request, current_user: action_user} = socket.assigns
+    %{request: request, current_scope: %{user: action_user}} = socket.assigns
 
     # 거부시 댓글 필수 체크 안해도 되도록, 빈 문자열이면 nil로 전달
     params = if params["comment"] == "", do: nil, else: params

@@ -26,7 +26,7 @@ defmodule ItsmWeb.Admin.RequestLive.Show do
   end
 
   def handle_event("delete", %{"schema" => schema, "id" => _id} = params, socket) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
 
     case schema do
       "attachments" ->

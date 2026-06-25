@@ -18,10 +18,12 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(:conflict, false)
+     |> assign_new(:conflict, fn -> false end)
+     |> assign_new(:conflict_msg, fn -> nil end)
      |> assign_new(:form, fn ->
        to_form(Assets.change_asset(asset))
      end)
+     |> assign_new(:dynamic_fields, fn -> Assets.metadata_fields_for_category(asset.category) end)
      |> assign_new_options()}
   end
 
@@ -32,20 +34,16 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
         {@title}
         <:subtitle>Use this form to manage asset records in your database.</:subtitle>
       </.header>
-      
-      <div
-        :if={@conflict}
-        class="p-4 mb-4 bg-red-50 border border-red-200 text-red-800 rounded animate-pulse"
+
+      <.card
+        visible={@conflict}
+        state={:error}
+        title="⚠️ 충돌 발생!"
       >
-        <div class="flex items-center gap-2 font-bold">
-          <span>⚠️ 충돌 발생!</span>
-        </div>
-        
-        <p class="mt-1 text-sm">{@conflict_msg}</p>
-        
-        <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
-      </div>
-      
+        <p>{@conflict_msg}</p>
+        <p>현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
+      </.card>
+
       <.form
         for={@form}
         id="asset-form"
@@ -118,20 +116,38 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
           prompt="Choose a value"
           options={@crew_options}
         />
-        <:actions>
-          <.button :if={!@conflict} phx-disable-with="Saving...">Save Asset</.button>
-        </:actions>
+
+        <div class="grid grid-cols-2 gap-4">
+          <.input
+            :for={{field_name, type} <- @dynamic_fields}
+            field={
+              ItsmWeb.LiveUtils.get_sub_field(
+                field_name,
+                @form[:metadata],
+                @form.params["metadata"]
+              )
+            }
+            type={if type in [:integer, :float], do: "number", else: "text"}
+            label={field_name |> Atom.to_string() |> String.capitalize()}
+          />
+        </div>
+
+        <.button :if={!@conflict} phx-disable-with="Saving...">Save Asset</.button>
       </.form>
     </div>
     """
   end
 
-  def handle_event("validate", %{"asset" => request_params}, socket) do
-    changeset = Assets.change_asset(%Asset{}, request_params)
+  def handle_event("validate", %{"asset" => asset_params}, socket) do
+    changeset = Assets.change_asset(%Asset{}, asset_params)
+
+    current_category = asset_params["category"]
+    dynamic_fields = Assets.metadata_fields_for_category(current_category)
 
     {:noreply,
      socket
-     |> assign(form: to_form(changeset, action: :validate))}
+     |> assign(form: to_form(changeset, action: :validate))
+     |> assign(dynamic_fields: dynamic_fields)}
   end
 
   def handle_event("save", %{"asset" => asset_params}, socket) do
@@ -152,7 +168,7 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
   end
 
   defp save_asset(socket, :edit, asset_params) do
-    %{current_user: action_user, asset: asset} = socket.assigns
+    %{current_scope: %{user: action_user}, asset: asset} = socket.assigns
 
     case Assets.update_asset(action_user, asset, asset_params) do
       {:ok, _asset} ->
@@ -164,7 +180,8 @@ defmodule ItsmWeb.Admin.AssetLive.FormComponent do
   end
 
   defp save_asset(socket, :new, asset_params) do
-    %{current_user: action_user} = socket.assigns
+    IO.inspect(socket.assigns)
+    %{current_scope: %{user: action_user}} = socket.assigns
 
     case Assets.create_asset(action_user, asset_params) do
       {:ok, _asset} ->

@@ -1,6 +1,7 @@
 <.header>
   Approval {@approval.id}
   <:subtitle>This is a approval record from your database.</:subtitle>
+
   <:actions>
     <.link patch={~p"/admin/approvals/#{@approval}/show/edit"} phx-click={JS.push_focus()}>
       <.button>Edit approval</.button>
@@ -42,7 +43,7 @@
     title={@page_title}
     action={@live_action}
     approval={@approval}
-    current_user={@current_user}
+    current_scope={@current_scope}
     patch={~p"/admin/approvals/#{@approval}"}
   />
 </.modal>

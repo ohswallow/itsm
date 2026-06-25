@@ -14,7 +14,7 @@ defmodule ItsmWeb.Admin.BoardLive.Index do
   end
 
   def handle_event("delete", %{"id" => _id} = board_params, socket) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
     {:ok, board} = Boards.delete_board(action_user, board_params)
 
     {:noreply, stream_delete(socket, :boards, board)}

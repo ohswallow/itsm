@@ -10,20 +10,18 @@ defmodule ItsmWeb.CommonKCreateVmLive.Components do
       <.header>
         {@request.category.name}
         <:subtitle>Request ID: {@request.id}</:subtitle>
-        
-        <:actions>
-          <.link
-            :if={@show_edit}
-            navigate={~p"/common_k_create_vm/#{@request}/edit"}
-            class="text-sm text-zinc-700"
-          >
-            Edit
-          </.link>
-          
-          <.link navigate={~p"/common_k_create_vm/#{@request}/copy"} class="text-sm text-zinc-700">
-            Copy
-          </.link>
-        </:actions>
+
+        <.link
+          :if={@show_edit}
+          navigate={~p"/common-k-create-vm/#{@request}/edit"}
+          class="text-sm text-zinc-700"
+        >
+          Edit
+        </.link>
+
+        <.link navigate={~p"/common-k-create-vm/#{@request}/copy"} class="text-sm text-zinc-700">
+          Copy
+        </.link>
       </.header>
     </div>
     """
@@ -33,15 +31,15 @@ defmodule ItsmWeb.CommonKCreateVmLive.Components do
     ~H"""
     <.list>
       <:item title={gettext("Title")}>{@request.title}</:item>
-      
+
       <:item title={gettext("Description")}>{@request.description}</:item>
-      
+
       <:item title={gettext("Environment")}>
         <.common_code_label group="운영_구분" code={@request.env} />
       </:item>
-      
+
       <:item title={gettext("Status")}>{Workflow.status_label(:service_request, @request)}</:item>
-      
+
       <:item title={gettext("Due Date")}>
         <div
           id={"due_date_#{@request.id}"}
@@ -50,7 +48,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Components do
           utc-value={@request.due_date}
         />
       </:item>
-      
+
       <:item title="Referenced Crew">
         <div class="flex flex-wrap items-center gap-3">
           <CustomComponents.crew_tooltip :for={%{crew: crew} <- @request.crew_references} crew={crew} />
@@ -64,60 +62,60 @@ defmodule ItsmWeb.CommonKCreateVmLive.Components do
     ~H"""
     <div class="mt-8">
       <h2 class="text-lg font-semibold text-zinc-700 mb-4">VM 생성 요청</h2>
-      
+
       <div class="space-y-4">
         <div
           :for={{vm, index} <- Enum.with_index(@vms, 1)}
           class="border border-zinc-200 rounded-lg p-4"
         >
           <h3 class="font-semibold text-zinc-800 mb-3">VM #{index}</h3>
-          
+
           <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
             <div>
               <dt class="text-sm font-medium text-zinc-500">호스트명</dt>
-              
+
               <dd class="text-sm text-zinc-900">{vm.hostname}</dd>
             </div>
-            
+
             <div>
               <dt class="text-sm font-medium text-zinc-500">서비스명</dt>
-              
+
               <dd class="text-sm text-zinc-900">{vm.service_name}</dd>
             </div>
-            
+
             <div>
               <dt class="text-sm font-medium text-zinc-500">OS 종류</dt>
-              
+
               <dd class="text-sm text-zinc-900">{vm.os_image}</dd>
             </div>
-            
+
             <div>
               <dt class="text-sm font-medium text-zinc-500">OS 버전</dt>
-              
+
               <dd class="text-sm text-zinc-900">{vm.os_version}</dd>
             </div>
-            
+
             <div>
               <dt class="text-sm font-medium text-zinc-500">CPU(vCore)</dt>
-              
+
               <dd class="text-sm text-zinc-900">{vm.cpu}</dd>
             </div>
-            
+
             <div>
               <dt class="text-sm font-medium text-zinc-500">Memory(GB)</dt>
-              
+
               <dd class="text-sm text-zinc-900">{vm.memory}</dd>
             </div>
-            
+
             <div>
               <dt class="text-sm font-medium text-zinc-500">{gettext("Location")}</dt>
-              
+
               <dd class="text-sm text-zinc-900">{vm.location}</dd>
             </div>
-            
+
             <div>
               <dt class="text-sm font-medium text-zinc-500">{gettext("Is DMZ?")}</dt>
-              
+
               <dd class="text-sm text-zinc-900">{vm.is_dmz_zone}</dd>
             </div>
           </dl>
@@ -135,7 +133,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Components do
     ~H"""
     <div class="mt-8">
       <h2 class="text-lg font-semibold text-zinc-700 mb-4">첨부파일 ({@attachments_count})</h2>
-      
+
       <div id={@id} class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" phx-update="stream">
         {render_slot(@inner_block)}
       </div>
@@ -164,21 +162,20 @@ defmodule ItsmWeb.CommonKCreateVmLive.Components do
             class="w-full h-full object-cover"
           />
         </div>
-        
+
         <div class="p-2 bg-white">
           <p class="text-xs text-zinc-700 truncate">{@attachment.filename}</p>
-          
+
           <p class="text-xs text-zinc-400">{format_file_size(@attachment.byte_size)}</p>
         </div>
-        
+
         <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
           <.icon name="hero-magnifying-glass-plus" class="w-8 h-8 text-white" />
         </div>
       </div>
-      
+
       <.button
         :if={@live_action == :edit}
-        type="button"
         class="top-2 right-2 p-1 bg-white/80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
         phx-click="delete_attachment"
         phx-value-id={@attachment.id}
@@ -195,7 +192,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Components do
     ~H"""
     <div class="mt-8 bg-white rounded-lg shadow-sm border border-slate-200 p-6">
       <div class="text-lg font-semibold text-slate-900 mb-4">Activity & Comments</div>
-      
+
       <div id="comments" phx-update="stream">
         <.comment_item :for={{dom_id, comment} <- @streams.comments} comment={comment} id={dom_id} />
       </div>
@@ -216,13 +213,13 @@ defmodule ItsmWeb.CommonKCreateVmLive.Components do
             utc-value={@comment.inserted_at}
           ></span>
         </div>
-        
+
         <div class="bg-slate-50 rounded-lg p-3">
           <p class="text-sm text-slate-700 whitespace-pre-wrap">{@comment.comment}</p>
-          
+
           <div :if={Enum.any?(@comment.attachments)} class="mt-3 pt-2 border-t border-slate-200">
             <p class="text-xs text-slate-400 mb-2 font-medium">Attachments</p>
-            
+
             <div class="flex flex-wrap gap-2">
               <div
                 :for={attachment <- @comment.attachments}
@@ -234,7 +231,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Components do
                 <div class="bg-blue-50 text-blue-600 rounded p-0.5">
                   <.icon name="hero-paper-clip" class="w-3 h-3" />
                 </div>
-                
+
                 <span class="text-xs text-slate-600 group-hover:text-blue-600 max-w-[158px] truncate">
                   {attachment.filename}
                 </span>
@@ -258,7 +255,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Components do
             <.icon name="hero-arrow-up-on-square" class="w-5 h-5" />
             <span class="text-xs font-medium">파일 업로드</span>
           </label>
-          
+
           <span
             :if={length(@uploads.attachment.entries) > 0}
             class="text-xs text-blue-600 font-semibold"
@@ -266,16 +263,16 @@ defmodule ItsmWeb.CommonKCreateVmLive.Components do
             {length(@uploads.attachment.entries)}개 선택됨
           </span>
         </div>
-         <.button phx-disable-with="Saving..." class="text-xs px-3 py-1.5">Add Comment</.button>
+        <.button phx-disable-with="Saving..." class="text-xs px-3 py-1.5">Add Comment</.button>
       </div>
-      
+
       <p
         :for={err <- upload_errors(@uploads.attachment)}
         class="mt-1.5 flex gap-2 items-center text-sm text-error"
       >
         <.icon name="hero-exclamation-circle" class="size-5" /> {Phoenix.Naming.humanize(err)}
       </p>
-      
+
       <div
         :if={length(@uploads.attachment.entries) > 0}
         class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-4"
@@ -287,11 +284,11 @@ defmodule ItsmWeb.CommonKCreateVmLive.Components do
           <div class="aspect-square bg-zinc-100 rounded-md overflow-hidden mb-2">
             <.live_img_preview entry={entry} class="w-full h-full object-cover" />
           </div>
-          
+
           <p class="text-xs text-zinc-600 truncate px-1">{entry.client_name}</p>
-          
+
           <p class="text-xs text-zinc-400">{format_file_size(entry.client_size)}</p>
-          
+
           <button
             type="button"
             phx-click="cancel-upload"
@@ -300,7 +297,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Components do
           >
             <.icon name="hero-x-mark" class="w-3 h-3" />
           </button>
-          
+
           <p
             :for={err <- upload_errors(@uploads.attachment, entry)}
             class="mt-1.5 flex gap-2 items-center text-sm text-error"

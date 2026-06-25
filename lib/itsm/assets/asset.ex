@@ -2,6 +2,12 @@ defmodule Itsm.Assets.Asset do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @metadata_registry %{
+    "서버" => Itsm.Assets.Metadata.Server,
+    "네트워크" => Itsm.Assets.Metadata.Network,
+    "스토리지" => Itsm.Assets.Metadata.Storage
+  }
+
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "assets" do
@@ -22,6 +28,12 @@ defmodule Itsm.Assets.Asset do
     field :is_dmz_zone, :boolean, default: false
     # field :service_crew_id, :binary_id
     # field :system_crew_id, :binary_id
+    field :metadata, :map
+    # embeds_one :metadata, Itsm.Assets.Metadata, on_replace: :update
+
+    many_to_many :relation_assets, Itsm.Assets.Asset,
+      join_through: "v_asset_relations",
+      join_keys: [asset_a_id: :id, asset_b_id: :id]
 
     has_one :os_instance, Itsm.OsInstances.OsInstance
 
@@ -65,5 +77,53 @@ defmodule Itsm.Assets.Asset do
       :service_crew_id
     ])
     |> unique_constraint(:name)
+    |> validate_metadata(attrs)
+  end
+
+  def metadata_fields_for_category(category) do
+    case Map.get(@metadata_registry, category) do
+      nil ->
+        []
+
+      module ->
+        module.__schema__(:fields)
+        |> List.delete(:id)
+        |> Enum.map(fn field ->
+          {field, module.__schema__(:type, field)}
+        end)
+    end
+  end
+
+  def get_metadata_registry, do: @metadata_registry
+
+  def validate_metadata(changeset, attrs) do
+    category = get_field(changeset, :category)
+    metadata_attrs = Map.get(attrs, "metadata", %{})
+
+    case Map.get(@metadata_registry, category) do
+      nil ->
+        put_change(changeset, :metadata, %{})
+
+      module ->
+        inner_changeset(changeset, module, metadata_attrs)
+    end
+  end
+
+  defp inner_changeset(changeset, module, metadata_attrs) do
+    struct_data = struct(module)
+    inner_changeset = module.changeset(struct_data, metadata_attrs)
+
+    if inner_changeset.valid? do
+      clean_map =
+        inner_changeset
+        |> apply_changes()
+        |> Map.from_struct()
+        |> Map.drop([:id, :__meta__, :__struct__])
+
+      put_change(changeset, :metadata, clean_map)
+    else
+      combined = Keyword.put(changeset.errors, :metadata, inner_changeset.errors)
+      %{changeset | errors: combined, valid?: false}
+    end
   end
 end

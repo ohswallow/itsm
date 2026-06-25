@@ -1,6 +1,7 @@
 <.header>
   Evaluation {@evaluation.id}
   <:subtitle>This is a evaluation record from your database.</:subtitle>
+
   <:actions>
     <.link patch={~p"/evaluations/#{@evaluation}/show/edit"} phx-click={JS.push_focus()}>
       <.button>Edit evaluation</.button>
@@ -41,7 +42,7 @@
     title={@page_title}
     action={@live_action}
     evaluation={@evaluation}
-    current_user={@current_user}
+    current_scope={@current_scope}
     patch={~p"/evaluations/#{@evaluation}"}
   />
 </.modal>

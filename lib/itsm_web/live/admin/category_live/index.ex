@@ -19,7 +19,7 @@ defmodule ItsmWeb.Admin.CategoryLive.Index do
   end
 
   def handle_event("delete", %{"id" => _id} = category_params, socket) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
     {:ok, category} = Categories.delete_category(action_user, category_params)
 
     {:noreply, stream_delete(socket, :categories, category)}

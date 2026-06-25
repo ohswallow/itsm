@@ -38,19 +38,19 @@ defmodule ItsmWeb.CodesLiveTest do
     setup [:create_common_codes]
 
     test "lists all common_codes", %{conn: conn, common_codes: common_codes} do
-      {:ok, _index_live, html} = live(conn, ~p"/common_codes")
+      {:ok, _index_live, html} = live(conn, ~p"/common-codes")
 
       assert html =~ "Listing Common codes"
       assert html =~ common_codes.code
     end
 
     test "saves new codes", %{conn: conn} do
-      {:ok, index_live, _html} = live(conn, ~p"/common_codes")
+      {:ok, index_live, _html} = live(conn, ~p"/common-codes")
 
       assert index_live |> element("a", "New Common Codes") |> render_click() =~
                "New Common Codes"
 
-      assert_patch(index_live, ~p"/common_codes/new")
+      assert_patch(index_live, ~p"/common-codes/new")
 
       assert index_live
              |> form("#common_codes-form", common_codes: @invalid_attrs)
@@ -60,7 +60,7 @@ defmodule ItsmWeb.CodesLiveTest do
              |> form("#common_codes-form", common_codes: @create_attrs)
              |> render_submit()
 
-      assert_patch(index_live, ~p"/common_codes")
+      assert_patch(index_live, ~p"/common-codes")
 
       html = render(index_live)
       assert html =~ "Common codes created successfully"
@@ -68,12 +68,12 @@ defmodule ItsmWeb.CodesLiveTest do
     end
 
     test "updates common_codes in listing", %{conn: conn, common_codes: common_codes} do
-      {:ok, index_live, _html} = live(conn, ~p"/common_codes")
+      {:ok, index_live, _html} = live(conn, ~p"/common-codes")
 
       assert index_live |> element("#common_codes-#{common_codes.id} a", "Edit") |> render_click() =~
                "Edit Common Codes"
 
-      assert_patch(index_live, ~p"/common_codes/#{common_codes}/edit")
+      assert_patch(index_live, ~p"/common-codes/#{common_codes}/edit")
 
       assert index_live
              |> form("#common_codes-form", common_codes: @invalid_attrs)
@@ -83,7 +83,7 @@ defmodule ItsmWeb.CodesLiveTest do
              |> form("#common_codes-form", common_codes: @update_attrs)
              |> render_submit()
 
-      assert_patch(index_live, ~p"/common_codes")
+      assert_patch(index_live, ~p"/common-codes")
 
       html = render(index_live)
       assert html =~ "Common codes updated successfully"
@@ -91,7 +91,7 @@ defmodule ItsmWeb.CodesLiveTest do
     end
 
     test "deletes common_codes in listing", %{conn: conn, common_codes: common_codes} do
-      {:ok, index_live, _html} = live(conn, ~p"/common_codes")
+      {:ok, index_live, _html} = live(conn, ~p"/common-codes")
 
       assert index_live
              |> element("#common_codes-#{common_codes.id} a", "Delete")
@@ -105,19 +105,19 @@ defmodule ItsmWeb.CodesLiveTest do
     setup [:create_common_codes]
 
     test "displays common_codes", %{conn: conn, common_codes: common_codes} do
-      {:ok, _show_live, html} = live(conn, ~p"/common_codes/#{common_codes}")
+      {:ok, _show_live, html} = live(conn, ~p"/common-codes/#{common_codes}")
 
       assert html =~ "Show Common Codes"
       assert html =~ common_codes.code
     end
 
     test "updates common_codes within modal", %{conn: conn, common_codes: common_codes} do
-      {:ok, show_live, _html} = live(conn, ~p"/common_codes/#{common_codes}")
+      {:ok, show_live, _html} = live(conn, ~p"/common-codes/#{common_codes}")
 
       assert show_live |> element("a", "Edit") |> render_click() =~
                "Edit Common Codes"
 
-      assert_patch(show_live, ~p"/common_codes/#{common_codes}/show/edit")
+      assert_patch(show_live, ~p"/common-codes/#{common_codes}/show/edit")
 
       assert show_live
              |> form("#common_codes-form", common_codes: @invalid_attrs)
@@ -127,7 +127,7 @@ defmodule ItsmWeb.CodesLiveTest do
              |> form("#common_codes-form", common_codes: @update_attrs)
              |> render_submit()
 
-      assert_patch(show_live, ~p"/common_codes/#{common_codes}")
+      assert_patch(show_live, ~p"/common-codes/#{common_codes}")
 
       html = render(show_live)
       assert html =~ "Common codes updated successfully"

@@ -57,7 +57,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   end
 
   def handle_event("save", %{"comment" => comment_params}, socket) do
-    %{request: request, current_user: action_user} = socket.assigns
+    %{request: request, current_scope: %{user: action_user}} = socket.assigns
 
     case Service.create_comment(
            action_user,

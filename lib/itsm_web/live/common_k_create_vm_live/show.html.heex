@@ -2,7 +2,9 @@
   <div class="flex-1">
     <.request_header
       request={@request}
-      show_edit={@request.requestor_id == @current_user.id and @request.status == :validation}
+      show_edit={
+        @request.requestor_id == @current_scope.user.id and @request.status == :validation
+      }
     /> <.request_info request={@request} />
     <.vm_section
       :if={Enum.any?(@request.common_k_create_vms)}
@@ -19,7 +21,7 @@
         attachment={attachment}
       />
     </.attachments_section>
-     <.comments_section streams={@streams} />
+    <.comments_section streams={@streams} />
     <.comment_form
       :if={@request.status not in [:closed, :rejected]}
       form={@form}
@@ -27,7 +29,7 @@
     />
     <.back navigate={~p"/requests"}>Back</.back>
   </div>
-   <%!-- Work Flow sidebar--%>
+  <%!-- Work Flow sidebar--%>
   <.live_component
     module={ItsmWeb.Components.WorkflowSidebar}
     id="workflow-sidebar"

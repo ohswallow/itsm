@@ -12,7 +12,7 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
   """
 
   use ItsmWeb, :live_component
-  use Gettext, backend: ItsmWeb.Gettext
+
   import ItsmWeb.CoreComponents
 
   alias Itsm.Workflow
@@ -33,7 +33,7 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
         <div class="text-center mb-5 pb-4 border-b border-gray-100">
           <label>WorkFlow</label>
         </div>
-        
+
         <div class="space-y-3">
           <.workflow_step
             :for={step <- @step_data}
@@ -68,10 +68,10 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
               {@step.index + 1}
           <% end %>
         </div>
-        
+
         <div><span class={step_label_class(@step.status)}>{@step.label}</span></div>
       </div>
-      
+
       <div class="text-right">
         <.step_detail step={@step} resource={@resource} workflow_type={@workflow_type} />
       </div>

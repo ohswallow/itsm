@@ -23,6 +23,8 @@ defmodule Itsm.Graphql.PagingHelper do
     final_preloads = Keyword.get(opts, :preloads, []) ++ dynamic_preloads
     opts = Keyword.put(opts, :preloads, final_preloads)
 
+    opts = if is_nil(string_params["row_column"]), do: Keyword.drop(opts, [:range_columns]), else: opts
+
     result = Paging.search_and_pagination(query_base, string_params, "/graphql", opts)
 
     {:ok, result}

@@ -1,7 +1,9 @@
 <.header>
   {gettext("Listing Delegations")}
   <:actions>
-    <.link patch={~p"/delegations/new"}><.button>{gettext("New Delegation")}</.button></.link>
+    <.link patch={~p"/delegations/new"}>
+      <.button>{gettext("New Delegation")}</.button>
+    </.link>
   </:actions>
 </.header>
 
@@ -41,7 +43,7 @@
   <:col :let={{_id, delegation}} label={gettext("Created By")}>{delegation.created_by_name}</:col>
 
   <:action :let={{_id, delegation}}>
-    <%= if can_delete?(@current_user, delegation) do %>
+    <%= if can_delete?(@current_scope.user, delegation) do %>
       <.link
         id={delegation.id}
         phx-click={JS.push("delete", value: %{id: delegation.id})}
@@ -66,7 +68,7 @@
     title={@page_title}
     action={@live_action}
     delegation={@delegation}
-    current_user={@current_user}
+    current_scope={@current_scope}
     patch={~p"/delegations"}
   />
 </.modal>

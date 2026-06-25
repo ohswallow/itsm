@@ -17,7 +17,8 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     {:ok,
      socket
      |> LiveUtils.allow_uploads()
-     |> assign(:conflict, false)
+     |> assign_new(:conflict, fn -> false end)
+     |> assign_new(:conflict_msg, fn -> nil end)
      |> assign(:form, to_form(Requests.change_request(%Request{})))
      |> assign(:selected_attachment, nil)
      |> assign_new_options()}
@@ -48,7 +49,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   end
 
   def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
-    %{current_user: user} = socket.assigns
+    %{current_scope: %{user: user}} = socket.assigns
 
     send_update(LiveSelect.Component,
       id: live_select_id,
@@ -64,7 +65,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   end
 
   def handle_event("delete_attachment", %{"id" => id}, socket) do
-    %{current_user: action_user} = socket.assigns
+    %{current_scope: %{user: action_user}} = socket.assigns
 
     case Attachments.delete_attachment(action_user, id) do
       {:ok, attachment} ->
@@ -91,7 +92,9 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
 
   defp assign_new_options(socket) do
     socket
-    |> assign_new(:crew_options, fn -> Accounts.crew_ids_names(socket.assigns[:current_user]) end)
+    |> assign_new(:crew_options, fn ->
+      Accounts.crew_ids_names(socket.assigns[:current_scope].user)
+    end)
     |> assign_new(:env_options, fn -> CommonCodes.get_select_options("운영_구분") end)
     |> assign_new(:group_code_options, fn -> CommonCodes.get_select_options("운영체제") end)
     |> assign_new(:location_options, fn -> CommonCodes.get_select_options("장소") end)
@@ -139,7 +142,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   end
 
   defp save_request(socket, :edit, params) do
-    %{current_user: action_user, request: request} = socket.assigns
+    %{current_scope: %{user: action_user}, request: request} = socket.assigns
 
     case Service.update_request(
            action_user,
@@ -151,7 +154,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
         {:noreply,
          socket
          |> put_flash(:info, "Request updated successfully")
-         |> push_navigate(to: ~p"/common_k_create_vm/#{request}")}
+         |> push_navigate(to: ~p"/common-k-create-vm/#{request}")}
 
       {:error, :request, %Ecto.Changeset{} = changeset, _so_far_changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -165,7 +168,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   end
 
   defp save_request(socket, :new, params) do
-    %{current_user: action_user, category: category} = socket.assigns
+    %{current_scope: %{user: action_user}, category: category} = socket.assigns
 
     crews = Crews.get_crews(params["referenced_crews"])
 
@@ -180,7 +183,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
         {:noreply,
          socket
          |> put_flash(:info, "Request created successfully")
-         |> push_navigate(to: ~p"/common_k_create_vm/#{request.id}")}
+         |> push_navigate(to: ~p"/common-k-create-vm/#{request.id}")}
 
       {:error, :request, %Ecto.Changeset{} = changeset, _so_far_changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}

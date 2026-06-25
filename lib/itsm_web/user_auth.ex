@@ -326,7 +326,7 @@ defmodule ItsmWeb.UserAuth do
   Plug for routes that require the user to be authenticated.
   """
   def require_authenticated_user(conn, _opts) do
-    if conn.assigns.current_scope && conn.assigns.current_scope.user do
+    if conn.assigns[:current_scope] && conn.assigns.current_scope.user do
       conn
     else
       conn
