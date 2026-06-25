@@ -22,6 +22,7 @@ defmodule Itsm.Assets.AssetShadow do
     field :is_dmz_zone, :boolean, default: false
 
     field :metadata, :map
+    field :mapping_value, :string
 
     belongs_to :asset, Itsm.Assets.Asset, type: :binary_id
 
@@ -46,21 +47,15 @@ defmodule Itsm.Assets.AssetShadow do
       :is_dmz_zone,
       :asset_id,
       :system_crew_id,
-      :service_crew_id
+      :service_crew_id,
+      :mapping_value
     ])
     |> validate_required([
       :name,
       :description,
-      :affiliate,
-      :category,
-      :region_type,
-      :infra_type,
-      :env,
-      :location,
-      :is_dmz_zone,
-      :system_crew_id,
-      :service_crew_id
+      :mapping_value
     ])
+    |> unique_constraint(:mapping_value, name: :assets_shadow_mapping_value_index)
     |> Itsm.Assets.Asset.validate_metadata(attrs)
   end
 end

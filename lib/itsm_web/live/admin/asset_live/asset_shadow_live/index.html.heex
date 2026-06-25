@@ -15,6 +15,9 @@
       fn {_id, asset_shadow} -> JS.navigate(~p"/admin/assets-shadow/#{asset_shadow}") end
     }
   >
+    <:col :let={{_id, asset_shadow}} label={gettext("Mapping Value")}>
+      {asset_shadow.mapping_value}
+    </:col>
     <:col :let={{_id, asset_shadow}} label={gettext("Name")}>{asset_shadow.name}</:col>
     <:col :let={{_id, asset_shadow}} label={gettext("Description")}>
       {asset_shadow.description}
@@ -41,10 +44,10 @@
       {asset_shadow.is_dmz_zone}
     </:col>
     <:col :let={{_id, asset_shadow}} label={gettext("Service Crew")}>
-      {asset_shadow.service_crew.name}
+      {Map.get(asset_shadow.service_crew || %{}, :name)}
     </:col>
     <:col :let={{_id, asset_shadow}} label={gettext("System Crew")}>
-      {asset_shadow.system_crew.name}
+      {Map.get(asset_shadow.system_crew || %{}, :name)}
     </:col>
     <:action :let={{_id, asset_shadow}}>
       <div class="sr-only">

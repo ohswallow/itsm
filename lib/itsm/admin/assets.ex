@@ -154,4 +154,6 @@ defmodule Itsm.Admin.Assets do
 
     {Enum.reverse(assets), Enum.reverse(all_ids)}
   end
+
+  def get_select_options, do: Asset |> select([a], {a.name, a.id}) |> Repo.all()
 end

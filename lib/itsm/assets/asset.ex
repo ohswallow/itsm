@@ -30,6 +30,7 @@ defmodule Itsm.Assets.Asset do
     # field :system_crew_id, :binary_id
     field :metadata, :map
     # embeds_one :metadata, Itsm.Assets.Metadata, on_replace: :update
+    field :mapping_value, :string
 
     many_to_many :relation_assets, Itsm.Assets.Asset,
       join_through: "v_asset_relations",
@@ -61,7 +62,8 @@ defmodule Itsm.Assets.Asset do
       :location,
       :is_dmz_zone,
       :system_crew_id,
-      :service_crew_id
+      :service_crew_id,
+      :mapping_value
     ])
     |> validate_required([
       :name,
@@ -74,9 +76,10 @@ defmodule Itsm.Assets.Asset do
       :location,
       :is_dmz_zone,
       :system_crew_id,
-      :service_crew_id
+      :service_crew_id,
+      :mapping_value
     ])
-    |> unique_constraint(:name)
+    |> unique_constraint(:mapping_value, name: :assets_mapping_value_index)
     |> validate_metadata(attrs)
   end
 

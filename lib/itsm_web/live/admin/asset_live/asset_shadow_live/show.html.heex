@@ -14,16 +14,18 @@
       {@asset_shadow.asset.id}
     </.link>
   </:item>
+  <:item title={gettext("Mapping Value")}>{@asset_shadow.mapping_value}</:item>
   <:item title={gettext("Origin Asset Name")}>{@asset_shadow.asset.name}</:item>
   <:item title={gettext("Name")}>{@asset_shadow.name}</:item>
   <:item title={gettext("Description")}>{@asset_shadow.description}</:item>
   <:item title={gettext("Detail")}>
     <div class="flex flex-wrap gap-2 mt-1">
-      <%= for {key, value} <- @asset_shadow.metadata do %>
-        <span class="inline-flex items-center gap-x-1.5 rounded-md bg-zinc-50 px-2 py-1 text-xs font-medium text-zinc-600 ring-1 ring-inset ring-zinc-500/10">
-          <strong class="text-zinc-950">{key}:</strong> {to_string(value)}
-        </span>
-      <% end %>
+      <span
+        :for={{key, value} <- @asset_shadow.metadata}
+        class="inline-flex items-center gap-x-1.5 rounded-md bg-zinc-50 px-2 py-1 text-xs font-medium text-zinc-600 ring-1 ring-inset ring-zinc-500/10"
+      >
+        <strong class="text-zinc-950">{key}:</strong> {to_string(value)}
+      </span>
     </div>
   </:item>
   <:item title={gettext("Affiliate")}>
@@ -46,10 +48,14 @@
   </:item>
   <:item title={gettext("Is Dmz Zone")}>{@asset_shadow.is_dmz_zone}</:item>
   <:item title={gettext("Service Crew")}>
-    <ItsmWeb.CustomComponents.crew_tooltip crew={@asset_shadow.service_crew} />
+    <ItsmWeb.CustomComponents.crew_tooltip crew={
+      @asset_shadow.service_crew || %{name: "", description: "", users: []}
+    } />
   </:item>
   <:item title={gettext("System Crew")}>
-    <ItsmWeb.CustomComponents.crew_tooltip crew={@asset_shadow.system_crew} />
+    <ItsmWeb.CustomComponents.crew_tooltip crew={
+      @asset_shadow.system_crew || %{name: "", description: "", users: []}
+    } />
   </:item>
   <:item title={gettext("Inserted At")}>
     <span
