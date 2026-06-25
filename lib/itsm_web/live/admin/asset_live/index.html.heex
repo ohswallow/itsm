@@ -13,6 +13,9 @@
     rows={@streams.assets}
     row_click={fn {_id, asset} -> JS.navigate(~p"/admin/assets/#{asset}") end}
   >
+    <:col :let={{_id, asset}} label={gettext("Mapping Value")}>
+      {asset.mapping_value}
+    </:col>
     <:col :let={{_id, asset}} label={gettext("Name")}>{asset.name}</:col>
     <:col :let={{_id, asset}} label={gettext("Description")}>{asset.description}</:col>
     <:col :let={{_id, asset}} label={gettext("Affiliate")}>

@@ -53,6 +53,7 @@ defmodule ItsmWeb.Admin.AssetLive.AssetShadowLive.FormComponent do
         phx-change="validate"
         phx-submit="save"
       >
+        <.input field={@form[:mapping_value]} type="text" label={gettext("Mapping Value")} />
         <.input field={@form[:name]} type="text" label={gettext("Name")} />
         <.input field={@form[:description]} type="text" label={gettext("Description")} />
         <.input
@@ -193,7 +194,6 @@ defmodule ItsmWeb.Admin.AssetLive.AssetShadowLive.FormComponent do
   end
 
   defp save_asset(socket, :new, asset_shadow_params) do
-    IO.inspect(socket.assigns)
     %{current_scope: %{user: action_user}} = socket.assigns
 
     case AssetsShadow.create_asset_shadow(action_user, asset_shadow_params) do

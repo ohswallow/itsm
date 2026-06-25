@@ -14,6 +14,7 @@ defmodule Itsm.Repo.Migrations.CreateAssets do
       add :location, :string
       add :is_dmz_zone, :boolean, default: false, null: false
       add :metadata, :map, default: %{}, null: false
+      add :mapping_value, :string
 
       add :service_crew_id, references(:crews, on_delete: :nothing, type: :binary_id)
       add :system_crew_id, references(:crews, on_delete: :nothing, type: :binary_id)
@@ -21,7 +22,7 @@ defmodule Itsm.Repo.Migrations.CreateAssets do
       timestamps(type: :utc_datetime)
     end
 
-    create unique_index(:assets, [:name])
+    create unique_index(:assets, [:mapping_value])
     create index(:assets, [:service_crew_id])
     create index(:assets, [:system_crew_id])
 
@@ -53,13 +54,15 @@ defmodule Itsm.Repo.Migrations.CreateAssets do
       add :location, :string
       add :is_dmz_zone, :boolean, default: false, null: false
       add :metadata, :map, default: %{}, null: false
-
+      add :mapping_value, :string
       add :asset_id, references(:assets, on_delete: :nothing, type: :binary_id)
       add :service_crew_id, references(:crews, on_delete: :nothing, type: :binary_id)
       add :system_crew_id, references(:crews, on_delete: :nothing, type: :binary_id)
 
       timestamps(type: :utc_datetime)
     end
+
+    create unique_index(:assets_shadow, [:mapping_value])
 
     create index(:assets_shadow, [:asset_id])
     create index(:assets_shadow, [:service_crew_id])
