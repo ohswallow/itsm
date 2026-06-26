@@ -1,48 +1,50 @@
-<.header>
-  Evaluation {@evaluation.id}
-  <:subtitle>This is a evaluation record from your database.</:subtitle>
-
-  <:actions>
-    <.link patch={~p"/evaluations/#{@evaluation}/show/edit"} phx-click={JS.push_focus()}>
-      <.button>Edit evaluation</.button>
-    </.link>
-  </:actions>
-</.header>
-
-<.list>
-  <:item title="Comment">{@evaluation.comment}</:item>
-  <%!-- <:item title="Rating">{@evaluation.rating}</:item> --%>
-  <:item title="Rating">
-    <div class="mb-6">
-      <%!-- <h2 class="text-lg font-semibold text-zinc-700">Rating</h2> --%>
-      <div
-        class="flex w-full"
-        data-raty
-        data-read-only="true"
-        data-score={@evaluation.rating}
-        id="evaluation_rating"
-        phx-update="ignore"
-      >
+<Layouts.default current_path={@current_path} current_params={@current_path} flash={@flash}>
+  <.header>
+    Evaluation {@evaluation.id}
+    <:subtitle>This is a evaluation record from your database.</:subtitle>
+    
+    <:actions>
+      <.link patch={~p"/evaluations/#{@evaluation}/show/edit"} phx-click={JS.push_focus()}>
+        <.button>Edit evaluation</.button>
+      </.link>
+    </:actions>
+  </.header>
+  
+  <.list>
+    <:item title="Comment">{@evaluation.comment}</:item>
+     <%!-- <:item title="Rating">{@evaluation.rating}</:item> --%>
+    <:item title="Rating">
+      <div class="mb-6">
+        <%!-- <h2 class="text-lg font-semibold text-zinc-700">Rating</h2> --%>
+        <div
+          class="flex w-full"
+          data-raty
+          data-read-only="true"
+          data-score={@evaluation.rating}
+          id="evaluation_rating"
+          phx-update="ignore"
+        >
+        </div>
       </div>
-    </div>
-  </:item>
-</.list>
-
-<.back navigate={~p"/evaluations"}>Back to evaluations</.back>
-
-<.modal
-  :if={@live_action == :edit}
-  id="evaluation-modal"
-  show
-  on_cancel={JS.patch(~p"/evaluations/#{@evaluation}")}
->
-  <.live_component
-    module={ItsmWeb.EvaluationLive.FormComponent}
-    id={@evaluation.id}
-    title={@page_title}
-    action={@live_action}
-    evaluation={@evaluation}
-    current_scope={@current_scope}
-    patch={~p"/evaluations/#{@evaluation}"}
-  />
-</.modal>
+    </:item>
+  </.list>
+  
+  <.back navigate={~p"/evaluations"}>Back to evaluations</.back>
+  
+  <.modal
+    :if={@live_action == :edit}
+    id="evaluation-modal"
+    show
+    on_cancel={JS.patch(~p"/evaluations/#{@evaluation}")}
+  >
+    <.live_component
+      module={ItsmWeb.EvaluationLive.FormComponent}
+      id={@evaluation.id}
+      title={@page_title}
+      action={@live_action}
+      evaluation={@evaluation}
+      current_scope={@current_scope}
+      patch={~p"/evaluations/#{@evaluation}"}
+    />
+  </.modal>
+</Layouts.default>

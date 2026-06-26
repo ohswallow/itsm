@@ -1,26 +1,28 @@
-<.header>
-  Delegation {@delegation.id}
-  <:subtitle>This is a delegation record from your database.</:subtitle>
-</.header>
-
-<.list>
-  <:item title={gettext("Delegator name")}>
-    {@delegation.delegator_name} ({@delegation.delegator_id})
-  </:item>
+<Layouts.default current_path={@current_path} current_params={@current_params} flash={@flash}>
+  <.header>
+    Delegation {@delegation.id}
+    <:subtitle>This is a delegation record from your database.</:subtitle>
+  </.header>
   
-  <:item title={gettext("Delegatee name")}>
-    {@delegation.delegatee_name} ({@delegation.delegatee_id})
-  </:item>
+  <.list>
+    <:item title={gettext("Delegator name")}>
+      {@delegation.delegator_name} ({@delegation.delegator_id})
+    </:item>
+    
+    <:item title={gettext("Delegatee name")}>
+      {@delegation.delegatee_name} ({@delegation.delegatee_id})
+    </:item>
+    
+    <:item title={gettext("Start date")}>{@delegation.start_date}</:item>
+    
+    <:item title={gettext("End date")}>{@delegation.end_date}</:item>
+    
+    <:item title={gettext("Reason")}>{@delegation.reason}</:item>
+    
+    <:item title={gettext("Created_by")}>
+      {@delegation.created_by_name} ({@delegation.created_by_id})
+    </:item>
+  </.list>
   
-  <:item title={gettext("Start date")}>{@delegation.start_date}</:item>
-  
-  <:item title={gettext("End date")}>{@delegation.end_date}</:item>
-  
-  <:item title={gettext("Reason")}>{@delegation.reason}</:item>
-  
-  <:item title={gettext("Created_by")}>
-    {@delegation.created_by_name} ({@delegation.created_by_id})
-  </:item>
-</.list>
-
-<.back navigate={~p"/delegations"}>Back to delegations</.back>
+  <.back navigate={~p"/delegations"}>Back to delegations</.back>
+</Layouts.default>

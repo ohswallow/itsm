@@ -1,64 +1,81 @@
-<.header>
-  Listing Users
-  <:actions>
-    <.link patch={~p"/admin/users/new"}>
-      <.button>New User</.button>
-    </.link>
-  </:actions>
-</.header>
-
-<.itsm_table_container results={assigns[:results]}>
-  <.table
-    id="users"
-    rows={@streams.users}
-    row_click={fn {_id, user} -> JS.navigate(~p"/admin/users/#{user}") end}
-  >
-    <:col :let={{_id, user}} label={gettext("Email")}>{user.email}</:col>
-    <:col :let={{id, user}} label={gettext("Confirmed At")}>
-      <div id={"confirmed-at-#{id}"} phx-hook="LocalTime.ToLocale" utc-value={user.confirmed_at} />
-    </:col>
-    <:col :let={{_id, user}} label={gettext("Employee Number")}>{user.employee_number}</:col>
-    <:col :let={{_id, user}} label={gettext("Display Name")}>{user.display_name}</:col>
-    <:col :let={{_id, user}} label={gettext("Organization")}>{user.organization}</:col>
-    <:col :let={{_id, user}} label={gettext("Organization Code")}>{user.organization_code}</:col>
-    <:col :let={{_id, user}} label={gettext("Department")}>{user.department}</:col>
-    <:col :let={{_id, user}} label={gettext("Department Code")}>{user.department_code}</:col>
-    <:col :let={{_id, user}} label={gettext("Role")}>
-      <.common_code_label group="역할" code={user.role} />
-    </:col>
-
-    <:action :let={{_id, user}}>
-      <div class="sr-only">
-        <.link navigate={~p"/admin/users/#{user}"}>Show</.link>
-      </div>
-      <.link patch={~p"/admin/users/#{user}/edit"}>Edit</.link>
-    </:action>
-    <:action :let={{_id, user}}>
-      <.link
-        id={user.id}
-        phx-click={JS.push("delete", value: %{id: user.id})}
-        class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
-        data-confirm="Are you sure?"
-      >
-        Delete
+<Layouts.default current_path={@current_path} current_params={@current_params} flash={@flash}>
+  <.header>
+    Listing Users
+    <:actions>
+      <.link patch={~p"/admin/users/new"}>
+        <.button>New User</.button>
       </.link>
-    </:action>
-  </.table>
-</.itsm_table_container>
-
-<.modal
-  :if={@live_action in [:new, :edit]}
-  id="user-modal"
-  show
-  on_cancel={JS.patch(~p"/admin/users?#{assigns[:results][:params] || %{}}")}
->
-  <.live_component
-    module={ItsmWeb.Admin.UserLive.FormComponent}
-    id={@user.id || :new}
-    title={@page_title}
-    action={@live_action}
-    user={@user}
-    current_scope={@current_scope}
-    patch={~p"/admin/users?#{assigns[:results][:params] || %{}}"}
-  />
-</.modal>
+    </:actions>
+  </.header>
+  
+  <.itsm_table_container results={assigns[:results]}>
+    <.table
+      id="users"
+      rows={@streams.users}
+      row_click={fn {_id, user} -> JS.navigate(~p"/admin/users/#{user}") end}
+    >
+      <:col :let={{_id, user}} label={gettext("Email")}>{user.email}</:col>
+      
+      <:col :let={{id, user}} label={gettext("Confirmed At")}>
+        <div
+          id={"confirmed-at-#{id}"}
+          phx-hook="LocalTime.ToLocale"
+          utc-value={user.confirmed_at}
+        />
+      </:col>
+      
+      <:col :let={{_id, user}} label={gettext("Employee Number")}>{user.employee_number}</:col>
+      
+      <:col :let={{_id, user}} label={gettext("Display Name")}>{user.display_name}</:col>
+      
+      <:col :let={{_id, user}} label={gettext("Organization")}>{user.organization}</:col>
+      
+      <:col :let={{_id, user}} label={gettext("Organization Code")}>
+        {user.organization_code}
+      </:col>
+      
+      <:col :let={{_id, user}} label={gettext("Department")}>{user.department}</:col>
+      
+      <:col :let={{_id, user}} label={gettext("Department Code")}>{user.department_code}</:col>
+      
+      <:col :let={{_id, user}} label={gettext("Role")}>
+        <.common_code_label group="역할" code={user.role} />
+      </:col>
+      
+      <:action :let={{_id, user}}>
+        <div class="sr-only">
+          <.link navigate={~p"/admin/users/#{user}"}>Show</.link>
+        </div>
+         <.link patch={~p"/admin/users/#{user}/edit"}>Edit</.link>
+      </:action>
+      
+      <:action :let={{_id, user}}>
+        <.link
+          id={user.id}
+          phx-click={JS.push("delete", value: %{id: user.id})}
+          class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
+          data-confirm="Are you sure?"
+        >
+          Delete
+        </.link>
+      </:action>
+    </.table>
+  </.itsm_table_container>
+  
+  <.modal
+    :if={@live_action in [:new, :edit]}
+    id="user-modal"
+    show
+    on_cancel={JS.patch(~p"/admin/users?#{assigns[:results][:params] || %{}}")}
+  >
+    <.live_component
+      module={ItsmWeb.Admin.UserLive.FormComponent}
+      id={@user.id || :new}
+      title={@page_title}
+      action={@live_action}
+      user={@user}
+      current_scope={@current_scope}
+      patch={~p"/admin/users?#{assigns[:results][:params] || %{}}"}
+    />
+  </.modal>
+</Layouts.default>

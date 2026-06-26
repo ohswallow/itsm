@@ -1,20 +1,23 @@
-<.header>
-  Listing Evaluations
-  <:actions>
-    <.link patch={~p"/evaluations/new"}>
-      <.button>New Evaluation</.button>
-    </.link>
-  </:actions>
-</.header>
-
-<.table
-  id="evaluations"
-  rows={@streams.evaluations}
-  row_click={fn {_id, evaluation} -> JS.navigate(~p"/evaluations/#{evaluation}") end}
->
-  <:col :let={{_id, evaluation}} label={gettext("Comment")}>{evaluation.comment}</:col>
-  <:col :let={{_id, evaluation}} label={gettext("Rating")}>{evaluation.rating}</:col>
-  <%!-- <:col :let={{_id, evaluation}} label="Rating">
+<Layouts.default current_path={@current_path} current_params={@current_params} flash={@flash}>
+  <.header>
+    Listing Evaluations
+    <:actions>
+      <.link patch={~p"/evaluations/new"}>
+        <.button>New Evaluation</.button>
+      </.link>
+    </:actions>
+  </.header>
+  
+  <.table
+    id="evaluations"
+    rows={@streams.evaluations}
+    row_click={fn {_id, evaluation} -> JS.navigate(~p"/evaluations/#{evaluation}") end}
+  >
+    <:col :let={{_id, evaluation}} label={gettext("Comment")}>{evaluation.comment}</:col>
+    
+    <:col :let={{_id, evaluation}} label={gettext("Rating")}>{evaluation.rating}</:col>
+    
+    <%!-- <:col :let={{_id, evaluation}} label="Rating">
     <div>
       <div
         class="flex w-full"
@@ -27,7 +30,7 @@
       </div>
     </div>
   </:col> --%>
-  <%!-- <:col :let={{_id, evaluation}} label="Rating">
+    <%!-- <:col :let={{_id, evaluation}} label="Rating">
     <div
       class="inline-block"
       id={"raty-#{evaluation.id}"}
@@ -36,7 +39,7 @@
       phx-update="ignore"
     />
   </:col> --%>
-  <%!-- <:col :let={{_id, evaluation}} label="Rating">
+    <%!-- <:col :let={{_id, evaluation}} label="Rating">
     <div
       class="inline-block"
       id={"raty-#{evaluation.id}"}
@@ -45,37 +48,39 @@
       phx-update="ignore"
     />
   </:col> --%>
-  <:action :let={{_id, evaluation}}>
-    <div class="sr-only">
-      <.link navigate={~p"/evaluations/#{evaluation}"}>Show</.link>
-    </div>
-    <.link patch={~p"/evaluations/#{evaluation}/edit"}>Edit</.link>
-  </:action>
-  <:action :let={{_id, evaluation}}>
-    <.link
-      id={evaluation.id}
-      phx-click={JS.push("delete", value: %{id: evaluation.id})}
-      class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
-      data-confirm="Are you sure?"
-    >
-      Delete
-    </.link>
-  </:action>
-</.table>
-
-<.modal
-  :if={@live_action in [:new, :edit]}
-  id="evaluation-modal"
-  show
-  on_cancel={JS.patch(~p"/evaluations")}
->
-  <.live_component
-    module={ItsmWeb.EvaluationLive.FormComponent}
-    id={@evaluation.id || :new}
-    title={@page_title}
-    action={@live_action}
-    evaluation={@evaluation}
-    current_scope={@current_scope}
-    patch={~p"/evaluations"}
-  />
-</.modal>
+    <:action :let={{_id, evaluation}}>
+      <div class="sr-only">
+        <.link navigate={~p"/evaluations/#{evaluation}"}>Show</.link>
+      </div>
+       <.link patch={~p"/evaluations/#{evaluation}/edit"}>Edit</.link>
+    </:action>
+    
+    <:action :let={{_id, evaluation}}>
+      <.link
+        id={evaluation.id}
+        phx-click={JS.push("delete", value: %{id: evaluation.id})}
+        class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
+  </.table>
+  
+  <.modal
+    :if={@live_action in [:new, :edit]}
+    id="evaluation-modal"
+    show
+    on_cancel={JS.patch(~p"/evaluations")}
+  >
+    <.live_component
+      module={ItsmWeb.EvaluationLive.FormComponent}
+      id={@evaluation.id || :new}
+      title={@page_title}
+      action={@live_action}
+      evaluation={@evaluation}
+      current_scope={@current_scope}
+      patch={~p"/evaluations"}
+    />
+  </.modal>
+</Layouts.default>

@@ -6,9 +6,14 @@ defmodule ItsmWeb.PathProvider do
     {:cont,
      attach_hook(socket, :set_current_path_on_assigns, :handle_params, fn _params, uri, socket ->
        uri = URI.parse(uri)
-       current_path = if uri.query, do: "#{uri.path}?#{uri.query}", else: uri.path
 
-       {:cont, assign(socket, :current_path, current_path)}
+       full_path = if uri.query, do: "#{uri.path}?#{uri.query}", else: uri.path
+
+       {:cont,
+        socket
+        |> assign(:full_path, full_path)
+        |> assign(:current_path, uri.path)
+        |> assign(:current_params, URI.decode_query(uri.query || ""))}
      end)}
   end
 end

@@ -1,46 +1,53 @@
-<.header>
-  Board {@board.id}
-  <:subtitle>This is a board record from your database.</:subtitle>
-</.header>
-
-<.list>
-  <:item title={gettext("Name")}>{@board.name}</:item>
-  <:item title={gettext("Slug")}>{@board.slug}</:item>
-  <:item title={gettext("Description")}>{@board.description}</:item>
-  <:item title={gettext("Metadata")}>
-    {Jason.encode!(@board.metadata, pretty: true)}
-  </:item>
-  <:item title={gettext("Inserted At")}>
-    <span
-      id={"board-inserted-at-#{@board.id}"}
-      phx-hook="LocalTime.ToLocale"
-      utc-value={@board.inserted_at}
+<Layouts.default current_path={@current_path} current_params={@current_params} flash={@flash}>
+  <.header>
+    Board {@board.id}
+    <:subtitle>This is a board record from your database.</:subtitle>
+  </.header>
+  
+  <.list>
+    <:item title={gettext("Name")}>{@board.name}</:item>
+    
+    <:item title={gettext("Slug")}>{@board.slug}</:item>
+    
+    <:item title={gettext("Description")}>{@board.description}</:item>
+    
+    <:item title={gettext("Metadata")}>
+      {Jason.encode!(@board.metadata, pretty: true)}
+    </:item>
+    
+    <:item title={gettext("Inserted At")}>
+      <span
+        id={"board-inserted-at-#{@board.id}"}
+        phx-hook="LocalTime.ToLocale"
+        utc-value={@board.inserted_at}
+      />
+    </:item>
+    
+    <:item title={gettext("Updated At")}>
+      <span
+        id={"board-updated-at-#{@board.id}"}
+        phx-hook="LocalTime.ToLocale"
+        utc-value={@board.updated_at}
+      />
+    </:item>
+  </.list>
+  
+  <.back navigate={~p"/boards"}>Back to boards</.back>
+  
+  <.modal
+    :if={@live_action == :edit}
+    id="board-modal"
+    show
+    on_cancel={JS.patch(~p"/boards/#{@board}")}
+  >
+    <.live_component
+      module={ItsmWeb.BoardLive.FormComponent}
+      id={@board.id}
+      title={@page_title}
+      action={@live_action}
+      board={@board}
+      current_scope={@current_scope}
+      patch={~p"/boards/#{@board}"}
     />
-  </:item>
-  <:item title={gettext("Updated At")}>
-    <span
-      id={"board-updated-at-#{@board.id}"}
-      phx-hook="LocalTime.ToLocale"
-      utc-value={@board.updated_at}
-    />
-  </:item>
-</.list>
-
-<.back navigate={~p"/boards"}>Back to boards</.back>
-
-<.modal
-  :if={@live_action == :edit}
-  id="board-modal"
-  show
-  on_cancel={JS.patch(~p"/boards/#{@board}")}
->
-  <.live_component
-    module={ItsmWeb.BoardLive.FormComponent}
-    id={@board.id}
-    title={@page_title}
-    action={@live_action}
-    board={@board}
-    current_scope={@current_scope}
-    patch={~p"/boards/#{@board}"}
-  />
-</.modal>
+  </.modal>
+</Layouts.default>
