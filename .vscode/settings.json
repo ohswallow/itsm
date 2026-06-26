@@ -14,8 +14,7 @@
   },
 
   "[phoenix-heex]": {
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "JakeBecker.elixir-ls"
+    "editor.formatOnSave": true
   },
 
   "emmet.includeLanguages": {
