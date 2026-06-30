@@ -154,8 +154,7 @@ defmodule ItsmWeb.Router do
         {ItsmWeb.UserAuth, :set_locale},
         {ItsmWeb.PathProvider, :set_current_path_on_assigns},
         {ItsmWeb.UserAuth, :log_menu_access}
-      ],
-      layout: {ItsmWeb.Layouts, :admin} do
+      ] do
       live "/", Admin.CategoryLive.Index, :index
 
       live "/users", Admin.UserLive.Index, :index

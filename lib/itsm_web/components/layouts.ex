@@ -11,6 +11,7 @@ defmodule ItsmWeb.Layouts do
   # and other static content.
   embed_templates "layouts/*"
 
+  attr :current_scope, Itsm.Accounts.Scope, required: true, doc: "로그인 정보"
   attr :current_path, :string, required: true, doc: "현재 페이지의 URL 경로 (예: /boards/123)"
   attr :current_params, :map, required: true, doc: "현재 페이지의 params map (예: %{menu_id: 456})"
   attr :page_title, :string, required: true, doc: "현재 선택된 페이지 제목"
@@ -19,6 +20,17 @@ defmodule ItsmWeb.Layouts do
 
   def default(assigns) do
     _default(assigns)
+  end
+
+  attr :current_scope, Itsm.Accounts.Scope, required: true, doc: "로그인 정보"
+  attr :current_path, :string, required: true, doc: "현재 페이지의 URL 경로 (예: /boards/123)"
+  attr :current_params, :map, required: true, doc: "현재 페이지의 params map (예: %{menu_id: 456})"
+  attr :page_title, :string, required: true, doc: "현재 선택된 페이지 제목"
+  attr :flash, :map, required: true, doc: "the map of flash messages"
+  slot :inner_block, required: true
+
+  def admin(assigns) do
+    _admin(assigns)
   end
 
   @doc """
@@ -200,7 +212,7 @@ defmodule ItsmWeb.Layouts do
     """
   end
 
-  defp selected_menu?(_current_path, %{menu_id: menu_id}, _navigate, menu_id), do: true
+  defp selected_menu?(_current_path, %{"menu_id" => menu_id}, _navigate, menu_id), do: true
 
   defp selected_menu?(current_path, _current_params, navigate, _menu_id) do
     String.starts_with?(current_path, navigate)

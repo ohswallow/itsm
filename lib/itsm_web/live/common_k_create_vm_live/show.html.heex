@@ -1,4 +1,4 @@
-<Layouts.default current_path={@current_path} current_params={@current_params} flash={@flash}>
+<Layouts.default current_scope={@current_scope} page_title={@page_title} current_path={@current_path} current_params={@current_params} flash={@flash}>
   <div class="flex gap-6">
     <div class="flex-1">
       <.request_header
@@ -38,7 +38,7 @@
       resource={@request}
     />
   </div>
-  
+
   <.attachment_modal
     :if={@selected_attachment}
     attachment={@selected_attachment}

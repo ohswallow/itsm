@@ -1,4 +1,4 @@
-<Layouts.default flash={@flash} current_path={@current_path} current_params={@current_params}>
+<Layouts.default current_scope={@current_scope} page_title={@page_title} current_path={@current_path} current_params={@current_params} flash={@flash}>
   <.header>
     {@page_title}
     <:actions>
@@ -7,7 +7,7 @@
       </.link>
     </:actions>
   </.header>
-  
+
   <.crew_table
     crews={@streams.crews}
     row_click={
@@ -24,7 +24,7 @@
         >
           <.icon name="hero-pencil" class="w-4 h-4" /> Edit Crew
         </.link>
-        
+
         <.link
           phx-click={JS.push("delete", value: %{id: crew.id})}
           data-confirm="Are you sure?"
@@ -35,7 +35,7 @@
       </.dropdown_menu>
     </:action>
   </.crew_table>
-  
+
   <.modal
     :if={@live_action in [:new, :edit]}
     id="crew-modal"

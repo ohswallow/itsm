@@ -1,8 +1,8 @@
-<Layouts.default current_path={@current_path} current_params={@current_params} flash={@flash}>
+<Layouts.default current_scope={@current_scope} page_title={@page_title} current_path={@current_path} current_params={@current_params} flash={@flash}>
   <.header>
     {assigns[:board_name] || "Not Found"} Post {@post.id}
     <:subtitle>This is a post record from your database.</:subtitle>
-    
+
     <:actions>
       <.link
         patch={~p"/posts/#{@post}/show/edit?board_id=#{assigns[:board_id] || ""}&menu_id=boards"}
@@ -12,14 +12,14 @@
       </.link>
     </:actions>
   </.header>
-  
+
   <.list>
     <:item title={gettext("Board")}>{@post.board.name}</:item>
-    
+
     <:item title={gettext("Title")}>{@post.title}</:item>
-    
+
     <:item title={gettext("Content")}>{@post.content}</:item>
-    
+
     <:item
       :for={
         %{"label" => label, "name" => name, "type" => type} = field <-
@@ -38,9 +38,9 @@
         {@post.metadata[name]}
       </span>
     </:item>
-    
+
     <:item title={gettext("Author")}>{@post.author.display_name}</:item>
-    
+
     <:item title={gettext("Inserted At")}>
       <span
         id={"post-inserted-at-#{@post.id}"}
@@ -48,7 +48,7 @@
         utc-value={@post.inserted_at}
       />
     </:item>
-    
+
     <:item title={gettext("Updated At")}>
       <span
         id={"post-updated-at-#{@post.id}"}
@@ -57,7 +57,7 @@
       />
     </:item>
   </.list>
-  
+
   <.attachments_section
     :if={@attachments_count > 0}
     id="attachments"
@@ -69,7 +69,7 @@
       attachment={attachment}
     />
   </.attachments_section>
-  
+
   <div :if={@post.metadata["allow_comment"] in ["true", true]}>
     <.comments_section streams={@streams} />
     <.comment_form
@@ -77,11 +77,11 @@
       uploads={@uploads}
     />
   </div>
-  
+
   <.back navigate={~p"/posts?board_id=#{assigns[:board_id] || ""}&menu_id=boards"}>
     Back to posts
   </.back>
-  
+
   <.modal
     :if={@live_action == :edit}
     id="post-modal"
@@ -100,7 +100,7 @@
       board_name={assigns[:board_name]}
     />
   </.modal>
-  
+
   <.attachment_modal
     :if={@selected_attachment}
     attachment={@selected_attachment}

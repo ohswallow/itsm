@@ -1,26 +1,26 @@
-<Layouts.default current_path={@current_path} current_params={@current_params} flash={@flash}>
+<Layouts.admin current_scope={@current_scope} page_title={@page_title} current_path={@current_path} current_params={@current_params} flash={@flash}>
   <.header>
     Board {@board.id}
     <:subtitle>This is a board record from your database.</:subtitle>
-    
+
     <:actions>
       <.link patch={~p"/admin/boards/#{@board}/show/edit"} phx-click={JS.push_focus()}>
         <.button>Edit board</.button>
       </.link>
     </:actions>
   </.header>
-  
+
   <.list>
     <:item title={gettext("Name")}>{@board.name}</:item>
-    
+
     <:item title={gettext("Slug")}>{@board.slug}</:item>
-    
+
     <:item title={gettext("Description")}>{@board.description}</:item>
-    
+
     <:item title={gettext("Metadata")}>
       {Jason.encode!(@board.metadata, pretty: true)}
     </:item>
-    
+
     <:item title={gettext("Inserted At")}>
       <span
         id={"board-inserted-at-#{@board.id}"}
@@ -28,7 +28,7 @@
         utc-value={@board.inserted_at}
       />
     </:item>
-    
+
     <:item title={gettext("Updated At")}>
       <span
         id={"board-updated-at-#{@board.id}"}
@@ -37,9 +37,9 @@
       />
     </:item>
   </.list>
-  
+
   <.back navigate={~p"/admin/boards"}>Back to boards</.back>
-  
+
   <.modal
     :if={@live_action == :edit}
     id="board-modal"
@@ -56,4 +56,4 @@
       patch={~p"/admin/boards/#{@board}"}
     />
   </.modal>
-</Layouts.default>
+</Layouts.admin>

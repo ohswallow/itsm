@@ -1,20 +1,20 @@
-<Layouts.default current_path={@current_path} current_params={@current_params} flash={@flash}>
+<Layouts.admin current_scope={@current_scope} page_title={@page_title} current_path={@current_path} current_params={@current_params} flash={@flash}>
   <.header>
     Crew {@crew.id}
     <:subtitle>This is a crew record from your database.</:subtitle>
-    
+
     <:actions>
       <.link patch={~p"/admin/crews/#{@crew}/show/edit"} phx-click={JS.push_focus()}>
         <.button>Edit crew</.button>
       </.link>
     </:actions>
   </.header>
-  
+
   <.list>
     <:item title={gettext("Name")}>{@crew.name}</:item>
-    
+
     <:item title={gettext("Description")}>{@crew.description}</:item>
-    
+
     <:item title={gettext("Inserted At")}>
       <span
         id={"crew-inserted-at-#{@crew.id}"}
@@ -22,7 +22,7 @@
         utc-value={@crew.inserted_at}
       />
     </:item>
-    
+
     <:item title={gettext("Updated At")}>
       <span
         id={"crew-updated-at-#{@crew.id}"}
@@ -31,9 +31,9 @@
       />
     </:item>
   </.list>
-  
+
   <.back navigate={~p"/admin/crews"}>Back to crews</.back>
-  
+
   <.modal
     :if={@live_action == :edit}
     id="crew-modal"
@@ -50,4 +50,4 @@
       patch={~p"/admin/crews/#{@crew}"}
     />
   </.modal>
-</Layouts.default>
+</Layouts.admin>

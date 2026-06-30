@@ -1,6 +1,6 @@
-<Layouts.default current_path={@current_path} current_params={@current_params} flash={@flash}>
+<Layouts.default current_scope={@current_scope} page_title={@page_title} current_path={@current_path} current_params={@current_params} flash={@flash}>
   <.header>Listing Boards</.header>
-  
+
   <.table
     id="boards"
     rows={@streams.boards}
@@ -11,9 +11,9 @@
     }
   >
     <:col :let={{_id, board}} label={gettext("Name")}>{board.name}</:col>
-    
+
     <:col :let={{_id, board}} label={gettext("Slug")}>{board.slug}</:col>
-    
+
     <:col :let={{_id, board}} label={gettext("Description") <> " (클릭시 각각의 게시물로 이동됩니다)"}>
       {board.description}
     </:col>

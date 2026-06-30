@@ -17,13 +17,13 @@
         ><path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z">
         </path><path d="M9 4v16"></path><path d="M14 10l2 2l-2 2"></path></svg>
       </label>
-      
-      <div class="px-4">Navbar Title</div>
+
+      <div class="px-4">{@page_title}</div>
     </nav>
     <!-- Page content here -->
     <div class="p-4">{render_slot(@inner_block)}</div>
   </div>
-  
+
   <div class="drawer-side is-drawer-open:overflow-visible">
     <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
     <div class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-64 is-drawer-open:w-14">
@@ -38,7 +38,7 @@
         >
           {gettext("Service Request")}
         </Layouts.menu>
-        
+
         <Layouts.menu
           navigate={~p"/requests"}
           icon_name="hero-list-bullet"
@@ -48,7 +48,7 @@
         >
           {gettext("My Request List")}
         </Layouts.menu>
-        
+
         <Layouts.menu
           navigate={~p"/approvals"}
           icon_name="hero-check-badge"
@@ -68,7 +68,7 @@
         >
           {gettext("Delegation")}
         </Layouts.menu>
-        
+
         <Layouts.menu
           navigate={~p"/crews?menu_id=crews"}
           icon_name="hero-users"
@@ -79,7 +79,7 @@
         >
           {gettext("My Crews")}
         </Layouts.menu>
-        
+
         <Layouts.menu
           navigate={~p"/crews/all?menu_id=all_crews"}
           icon_name="hero-rectangle-stack"
@@ -90,7 +90,7 @@
         >
           {gettext("All Crews")}
         </Layouts.menu>
-        
+
         <Layouts.menu
           navigate={~p"/assets"}
           icon_name="hero-computer-desktop"
@@ -100,7 +100,7 @@
         >
           {gettext("Assets")}
         </Layouts.menu>
-        
+
         <Layouts.menu
           navigate={~p"/boards?menu_id=boards"}
           icon_name="hero-list-bullet"
@@ -111,7 +111,7 @@
         >
           {gettext("Boards")}
         </Layouts.menu>
-        
+
         <Layouts.menu
           navigate={~p"/api/graphiql"}
           icon_name="hero-document-text"
@@ -124,6 +124,7 @@
         </Layouts.menu>
          <li />
         <Layouts.menu
+          :if={@current_scope.role == "admin"}
           navigate={~p"/admin"}
           icon_name="hero-shield-check"
           current_path={@current_path}

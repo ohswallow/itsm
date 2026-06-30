@@ -1,11 +1,11 @@
-<Layouts.default current_path={@current_path} current_params={@current_params} flash={@flash}>
+<Layouts.default current_scope={@current_scope} page_title={@page_title} current_path={@current_path} current_params={@current_params} flash={@flash}>
   <.filter_form form={@form} group_select_options={@group_select_options} />
   <div id="categories-container" class="mt-6 space-y-10">
     <div :for={group <- @filtered_category_groups} class="group-section">
       <div class="relative py-4 border-b border-zinc-100 mb-4">
         <span class="bg-white pr-3 text-sm font-bold text-zinc-800">{group}</span>
       </div>
-      
+
       <div
         id={"category-card-container-#{group}"}
         phx-update="stream"

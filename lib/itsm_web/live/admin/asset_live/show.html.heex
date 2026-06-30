@@ -1,22 +1,22 @@
-<Layouts.default current_path={@current_path} current_params={@current_params} flash={@flash}>
+<Layouts.admin current_scope={@current_scope} page_title={@page_title} current_path={@current_path} current_params={@current_params} flash={@flash}>
   <.header>
     Asset {@asset.id}
     <:subtitle>This is a asset record from your database.</:subtitle>
-    
+
     <:actions>
       <.link patch={~p"/admin/assets/#{@asset}/show/edit"} phx-click={JS.push_focus()}>
         <.button>Edit asset</.button>
       </.link>
     </:actions>
   </.header>
-  
+
   <.list>
     <:item title={gettext("Mapping Value")}>{@asset.mapping_value}</:item>
-    
+
     <:item title={gettext("Name")}>{@asset.name}</:item>
-    
+
     <:item title={gettext("Description")}>{@asset.description}</:item>
-    
+
     <:item title={gettext("Detail")}>
       <div class="flex flex-wrap gap-2 mt-1">
         <span
@@ -27,45 +27,45 @@
         </span>
       </div>
     </:item>
-    
+
     <:item title={gettext("Affiliate")}>
       <.common_code_label group="계열사" code={@asset.affiliate} />
     </:item>
-    
+
     <:item title={gettext("Category")}>
       <.common_code_label group="카테고리" code={@asset.category} />
     </:item>
-    
+
     <:item title={gettext("Region Type")}>
       <.common_code_label group="지역_유형" code={@asset.region_type} />
     </:item>
-    
+
     <:item title={gettext("Infra Type")}>
       <.common_code_label group="인프라_유형" code={@asset.infra_type} />
     </:item>
-    
+
     <:item title={gettext("Environment")}>
       <.common_code_label group="운영_구분" code={@asset.env} />
     </:item>
-    
+
     <:item title={gettext("Location")}>
       <.common_code_label group="장소" code={@asset.location} />
     </:item>
-    
+
     <:item title={gettext("Is Dmz Zone")}>{@asset.is_dmz_zone}</:item>
-    
+
     <:item title={gettext("Service Crew")}>
       <ItsmWeb.CustomComponents.crew_tooltip crew={
         @asset.service_crew || %{name: "", description: "", users: []}
       } />
     </:item>
-    
+
     <:item title={gettext("System Crew")}>
       <ItsmWeb.CustomComponents.crew_tooltip crew={
         @asset.system_crew || %{name: "", description: "", users: []}
       } />
     </:item>
-    
+
     <:item title={gettext("Inserted At")}>
       <span
         id={"asset-inserted-at-#{@asset.id}"}
@@ -73,7 +73,7 @@
         utc-value={@asset.inserted_at}
       />
     </:item>
-    
+
     <:item title={gettext("Updated At")}>
       <span
         id={"asset-updated-at-#{@asset.id}"}
@@ -81,7 +81,7 @@
         utc-value={@asset.updated_at}
       />
     </:item>
-    
+
     <:item :for={asset <- @asset.relation_assets} title={gettext("Relation Assets")}>
       {"#{asset.id} - #{asset.name} "}
       <button
@@ -92,7 +92,7 @@
       >연결 해제</button>
     </:item>
   </.list>
-  
+
   <.form for={%{}} phx-change="update_selection" phx-submit="batch_action">
     <.table
       id="assets"
@@ -124,61 +124,61 @@
           class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
         />
       </:col>
-      
+
       <:col :let={{_id, asset}} label={gettext("Relation")}>
         {(Enum.any?(@asset.relation_assets, &(&1.id == asset.id)) && "✅") || ""}
       </:col>
-      
+
       <:col :let={{_id, asset}} label={gettext("Id")}>
         <div class="w-24 truncate" title={asset.id}>
           {asset.id}
         </div>
       </:col>
-      
+
       <:col :let={{_id, asset}} label={gettext("Name")}>{asset.name}</:col>
-      
+
       <:col :let={{_id, asset}} label={gettext("Description")}>{asset.description}</:col>
-      
+
       <:col :let={{_id, asset}} label={gettext("Affiliate")}>
         <.common_code_label group="계열사" code={asset.affiliate} />
       </:col>
-      
+
       <:col :let={{_id, asset}} label={gettext("Category")}>
         <.common_code_label group="카테고리" code={asset.category} />
       </:col>
-      
+
       <:col :let={{_id, asset}} label={gettext("Region Type")}>
         <.common_code_label group="지역_유형" code={asset.region_type} />
       </:col>
-      
+
       <:col :let={{_id, asset}} label={gettext("Infra Type")}>
         <.common_code_label group="인프라_유형" code={asset.infra_type} />
       </:col>
-      
+
       <:col :let={{_id, asset}} label={gettext("Environment")}>
         <.common_code_label group="운영_구분" code={asset.env} />
       </:col>
-      
+
       <:col :let={{_id, asset}} label={gettext("Location")}>
         <.common_code_label group="장소" code={asset.location} />
       </:col>
-      
+
       <:col :let={{_id, asset}} label={gettext("Is Dmz Zone")}>{asset.is_dmz_zone}</:col>
-      
+
       <:col :let={{_id, asset}} label={gettext("Service Crew")}>{asset.service_crew.name}</:col>
-      
+
       <:col :let={{_id, asset}} label={gettext("System Crew")}>{asset.system_crew.name}</:col>
     </.table>
-    
+
     <div class="mt-4 flex justify-end">
       <.button disabled={Enum.empty?(@selected_ids)}>
         선택한 {Enum.count(@selected_ids)}개 자산 연결
       </.button>
     </div>
   </.form>
-  
+
   <.back navigate={~p"/admin/assets"}>Back to assets</.back>
-  
+
   <.modal
     :if={@live_action == :edit}
     id="asset-modal"
@@ -195,4 +195,4 @@
       patch={~p"/admin/assets/#{@asset}"}
     />
   </.modal>
-</Layouts.default>
+</Layouts.admin>

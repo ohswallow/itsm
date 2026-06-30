@@ -1,22 +1,22 @@
-<Layouts.default current_path={@current_path} current_params={@current_params} flash={@flash}>
+<Layouts.admin current_scope={@current_scope} page_title={@page_title} current_path={@current_path} current_params={@current_params} flash={@flash}>
   <.header>
     Approval {@approval.id}
     <:subtitle>This is a approval record from your database.</:subtitle>
-    
+
     <:actions>
       <.link patch={~p"/admin/approvals/#{@approval}/show/edit"} phx-click={JS.push_focus()}>
         <.button>Edit approval</.button>
       </.link>
     </:actions>
   </.header>
-  
+
   <.list>
     <:item title={gettext("Category")}>{@approval.request.category.name}</:item>
-    
+
     <:item title={gettext("Status")}>{@approval.status}</:item>
-    
+
     <:item title={gettext("Approver Name")}>{@approval.approver_name}</:item>
-    
+
     <:item title={gettext("Inserted At")}>
       <span
         id={"approval-inserted-at-#{@approval.id}"}
@@ -24,7 +24,7 @@
         utc-value={@approval.inserted_at}
       />
     </:item>
-    
+
     <:item title={gettext("Updated At")}>
       <span
         id={"approval-updated-at-#{@approval.id}"}
@@ -33,9 +33,9 @@
       />
     </:item>
   </.list>
-  
+
   <.back navigate={~p"/admin/approvals"}>Back to approvals</.back>
-  
+
   <.modal
     :if={@live_action == :edit}
     id="approval-modal"
@@ -52,4 +52,4 @@
       patch={~p"/admin/approvals/#{@approval}"}
     />
   </.modal>
-</Layouts.default>
+</Layouts.admin>

@@ -7,7 +7,11 @@ defmodule ItsmWeb.CategoryLive.Index do
   alias Itsm.CommonCodes
 
   def mount(_params, _session, socket) do
-    {:ok, socket |> stream(:categories, []) |> Itsm.PubSub.Helper.subscribe(Categories)}
+    {:ok,
+     socket
+     |> assign(:page_title, "Service Request")
+     |> stream(:categories, [])
+     |> Itsm.PubSub.Helper.subscribe(Categories)}
   end
 
   def handle_params(params, _uri, socket) do

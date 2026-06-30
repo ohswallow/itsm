@@ -1,4 +1,4 @@
-<Layouts.default current_path={@current_path} current_params={@current_params} flash={@flash}>
+<Layouts.default current_scope={@current_scope} page_title={@page_title} current_path={@current_path} current_params={@current_params} flash={@flash}>
   <.header>
     Listing Evaluations
     <:actions>
@@ -7,16 +7,16 @@
       </.link>
     </:actions>
   </.header>
-  
+
   <.table
     id="evaluations"
     rows={@streams.evaluations}
     row_click={fn {_id, evaluation} -> JS.navigate(~p"/evaluations/#{evaluation}") end}
   >
     <:col :let={{_id, evaluation}} label={gettext("Comment")}>{evaluation.comment}</:col>
-    
+
     <:col :let={{_id, evaluation}} label={gettext("Rating")}>{evaluation.rating}</:col>
-    
+
     <%!-- <:col :let={{_id, evaluation}} label="Rating">
     <div>
       <div
@@ -54,7 +54,7 @@
       </div>
        <.link patch={~p"/evaluations/#{evaluation}/edit"}>Edit</.link>
     </:action>
-    
+
     <:action :let={{_id, evaluation}}>
       <.link
         id={evaluation.id}
@@ -66,7 +66,7 @@
       </.link>
     </:action>
   </.table>
-  
+
   <.modal
     :if={@live_action in [:new, :edit]}
     id="evaluation-modal"

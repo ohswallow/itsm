@@ -1,4 +1,4 @@
-<Layouts.default current_path={@current_path} current_params={@current_params} flash={@flash}>
+<Layouts.admin current_scope={@current_scope} page_title={@page_title} current_path={@current_path} current_params={@current_params} flash={@flash}>
   <.header>
     Listing Users
     <:actions>
@@ -7,7 +7,7 @@
       </.link>
     </:actions>
   </.header>
-  
+
   <.itsm_table_container results={assigns[:results]}>
     <.table
       id="users"
@@ -15,7 +15,7 @@
       row_click={fn {_id, user} -> JS.navigate(~p"/admin/users/#{user}") end}
     >
       <:col :let={{_id, user}} label={gettext("Email")}>{user.email}</:col>
-      
+
       <:col :let={{id, user}} label={gettext("Confirmed At")}>
         <div
           id={"confirmed-at-#{id}"}
@@ -23,32 +23,32 @@
           utc-value={user.confirmed_at}
         />
       </:col>
-      
+
       <:col :let={{_id, user}} label={gettext("Employee Number")}>{user.employee_number}</:col>
-      
+
       <:col :let={{_id, user}} label={gettext("Display Name")}>{user.display_name}</:col>
-      
+
       <:col :let={{_id, user}} label={gettext("Organization")}>{user.organization}</:col>
-      
+
       <:col :let={{_id, user}} label={gettext("Organization Code")}>
         {user.organization_code}
       </:col>
-      
+
       <:col :let={{_id, user}} label={gettext("Department")}>{user.department}</:col>
-      
+
       <:col :let={{_id, user}} label={gettext("Department Code")}>{user.department_code}</:col>
-      
+
       <:col :let={{_id, user}} label={gettext("Role")}>
         <.common_code_label group="역할" code={user.role} />
       </:col>
-      
+
       <:action :let={{_id, user}}>
         <div class="sr-only">
           <.link navigate={~p"/admin/users/#{user}"}>Show</.link>
         </div>
          <.link patch={~p"/admin/users/#{user}/edit"}>Edit</.link>
       </:action>
-      
+
       <:action :let={{_id, user}}>
         <.link
           id={user.id}
@@ -61,7 +61,7 @@
       </:action>
     </.table>
   </.itsm_table_container>
-  
+
   <.modal
     :if={@live_action in [:new, :edit]}
     id="user-modal"
@@ -78,4 +78,4 @@
       patch={~p"/admin/users?#{assigns[:results][:params] || %{}}"}
     />
   </.modal>
-</Layouts.default>
+</Layouts.admin>

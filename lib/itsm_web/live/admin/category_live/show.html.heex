@@ -1,38 +1,38 @@
-<Layouts.default current_path={@current_path} current_params={@current_params} flash={@flash}>
+<Layouts.admin current_scope={@current_scope} page_title={@page_title} current_path={@current_path} current_params={@current_params} flash={@flash}>
   <.header>
     Category {@category.id}
     <:subtitle>This is a category record from your database.</:subtitle>
-    
+
     <:actions>
       <.link patch={~p"/admin/categories/#{@category}/show/edit"} phx-click={JS.push_focus()}>
         <.button>Edit category</.button>
       </.link>
     </:actions>
   </.header>
-  
+
   <.list>
     <:item title={gettext("Name")}>{@category.name}</:item>
-    
+
     <:item title={gettext("Description")}>{@category.description}</:item>
-    
+
     <:item title={gettext("Affiliate")}>
       <.common_code_label group="계열사" code={@category.affiliate} />
     </:item>
-    
+
     <:item title={gettext("Request Name")}>{@category.request_name}</:item>
-    
+
     <:item title={gettext("Group")}>
       <.common_code_label group="그룹" code={@category.group} />
     </:item>
-    
+
     <:item title={gettext("Category")}>
       <.common_code_label group="카테고리" code={@category.category} />
     </:item>
-    
+
     <:item title={gettext("Duration")}>{@category.duration}</:item>
-    
+
     <:item title={gettext("Active")}>{@category.active}</:item>
-    
+
     <:item title={gettext("Inserted At")}>
       <span
         id={"category-inserted-at-#{@category.id}"}
@@ -40,7 +40,7 @@
         utc-value={@category.inserted_at}
       />
     </:item>
-    
+
     <:item title={gettext("Updated At")}>
       <span
         id={"category-updated-at-#{@category.id}"}
@@ -49,9 +49,9 @@
       />
     </:item>
   </.list>
-  
+
   <.back navigate={~p"/admin/categories"}>Back to categories</.back>
-  
+
   <.modal
     :if={@live_action == :edit}
     id="category-modal"
@@ -68,4 +68,4 @@
       patch={~p"/admin/categories/#{@category}"}
     />
   </.modal>
-</Layouts.default>
+</Layouts.admin>

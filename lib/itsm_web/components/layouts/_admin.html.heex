@@ -1,0 +1,76 @@
+<div class="drawer lg:drawer-open">
+  <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
+  <div class="drawer-content">
+    <!-- Navbar -->
+    <nav class="navbar w-full bg-base-300">
+      <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-square btn-ghost">
+        <!-- Sidebar toggle icon -->
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          stroke-linejoin="round"
+          stroke-linecap="round"
+          stroke-width="2"
+          fill="none"
+          stroke="currentColor"
+          class="my-1.5 inline-block size-4"
+        ><path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z">
+        </path><path d="M9 4v16"></path><path d="M14 10l2 2l-2 2"></path></svg>
+      </label>
+
+      <div class="px-4">{@page_title}</div>
+    </nav>
+    <!-- Page content here -->
+    <div class="p-4">{render_slot(@inner_block)}</div>
+  </div>
+
+  <div class="drawer-side is-drawer-open:overflow-visible">
+    <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
+    <div class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-64 is-drawer-open:w-14">
+      <!-- Sidebar content here -->
+      <ul class="menu w-full grow">
+        <% icon_map = %{
+          "categories" => "hero-document-plus",
+          "requests" => "hero-list-bullet",
+          "approvals" => "hero-check-badge",
+          "delegations" => "hero-user-group",
+          "crews" => "hero-users",
+          "assets" => "hero-computer-desktop",
+          "admin" => "hero-shield-check",
+          "comments" => "hero-chat-bubble-left",
+          "common_codes" => "hero-squares-2x2",
+          "users" => "hero-user-circle-solid"
+        }
+
+        get_icon_name = fn path ->
+          path = String.replace(path, "/admin/", "")
+          Map.get(icon_map, path) || "hero-question-mark-circle"
+        end %>
+        <Layouts.menu
+          :if={@current_scope.role == "admin"}
+          :for={menu <- ItsmWeb.RouterUtils.admin_menu_items()}
+          navigate={menu.path}
+          icon_name={get_icon_name.(menu.path)}
+          current_path={@current_path}
+          current_params={@current_params}
+          data_tip={Gettext.gettext(ItsmWeb.Gettext, menu.name)}
+        >
+          {Gettext.gettext(ItsmWeb.Gettext, menu.name)}
+        </Layouts.menu>
+
+        <Layouts.menu
+          :if={@current_scope.role == "admin"}
+          navigate={~p"/api/graphiql"}
+          icon_name="hero-document-text"
+          current_path={@current_path}
+          current_params={@current_params}
+          data_tip={gettext("Api Doc")}
+        >
+          {gettext("Api Doc")}
+        </Layouts.menu>
+
+      </ul>
+    </div>
+  </div>
+   <Layouts.flash_group flash={@flash} />
+</div>

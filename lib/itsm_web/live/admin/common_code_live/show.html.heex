@@ -1,28 +1,28 @@
-<Layouts.default current_path={@current_path} current_params={@current_params} flash={@flash}>
+<Layouts.admin current_scope={@current_scope} page_title={@page_title} current_path={@current_path} current_params={@current_params} flash={@flash}>
   <.header>
     Common Code {@common_code.id}
     <:subtitle>This is a common code record from your database.</:subtitle>
-    
+
     <:actions>
       <.link patch={~p"/admin/common-codes/#{@common_code}/show/edit"} phx-click={JS.push_focus()}>
         <.button>Edit common code</.button>
       </.link>
     </:actions>
   </.header>
-  
+
   <.list>
     <:item title={gettext("Group Code")}>{@common_code.group_code}</:item>
-    
+
     <:item title={gettext("Code")}>{@common_code.code}</:item>
-    
+
     <:item title={gettext("Label")}>{@common_code.label}</:item>
-    
+
     <:item title={gettext("Description")}>{@common_code.description}</:item>
-    
+
     <:item title={gettext("Sort Order")}>{@common_code.sort_order}</:item>
-    
+
     <:item title={gettext("Is Active")}>{@common_code.is_active}</:item>
-    
+
     <:item title={gettext("Inserted At")}>
       <span
         id={"common-code-inserted-at-#{@common_code.id}"}
@@ -30,7 +30,7 @@
         utc-value={@common_code.inserted_at}
       />
     </:item>
-    
+
     <:item title={gettext("Updated At")}>
       <span
         id={"common-code-updated-at-#{@common_code.id}"}
@@ -39,9 +39,9 @@
       />
     </:item>
   </.list>
-  
+
   <.back navigate={~p"/admin/common-codes"}>Back to common_codes</.back>
-  
+
   <.modal
     :if={@live_action == :edit}
     id="common_code-modal"
@@ -58,4 +58,4 @@
       patch={~p"/admin/common-codes/#{@common_code}"}
     />
   </.modal>
-</Layouts.default>
+</Layouts.admin>

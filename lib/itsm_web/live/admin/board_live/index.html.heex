@@ -1,4 +1,4 @@
-<Layouts.default current_path={@current_path} current_params={@current_params} flash={@flash}>
+<Layouts.admin current_scope={@current_scope} page_title={@page_title} current_path={@current_path} current_params={@current_params} flash={@flash}>
   <.header>
     Listing Boards
     <:actions>
@@ -7,7 +7,7 @@
       </.link>
     </:actions>
   </.header>
-  
+
   <.itsm_table_container results={assigns[:results]}>
     <.table
       id="boards"
@@ -15,11 +15,11 @@
       row_click={fn {_id, board} -> JS.navigate(~p"/admin/boards/#{board}") end}
     >
       <:col :let={{_id, board}} label={gettext("Name")}>{board.name}</:col>
-      
+
       <:col :let={{_id, board}} label={gettext("Slug")}>{board.slug}</:col>
-      
+
       <:col :let={{_id, board}} label={gettext("Description")}>{board.description}</:col>
-      
+
       <:col :let={{_id, board}} label={gettext("Metadata")}>
         <div class="flex flex-wrap gap-1">
           <span
@@ -28,20 +28,20 @@
           >
             {field["label"]}
           </span>
-          
+
           <span :if={is_nil(board.metadata["fields"])} class="text-gray-400 italic">
             기본 필드
           </span>
         </div>
       </:col>
-      
+
       <:action :let={{_id, board}}>
         <div class="sr-only">
           <.link navigate={~p"/admin/boards/#{board}"}>Show</.link>
         </div>
          <.link patch={~p"/admin/boards/#{board}/edit"}>Edit</.link>
       </:action>
-      
+
       <:action :let={{_id, board}}>
         <.link
           id={board.id}
@@ -54,7 +54,7 @@
       </:action>
     </.table>
   </.itsm_table_container>
-  
+
   <.modal
     :if={@live_action in [:new, :edit]}
     id="board-modal"
@@ -71,4 +71,4 @@
       patch={~p"/admin/boards?#{assigns[:results][:params] || %{}}"}
     />
   </.modal>
-</Layouts.default>
+</Layouts.admin>
