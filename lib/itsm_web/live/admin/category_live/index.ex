@@ -11,6 +11,7 @@ defmodule ItsmWeb.Admin.CategoryLive.Index do
      socket
      |> stream(:categories, [])
      |> assign_new_options()
+     |> assign(:page_title, "테스트")
      |> Itsm.PubSub.Helper.subscribe(Categories, is_admin: true)}
   end
 

@@ -1,21 +1,23 @@
-<.filter_form form={@form} group_select_options={@group_select_options} />
-<div id="categories-container" class="mt-6 space-y-10">
-  <div :for={group <- @filtered_category_groups} class="group-section">
-    <div class="relative py-4 border-b border-zinc-100 mb-4">
-      <span class="bg-white pr-3 text-sm font-bold text-zinc-800">{group}</span>
-    </div>
+<Layouts.default current_scope={@current_scope} page_title={@page_title} current_path={@current_path} current_params={@current_params} flash={@flash}>
+  <.filter_form form={@form} group_select_options={@group_select_options} />
+  <div id="categories-container" class="mt-6 space-y-10">
+    <div :for={group <- @filtered_category_groups} class="group-section">
+      <div class="relative py-4 border-b border-zinc-100 mb-4">
+        <span class="bg-white pr-3 text-sm font-bold text-zinc-800">{group}</span>
+      </div>
 
-    <div
-      id={"category-card-container-#{group}"}
-      phx-update="stream"
-      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
-    >
-      <.category_card
-        :for={{dom_id, category} <- @streams.categories}
-        :if={category.group == group}
-        category={category}
-        id={dom_id}
-      />
+      <div
+        id={"category-card-container-#{group}"}
+        phx-update="stream"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
+      >
+        <.category_card
+          :for={{dom_id, category} <- @streams.categories}
+          :if={category.group == group}
+          category={category}
+          id={dom_id}
+        />
+      </div>
     </div>
   </div>
-</div>
+</Layouts.default>

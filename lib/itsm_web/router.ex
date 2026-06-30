@@ -59,6 +59,7 @@ defmodule ItsmWeb.Router do
         {ItsmWeb.PathProvider, :set_current_path_on_assigns},
         {ItsmWeb.UserAuth, :log_menu_access}
       ] do
+      live "/main", MainLive.Index, :index
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
 
@@ -153,8 +154,7 @@ defmodule ItsmWeb.Router do
         {ItsmWeb.UserAuth, :set_locale},
         {ItsmWeb.PathProvider, :set_current_path_on_assigns},
         {ItsmWeb.UserAuth, :log_menu_access}
-      ],
-      layout: {ItsmWeb.Layouts, :admin} do
+      ] do
       live "/", Admin.CategoryLive.Index, :index
 
       live "/users", Admin.UserLive.Index, :index

@@ -1,60 +1,71 @@
-<.header>
-  Attachment {@attachment.id}
-  <:subtitle>This is a attachment record from your database.</:subtitle>
+<Layouts.admin current_scope={@current_scope} page_title={@page_title} current_path={@current_path} current_params={@current_params} flash={@flash}>
+  <.header>
+    Attachment {@attachment.id}
+    <:subtitle>This is a attachment record from your database.</:subtitle>
 
-  <:actions>
-    <.link patch={~p"/admin/attachments/#{@attachment}/show/edit"} phx-click={JS.push_focus()}>
-      <.button>Edit attachment</.button>
-    </.link>
-  </:actions>
-</.header>
+    <:actions>
+      <.link patch={~p"/admin/attachments/#{@attachment}/show/edit"} phx-click={JS.push_focus()}>
+        <.button>Edit attachment</.button>
+      </.link>
+    </:actions>
+  </.header>
 
-<.list>
-  <:item title={gettext("Filename")}>{@attachment.filename}</:item>
-  <:item title={gettext("Local Path")}>{@attachment.local_path}</:item>
-  <:item title={gettext("File Type")}>{@attachment.file_type}</:item>
-  <:item title={gettext("Byte Size")}>{@attachment.byte_size}</:item>
-  <:item title={gettext("Status")}>{@attachment.status}</:item>
-  <:item title={gettext("Resource Type")}>{@attachment.resource_type}</:item>
-  <:item title={gettext("Resource Id")}>{@attachment.resource_id}</:item>
-  <:item title={gettext("Deleted At")}>
-    <span
-      id={"attachment-deleted_at-#{@attachment.id}"}
-      phx-hook="LocalTime.ToLocale"
-      utc-value={@attachment.deleted_at}
+  <.list>
+    <:item title={gettext("Filename")}>{@attachment.filename}</:item>
+
+    <:item title={gettext("Local Path")}>{@attachment.local_path}</:item>
+
+    <:item title={gettext("File Type")}>{@attachment.file_type}</:item>
+
+    <:item title={gettext("Byte Size")}>{@attachment.byte_size}</:item>
+
+    <:item title={gettext("Status")}>{@attachment.status}</:item>
+
+    <:item title={gettext("Resource Type")}>{@attachment.resource_type}</:item>
+
+    <:item title={gettext("Resource Id")}>{@attachment.resource_id}</:item>
+
+    <:item title={gettext("Deleted At")}>
+      <span
+        id={"attachment-deleted_at-#{@attachment.id}"}
+        phx-hook="LocalTime.ToLocale"
+        utc-value={@attachment.deleted_at}
+      />
+    </:item>
+
+    <:item title={gettext("Inserted At")}>
+      <span
+        id={"attachment-inserted-at-#{@attachment.id}"}
+        phx-hook="LocalTime.ToLocale"
+        utc-value={@attachment.inserted_at}
+      />
+    </:item>
+
+    <:item title={gettext("Updated At")}>
+      <span
+        id={"attachment-updated-at-#{@attachment.id}"}
+        phx-hook="LocalTime.ToLocale"
+        utc-value={@attachment.updated_at}
+      />
+    </:item>
+  </.list>
+
+  <.back navigate={~p"/admin/attachments"}>Back to attachments</.back>
+
+  <.modal
+    :if={@live_action == :edit}
+    id="attachment-modal"
+    show
+    on_cancel={JS.patch(~p"/admin/attachments/#{@attachment}")}
+  >
+    <.live_component
+      module={ItsmWeb.Admin.AttachmentLive.FormComponent}
+      id={@attachment.id}
+      title={@page_title}
+      action={@live_action}
+      attachment={@attachment}
+      current_scope={@current_scope}
+      patch={~p"/admin/attachments/#{@attachment}"}
     />
-  </:item>
-  <:item title={gettext("Inserted At")}>
-    <span
-      id={"attachment-inserted-at-#{@attachment.id}"}
-      phx-hook="LocalTime.ToLocale"
-      utc-value={@attachment.inserted_at}
-    />
-  </:item>
-  <:item title={gettext("Updated At")}>
-    <span
-      id={"attachment-updated-at-#{@attachment.id}"}
-      phx-hook="LocalTime.ToLocale"
-      utc-value={@attachment.updated_at}
-    />
-  </:item>
-</.list>
-
-<.back navigate={~p"/admin/attachments"}>Back to attachments</.back>
-
-<.modal
-  :if={@live_action == :edit}
-  id="attachment-modal"
-  show
-  on_cancel={JS.patch(~p"/admin/attachments/#{@attachment}")}
->
-  <.live_component
-    module={ItsmWeb.Admin.AttachmentLive.FormComponent}
-    id={@attachment.id}
-    title={@page_title}
-    action={@live_action}
-    attachment={@attachment}
-    current_scope={@current_scope}
-    patch={~p"/admin/attachments/#{@attachment}"}
-  />
-</.modal>
+  </.modal>
+</Layouts.admin>

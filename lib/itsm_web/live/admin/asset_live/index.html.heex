@@ -1,76 +1,91 @@
-<.header>
-  Listing Assets
-  <:actions>
-    <.link patch={~p"/admin/assets/new"}>
-      <.button>New Asset</.button>
-    </.link>
-  </:actions>
-</.header>
-
-<.itsm_table_container results={assigns[:results]}>
-  <.table
-    id="assets"
-    rows={@streams.assets}
-    row_click={fn {_id, asset} -> JS.navigate(~p"/admin/assets/#{asset}") end}
-  >
-    <:col :let={{_id, asset}} label={gettext("Mapping Value")}>
-      {asset.mapping_value}
-    </:col>
-    <:col :let={{_id, asset}} label={gettext("Name")}>{asset.name}</:col>
-    <:col :let={{_id, asset}} label={gettext("Description")}>{asset.description}</:col>
-    <:col :let={{_id, asset}} label={gettext("Affiliate")}>
-      <.common_code_label group="계열사" code={asset.affiliate} />
-    </:col>
-    <:col :let={{_id, asset}} label={gettext("Category")}>
-      <.common_code_label group="카테고리" code={asset.category} />
-    </:col>
-    <:col :let={{_id, asset}} label={gettext("Region Type")}>
-      <.common_code_label group="지역_유형" code={asset.region_type} />
-    </:col>
-    <:col :let={{_id, asset}} label={gettext("Infra Type")}>
-      <.common_code_label group="인프라_유형" code={asset.infra_type} />
-    </:col>
-    <:col :let={{_id, asset}} label={gettext("Environment")}>
-      <.common_code_label group="운영_구분" code={asset.env} />
-    </:col>
-    <:col :let={{_id, asset}} label={gettext("Location")}>
-      <.common_code_label group="장소" code={asset.location} />
-    </:col>
-    <:col :let={{_id, asset}} label={gettext("Is Dmz Zone")}>{asset.is_dmz_zone}</:col>
-    <:col :let={{_id, asset}} label={gettext("Service Crew")}>{asset.service_crew.name}</:col>
-    <:col :let={{_id, asset}} label={gettext("System Crew")}>{asset.system_crew.name}</:col>
-    <:action :let={{_id, asset}}>
-      <div class="sr-only">
-        <.link navigate={~p"/admin/assets/#{asset}"}>Show</.link>
-      </div>
-      <.link patch={~p"/admin/assets/#{asset}/edit"}>Edit</.link>
-    </:action>
-    <:action :let={{_id, asset}}>
-      <.link
-        id={asset.id}
-        phx-click={JS.push("delete", value: %{id: asset.id})}
-        class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
-        data-confirm="Are you sure?"
-      >
-        Delete
+<Layouts.admin current_scope={@current_scope} page_title={@page_title} current_path={@current_path} current_params={@current_params} flash={@flash}>
+  <.header>
+    Listing Assets
+    <:actions>
+      <.link patch={~p"/admin/assets/new"}>
+        <.button>New Asset</.button>
       </.link>
-    </:action>
-  </.table>
-</.itsm_table_container>
+    </:actions>
+  </.header>
 
-<.modal
-  :if={@live_action in [:new, :edit]}
-  id="asset-modal"
-  show
-  on_cancel={JS.patch(~p"/admin/assets?#{assigns[:results][:params] || %{}}")}
->
-  <.live_component
-    module={ItsmWeb.Admin.AssetLive.FormComponent}
-    id={@asset.id || :new}
-    title={@page_title}
-    action={@live_action}
-    asset={@asset}
-    current_scope={@current_scope}
-    patch={~p"/admin/assets?#{assigns[:results][:params] || %{}}"}
-  />
-</.modal>
+  <.itsm_table_container results={assigns[:results]}>
+    <.table
+      id="assets"
+      rows={@streams.assets}
+      row_click={fn {_id, asset} -> JS.navigate(~p"/admin/assets/#{asset}") end}
+    >
+      <:col :let={{_id, asset}} label={gettext("Mapping Value")}>
+        {asset.mapping_value}
+      </:col>
+
+      <:col :let={{_id, asset}} label={gettext("Name")}>{asset.name}</:col>
+
+      <:col :let={{_id, asset}} label={gettext("Description")}>{asset.description}</:col>
+
+      <:col :let={{_id, asset}} label={gettext("Affiliate")}>
+        <.common_code_label group="계열사" code={asset.affiliate} />
+      </:col>
+
+      <:col :let={{_id, asset}} label={gettext("Category")}>
+        <.common_code_label group="카테고리" code={asset.category} />
+      </:col>
+
+      <:col :let={{_id, asset}} label={gettext("Region Type")}>
+        <.common_code_label group="지역_유형" code={asset.region_type} />
+      </:col>
+
+      <:col :let={{_id, asset}} label={gettext("Infra Type")}>
+        <.common_code_label group="인프라_유형" code={asset.infra_type} />
+      </:col>
+
+      <:col :let={{_id, asset}} label={gettext("Environment")}>
+        <.common_code_label group="운영_구분" code={asset.env} />
+      </:col>
+
+      <:col :let={{_id, asset}} label={gettext("Location")}>
+        <.common_code_label group="장소" code={asset.location} />
+      </:col>
+
+      <:col :let={{_id, asset}} label={gettext("Is Dmz Zone")}>{asset.is_dmz_zone}</:col>
+
+      <:col :let={{_id, asset}} label={gettext("Service Crew")}>{asset.service_crew.name}</:col>
+
+      <:col :let={{_id, asset}} label={gettext("System Crew")}>{asset.system_crew.name}</:col>
+
+      <:action :let={{_id, asset}}>
+        <div class="sr-only">
+          <.link navigate={~p"/admin/assets/#{asset}"}>Show</.link>
+        </div>
+         <.link patch={~p"/admin/assets/#{asset}/edit"}>Edit</.link>
+      </:action>
+
+      <:action :let={{_id, asset}}>
+        <.link
+          id={asset.id}
+          phx-click={JS.push("delete", value: %{id: asset.id})}
+          class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
+          data-confirm="Are you sure?"
+        >
+          Delete
+        </.link>
+      </:action>
+    </.table>
+  </.itsm_table_container>
+
+  <.modal
+    :if={@live_action in [:new, :edit]}
+    id="asset-modal"
+    show
+    on_cancel={JS.patch(~p"/admin/assets?#{assigns[:results][:params] || %{}}")}
+  >
+    <.live_component
+      module={ItsmWeb.Admin.AssetLive.FormComponent}
+      id={@asset.id || :new}
+      title={@page_title}
+      action={@live_action}
+      asset={@asset}
+      current_scope={@current_scope}
+      patch={~p"/admin/assets?#{assigns[:results][:params] || %{}}"}
+    />
+  </.modal>
+</Layouts.admin>

@@ -12,12 +12,6 @@
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "JakeBecker.elixir-ls"
   },
-
-  "[phoenix-heex]": {
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "JakeBecker.elixir-ls"
-  },
-
   "emmet.includeLanguages": {
     "elixir": "html",
     "phoenix-heex": "html"
