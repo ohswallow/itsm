@@ -1,4 +1,4 @@
-<Layouts.default current_scope={@current_scope} page_title={@page_title} current_path={@current_path} current_params={@current_params} flash={@flash}>
+<Layouts.default current_scope={@current_scope} menu_title={gettext("All Crews")} flash={@flash}>
   <.header>{@page_title}</.header>
 
   <.itsm_table_container results={assigns[:results]}>
@@ -7,7 +7,7 @@
       row_click={
         fn {_id, crew} ->
           return_url = ~p"/crews/all?#{assigns[:results][:params] || %{}}"
-          JS.navigate(~p"/crews/#{crew}?return_to=#{return_url}&menu_id=all_crews")
+          JS.navigate(~p"/crews/#{crew}?return_to=#{return_url}")
         end
       }
     >

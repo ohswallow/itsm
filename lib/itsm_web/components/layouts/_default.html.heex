@@ -18,7 +18,7 @@
         </path><path d="M9 4v16"></path><path d="M14 10l2 2l-2 2"></path></svg>
       </label>
 
-      <div class="px-4">{@page_title}</div>
+      <div class="px-4">{@menu_title}</div>
     </nav>
     <!-- Page content here -->
     <div class="p-4">{render_slot(@inner_block)}</div>
@@ -30,109 +30,75 @@
       <!-- Sidebar content here -->
       <ul class="menu w-full grow">
         <Layouts.menu
+          name={gettext("Service Request")}
           navigate={~p"/categories"}
           icon_name="hero-document-plus"
-          current_path={@current_path}
-          current_params={@current_params}
-          data_tip={gettext("Service Request")}
-        >
-          {gettext("Service Request")}
-        </Layouts.menu>
+          selected={@menu_title}
+        />
 
         <Layouts.menu
+          name={gettext("My Request List")}
           navigate={~p"/requests"}
           icon_name="hero-list-bullet"
-          current_path={@current_path}
-          current_params={@current_params}
-          data_tip={gettext("My Request List")}
-        >
-          {gettext("My Request List")}
-        </Layouts.menu>
+          selected={@menu_title}
+        />
 
         <Layouts.menu
+          name={gettext("Approval List")}
           navigate={~p"/approvals"}
           icon_name="hero-check-badge"
-          current_path={@current_path}
-          current_params={@current_params}
-          data_tip={gettext("Approval List")}
-        >
-          {gettext("Approval List")}
-        </Layouts.menu>
+          selected={@menu_title}
+        />
          <li />
         <Layouts.menu
+          name={gettext("Delegation")}
           navigate={~p"/delegations"}
           icon_name="hero-user-group"
-          current_path={@current_path}
-          current_params={@current_params}
-          data_tip={gettext("Delegation")}
-        >
-          {gettext("Delegation")}
-        </Layouts.menu>
+          selected={@menu_title}
+        />
 
         <Layouts.menu
+          name={gettext("My Crews")}
           navigate={~p"/crews?menu_id=crews"}
           icon_name="hero-users"
-          menu_id="crews"
-          current_path={@current_path}
-          current_params={@current_params}
-          data_tip={gettext("My Crews")}
-        >
-          {gettext("My Crews")}
-        </Layouts.menu>
+          selected={@menu_title}
+       />
 
         <Layouts.menu
+          name={gettext("All Crews")}
           navigate={~p"/crews/all?menu_id=all_crews"}
           icon_name="hero-rectangle-stack"
-          menu_id="all_crews"
-          current_path={@current_path}
-          current_params={@current_params}
-          data_tip={gettext("All Crews")}
-        >
-          {gettext("All Crews")}
-        </Layouts.menu>
+          selected={@menu_title}
+        />
 
         <Layouts.menu
+          name={gettext("Assets")}
           navigate={~p"/assets"}
           icon_name="hero-computer-desktop"
-          current_path={@current_path}
-          current_params={@current_params}
-          data_tip={gettext("Assets")}
-        >
-          {gettext("Assets")}
-        </Layouts.menu>
+          selected={@menu_title}
+        />
 
         <Layouts.menu
+          name={gettext("Boards")}
           navigate={~p"/boards?menu_id=boards"}
           icon_name="hero-list-bullet"
-          menu_id="boards"
-          current_path={@current_path}
-          current_params={@current_params}
-          data_tip={gettext("Boards")}
-        >
-          {gettext("Boards")}
-        </Layouts.menu>
+          selected={@menu_title}
+        />
 
         <Layouts.menu
+          name={gettext("Api Doc")}
           navigate={~p"/api/graphiql"}
           icon_name="hero-document-text"
-          menu_id="graphiql"
-          current_path={@current_path}
-          current_params={@current_params}
-          data_tip={gettext("Api Doc")}
-        >
-          {gettext("Api Doc")}
-        </Layouts.menu>
+          selected={@menu_title}
+        />
          <li />
         <Layouts.menu
           :if={@current_scope.role == "admin"}
+          name={gettext("Admin Console")}
           navigate={~p"/admin"}
           icon_name="hero-shield-check"
-          current_path={@current_path}
-          current_params={@current_params}
-          data_tip={gettext("Admin Console")}
-        >
-          {gettext("Admin Console")}
-        </Layouts.menu>
+          selected={@menu_title}
+        />
       </ul>
     </div>
   </div>

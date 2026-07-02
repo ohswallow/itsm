@@ -1,4 +1,4 @@
-<Layouts.default current_scope={@current_scope} page_title={@page_title} current_path={@current_path} current_params={@current_params} flash={@flash}>
+<Layouts.default current_scope={@current_scope} menu_title={gettext("My Request List")} flash={@flash}>
   <.header>{gettext("Listing Requests")}</.header>
 
   <.itsm_table_container results={assigns[:results]}>

@@ -66,8 +66,8 @@ defmodule ItsmWeb.Router do
       # 내 크루 관리
       live "/crews", CrewLive.Index, :index
       live "/crews/all", CrewLive.AllIndex, :index
-      live "/crews/new", CrewLive.Index, :new
-      live "/crews/:id/edit", CrewLive.Index, :edit
+      live "/crews/new", CrewLive.Form, :new
+      live "/crews/:id/edit", CrewLive.Form, :edit
       live "/crews/:id", CrewLive.Show, :show
 
       # 카테고리(SR 유형) 목록

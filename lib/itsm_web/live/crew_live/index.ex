@@ -6,35 +6,14 @@ defmodule ItsmWeb.CrewLive.Index do
   alias Itsm.Crews.CrewsUsers
   alias ItsmWeb.LiveUtils
 
-  # 공통 컴포넌트 임포트
-  import ItsmWeb.CrewLive.TableComponents
-
   def mount(_params, _session, socket) do
-    {:ok, socket |> stream(:crews, []) |> Itsm.PubSub.Helper.subscribe(Crews)}
-  end
-
-  def handle_params(params, _url, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
-  end
-
-  defp apply_action(socket, :index, _params) do
     %{current_scope: current_scope} = socket.assigns
 
-    socket
-    |> assign(:page_title, "My Crews")
-    |> stream(:crews, Crews.list_my_crews(current_scope.user), reset: true)
-  end
-
-  defp apply_action(socket, :new, _params) do
-    socket
-    |> assign(:page_title, "New Crew")
-    |> assign(:crew, %Crew{})
-  end
-
-  defp apply_action(socket, :edit, %{"id" => id}) do
-    socket
-    |> assign(:page_title, "Edit Crew")
-    |> assign(:crew, Crews.get_crew!(id))
+    {:ok,
+     socket
+     |> assign(:page_title, "My Crews")
+     |> stream(:crews, Crews.list_my_crews(current_scope.user), reset: true)
+     |> Itsm.PubSub.Helper.subscribe(Crews)}
   end
 
   def handle_event("delete", %{"id" => id}, socket) do

@@ -1,4 +1,4 @@
-<Layouts.default current_scope={@current_scope} page_title={@page_title} current_path={@current_path} current_params={@current_params} flash={@flash}>
+<Layouts.default current_scope={@current_scope} menu_title={gettext("My Crews")} flash={@flash}>
   <.header>
     {@page_title}
     <:actions>
@@ -8,48 +8,40 @@
     </:actions>
   </.header>
 
-  <.crew_table
-    crews={@streams.crews}
-    row_click={
-      fn {_id, crew} ->
-        JS.navigate(~p"/crews/#{crew}?menu_id=crews")
-      end
-    }
-  >
-    <:action :let={{_id, crew}} label="Actions">
-      <.dropdown_menu id={"#{crew.id}-menu"}>
-        <.link
-          patch={~p"/crews/#{crew}/edit?menu_id=crews"}
-          class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-        >
-          <.icon name="hero-pencil" class="w-4 h-4" /> Edit Crew
-        </.link>
-
-        <.link
-          phx-click={JS.push("delete", value: %{id: crew.id})}
-          data-confirm="Are you sure?"
-          class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-        >
-          <.icon name="hero-trash" class="w-4 h-4" /> Delete Crew
-        </.link>
-      </.dropdown_menu>
+  <.table
+    id="crews"
+    rows={@streams.crews}
+    row_click={fn {_id, crew} -> JS.navigate(~p"/crews/#{crew}?menu_id=crews") end}
+    >
+    <:col :let={{_id, crew}} label={gettext("Name")}>{crew.name}</:col>
+    <:col :let={{_id, crew}} label={gettext("Description")}>{crew.description}</:col>
+    <:col :let={{_id, crew}} label={gettext("Organization")}>
+      <.common_code_label group="계열사" code={LiveUtils.fetch_safe(crew.leader, :organization_code)} />
+    </:col>
+    <:col :let={{_id, crew}} label={gettext("Department")}>
+      {LiveUtils.fetch_safe(crew.leader, :department)}
+    </:col>
+    <:col :let={{_id, crew}} label={gettext("Leader")}>
+      {LiveUtils.fetch_safe(crew.leader, :display_name)}
+    </:col>
+    <:action :let={{_id, crew}} >
+      <div class="dropdown dropdown-top dropdown-end" >
+        <div tabindex="0" role="button" class="btn m-1" >
+        <.icon name="hero-ellipsis-vertical" class="h-6 w-6"/>
+        ️</div>
+        <ul tabindex="-1" class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+          <li>
+            <.link patch={~p"/crews/#{crew}/edit?menu_id=crews"}>
+              <.icon name="hero-pencil" class="w-4 h-4" />Edit Crew
+            </.link>
+          </li>
+          <li>
+            <.link phx-click={JS.push("delete", value: %{id: crew.id})} data-confirm="Are you sure?" >
+              <.icon name="hero-trash" class="w-4 h-4" /> Delete Crew
+            </.link>
+          </li>
+        </ul>
+      </div>
     </:action>
-  </.crew_table>
-
-  <.modal
-    :if={@live_action in [:new, :edit]}
-    id="crew-modal"
-    show
-    on_cancel={JS.patch(~p"/crews?menu_id=crews")}
-  >
-    <.live_component
-      module={ItsmWeb.CrewLive.FormComponent}
-      id={@crew.id || :new}
-      title={@page_title}
-      action={@live_action}
-      crew={@crew}
-      current_user={@current_user}
-      patch={~p"/crews?menu_id=crews"}
-    />
-  </.modal>
+  </.table>
 </Layouts.default>

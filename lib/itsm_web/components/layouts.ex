@@ -12,9 +12,7 @@ defmodule ItsmWeb.Layouts do
   embed_templates "layouts/*"
 
   attr :current_scope, Itsm.Accounts.Scope, required: true, doc: "로그인 정보"
-  attr :current_path, :string, required: true, doc: "현재 페이지의 URL 경로 (예: /boards/123)"
-  attr :current_params, :map, required: true, doc: "현재 페이지의 params map (예: %{menu_id: 456})"
-  attr :page_title, :string, required: true, doc: "현재 선택된 페이지 제목"
+  attr :menu_title, :string, default: "", doc: "현재 선택된 메뉴 제목"
   attr :flash, :map, required: true, doc: "the map of flash messages"
   slot :inner_block, required: true
 
@@ -23,9 +21,7 @@ defmodule ItsmWeb.Layouts do
   end
 
   attr :current_scope, Itsm.Accounts.Scope, required: true, doc: "로그인 정보"
-  attr :current_path, :string, required: true, doc: "현재 페이지의 URL 경로 (예: /boards/123)"
-  attr :current_params, :map, required: true, doc: "현재 페이지의 params map (예: %{menu_id: 456})"
-  attr :page_title, :string, required: true, doc: "현재 선택된 페이지 제목"
+  attr :menu_title, :string, default: "", doc: "현재 선택된 메뉴 제목"
   attr :flash, :map, required: true, doc: "the map of flash messages"
   slot :inner_block, required: true
 
@@ -187,11 +183,9 @@ defmodule ItsmWeb.Layouts do
   """
   attr :navigate, :string, required: true, doc: "링크로 이동할 URL 경로 (예: /boards/123)"
   attr :icon_name, :string, required: true, doc: "Heroicons name, e.g. 'hero-home'"
-  attr :current_path, :string, required: true, doc: "현재 페이지의 URL 경로 (예: /boards/123)"
-  attr :current_params, :any, required: true, doc: "현재 페이지의 params map (예: %{menu_id: 456}"
-  attr :menu_id, :string, default: "", doc: "선택적으로 URL 쿼리에서 menu_id를 추출하여 메뉴 활성화 여부 결정"
-  attr :data_tip, :string, default: "", doc: "메뉴가 아이콘만 표출될때 마우스오버시 data-tip형식으로 메뉴표출"
-  slot :inner_block, required: true
+  attr :name, :string, required: true, doc: "메뉴명"
+  attr :selected, :string, default: nil, doc: "선택된 메뉴명 == 메뉴명이 동일할 경우 활성황 상태로 표시"
+  attr :data_tip, :string, default: nil, doc: "메뉴가 아이콘만 표출될때 마우스오버시 data-tip형식으로 메뉴표출"
 
   def menu(assigns) do
     ~H"""
@@ -199,22 +193,15 @@ defmodule ItsmWeb.Layouts do
       <.button
         navigate={@navigate}
         class={[
-          selected_menu?(@current_path, @current_params, @navigate, @menu_id) &&
+          @name == @selected &&
             "!bg-neutral !text-neutral-content",
           "is-drawer-open:tooltip is-drawer-open:tooltip-right"
         ]}
-        data-tip={@data_tip}
+        data-tip={@data_tip || @name}
       >
-        <.icon name={@icon_name} />
-        <span class="is-drawer-open:hidden">{render_slot(@inner_block)}</span>
+        <.icon name={@icon_name} /> <span class="is-drawer-open:hidden">{@name}</span>
       </.button>
     </li>
     """
-  end
-
-  defp selected_menu?(_current_path, %{"menu_id" => menu_id}, _navigate, menu_id), do: true
-
-  defp selected_menu?(current_path, _current_params, navigate, _menu_id) do
-    String.starts_with?(current_path, navigate)
   end
 end
