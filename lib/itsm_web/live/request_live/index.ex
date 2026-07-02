@@ -10,6 +10,7 @@ defmodule ItsmWeb.RequestLive.Index do
   def mount(_params, _session, socket) do
     {:ok,
      socket
+     |> assign(:menu_title, "My Request List")
      |> stream(:requests, [])
      |> Itsm.PubSub.Helper.subscribe(Requests)}
   end

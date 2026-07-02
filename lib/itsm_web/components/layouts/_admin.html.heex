@@ -18,7 +18,7 @@
         </path><path d="M9 4v16"></path><path d="M14 10l2 2l-2 2"></path></svg>
       </label>
 
-      <div class="px-4">{@page_title}</div>
+      <div class="px-4">{@menu_title}</div>
     </nav>
     <!-- Page content here -->
     <div class="p-4">{render_slot(@inner_block)}</div>
@@ -49,25 +49,19 @@
         <Layouts.menu
           :if={@current_scope.role == "admin"}
           :for={menu <- ItsmWeb.RouterUtils.admin_menu_items()}
+          name={Gettext.gettext(ItsmWeb.Gettext, menu.name)}
           navigate={menu.path}
           icon_name={get_icon_name.(menu.path)}
-          current_path={@current_path}
-          current_params={@current_params}
-          data_tip={Gettext.gettext(ItsmWeb.Gettext, menu.name)}
-        >
-          {Gettext.gettext(ItsmWeb.Gettext, menu.name)}
-        </Layouts.menu>
+          selected={@menu_title}
+        />
 
         <Layouts.menu
           :if={@current_scope.role == "admin"}
+          name={gettext("Api Doc")}
           navigate={~p"/api/graphiql"}
           icon_name="hero-document-text"
-          current_path={@current_path}
-          current_params={@current_params}
-          data_tip={gettext("Api Doc")}
-        >
-          {gettext("Api Doc")}
-        </Layouts.menu>
+          selected={@menu_title}
+        />
 
       </ul>
     </div>

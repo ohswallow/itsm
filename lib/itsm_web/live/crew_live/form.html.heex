@@ -1,0 +1,15 @@
+<Layouts.default current_scope={@current_scope} menu_title={gettext("My Crews")} flash={@flash}>
+    <.header>
+        {@page_title}
+        <:subtitle>Use this form to manage crew records in your database.</:subtitle>
+    </.header>
+
+    <.form for={@form} id="crew-form" phx-change="validate" phx-submit="save">
+        <.input field={@form[:name]} type="text" label={"Name"} />
+        <.input field={@form[:description]} type="text" label="Description" />
+        <footer>
+            <.button phx-disable-with="Saving..." variant="primary">Save Crew</.button>
+            <.button navigate={return_path(@return_to, @crew)}>Cancel</.button>
+        </footer>
+    </.form>
+</Layouts.default>

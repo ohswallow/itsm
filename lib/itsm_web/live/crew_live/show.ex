@@ -8,10 +8,16 @@ defmodule ItsmWeb.CrewLive.Show do
   alias ItsmWeb.LiveUtils
 
   def mount(params, _session, socket) do
-    back_path = params["return_to"] || ~p"/crews?menu_id=crews"
+    back_path = params["return_to"] || ~p"/crews"
 
-    {:ok, assign(socket, :back_path, back_path)}
+    {:ok,
+     socket
+     |> assign(:back_path, back_path)
+     |> assign(:menu_title, get_menu_title(URI.parse(back_path)))}
   end
+
+  defp get_menu_title(%URI{path: "/crews/all"}), do: gettext("All Crews")
+  defp get_menu_title(%URI{path: _}), do: gettext("My Crews")
 
   def handle_params(%{"id" => id}, _params, socket) do
     crew = Crews.get_crew_with_leader_users(id)

@@ -9,7 +9,7 @@ defmodule ItsmWeb.CategoryLive.Index do
   def mount(_params, _session, socket) do
     {:ok,
      socket
-     |> assign(:page_title, "Service Request")
+     |> assign(:menu_title, "Service Request")
      |> stream(:categories, [])
      |> Itsm.PubSub.Helper.subscribe(Categories)}
   end
