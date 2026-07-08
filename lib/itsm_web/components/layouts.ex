@@ -178,8 +178,10 @@ defmodule ItsmWeb.Layouts do
 
   @doc """
   사이트바 메뉴 링크 컴포넌트
-  current_path와 navigate를 비교하여 활성화 상태를 결정합니다.
-  menu_id가 제공된 경우 URL 쿼리에서 menu_id를 추출하여 비교합니다.
+  Layout default, admin 메소드에서 menu_title의 값이 동일하면 선택표시 상태로 표시됩니다.
+
+  ## Examples
+  <Layouts.default menu_title={gettext("My Crews")} >
   """
   attr :navigate, :string, required: true, doc: "링크로 이동할 URL 경로 (예: /boards/123)"
   attr :icon_name, :string, required: true, doc: "Heroicons name, e.g. 'hero-home'"

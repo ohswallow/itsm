@@ -30,6 +30,7 @@ defmodule ItsmWeb.CoreComponents do
   use Gettext, backend: ItsmWeb.Gettext
 
   alias Phoenix.LiveView.JS
+  alias Phoenix.LiveView.ColocatedHook
 
   @doc """
   Renders flash notices.
@@ -75,10 +76,10 @@ defmodule ItsmWeb.CoreComponents do
         <.icon :if={@kind == :error} name="hero-exclamation-circle" class="size-5 shrink-0" />
         <div>
           <p :if={@title} class="font-semibold">{@title}</p>
-
+          
           <p>{msg}</p>
         </div>
-        <div class="flex-1" />
+         <div class="flex-1" />
         <button type="button" class="group self-start cursor-pointer" aria-label={gettext("close")}>
           <.icon name="hero-x-mark" class="size-5 opacity-40 group-hover:opacity-70" />
         </button>
@@ -234,7 +235,7 @@ defmodule ItsmWeb.CoreComponents do
           />{@label}
         </span>
       </label>
-
+      
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -253,10 +254,10 @@ defmodule ItsmWeb.CoreComponents do
           {@rest}
         >
           <option :if={@prompt} value="">{@prompt}</option>
-          {Phoenix.HTML.Form.options_for_select(@options, @value)}
+           {Phoenix.HTML.Form.options_for_select(@options, @value)}
         </select>
       </label>
-
+      
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -276,7 +277,7 @@ defmodule ItsmWeb.CoreComponents do
           {@rest}
         >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
       </label>
-
+      
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -300,7 +301,7 @@ defmodule ItsmWeb.CoreComponents do
           {@rest}
         />
       </label>
-
+      
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -329,12 +330,12 @@ defmodule ItsmWeb.CoreComponents do
         <h1 class="text-lg font-semibold leading-8">
           {render_slot(@inner_block)}
         </h1>
-
+        
         <p :if={@subtitle != []} class="text-sm text-base-content/70">
           {render_slot(@subtitle)}
         </p>
       </div>
-
+      
       <div class="flex-none">{render_slot(@actions)}</div>
     </header>
     """
@@ -376,13 +377,13 @@ defmodule ItsmWeb.CoreComponents do
       <thead>
         <tr>
           <th :for={col <- @col}>{col[:label]}</th>
-
+          
           <th :if={@action != []}>
             <span class="sr-only">{gettext("Actions")}</span>
           </th>
         </tr>
       </thead>
-
+      
       <tbody id={@id} phx-update={is_struct(@rows, Phoenix.LiveView.LiveStream) && "stream"}>
         <tr :for={row <- @rows} id={@row_id && @row_id.(row)}>
           <td
@@ -392,7 +393,7 @@ defmodule ItsmWeb.CoreComponents do
           >
             {render_slot(col, @row_item.(row))}
           </td>
-
+          
           <td :if={@action != []} class="w-0 font-semibold">
             <div class="flex gap-4">
               <%= for action <- @action do %>
@@ -426,7 +427,7 @@ defmodule ItsmWeb.CoreComponents do
       <li :for={item <- @item} class="list-row">
         <div class="list-col-grow">
           <div class="font-bold">{item.title}</div>
-
+          
           <div>{render_slot(item)}</div>
         </div>
       </li>
@@ -576,7 +577,7 @@ defmodule ItsmWeb.CoreComponents do
                   <.icon name="hero-x-mark-solid" class="h-5 w-5" />
                 </button>
               </div>
-
+              
               <div id={"#{@id}-content"}>{render_slot(@inner_block)}</div>
             </.focus_wrap>
           </div>
@@ -726,7 +727,7 @@ defmodule ItsmWeb.CoreComponents do
         >
           {@label}
         </div>
-
+        
         <div
           id={"datepicker-input-#{@id}"}
           class="flex items-center border rounded-lg px-3 py-2 cursor-pointer hover:border-indigo-500 bg-white"
@@ -756,12 +757,12 @@ defmodule ItsmWeb.CoreComponents do
             format={if @show_time, do: "datetime", else: "date"}
           >
           </div>
-          <span class="text-gray-400">📅</span>
+           <span class="text-gray-400">📅</span>
         </div>
-
+        
         <.error :for={msg <- @errors}>{msg}</.error>
       </div>
-
+      
       <div
         {@rests[:popup]}
         id={"#{@id}-calendar-popup"}
@@ -780,7 +781,7 @@ defmodule ItsmWeb.CoreComponents do
             >
               ≪
             </button>
-
+            
             <button
               type="button"
               phx-click="shift"
@@ -792,9 +793,9 @@ defmodule ItsmWeb.CoreComponents do
               ◀
             </button>
           </div>
-
+          
           <div class="font-bold text-lg">{"#{@view_date.year}년 #{@view_date.month}월"}</div>
-
+          
           <div class="flex gap-1">
             <button
               type="button"
@@ -806,7 +807,7 @@ defmodule ItsmWeb.CoreComponents do
             >
               ▶
             </button>
-
+            
             <button
               type="button"
               phx-click="shift"
@@ -819,7 +820,7 @@ defmodule ItsmWeb.CoreComponents do
             </button>
           </div>
         </div>
-
+        
         <div
           {@rests[:grid]}
           id={"#{@id}-calendar-grid"}
@@ -833,7 +834,7 @@ defmodule ItsmWeb.CoreComponents do
           <div :for={day_name <- ~w(일 월 화 수 목 금 토)} class="text-xs text-gray-400 pb-2">
             {day_name}
           </div>
-
+          
           <div
             :for={{date, index} <- Enum.with_index(@days)}
             {@rests[:date]}
@@ -849,7 +850,7 @@ defmodule ItsmWeb.CoreComponents do
             {date.day}
           </div>
         </div>
-
+        
         <div
           :if={@show_time}
           class="flex items-center justify-center gap-2 mt-4 pt-4 border-t border-gray-100"
@@ -936,7 +937,7 @@ defmodule ItsmWeb.CoreComponents do
               value={@results.params.range_column}
             />
           </div>
-
+          
           <div class="md:col-span-8">
             <label>날짜 범위</label>
             <div class="flex justify-start items-center">
@@ -954,7 +955,7 @@ defmodule ItsmWeb.CoreComponents do
                 default_selected_date_time={@results.params.start_date}
               />
               <div class="mx-1">-</div>
-
+              
               <.itsm_calendar
                 field={
                   %Phoenix.HTML.FormField{
@@ -971,7 +972,7 @@ defmodule ItsmWeb.CoreComponents do
             </div>
           </div>
         </div>
-
+        
         <div
           :if={@results.columns_options not in [[], [""], ["전체"]]}
           class="flex justify-between gap-4 items-center"
@@ -989,7 +990,7 @@ defmodule ItsmWeb.CoreComponents do
               value={@results.params.search_columns}
             />
           </div>
-
+          
           <div class="flex-2">
             <label>검색</label>
             <.input
@@ -1000,7 +1001,7 @@ defmodule ItsmWeb.CoreComponents do
               phx-debounce="300"
             />
           </div>
-
+          
           <div class="flex-1 w-full">
             <.link patch={@results.current_path}>
               <.icon
@@ -1018,7 +1019,7 @@ defmodule ItsmWeb.CoreComponents do
     <div class="grid grid-cols-3 items-center w-full mt-6">
       <div class="justify-self-start flex items-center">
         <div class="text-sm text-zinc-600">Total: {@results.total_count}</div>
-
+        
         <form phx-change="update-filters" phx-target={@target} class="ml-4">
           <input
             type="number"
@@ -1029,7 +1030,7 @@ defmodule ItsmWeb.CoreComponents do
           />
         </form>
       </div>
-
+      
       <nav class="justify-self-center flex gap-2 items-center">
         <div class="pagination flex items-center">
           <.link
@@ -1039,11 +1040,11 @@ defmodule ItsmWeb.CoreComponents do
           >
             &lt;
           </.link>
-
+          
           <span :if={@results.params.page <= 1} class="pagination-item pagination-item-disabled">
             &lt;
           </span>
-
+          
           <div class="pagination flex items-center">
             <span
               :for={
@@ -1067,7 +1068,7 @@ defmodule ItsmWeb.CoreComponents do
               >
                 ...
               </span>
-
+              
               <.link
                 patch={"#{@results.current_path}?#{Plug.Conn.Query.encode(Map.put(@results.params, :page, page_num))}"}
                 class={[
@@ -1077,7 +1078,7 @@ defmodule ItsmWeb.CoreComponents do
               >
                 {page_num}
               </.link>
-
+              
               <span
                 :if={page_num == 1 and @results.params.page > 3}
                 class="pagination-item border-none"
@@ -1086,7 +1087,7 @@ defmodule ItsmWeb.CoreComponents do
               </span>
             </span>
           </div>
-
+          
           <.link
             :if={@results.params.page < @results.total_pages}
             patch={"#{@results.current_path}?#{Plug.Conn.Query.encode(Map.put(@results.params, :page, @results.params.page + 1))}"}
@@ -1094,7 +1095,7 @@ defmodule ItsmWeb.CoreComponents do
           >
             &gt;
           </.link>
-
+          
           <span
             :if={@results.params.page >= @results.total_pages}
             class="pagination-item pagination-item-disabled"
@@ -1170,7 +1171,7 @@ defmodule ItsmWeb.CoreComponents do
       >
         <.icon name="hero-ellipsis-vertical" class="h-6 w-6" />
       </button>
-
+      
       <div
         id={"dropdown-#{@id}-body"}
         class="hidden absolute right-12 bottom-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10"
@@ -1187,27 +1188,27 @@ defmodule ItsmWeb.CoreComponents do
     ~H"""
     <div class={["lds-spinner", @class]}>
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
-
+      
       <div></div>
     </div>
     """
@@ -1228,11 +1229,12 @@ defmodule ItsmWeb.CoreComponents do
         field={@field}
         allow_clear={true}
         debounce={300}
-        text_input_class="form-input"
-        container_extra_class="flex-grow"
-        dropdown_extra_class="bg-white shadow-xl border border-kb-border-gray rounded-md w-full max-h-60 overflow-y-auto z-50"
-        option_extra_class="text-kb-dark-gray border-b border-gray-50 hover:bg-kb-yellow/20 py-2.5 px-4 transition-colors cursor-pointer"
-        active_option_class="bg-kb-yellow text-kb-dark-gray font-bold"
+        container_class="relative w-full"
+        text_input_class="input input-bordered w-full focus:input-primary"
+        dropdown_class="absolute z-[100] menu bg-base-100 border border-base-300 w-full rounded-box shadow-xl max-h-60 overflow-y-auto mt-1 p-2"
+        option_class="rounded-lg p-2 cursor-pointer hover:bg-base-200"
+        active_option_class="bg-primary text-primary-content font-semibold"
+        tag_class="flex items-center gap-1 mb-1"
         {@live_select_opts}
       />
       <.error :for={msg <- @errors}>{msg}</.error>
@@ -1312,71 +1314,6 @@ defmodule ItsmWeb.CoreComponents do
     """
   end
 
-  @doc """
-  사이트바 메뉴 링크 컴포넌트
-  current_path와 navigate를 비교하여 활성화 상태를 결정합니다.
-  menu_id가 제공된 경우 URL 쿼리에서 menu_id를 추출하여 비교합니다.
-  """
-  attr :navigate, :string, required: true, doc: "링크로 이동할 URL 경로 (예: /boards/123)"
-  attr :icon_name, :string, required: true, doc: "Heroicons name, e.g. 'hero-home'"
-  attr :current_path, :any, required: true, doc: "현재 페이지의 URL 경로 (예: /boards/123?menu_id=456)"
-  attr :menu_id, :string, default: nil, doc: "선택적으로 URL 쿼리에서 menu_id를 추출하여 메뉴 활성화 여부 결정"
-  slot :inner_block, required: true
-
-  def sidebar_menu_link(assigns) do
-    struct_class =
-      "flex items-center px-4 py-3 text-sm font-bold rounded-lg transition-all duration-200"
-
-    active_styles = "bg-kb-yellow text-kb-dark-gray shadow-lg ring-1 ring-white/10"
-    inactive_styles = "text-gray-400 hover:bg-gray-700 hover:text-white group"
-
-    link_class =
-      if selected_menu?(assigns),
-        do: "#{struct_class} #{active_styles}",
-        else: "#{struct_class} #{inactive_styles}"
-
-    link_icon_class =
-      if selected_menu?(assigns),
-        do: "w-5 h-5 mr-3 text-kb-dark-gray",
-        else: "w-5 h-5 mr-3 text-kb-yellow group-hover:text-white"
-
-    assigns =
-      assigns
-      |> assign(:link_class, link_class)
-      |> assign(:link_icon_class, link_icon_class)
-
-    ~H"""
-    <.link navigate={@navigate} class={@link_class}>
-      <.icon name={@icon_name} class={@link_icon_class} />{render_slot(@inner_block)}
-    </.link>
-    """
-  end
-
-  defp selected_menu?(%{current_path: nil}), do: false
-
-  defp selected_menu?(%{current_path: current_path, navigate: navigate, menu_id: nil}) do
-    String.starts_with?(current_path, navigate)
-  end
-
-  defp selected_menu?(%{current_path: current_path, navigate: _navigate, menu_id: menu_id}) do
-    extract_menu_id(current_path) == menu_id
-  end
-
-  defp extract_menu_id(url) do
-    url
-    |> URI.parse()
-    |> Map.get(:query)
-    |> case do
-      nil ->
-        url
-
-      query_string ->
-        query_string
-        |> URI.decode_query()
-        |> Map.get("menu_id", url)
-    end
-  end
-
   ###############################################################
   # ITSM Custom Compoents  종료
   ##############################################################
@@ -1410,8 +1347,9 @@ defmodule ItsmWeb.CoreComponents do
     >
       <div class="card-body">
         <h2 :if={@title != ""} class="card-title">{@title}</h2>
+        
         <p :if={@body != ""}>{@body}</p>
-        {render_slot(@inner_block)}
+         {render_slot(@inner_block)}
       </div>
     </div>
     """
@@ -1420,4 +1358,60 @@ defmodule ItsmWeb.CoreComponents do
   ###############################################################
   # ITSM Custom Compoents Main 이후 추가 종료
   ##############################################################
+
+  @doc """
+  Modal 컴포넌트
+
+  ### Examples
+
+      <.daisy_modal id="my-modal" title="My Modal">
+        <p>This is the content of the modal.</p>
+      </.daisy_modal>
+
+      Client-side에서 모달을 오픈
+      <button phx-click={JS.dispatch("daisy:modal:show", to: "#my-modal")}>Open Modal</button>
+
+      Server-side에서 모달을 오픈
+      def handle_event("save", params, socket) do
+        {noreply, push_event(socket, "daisy:modal:show", %{id: "my-modal"})}
+      end
+  """
+  attr :id, :string, required: true
+  attr :title, :string, default: ""
+  slot :inner_block, required: true
+
+  def daisy_modal(assigns) do
+    ~H"""
+    <dialog id={@id} class="modal" phx-hook=".DaisyModal" phx-update="ignore">
+      <div class="modal-box overflow-visible">
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        
+        <h3 class="text-lg font-bold">{@title}</h3>
+        
+        <p class="py-4">
+          {render_slot(@inner_block)}
+        </p>
+      </div>
+    </dialog>
+
+    <script :type={ColocatedHook} name=".DaisyModal">
+      export default {
+        mounted() {
+          // 1. 클라언트(브라우저) 안에서 JS.dipatch()로 호출할때
+          this.el.addEventListener("daisy:modal:show", () => {this.el.showModal()});
+          this.el.addEventListener("daisy:modal:close", () => {this.el.close()});
+          // 2. 서버에서 push_event()로 호출할때
+          this.handleEvent("daisy:modal:show", (payload) => {
+            if (payload.id === this.el.id) this.el.showModal();
+          });
+          this.handleEvent("daisy:modal:close", (payload) => {
+            if (payload.id === this.el.id) this.el.close();
+          });
+        }
+      }
+    </script>
+    """
+  end
 end

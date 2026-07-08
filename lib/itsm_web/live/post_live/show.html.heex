@@ -5,7 +5,7 @@
 
     <:actions>
       <.link
-        patch={~p"/posts/#{@post}/show/edit?board_id=#{assigns[:board_id] || ""}&menu_id=boards"}
+        patch={~p"/posts/#{@post}/show/edit?board_id=#{assigns[:board_id] || ""}"}
         phx-click={JS.push_focus()}
       >
         <.button>Edit post</.button>
@@ -78,7 +78,7 @@
     />
   </div>
 
-  <.back navigate={~p"/posts?board_id=#{assigns[:board_id] || ""}&menu_id=boards"}>
+  <.back navigate={~p"/posts?board_id=#{assigns[:board_id] || ""}"}>
     Back to posts
   </.back>
 
@@ -86,7 +86,7 @@
     :if={@live_action == :edit}
     id="post-modal"
     show
-    on_cancel={JS.patch(~p"/posts/#{@post}?board_id=#{assigns[:board_id] || ""}&menu_id=boards")}
+    on_cancel={JS.patch(~p"/posts/#{@post}?board_id=#{assigns[:board_id] || ""}")}
   >
     <.live_component
       module={ItsmWeb.PostLive.FormComponent}
@@ -95,7 +95,7 @@
       action={@live_action}
       post={@post}
       current_scope={@current_scope}
-      patch={~p"/posts/#{@post}?board_id=#{assigns[:board_id] || ""}&menu_id=boards"}
+      patch={~p"/posts/#{@post}?board_id=#{assigns[:board_id] || ""}"}
       board_id={assigns[:board_id]}
       board_name={assigns[:board_name]}
     />

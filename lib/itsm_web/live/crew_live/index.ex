@@ -33,10 +33,6 @@ defmodule ItsmWeb.CrewLive.Index do
     end
   end
 
-  def handle_info({ItsmWeb.CrewLive.FormComponent, {:saved, crew}}, socket) do
-    {:noreply, stream_insert(socket, :crews, crew)}
-  end
-
   def handle_info({:pubsub, {action_user, event, item}}, socket) do
     handle_pubsub(action_user, event, item, socket)
   end

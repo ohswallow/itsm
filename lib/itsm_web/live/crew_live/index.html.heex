@@ -2,16 +2,14 @@
   <.header>
     {@page_title}
     <:actions>
-      <.link patch={~p"/crews/new"}>
-        <.button>New Crew</.button>
-      </.link>
+      <.button patch={~p"/crews/new"} variant="primary">{gettext("New Crew")}</.button>
     </:actions>
   </.header>
 
   <.table
     id="crews"
     rows={@streams.crews}
-    row_click={fn {_id, crew} -> JS.navigate(~p"/crews/#{crew}?menu_id=crews") end}
+    row_click={fn {_id, crew} -> JS.navigate(~p"/crews/#{crew}") end}
     >
     <:col :let={{_id, crew}} label={gettext("Name")}>{crew.name}</:col>
     <:col :let={{_id, crew}} label={gettext("Description")}>{crew.description}</:col>
@@ -31,7 +29,7 @@
         ️</div>
         <ul tabindex="-1" class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
           <li>
-            <.link patch={~p"/crews/#{crew}/edit?menu_id=crews"}>
+            <.link patch={~p"/crews/#{crew}/edit"}>
               <.icon name="hero-pencil" class="w-4 h-4" />Edit Crew
             </.link>
           </li>

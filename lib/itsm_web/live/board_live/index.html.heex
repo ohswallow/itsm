@@ -6,7 +6,7 @@
     rows={@streams.boards}
     row_click={
       fn {_id, board} ->
-        JS.navigate(~p"/posts?&board_id=#{board.id}&menu_id=boards")
+        JS.navigate(~p"/posts?&board_id=#{board.id}")
       end
     }
   >
