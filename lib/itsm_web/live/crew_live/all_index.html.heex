@@ -1,16 +1,22 @@
 <Layouts.default current_scope={@current_scope} menu_title={gettext("All Crews")} flash={@flash}>
   <.header>{@page_title}</.header>
 
-  <.itsm_table_container results={assigns[:results]}>
-    <.crew_table
-      crews={@streams.crews}
-      row_click={
-        fn {_id, crew} ->
-          return_url = ~p"/crews/all?#{assigns[:results][:params] || %{}}"
-          JS.navigate(~p"/crews/#{crew}?return_to=#{return_url}")
-        end
-      }
-    >
-    </.crew_table>
+  <.itsm_table_container results={@results}>
+    <.table
+      id="crews"
+      rows={@streams.crews}
+      row_click={fn {_id, crew} -> JS.navigate(crew_detail_path(crew, @results[:params])) end}>
+      <:col :let={{_id, crew}} label={gettext("Name")}>{crew.name}</:col>
+      <:col :let={{_id, crew}} label={gettext("Description")}>{crew.description}</:col>
+      <:col :let={{_id, crew}} label={gettext("Organization")}>
+        <.common_code_label group="계열사" code={LiveUtils.fetch_safe(crew.leader, :organization_code)} />
+      </:col>
+      <:col :let={{_id, crew}} label={gettext("Department")}>
+        {LiveUtils.fetch_safe(crew.leader, :department)}
+      </:col>
+      <:col :let={{_id, crew}} label={gettext("Leader")}>
+        {LiveUtils.fetch_safe(crew.leader, :display_name)}
+      </:col>
+    </.table>
   </.itsm_table_container>
 </Layouts.default>

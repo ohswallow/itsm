@@ -14,46 +14,45 @@ defmodule ItsmWeb.SearchUsersDialog do
 
   def render(assigns) do
     ~H"""
-    <div class="dialog">
-      <h1 class="mb-2">멤버 추가</h1>
-
+    <div>
       <.form
         for={@form}
         id="search-users-form"
         phx-submit="submit"
         phx-target={@myself}
-        class="flex items-center space-x-2"
       >
-        <LiveSelect.live_select
-          field={@form[:user_search]}
-          phx-target={@myself}
-          allow_clear={true}
-          mode={:tags}
-          placeholder="이름을 검색하세요"
-          container_extra_class="flex-grow"
-          dropdown_extra_class="bg-white shadow-lg w-full max-h-60 overflow-y-auto z-50"
-          option_extra_class="text-gray-800 border-b border-gray-200 hover:bg-blue-100 py-2 px-4"
-          active_option_class="bg-blue-500 text-white"
-          tags_container_extra_class="flex flex-wrap gap-2 items-start max-h-28 overflow-y-auto pr-2"
-          debounce={300}
-        >
-          <:clear_button>&times;</:clear_button> <%!-- 드롭다운 옵션 디자인 --%>
-          <:option :let={option}>
-            <div class="flex flex-col">
-              <span class="font-bold">
-                {option.label} <span class="text-xs font-normal">({option.employee_number})</span>
-              </span>
-               <span class="text-xs text-gray-500">{option.department} | {option.email}</span>
-            </div>
-          </:option>
-          <%!-- 선택된 태그 디자인 (tag_label 사용) --%>
-          <:tag :let={option}>
-            <div class="flex items-center bg-blue-100 text-blue-800 mb-1 border border-blue-200 px-2 py-1 rounded-full text-sm">
-              <span class="font-medium mr-1">{option.tag_label}</span>
-            </div>
-          </:tag>
-        </LiveSelect.live_select>
-        <.button phx-disable-with="Adding...">Add</.button>
+        <div class="flex items-end w-full">
+          <LiveSelect.live_select
+            field={@form[:user_search]}
+            phx-target={@myself}
+            allow_clear={true}
+            mode={:tags}
+            placeholder={gettext("이름을 검색하세요")}
+            debounce={300}
+            container_class="relative w-full"
+            text_input_class="input input-bordered w-full focus:input-primary"
+            dropdown_class="absolute z-[100] menu bg-base-100 border border-base-300 w-full rounded-box shadow-xl max-h-60 overflow-y-auto mt-1 p-2"
+            option_class="rounded-lg p-2 cursor-pointer hover:bg-base-200"
+            active_option_class="bg-primary text-primary-content font-semibold"
+            tag_class="flex items-center gap-1 mb-1"
+          >
+            <:option :let={option}>
+              <div class="flex flex-col">
+                <span class="font-bold">
+                  {option.label} <span class="text-xs opacity-70">({option.employee_number})</span>
+                </span>
+                 <span class="text-xs opacity-60 mt-0.5">{option.department} | {option.email}</span>
+              </div>
+            </:option>
+            
+            <:tag :let={option}>
+              <div class="badge badge-primary gap-1 p-3">
+                {option.tag_label}
+              </div>
+            </:tag>
+          </LiveSelect.live_select>
+           <.button>{gettext("Add")}</.button>
+        </div>
       </.form>
     </div>
     """

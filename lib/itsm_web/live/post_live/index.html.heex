@@ -4,7 +4,7 @@
     <:actions>
       <.link
         :if={assigns[:board_name] not in ["공지사항", "FAQ"]}
-        patch={~p"/posts/new?board_id=#{assigns[:board_id] || ""}&menu_id=boards"}
+        patch={~p"/posts/new?board_id=#{assigns[:board_id] || ""}"}
       >
         <.button>New Post</.button>
       </.link>
@@ -16,7 +16,7 @@
     rows={@streams.posts}
     row_click={
       fn {_id, post} ->
-        JS.navigate(~p"/posts/#{post}?board_id=#{assigns[:board_id] || ""}&menu_id=boards")
+        JS.navigate(~p"/posts/#{post}?board_id=#{assigns[:board_id] || ""}")
       end
     }
   >
@@ -27,7 +27,7 @@
     <:col :let={{_id, post}} label={gettext("Author")}>{post.author.display_name}</:col>
   </.table>
 
-  <.back navigate={~p"/boards?menu_id=boards"}>
+  <.back navigate={~p"/boards"}>
     Back to boards
   </.back>
 
@@ -35,7 +35,7 @@
     :if={@live_action in [:new, :edit]}
     id="post-modal"
     show
-    on_cancel={JS.patch(~p"/posts?board_id=#{assigns[:board_id] || ""}&menu_id=boards")}
+    on_cancel={JS.patch(~p"/posts?board_id=#{assigns[:board_id] || ""}")}
   >
     <.live_component
       module={ItsmWeb.PostLive.FormComponent}
@@ -44,7 +44,7 @@
       action={@live_action}
       post={@post}
       current_scope={@current_scope}
-      patch={~p"/posts?board_id=#{assigns[:board_id] || ""}&menu_id=boards"}
+      patch={~p"/posts?board_id=#{assigns[:board_id] || ""}"}
       board_id={assigns[:board_id]}
       board_name={assigns[:board_name]}
     />

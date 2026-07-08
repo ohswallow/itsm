@@ -59,14 +59,14 @@
 
         <Layouts.menu
           name={gettext("My Crews")}
-          navigate={~p"/crews?menu_id=crews"}
+          navigate={~p"/crews"}
           icon_name="hero-users"
           selected={@menu_title}
        />
 
         <Layouts.menu
           name={gettext("All Crews")}
-          navigate={~p"/crews/all?menu_id=all_crews"}
+          navigate={~p"/crews/all"}
           icon_name="hero-rectangle-stack"
           selected={@menu_title}
         />
@@ -80,7 +80,7 @@
 
         <Layouts.menu
           name={gettext("Boards")}
-          navigate={~p"/boards?menu_id=boards"}
+          navigate={~p"/boards"}
           icon_name="hero-list-bullet"
           selected={@menu_title}
         />

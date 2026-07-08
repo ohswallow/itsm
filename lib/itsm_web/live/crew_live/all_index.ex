@@ -3,10 +3,8 @@ defmodule ItsmWeb.CrewLive.AllIndex do
   use ItsmWeb, :live_view
 
   alias Itsm.Crews
-
-  # 공통 컴포넌트 임포트
-  import ItsmWeb.CrewLive.TableComponents
   alias Itsm.Paging
+  alias ItsmWeb.LiveUtils
 
   def mount(_params, _session, socket) do
     {:ok,
@@ -60,5 +58,10 @@ defmodule ItsmWeb.CrewLive.AllIndex do
 
   defp handle_pubsub(_action_user, _event, _item, socket) do
     {:noreply, socket}
+  end
+
+  defp crew_detail_path(crew, results_params) do
+    return_url = ~p"/crews/all?#{results_params || %{}}"
+    ~p"/crews/#{crew}?return_to=#{return_url}"
   end
 end

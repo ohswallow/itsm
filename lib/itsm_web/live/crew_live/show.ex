@@ -3,8 +3,11 @@ defmodule ItsmWeb.CrewLive.Show do
   use ItsmWeb, :live_view
 
   alias Itsm.Crews
+  alias Itsm.Crews.Crew
   alias Itsm.Crews.CrewsUsers
   alias Itsm.Accounts
+  alias Itsm.Accounts.Scope
+  alias Itsm.Accounts.User
   alias ItsmWeb.LiveUtils
 
   def mount(params, _session, socket) do
@@ -26,7 +29,6 @@ defmodule ItsmWeb.CrewLive.Show do
      socket
      |> assign(:page_title, "Show Crew")
      |> assign(:crew, crew)
-     |> assign(:show_member_modal, false)
      |> stream(:crews_userses, Crews.list_regular_users(crew), reset: true)
      |> Itsm.PubSub.Helper.subscribe(Crews, id: crew.id)}
   end
@@ -51,7 +53,6 @@ defmodule ItsmWeb.CrewLive.Show do
 
         socket =
           socket
-          |> assign(:show_member_modal, false)
           |> stream_delete(:crews_userses, crews_users)
           |> put_flash(:info, msg)
 
@@ -69,7 +70,7 @@ defmodule ItsmWeb.CrewLive.Show do
     if Enum.empty?(crew.crews_users) and crew.leader in ["", nil] do
       switch_leader(socket, action_user)
     else
-      {:noreply, assign(socket, :show_member_modal, true)}
+      {:noreply, push_event(socket, "daisy:modal:show", %{id: "search-users-modal"})}
     end
   end
 
@@ -80,7 +81,7 @@ defmodule ItsmWeb.CrewLive.Show do
       {:ok, crews_userses} ->
         {:noreply,
          stream(socket, :crews_userses, crews_userses)
-         |> assign(:show_member_modal, false)
+         |> push_event("daisy:modal:close", %{id: "search-users-modal"})
          |> put_flash(:info, "Members added successfully")}
 
       {:error, step, _changeset, _so_far_changeset} ->
@@ -103,7 +104,9 @@ defmodule ItsmWeb.CrewLive.Show do
       push_patch: [to: "#{socket.assigns.current_path}"]
     ]
 
-    {:noreply, ItsmWeb.LiveUtils.handle_standard_pubsub(socket, action_user, event, crew, opts)}
+    {:noreply,
+     assign(socket, :crew, crew)
+     |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, crew, opts)}
   end
 
   defp handle_pubsub(
@@ -193,4 +196,31 @@ defmodule ItsmWeb.CrewLive.Show do
 
   defp add_back_path(opts, true, back_path), do: Keyword.put(opts, :push_navigate, to: back_path)
   defp add_back_path(opts, false, _back_path), do: opts
+
+  defp get_leader_info(%Crew{leader: leader}, _opt) when leader in ["", nil], do: ""
+
+  defp get_leader_info(%Crew{leader: %{display_name: display_name}}, _opt)
+       when display_name in ["", nil], do: ""
+
+  defp get_leader_info(%Crew{leader: %{display_name: display_name}}, :first_name),
+    do: String.first(display_name)
+
+  defp get_leader_info(
+         %Crew{leader: %{display_name: display_name, employee_number: employee_number}},
+         :name
+       ),
+       do: "#{display_name} (#{employee_number})"
+
+  defp can_leader?(_current_scope, %Crew{crews_users: crews_users, leader: leader})
+       when crews_users in [nil, []] or leader in ["", nil], do: true
+
+  defp can_leader?(%Scope{user: user}, %Crew{leader: leader}), do: leader.id == user.id
+
+  defp can_delete_member?(%Scope{user: user}, %Crew{leader: leader}, %User{} = target_user) do
+    leader.id == user.id or target_user.id == user.id
+  end
+
+  defp get_primary(%Scope{} = scope, %Crew{} = crew, menu_title) do
+    if !can_leader?(scope, crew) or menu_title == gettext("All Crews"), do: "primary", else: nil
+  end
 end
