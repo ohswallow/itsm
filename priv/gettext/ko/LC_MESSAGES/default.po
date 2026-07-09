@@ -951,3 +951,15 @@ msgstr "게시물"
 
 msgid "Api Doc"
 msgstr "API 문서"
+
+msgid "Delegations"
+msgstr "대결"
+
+msgid "Service Request"
+msgstr "서비스 요청"
+
+msgid "My Request List"
+msgstr "내 요청"
+
+msgid "Approval List"
+msgstr "결제"

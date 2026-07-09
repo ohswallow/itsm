@@ -10,7 +10,10 @@ defmodule ItsmWeb.Admin.UserLive.Index do
   end
 
   def handle_params(params, url, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params, url)}
+    {:noreply,
+     socket
+     |> assign_paged_stream(:users, User, params, url)
+     |> assign(:page_title, gettext("Listing Users"))}
   end
 
   def handle_event("delete", %{"id" => _id} = user_params, socket) do
@@ -33,25 +36,6 @@ defmodule ItsmWeb.Admin.UserLive.Index do
   end
 
   def handle_info(_event, socket), do: {:noreply, socket}
-
-  defp apply_action(socket, :index, params, url) do
-    socket
-    |> assign_paged_stream(:users, User, params, url)
-    |> assign(:page_title, "Listing Users")
-    |> assign(:user, nil)
-  end
-
-  defp apply_action(socket, :new, _params, _url) do
-    socket
-    |> assign(:page_title, "New User")
-    |> assign(:user, %User{})
-  end
-
-  defp apply_action(socket, :edit, %{"id" => id}, _url) do
-    socket
-    |> assign(:page_title, "Edit User")
-    |> assign(:user, Accounts.get_user!(id))
-  end
 
   defp assign_paged_stream(socket, stream_key, schema, params, url) do
     opts = [

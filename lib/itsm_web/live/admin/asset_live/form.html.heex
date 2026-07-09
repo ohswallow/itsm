@@ -1,0 +1,115 @@
+<Layouts.admin current_scope={@current_scope} menu_title={gettext("Assets")} flash={@flash}>
+  <.header>
+    {@page_title}
+    <:subtitle>Use this form to manage asset records in your database.</:subtitle>
+
+    <:actions>
+      <.button navigate={~p"/admin/assets"}>
+        <.icon name="hero-arrow-left" />
+      </.button>
+    </:actions>
+  </.header>
+
+  <div class="max-w-5xl">
+    <.card
+      visible={@conflict}
+      state={:error}
+      title="⚠️ 충돌 발생!"
+    >
+      <p>{@conflict_msg}</p>
+      <p>현재 편집 내용을 저장할 수 없습니다. 새로고침 후 다시 시도해 주세요.</p>
+      <p><.link class="btn" navigate={@current_path}>새로고침</.link></p>
+    </.card>
+
+    <.form
+      for={@form}
+      id="asset-form"
+      phx-change="validate"
+      phx-submit="save"
+    >
+      <.input field={@form[:mapping_value]} type="text" label={gettext("Mapping Value")} />
+      <.input field={@form[:name]} type="text" label={gettext("Name")} />
+      <.input field={@form[:description]} type="text" label={gettext("Description")} />
+      <.input
+        field={@form[:affiliate]}
+        type="select"
+        label={gettext("Affiliate")}
+        prompt="Choose a value"
+        options={@affiliate_options}
+      />
+      <.input
+        field={@form[:category]}
+        type="select"
+        label={gettext("Category")}
+        prompt="Choose a value"
+        options={@category_options}
+      />
+      <.input
+        field={@form[:region_type]}
+        type="select"
+        label={gettext("Region Type")}
+        prompt="Choose a value"
+        options={@region_type_options}
+      />
+      <.input
+        field={@form[:infra_type]}
+        type="select"
+        label={gettext("Infra Type")}
+        prompt="Choose a value"
+        options={@infra_type_options}
+      />
+      <.input
+        field={@form[:env]}
+        type="select"
+        label={gettext("Environment")}
+        prompt="Choose a value"
+        options={@env_options}
+      />
+      <.input
+        field={@form[:location]}
+        type="select"
+        label={gettext("Location")}
+        prompt="Choose a value"
+        options={@location_options}
+      /> <.input field={@form[:is_dmz_zone]} type="checkbox" label={gettext("Is Dmz Zone")} />
+      <.itsm_calendar
+        :if={@live_action == :edit}
+        field={@form[:inserted_at]}
+        label={gettext("Inserted At")}
+        show_time
+        default_selected_date_time={@form[:inserted_at].value}
+      />
+      <.input
+        field={@form[:service_crew_id]}
+        type="select"
+        label={gettext("service_crew")}
+        prompt="Choose a value"
+        options={@crew_options}
+      />
+      <.input
+        field={@form[:system_crew_id]}
+        type="select"
+        label={gettext("system_crew")}
+        prompt="Choose a value"
+        options={@crew_options}
+      />
+
+      <div class="grid grid-cols-2 gap-4">
+        <.input
+          :for={{field_name, type} <- @dynamic_fields}
+          field={
+            ItsmWeb.LiveUtils.get_sub_field(
+              field_name,
+              @form[:metadata],
+              @form.params["metadata"]
+            )
+          }
+          type={if type in [:integer, :float], do: "number", else: "text"}
+          label={field_name |> Atom.to_string() |> String.capitalize()}
+        />
+      </div>
+
+      <.button :if={!@conflict} phx-disable-with="Saving...">Save Asset</.button>
+    </.form>
+  </div>
+</Layouts.admin>

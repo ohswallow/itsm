@@ -11,7 +11,7 @@ defmodule ItsmWeb.Admin.CategoryLive.Index do
      socket
      |> stream(:categories, [])
      |> assign_new_options()
-     |> assign(:page_title, "테스트")
+     |> assign(:page_title, gettext("테스트"))
      |> Itsm.PubSub.Helper.subscribe(Categories, is_admin: true)}
   end
 
@@ -41,20 +41,7 @@ defmodule ItsmWeb.Admin.CategoryLive.Index do
   defp apply_action(socket, :index, params, url) do
     socket
     |> assign_paged_stream(:categories, Category, params, url)
-    |> assign(:page_title, "Listing Categories")
-    |> assign(:category, nil)
-  end
-
-  defp apply_action(socket, :new, _params, _url) do
-    socket
-    |> assign(:page_title, "New Category")
-    |> assign(:category, %Category{})
-  end
-
-  defp apply_action(socket, :edit, %{"id" => id}, _url) do
-    socket
-    |> assign(:page_title, "Edit Category")
-    |> assign(:category, Categories.get_category!(id))
+    |> assign(:page_title, gettext("Listing Categories"))
   end
 
   defp assign_paged_stream(socket, stream_key, schema, params, url) do

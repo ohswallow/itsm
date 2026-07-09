@@ -9,6 +9,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   alias ItsmWeb.LiveUtils
   alias Itsm.Service
   alias Itsm.Attachments
+  alias Itsm.Attachments.Attachment
 
   def mount(_params, _session, socket) do
     {:ok,
@@ -141,6 +142,26 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
      |> handle_pubsub_comment(Atom.to_string(event), item)}
   end
 
+  defp handle_pubsub(
+         action_user,
+         event,
+         %Attachment{} = item,
+         socket
+       ) do
+    opts =
+      [
+        target_key: :attachments,
+        resource_name: gettext("Attachment"),
+        live_action: :index
+      ]
+      |> Keyword.merge(push_event_action(socket, event))
+
+    {:noreply,
+     socket
+     |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)
+     |> handle_pubsub_attachment(Atom.to_string(event), item)}
+  end
+
   defp handle_pubsub(_user, _event, _item, socket) do
     {:noreply, socket}
   end
@@ -157,4 +178,12 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
     do: stream_insert(socket, :comments, item)
 
   defp handle_pubsub_comment(socket, _other_event, _item), do: socket
+
+  defp handle_pubsub_attachment(socket, "update" <> _action, item),
+    do: stream_insert(socket, :attachments, item)
+
+  defp handle_pubsub_attachment(socket, "create" <> _action, item),
+    do: stream_insert(socket, :attachments, item)
+
+  defp handle_pubsub_attachment(socket, _other_event, _item), do: socket
 end

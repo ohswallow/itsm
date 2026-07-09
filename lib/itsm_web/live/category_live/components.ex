@@ -69,7 +69,10 @@ defmodule ItsmWeb.CategoryLive.Components do
 
   def category_card(assigns) do
     ~H"""
-    <.link navigate={"/categories/#{@category.id}/#{@category.request_name}/new"} id={@id}>
+    <.link
+      navigate={"/categories/#{@category.id}/#{@category.request_name}/new"}
+      id={@id}
+    >
       <div class="card-interactive shrink-0 lg:w-72">
         <span class="badge badge-deposit">가상</span>
         <h3 class="text-title-h3 mt-3">{@category.name}</h3>

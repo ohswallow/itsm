@@ -4,7 +4,10 @@
     <:subtitle>This is a comment record from your database.</:subtitle>
 
     <:actions>
-      <.link patch={~p"/admin/comments/#{@comment}/show/edit"} phx-click={JS.push_focus()}>
+      <.button navigate={~p"/admin/comments"}>
+        <.icon name="hero-arrow-left" />
+      </.button>
+      <.link navigate={~p"/admin/comments/#{@comment}/edit"}>
         <.button>Edit comment</.button>
       </.link>
     </:actions>
@@ -35,21 +38,4 @@
   </.list>
 
   <.back navigate={~p"/admin/comments"}>Back to comments</.back>
-
-  <.modal
-    :if={@live_action == :edit}
-    id="comment-modal"
-    show
-    on_cancel={JS.patch(~p"/admin/comments/#{@comment}")}
-  >
-    <.live_component
-      module={ItsmWeb.Admin.CommentLive.FormComponent}
-      id={@comment.id}
-      title={@page_title}
-      action={@live_action}
-      comment={@comment}
-      current_scope={@current_scope}
-      patch={~p"/admin/comments/#{@comment}"}
-    />
-  </.modal>
 </Layouts.admin>

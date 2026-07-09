@@ -2,7 +2,7 @@
   <.header>
     Listing Attachments
     <:actions>
-      <.link patch={~p"/admin/attachments/new"}>
+      <.link navigate={~p"/admin/attachments/new"}>
         <.button>New Attachment</.button>
       </.link>
     </:actions>
@@ -44,7 +44,7 @@
         <div class="sr-only">
           <.link navigate={~p"/admin/attachments/#{attachment}"}>Show</.link>
         </div>
-         <.link patch={~p"/admin/attachments/#{attachment}/edit"}>Edit</.link>
+         <.link navigate={~p"/admin/attachments/#{attachment}/edit"}>Edit</.link>
       </:action>
 
       <:action :let={{_id, attachment}}>
@@ -59,21 +59,4 @@
       </:action>
     </.table>
   </.itsm_table_container>
-
-  <.modal
-    :if={@live_action in [:new, :edit]}
-    id="attachment-modal"
-    show
-    on_cancel={JS.patch(~p"/admin/attachments?#{assigns[:results][:params] || %{}}")}
-  >
-    <.live_component
-      module={ItsmWeb.Admin.AttachmentLive.FormComponent}
-      id={@attachment.id || :new}
-      title={@page_title}
-      action={@live_action}
-      attachment={@attachment}
-      current_scope={@current_scope}
-      patch={~p"/admin/attachments?#{assigns[:results][:params] || %{}}"}
-    />
-  </.modal>
 </Layouts.admin>

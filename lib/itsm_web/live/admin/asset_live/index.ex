@@ -10,7 +10,10 @@ defmodule ItsmWeb.Admin.AssetLive.Index do
   end
 
   def handle_params(params, url, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params, url)}
+    {:noreply,
+     socket
+     |> assign_paged_stream(:assets, Asset, params, url)
+     |> assign(:page_title, gettext("Listing Assets"))}
   end
 
   def handle_event("delete", %{"id" => _id} = asset_params, socket) do
@@ -25,25 +28,6 @@ defmodule ItsmWeb.Admin.AssetLive.Index do
   end
 
   def handle_info(_event, socket), do: {:noreply, socket}
-
-  defp apply_action(socket, :index, params, url) do
-    socket
-    |> assign_paged_stream(:assets, Asset, params, url)
-    |> assign(:page_title, "Listing Assets")
-    |> assign(:asset, nil)
-  end
-
-  defp apply_action(socket, :new, _params, _url) do
-    socket
-    |> assign(:page_title, "New Asset")
-    |> assign(:asset, %Asset{} |> Itsm.Assets.with_assoc([:service_crew, :system_crew]))
-  end
-
-  defp apply_action(socket, :edit, %{"id" => id}, _url) do
-    socket
-    |> assign(:page_title, "Edit Asset")
-    |> assign(:asset, Assets.get_asset!(id))
-  end
 
   defp assign_paged_stream(socket, stream_key, schema, params, url) do
     opts = [

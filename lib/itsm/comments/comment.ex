@@ -32,4 +32,13 @@ defmodule Itsm.Comments.Comment do
     |> validate_length(:comment, min: 1, max: 1000)
     |> assoc_constraint(:user)
   end
+
+  def create_changeset(comment, action_user, attrs \\ %{}) do
+    comment
+    |> cast(attrs, [:comment, :resource_type, :resource_id])
+    |> validate_required([:comment, :resource_type, :resource_id])
+    |> validate_length(:comment, min: 1, max: 1000)
+    |> put_assoc(:user, action_user)
+    |> assoc_constraint(:user)
+  end
 end

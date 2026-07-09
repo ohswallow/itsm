@@ -1,10 +1,169 @@
 <div>
-  <.table_container_ui
-    {assigns}
-    id="table-container-static-id"
-    results={@results}
-    target={@myself}
-  >
-    {render_slot(@inner_block)}
-  </.table_container_ui>
+  <div class="filter-section">
+    <form
+      {@rest}
+      phx-change="update-filters"
+      phx-target={@myself}
+    >
+      <div
+        :if={@results.range_column_options not in [[], [""]]}
+        class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end"
+      >
+        <div class="md:col-span-4">
+          <label>조건 날짜</label>
+          <.input
+            id={"#{@id}-util-filters-range-column"}
+            type="select"
+            name="range_column"
+            options={@results.range_column_options}
+            value={@results.params.range_column}
+          />
+        </div>
+
+        <div class="md:col-span-8">
+          <label>날짜 범위</label>
+          <div class="flex justify-start items-center">
+            <.itsm_calendar
+              field={
+                %Phoenix.HTML.FormField{
+                  id: "start_date",
+                  form: %{name: "start_date", params: %{}},
+                  name: "start_date",
+                  errors: [],
+                  field: String.to_atom("start_date"),
+                  value: ""
+                }
+              }
+              default_selected_date_time={@results.params.start_date}
+            />
+            <div class="mx-1">-</div>
+
+            <.itsm_calendar
+              field={
+                %Phoenix.HTML.FormField{
+                  id: "end_date",
+                  form: %{name: "end_date", params: %{}},
+                  name: "end_date",
+                  errors: [],
+                  field: String.to_atom("end_date"),
+                  value: ""
+                }
+              }
+              default_selected_date_time={@results.params.end_date}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div
+        :if={@results.columns_options not in [[], [""], ["전체"]]}
+        class="flex gap-2 h-auto"
+      >
+        <select
+          id={"#{@id}-util-filters-search-columns"}
+          class="select py-0 w-auto appearance-none"
+          name="search_columns[]"
+          multiple
+          size={1}
+          phx-hook="InputSelect.selectAll"
+        >
+          {Phoenix.HTML.Form.options_for_select(
+            @results.columns_options,
+            @results.params.search_columns
+          )}
+        </select>
+
+        <input
+          class="input w-auto"
+          name="search"
+          type="search"
+          placeholder="검색어를 입력해주세요"
+          value={@results.params.search}
+          phx-debounce="300"
+        />
+
+        <.link patch={@results.current_path} class="btn btn-warning">
+          초기화
+        </.link>
+      </div>
+    </form>
+  </div>
+
+  <div class="table-container">{render_slot(@inner_block)}</div>
+
+  <div class="flex items-center w-full mt-6">
+    <div class="flex items-center">
+      <div class="text-sm text-zinc-600">Total: {@results.total_count}</div>
+
+      <form phx-change="update-filters" phx-target={@myself}>
+        <input
+          type="number"
+          name="page_size"
+          value={@results.params.page_size}
+          class="input w-12 ml-4  "
+          phx-debounce="500"
+        />
+      </form>
+    </div>
+
+    <div class="flex gap-2 items-center w-auto mx-auto">
+      <.link
+        :if={@results.params.page > 1}
+        patch={"#{@results.current_path}?#{Plug.Conn.Query.encode(Map.put(@results.params, :page, @results.params.page - 1))}"}
+      >
+        &lt;
+      </.link>
+
+      <span :if={@results.params.page <= 1} class="">
+        &lt;
+      </span>
+
+      <div class="flex items-center">
+        <span
+          :for={
+            page_num <-
+              Enum.uniq([
+                1,
+                @results.params.page - 1,
+                @results.params.page,
+                @results.params.page + 1,
+                @results.total_pages
+              ])
+          }
+          :if={page_num > 0 and page_num <= @results.total_pages}
+          class="flex items-center"
+        >
+          <span :if={
+            page_num == @results.total_pages and @results.params.page < @results.total_pages - 2
+          }>
+            ...
+          </span>
+
+          <.link
+            patch={"#{@results.current_path}?#{Plug.Conn.Query.encode(Map.put(@results.params, :page, page_num))}"}
+            class={[
+              page_num == @results.params.page && "pagination-item-active"
+            ]}
+          >
+            {page_num}
+          </.link>
+
+          <span :if={page_num == 1 and @results.params.page > 3}>
+            ...
+          </span>
+        </span>
+      </div>
+
+      <.link
+        :if={@results.params.page < @results.total_pages}
+        patch={"#{@results.current_path}?#{Plug.Conn.Query.encode(Map.put(@results.params, :page, @results.params.page + 1))}"}
+      >
+        &gt;
+      </.link>
+
+      <span :if={@results.params.page >= @results.total_pages}>
+        &gt;
+      </span>
+    </div>
+  </div>
 </div>

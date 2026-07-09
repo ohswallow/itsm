@@ -1,8 +1,9 @@
 <Layouts.admin current_scope={@current_scope} menu_title={gettext("Posts")} flash={@flash}>
   <.header>
     Listing Posts
+
     <:actions>
-      <.link patch={~p"/admin/posts/new"}>
+      <.link navigate={~p"/admin/posts/new"}>
         <.button>New Post</.button>
       </.link>
     </:actions>
@@ -40,7 +41,7 @@
         <div class="sr-only">
           <.link navigate={~p"/admin/posts/#{post}"}>Show</.link>
         </div>
-         <.link patch={~p"/admin/posts/#{post}/edit"}>Edit</.link>
+         <.link navigate={~p"/admin/posts/#{post}/edit"}>Edit</.link>
       </:action>
 
       <:action :let={{_id, post}}>
@@ -55,21 +56,4 @@
       </:action>
     </.table>
   </.itsm_table_container>
-
-  <.modal
-    :if={@live_action in [:new, :edit]}
-    id="post-modal"
-    show
-    on_cancel={JS.patch(~p"/admin/posts?#{assigns[:results][:params] || %{}}")}
-  >
-    <.live_component
-      module={ItsmWeb.Admin.PostLive.FormComponent}
-      id={@post.id || :new}
-      title={@page_title}
-      action={@live_action}
-      post={@post}
-      current_scope={@current_scope}
-      patch={~p"/admin/posts?#{assigns[:results][:params] || %{}}"}
-    />
-  </.modal>
 </Layouts.admin>

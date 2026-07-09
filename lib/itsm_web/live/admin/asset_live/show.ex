@@ -15,7 +15,7 @@ defmodule ItsmWeb.Admin.AssetLive.Show do
 
     {:noreply,
      socket
-     |> assign(:page_title, page_title(socket.assigns.live_action))
+     |> assign(:page_title, gettext("Show Asset"))
      |> assign(:asset, asset)
      |> setup_relation_assets(asset)
      |> Itsm.PubSub.Helper.subscribe(Assets, id: id, is_admin: true)}
@@ -105,9 +105,6 @@ defmodule ItsmWeb.Admin.AssetLive.Show do
 
   def handle_info(_event, socket), do: {:noreply, socket}
 
-  defp page_title(:show), do: "Show Asset"
-  defp page_title(:edit), do: "Edit Asset"
-
   defp handle_pubsub(
          action_user,
          event,
@@ -116,7 +113,7 @@ defmodule ItsmWeb.Admin.AssetLive.Show do
        ) do
     opts =
       [target_key: :asset, resource_name: gettext("Asset")]
-      |> Keyword.merge(push_event_action(socket, event))
+      |> push_event_action(event)
 
     {:noreply,
      socket
@@ -127,10 +124,10 @@ defmodule ItsmWeb.Admin.AssetLive.Show do
     {:noreply, socket}
   end
 
-  defp push_event_action(socket, :delete_asset),
-    do: [push_navigate: [to: "#{socket.assigns.current_path}"]]
+  defp push_event_action(opts, :delete_asset),
+    do: Keyword.put(opts, :push_navigate, to: ~p"/admin/assets")
 
-  defp push_event_action(_socket, _), do: []
+  defp push_event_action(opts, _), do: opts
 
   defp setup_relation_assets(socket, asset) do
     {assets, all_ids} =

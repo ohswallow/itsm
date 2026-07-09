@@ -11,7 +11,10 @@ defmodule ItsmWeb.Admin.RequestLive.Index do
   end
 
   def handle_params(params, url, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params, url)}
+    {:noreply,
+     socket
+     |> assign_paged_stream(:requests, Request, params, url)
+     |> assign(:page_title, gettext("Listing Requests"))}
   end
 
   def handle_event("delete", %{"id" => _id} = request_params, socket) do
@@ -31,25 +34,6 @@ defmodule ItsmWeb.Admin.RequestLive.Index do
   end
 
   def handle_info(_event, socket), do: {:noreply, socket}
-
-  defp apply_action(socket, :index, params, url) do
-    socket
-    |> assign_paged_stream(:requests, Request, params, url)
-    |> assign(:page_title, "Listing Requests")
-    |> assign(:request, nil)
-  end
-
-  defp apply_action(socket, :new, _params, _url) do
-    socket
-    |> assign(:page_title, "New Request")
-    |> assign(:request, %Request{})
-  end
-
-  defp apply_action(socket, :edit, %{"id" => id}, _url) do
-    socket
-    |> assign(:page_title, "Edit Request")
-    |> assign(:request, Requests.get_request!(id))
-  end
 
   defp assign_paged_stream(socket, stream_key, schema, params, url) do
     opts = [

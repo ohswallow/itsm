@@ -10,7 +10,7 @@ defmodule ItsmWeb.Admin.AttachmentLive.Show do
   def handle_params(%{"id" => id}, _, socket) do
     {:noreply,
      socket
-     |> assign(:page_title, page_title(socket.assigns.live_action))
+     |> assign(:page_title, gettext("Show Attachment"))
      |> assign(:attachment, Attachments.get_attachment!(id))
      |> Itsm.PubSub.Helper.subscribe(Itsm.Admin.Attachments, id: id)}
   end
@@ -21,9 +21,6 @@ defmodule ItsmWeb.Admin.AttachmentLive.Show do
 
   def handle_info(_event, socket), do: {:noreply, socket}
 
-  defp page_title(:show), do: "Show Attachment"
-  defp page_title(:edit), do: "Edit Attachment"
-
   defp handle_pubsub(
          action_user,
          event,
@@ -32,7 +29,7 @@ defmodule ItsmWeb.Admin.AttachmentLive.Show do
        ) do
     opts =
       [target_key: :attachment, resource_name: gettext("Attachment")]
-      |> Keyword.merge(push_event_action(socket, event))
+      |> push_event_action(event)
 
     {:noreply,
      socket
@@ -43,8 +40,8 @@ defmodule ItsmWeb.Admin.AttachmentLive.Show do
     {:noreply, socket}
   end
 
-  defp push_event_action(socket, :delete_attachment),
-    do: [push_navigate: [to: "#{socket.assigns.current_path}"]]
+  defp push_event_action(opts, :delete_attachment),
+    do: Keyword.put(opts, :push_navigate, to: ~p"/admin/attachments")
 
-  defp push_event_action(_socket, _), do: []
+  defp push_event_action(opts, _), do: opts
 end

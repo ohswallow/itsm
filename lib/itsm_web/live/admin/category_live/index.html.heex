@@ -55,21 +55,4 @@
       </:action>
     </.table>
   </.itsm_table_container>
-
-  <.modal
-    :if={@live_action in [:new, :edit]}
-    id="category-modal"
-    show
-    on_cancel={JS.patch(~p"/admin/categories?#{assigns[:results][:params] || %{}}")}
-  >
-    <.live_component
-      module={ItsmWeb.Admin.CategoryLive.FormComponent}
-      id={@category.id || :new}
-      title={@page_title}
-      action={@live_action}
-      category={@category}
-      current_scope={@current_scope}
-      patch={~p"/admin/categories?#{assigns[:results][:params] || %{}}"}
-    />
-  </.modal>
 </Layouts.admin>

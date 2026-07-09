@@ -23,7 +23,7 @@
 
       <:action :let={{_id, approval}}>
         <div class="sr-only"><.link navigate={~p"/admin/approvals/#{approval}"}>Show</.link></div>
-         <.link patch={~p"/admin/approvals/#{approval}/edit"}>Edit</.link>
+         <.link navigate={~p"/admin/approvals/#{approval}/edit"}>Edit</.link>
       </:action>
 
       <:action :let={{_id, approval}}>
@@ -38,21 +38,4 @@
       </:action>
     </.table>
   </.itsm_table_container>
-
-  <.modal
-    :if={@live_action == :edit}
-    id="approval-modal"
-    show
-    on_cancel={JS.patch(~p"/admin/approvals?#{assigns[:results][:params] || %{}}")}
-  >
-    <.live_component
-      module={ItsmWeb.Admin.ApprovalLive.FormComponent}
-      id={@approval.id}
-      title={@page_title}
-      action={@live_action}
-      approval={@approval}
-      current_scope={@current_scope}
-      patch={~p"/admin/approvals?#{assigns[:results][:params] || %{}}"}
-    />
-  </.modal>
 </Layouts.admin>

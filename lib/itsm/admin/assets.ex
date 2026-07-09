@@ -156,4 +156,23 @@ defmodule Itsm.Admin.Assets do
   end
 
   def get_select_options, do: Asset |> select([a], {a.name, a.id}) |> Repo.all()
+
+  def get_asset_by_category_and_mapping_value(category, value) do
+    Asset |> Repo.get_by(category: category, mapping_value: value)
+  end
+
+  def create_asset_is_shadow(%User{} = action_user, attrs) do
+    %Asset{}
+    |> Asset.is_shadow_changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, asset} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_asset_is_shadow, asset})
+
+        {:ok, asset}
+
+      error ->
+        error
+    end
+  end
 end

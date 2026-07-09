@@ -15,6 +15,8 @@ defmodule Itsm.Repo.Migrations.CreateAssets do
       add :is_dmz_zone, :boolean, default: false, null: false
       add :metadata, :map, default: %{}, null: false
       add :mapping_value, :string
+      add :is_shadow, :boolean
+      add :status, :string, default: "temp_create", null: false
 
       add :service_crew_id, references(:crews, on_delete: :nothing, type: :binary_id)
       add :system_crew_id, references(:crews, on_delete: :nothing, type: :binary_id)
@@ -23,6 +25,7 @@ defmodule Itsm.Repo.Migrations.CreateAssets do
     end
 
     create unique_index(:assets, [:mapping_value])
+
     create index(:assets, [:service_crew_id])
     create index(:assets, [:system_crew_id])
 
@@ -31,8 +34,8 @@ defmodule Itsm.Repo.Migrations.CreateAssets do
     create table(:asset_relations, primary_key: false) do
       add :id, :binary_id, primary_key: true
 
-      add(:asset_a_id, references(:assets, type: :uuid, on_delete: :delete_all), null: false)
-      add(:asset_b_id, references(:assets, type: :uuid, on_delete: :delete_all), null: false)
+      add(:asset_a_id, references(:assets, type: :binary_id, on_delete: :delete_all), null: false)
+      add(:asset_b_id, references(:assets, type: :binary_id, on_delete: :delete_all), null: false)
 
       timestamps()
     end
@@ -41,34 +44,6 @@ defmodule Itsm.Repo.Migrations.CreateAssets do
     create index(:asset_relations, [:asset_b_id, :asset_a_id])
 
     create constraint(:asset_relations, :asset_id_order_check, check: "asset_a_id < asset_b_id")
-
-    create table(:assets_shadow, primary_key: false) do
-      add :id, :binary_id, primary_key: true
-      add :name, :string
-      add :description, :string
-      add :affiliate, :string
-      add :category, :string
-      add :region_type, :string
-      add :infra_type, :string
-      add :env, :string
-      add :location, :string
-      add :is_dmz_zone, :boolean, default: false, null: false
-      add :metadata, :map, default: %{}, null: false
-      add :mapping_value, :string
-      add :asset_id, references(:assets, on_delete: :nothing, type: :binary_id)
-      add :service_crew_id, references(:crews, on_delete: :nothing, type: :binary_id)
-      add :system_crew_id, references(:crews, on_delete: :nothing, type: :binary_id)
-
-      timestamps(type: :utc_datetime)
-    end
-
-    create unique_index(:assets_shadow, [:mapping_value])
-
-    create index(:assets_shadow, [:asset_id])
-    create index(:assets_shadow, [:service_crew_id])
-    create index(:assets_shadow, [:system_crew_id])
-
-    create index(:assets_shadow, [:metadata], using: :gin)
 
     execute(
       """

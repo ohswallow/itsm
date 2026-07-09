@@ -17,7 +17,7 @@ Calendar.DateGrid = {
       const [dt, ctx] = Calendar.getDtAndContext(this.el);
       if (this.el.dataset.showTime === "false") {
         const popupId = this.el.id.replace("-calendar-grid", "-calendar-popup");
-        window.liveSocket?.execJS(this.el, `[[ "hide", { "to": "#${popupId}" } ]]`);
+        document.getElementById(popupId)?.classList.toggle("hidden");
       } else {
         if (!ctx.hInput.value) {
           Calendar.updateTime(ctx.hInput, dt);

@@ -17,7 +17,7 @@ defmodule ItsmWeb.Admin.RequestLive.Show do
 
     {:noreply,
      socket
-     |> assign(:page_title, page_title(socket.assigns.live_action))
+     |> assign(:page_title, gettext("Show Request"))
      |> assign(:request, request)
      |> stream(:attachments, Attachments.list_attachments_by_resource(request), reset: true)
      |> stream(:comments, Comments.list_comments_by_resource(request), reset: true)
@@ -49,9 +49,6 @@ defmodule ItsmWeb.Admin.RequestLive.Show do
 
   def handle_info(_event, socket), do: {:noreply, socket}
 
-  defp page_title(:show), do: "Show Request"
-  defp page_title(:edit), do: "Edit Request"
-
   defp handle_pubsub(
          action_user,
          event,
@@ -60,7 +57,7 @@ defmodule ItsmWeb.Admin.RequestLive.Show do
        ) do
     opts =
       [target_key: :request, resource_name: gettext("Request")]
-      |> Keyword.merge(push_event_action(socket, event))
+      |> push_event_action(event)
 
     {:noreply,
      socket
@@ -71,8 +68,8 @@ defmodule ItsmWeb.Admin.RequestLive.Show do
     {:noreply, socket}
   end
 
-  defp push_event_action(socket, :delete_request),
-    do: [push_navigate: [to: "#{socket.assigns.current_path}"]]
+  defp push_event_action(opts, :delete_request),
+    do: Keyword.put(opts, :push_navigate, to: ~p"/admin/requests")
 
-  defp push_event_action(_socket, _), do: []
+  defp push_event_action(opts, _), do: opts
 end

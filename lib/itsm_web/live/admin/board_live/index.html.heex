@@ -1,6 +1,7 @@
 <Layouts.admin current_scope={@current_scope} menu_title={gettext("Boards")} flash={@flash}>
   <.header>
     Listing Boards
+
     <:actions>
       <.link patch={~p"/admin/boards/new"}>
         <.button>New Board</.button>
@@ -54,21 +55,4 @@
       </:action>
     </.table>
   </.itsm_table_container>
-
-  <.modal
-    :if={@live_action in [:new, :edit]}
-    id="board-modal"
-    show
-    on_cancel={JS.patch(~p"/admin/boards?#{assigns[:results][:params] || %{}}")}
-  >
-    <.live_component
-      module={ItsmWeb.Admin.BoardLive.FormComponent}
-      id={@board.id || :new}
-      title={@page_title}
-      action={@live_action}
-      board={@board}
-      current_scope={@current_scope}
-      patch={~p"/admin/boards?#{assigns[:results][:params] || %{}}"}
-    />
-  </.modal>
 </Layouts.admin>

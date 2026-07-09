@@ -56,7 +56,7 @@ defmodule ItsmWeb.DelegationLive.Index do
   defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, gettext("Listing Delegations"))
-    |> stream(:delegations, Delegations.list_delegations(socket.assigns.current_user),
+    |> stream(:delegations, Delegations.list_delegations(socket.assigns.current_scope.user),
       reset: true
     )
   end

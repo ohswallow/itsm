@@ -13,7 +13,10 @@ defmodule ItsmWeb.Admin.ApprovalLive.Index do
   end
 
   def handle_params(params, url, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params, url)}
+    {:noreply,
+     socket
+     |> assign_paged_stream(:approvals, Approval, params, url)
+     |> assign(:page_title, gettext("Listing Approvals"))}
   end
 
   def handle_event("delete", %{"id" => _id} = approval_params, socket) do
@@ -28,25 +31,6 @@ defmodule ItsmWeb.Admin.ApprovalLive.Index do
   end
 
   def handle_info(_event, socket), do: {:noreply, socket}
-
-  defp apply_action(socket, :index, params, url) do
-    socket
-    |> assign_paged_stream(:approvals, Approval, params, url)
-    |> assign(:page_title, "Listing Approvals")
-    |> assign(:approval, nil)
-  end
-
-  defp apply_action(socket, :new, _params, _url) do
-    socket
-    |> assign(:page_title, "New Approval")
-    |> assign(:approval, %Approval{})
-  end
-
-  defp apply_action(socket, :edit, %{"id" => id}, _url) do
-    socket
-    |> assign(:page_title, "Edit Approval")
-    |> assign(:approval, Approvals.get_approval!(id))
-  end
 
   defp assign_paged_stream(socket, stream_key, schema, params, url) do
     opts = [

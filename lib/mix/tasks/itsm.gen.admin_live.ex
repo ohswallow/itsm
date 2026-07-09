@@ -87,9 +87,10 @@ defmodule Mix.Tasks.Itsm.Gen.AdminLive do
     [
       {:eex, "show.ex.eex", Path.join(web_live, "show.ex")},
       {:eex, "index.ex.eex", Path.join(web_live, "index.ex")},
-      {:eex, "form_component.ex.eex", Path.join(web_live, "form_component.ex")},
+      {:eex, "form.ex.eex", Path.join(web_live, "form.ex")},
       {:eex, "index.html.heex.eex", Path.join(web_live, "index.html.heex")},
-      {:eex, "show.html.heex.eex", Path.join(web_live, "show.html.heex")}
+      {:eex, "show.html.heex.eex", Path.join(web_live, "show.html.heex")},
+      {:eex, "form.html.heex.eex", Path.join(web_live, "form.html.heex")}
     ]
   end
 
@@ -199,10 +200,9 @@ defmodule Mix.Tasks.Itsm.Gen.AdminLive do
   defp live_route_instructions(schema) do
     [
       ~s|live "/#{schema.plural}", Admin.#{inspect(schema.alias)}Live.Index, :index\n|,
-      ~s|live "/#{schema.plural}/new", Admin.#{inspect(schema.alias)}Live.Index, :new\n|,
-      ~s|live "/#{schema.plural}/:id/edit", Admin.#{inspect(schema.alias)}Live.Index, :edit\n\n|,
-      ~s|live "/#{schema.plural}/:id", Admin.#{inspect(schema.alias)}Live.Show, :show\n|,
-      ~s|live "/#{schema.plural}/:id/show/edit", Admin.#{inspect(schema.alias)}Live.Show, :edit|
+      ~s|live "/#{schema.plural}/new", Admin.#{inspect(schema.alias)}Live.Form, :new\n|,
+      ~s|live "/#{schema.plural}/:id/edit", Admin.#{inspect(schema.alias)}Live.Form, :edit\n|,
+      ~s|live "/#{schema.plural}/:id", Admin.#{inspect(schema.alias)}Live.Show, :show\n|
     ]
   end
 end

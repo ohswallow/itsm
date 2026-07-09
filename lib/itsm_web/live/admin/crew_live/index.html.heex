@@ -1,8 +1,9 @@
 <Layouts.admin current_scope={@current_scope} menu_title={gettext("Crews")} flash={@flash}>
   <.header>
     Listing Crews
+
     <:actions>
-      <.link patch={~p"/admin/crews/new"}>
+      <.link navigate={~p"/admin/crews/new"}>
         <.button>New Crew</.button>
       </.link>
     </:actions>
@@ -20,7 +21,7 @@
 
       <:action :let={{_id, crew}}>
         <div class="sr-only"><.link navigate={~p"/admin/crews/#{crew}"}>Show</.link></div>
-         <.link patch={~p"/admin/crews/#{crew}/edit"}>Edit</.link>
+         <.link navigate={~p"/admin/crews/#{crew}/edit"}>Edit</.link>
       </:action>
 
       <:action :let={{_id, crew}}>
@@ -35,21 +36,4 @@
       </:action>
     </.table>
   </.itsm_table_container>
-
-  <.modal
-    :if={@live_action in [:new, :edit]}
-    id="crew-modal"
-    show
-    on_cancel={JS.patch(~p"/admin/crews?#{assigns[:results][:params] || %{}}")}
-  >
-    <.live_component
-      module={ItsmWeb.Admin.CrewLive.FormComponent}
-      id={@crew.id || :new}
-      title={@page_title}
-      action={@live_action}
-      crew={@crew}
-      current_scope={@current_scope}
-      patch={~p"/admin/crews?#{assigns[:results][:params] || %{}}"}
-    />
-  </.modal>
 </Layouts.admin>
