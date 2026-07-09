@@ -1,16 +1,166 @@
-<div>
-  <.calendar_ui
-    {assigns}
-    rests={@rests}
-    field={@field}
-    id={@id}
+<div
+  {@rests[:container]}
+  phx-feedback-for={@field[:name]}
+  class="relative fieldset mb-2"
+  id={"datepicker-container-#{@id}"}
+  data-calendar-root
+>
+  <label
+    :if={assigns[:label]}
     label={@label}
-    selected_date_time={@selected_date_time}
-    show_time={@show_time}
-    view_date={@view_date}
-    target={@myself}
-    start_col_class={@start_col_class}
-    days={@days}
-    errors={@errors}
-  />
+    for={"selected-date-time-#{@id}"}
+  >
+    <span class="label mb-1">{@label}</span>
+    <div
+      id={"datepicker-input-#{@id}"}
+      class="w-full select pr-3 cursor-pointer"
+      phx-hook="Calendar.Toggle"
+      phx-click={JS.toggle_class("hidden", to: "##{@id}-calendar-popup")}
+    >
+      <input
+        id={"selected-date-time-#{@id}"}
+        name={@field && @field.name}
+        utc-value={@selected_date_time}
+        format={if @show_time, do: "datetime", else: "date"}
+        class="hidden"
+        phx-update="ignore"
+        readonly
+        value={@selected_date_time}
+      />
+      <div
+        {@rests[:selected_date_time]}
+        {@rest}
+        id={"display-date-time-#{@id}"}
+        class="w-full"
+        phx-hook="LocalTime.ToLocale"
+        utc-value={@selected_date_time}
+        format={if @show_time, do: "datetime", else: "date"}
+      >
+      </div>
+      <span>📅</span>
+    </div>
+  </label>
+
+  <p :for={msg <- @errors} class="mt-1.5 flex gap-2 items-center text-sm text-error">
+    <.icon name="hero-exclamation-circle" class="size-5" /> {msg}
+  </p>
+
+  <div
+    {@rests[:popup]}
+    id={"#{@id}-calendar-popup"}
+    class="hidden absolute z-50 p-4 top-full bg-base-100 rounded-xl w-100 text-center border"
+    phx-click-away={JS.toggle_class("hidden", to: "##{@id}-calendar-popup")}
+  >
+    <div class="join mb-2">
+      <button
+        type="button"
+        phx-click="shift"
+        phx-value-unit="year"
+        phx-value-amount="-1"
+        phx-target={@myself}
+        class="btn btn-ghost join-item"
+      >
+        ≪
+      </button>
+
+      <button
+        type="button"
+        phx-click="shift"
+        phx-value-unit="month"
+        phx-value-amount="-1"
+        phx-target={@myself}
+        class="btn btn-ghost join-item"
+      >
+        ◀
+      </button>
+
+      <div class="join-item font-bold text-lg">{"#{@view_date.year}년 #{@view_date.month}월"}</div>
+
+      <button
+        type="button"
+        phx-click="shift"
+        phx-value-unit="month"
+        phx-value-amount="1"
+        phx-target={@myself}
+        class="btn btn-ghost join-item"
+      >
+        ▶
+      </button>
+
+      <button
+        type="button"
+        phx-click="shift"
+        phx-value-unit="year"
+        phx-value-amount="1"
+        phx-target={@myself}
+        class="btn btn-ghost join-item"
+      >
+        ≫
+      </button>
+    </div>
+
+    <div
+      {@rests[:grid]}
+      id={"#{@id}-calendar-grid"}
+      phx-hook="Calendar.DateGrid"
+      phx-target={@myself}
+      class="grid grid-cols-7 gap-1 text-center"
+      utc-value={@selected_date_time}
+      format="datetime"
+      data-show-time={"#{@show_time}"}
+    >
+      <div :for={day_name <- ~w(일 월 화 수 목 금 토)} class="text-xs text-gray-400 pb-2">
+        {day_name}
+      </div>
+
+      <div
+        :for={{date, index} <- Enum.with_index(@days)}
+        {@rests[:date]}
+        id={"#{@id}-date-#{date.date}"}
+        data-date={date.date}
+        data-disabled={date.disabled || nil}
+        class={[
+          index == 0 && @start_col_class,
+          "p-2 text-sm rounded-lg transition-all cursor-pointer hover:bg-gray-100"
+        ]}
+        phx-update="ignore"
+      >
+        {date.day}
+      </div>
+    </div>
+
+    <div
+      :if={@show_time}
+      class="flex items-center justify-center gap-2 mt-4 pt-4"
+    >
+      <input
+        {@rests[:hour]}
+        id={"#{@id}-selected-date-time-hour"}
+        name={"#{@field.form.name}[calendar_ui][#{@field.name}][hour]"}
+        phx-hook="Calendar.Input"
+        utc-value={@selected_date_time}
+        type="number"
+        format="hour"
+        min="0"
+        max="23"
+        phx-target={@myself}
+        phx-update="ignore"
+        class="input w-fit"
+      /> <span class="text-gray-400 font-bold">:</span>
+      <input
+        {@rests[:minute]}
+        id={"#{@id}-selected-date-time-minute"}
+        name={"#{@field.form.name}[calendar_ui][#{@field.name}][minute]"}
+        phx-hook="Calendar.Input"
+        utc-value={@selected_date_time}
+        type="number"
+        format="minute"
+        min="0"
+        max="59"
+        phx-target={@myself}
+        phx-update="ignore"
+        class="input w-fit"
+      />
+    </div>
+  </div>
 </div>

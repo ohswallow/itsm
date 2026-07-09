@@ -4,7 +4,10 @@
     <:subtitle>This is a asset record from your database.</:subtitle>
 
     <:actions>
-      <.link patch={~p"/admin/assets/#{@asset}/show/edit"} phx-click={JS.push_focus()}>
+      <.button navigate={~p"/admin/assets"}>
+        <.icon name="hero-arrow-left" />
+      </.button>
+      <.link navigate={~p"/admin/assets/#{@asset}/edit"}>
         <.button>Edit asset</.button>
       </.link>
     </:actions>
@@ -178,21 +181,4 @@
   </.form>
 
   <.back navigate={~p"/admin/assets"}>Back to assets</.back>
-
-  <.modal
-    :if={@live_action == :edit}
-    id="asset-modal"
-    show
-    on_cancel={JS.patch(~p"/admin/assets/#{@asset}")}
-  >
-    <.live_component
-      module={ItsmWeb.Admin.AssetLive.FormComponent}
-      id={@asset.id}
-      title={@page_title}
-      action={@live_action}
-      asset={@asset}
-      current_scope={@current_scope}
-      patch={~p"/admin/assets/#{@asset}"}
-    />
-  </.modal>
 </Layouts.admin>

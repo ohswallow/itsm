@@ -21,6 +21,12 @@ defmodule Itsm.Paging do
     do: query
 
   def filter_status(query, search_columns, search, opts) do
+    search_columns =
+      Enum.flat_map(search_columns, fn
+        [_ | _] = kw -> Keyword.to_list(kw)
+        other -> [other]
+      end)
+
     query_cond = Keyword.get(opts, :query_cond)
     {query_base, modules_map} = build_query_base(query, search_columns)
 
@@ -416,6 +422,12 @@ defmodule Itsm.Paging do
   defp parse_integer(nil, default), do: default
   defp parse_integer(value, _default) when is_integer(value), do: value
 
+  defp get_last_binding_and_field(field) when is_list(field) do
+    field
+    |> List.last()
+    |> get_last_binding_and_field()
+  end
+
   defp get_last_binding_and_field({_parent, child}) when is_tuple(child) do
     get_last_binding_and_field(child)
   end
@@ -426,6 +438,12 @@ defmodule Itsm.Paging do
 
   defp get_last_binding_and_field(field) when is_atom(field) do
     {:main, field}
+  end
+
+  defp ensure_join(query, modules, assoc_name) when is_list(assoc_name) do
+    Enum.reduce(assoc_name, {query, modules}, fn assoc, {q, m} ->
+      ensure_join(q, m, assoc)
+    end)
   end
 
   defp ensure_join(query, modules, assoc_name) when is_atom(assoc_name) do

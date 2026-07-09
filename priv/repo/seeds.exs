@@ -818,3 +818,31 @@ free_board =
   }
 }
 |> Repo.insert!()
+
+%Itsm.Assets.Asset{
+  name: "ITSM_클라우드",
+  description: "ITSM_클라우드",
+  affiliate: "B0",
+  category: "서버",
+  region_type: "K_리전_은행",
+  infra_type: "AWS",
+  env: "운영",
+  location: "여의도IT센터",
+  is_dmz_zone: true,
+  metadata: %{
+    "os_type" => "리눅스",
+    "hostname" => "nitapo03",
+    "cpu_cores" => 4,
+    "memory_gb" => 16,
+    "ip_address" => "10.138.7.13",
+    "os_version" => "0.0.0",
+    "subnet_mask" => "",
+    "kernel_version" => "test1"
+  },
+  mapping_value: "국민은행_nitapo03_10.138.17.13",
+  is_shadow: false,
+  status: "temp_create",
+  service_crew_id: aaaaa.id,
+  system_crew_id: aaaaa.id
+}
+|> Repo.insert!()

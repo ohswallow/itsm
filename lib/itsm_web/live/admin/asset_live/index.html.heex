@@ -1,8 +1,9 @@
 <Layouts.admin current_scope={@current_scope} menu_title={gettext("Assets")} flash={@flash}>
   <.header>
     Listing Assets
+
     <:actions>
-      <.link patch={~p"/admin/assets/new"}>
+      <.link navigate={~p"/admin/assets/new"}>
         <.button>New Asset</.button>
       </.link>
     </:actions>
@@ -56,7 +57,7 @@
         <div class="sr-only">
           <.link navigate={~p"/admin/assets/#{asset}"}>Show</.link>
         </div>
-         <.link patch={~p"/admin/assets/#{asset}/edit"}>Edit</.link>
+         <.link navigate={~p"/admin/assets/#{asset}/edit"}>Edit</.link>
       </:action>
 
       <:action :let={{_id, asset}}>
@@ -71,21 +72,4 @@
       </:action>
     </.table>
   </.itsm_table_container>
-
-  <.modal
-    :if={@live_action in [:new, :edit]}
-    id="asset-modal"
-    show
-    on_cancel={JS.patch(~p"/admin/assets?#{assigns[:results][:params] || %{}}")}
-  >
-    <.live_component
-      module={ItsmWeb.Admin.AssetLive.FormComponent}
-      id={@asset.id || :new}
-      title={@page_title}
-      action={@live_action}
-      asset={@asset}
-      current_scope={@current_scope}
-      patch={~p"/admin/assets?#{assigns[:results][:params] || %{}}"}
-    />
-  </.modal>
 </Layouts.admin>

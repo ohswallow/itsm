@@ -1,0 +1,72 @@
+<Layouts.admin current_scope={@current_scope} menu_title={gettext("Users")} flash={@flash}>
+  <div class="max-w-5xl">
+    <.header>
+      {@page_title}
+      <:subtitle>Use this form to manage user records in your database.</:subtitle>
+
+      <:actions>
+        <.button navigate={~p"/admin/users"}>
+          <.icon name="hero-arrow-left" />
+        </.button>
+      </:actions>
+    </.header>
+
+    <.card
+      visible={@conflict}
+      state={:error}
+      title="⚠️ 충돌 발생!"
+    >
+      <p>{@conflict_msg}</p>
+      <p>현재 편집 내용을 저장할 수 없습니다. 새로고침 후 다시 시도해 주세요.</p>
+      <p>
+        <.link class="btn" navigate={@current_path}>새로고침</.link>
+      </p>
+    </.card>
+
+    <.form
+      for={@form}
+      id="user-form"
+      phx-change="validate"
+      phx-submit="save"
+    >
+      <.input field={@form[:email]} type="text" label={gettext("Email")} />
+      <.input
+        :if={@live_action == :new}
+        field={@form[:password]}
+        type="text"
+        label={gettext("Password")}
+      />
+      <.itsm_calendar
+        field={@form[:confirmed_at]}
+        label={gettext("Confirmed At")}
+        show_time
+        default_selected_date_time={@form[:confirmed_at].value}
+      />
+      <.input field={@form[:employee_number]} type="text" label={gettext("Employee Number")} />
+      <.input field={@form[:display_name]} type="text" label={gettext("Display Name")} />
+      <.input
+        field={@form[:organization_code]}
+        type="select"
+        label={gettext("Organization")}
+        prompt="Choose a value"
+        options={@organization_options}
+      />
+      <.input
+        field={@form[:department_code]}
+        type="select"
+        label={gettext("Department")}
+        prompt="Choose a value"
+        options={@department_options}
+      />
+      <.input field={@form[:role]} type="text" label={gettext("Role")} />
+      <.itsm_calendar
+        :if={@live_action == :edit}
+        field={@form[:inserted_at]}
+        label={gettext("Inserted At")}
+        show_time
+        default_selected_date_time={@form[:inserted_at].value}
+      />
+      <.button :if={!@conflict} phx-disable-with="Saving...">Save User</.button>
+    </.form>
+  </div>
+</Layouts.admin>

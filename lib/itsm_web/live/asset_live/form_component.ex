@@ -131,9 +131,7 @@ defmodule ItsmWeb.AssetLive.FormComponent do
     |> assign_new(:infra_type_options, fn -> CommonCodes.get_select_options("인프라_유형") end)
     |> assign_new(:env_options, fn -> CommonCodes.get_select_options("운영_구분") end)
     |> assign_new(:location_options, fn -> CommonCodes.get_select_options("장소") end)
-    |> assign_new(:crew_options, fn ->
-      Itsm.Crews.options_excluding_user(socket.assigns[:current_scope].user)
-    end)
+    |> assign_new(:crew_options, fn -> Itsm.Crews.get_select_options() end)
   end
 
   defp save_asset(socket, :new, asset_params) do

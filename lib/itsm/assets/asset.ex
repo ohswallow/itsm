@@ -31,6 +31,8 @@ defmodule Itsm.Assets.Asset do
     field :metadata, :map
     # embeds_one :metadata, Itsm.Assets.Metadata, on_replace: :update
     field :mapping_value, :string
+    field :is_shadow, :boolean
+    field :status, :string, default: "temp_create"
 
     many_to_many :relation_assets, Itsm.Assets.Asset,
       join_through: "v_asset_relations",
@@ -79,8 +81,28 @@ defmodule Itsm.Assets.Asset do
       :service_crew_id,
       :mapping_value
     ])
-    |> unique_constraint(:mapping_value, name: :assets_mapping_value_index)
+    |> unique_constraint([:mapping_value], name: :assets_mapping_value_index)
     |> validate_metadata(attrs)
+  end
+
+  def is_shadow_changeset(asset, attrs \\ %{}) do
+    asset
+    |> cast(attrs, [
+      :name,
+      :description,
+      :affiliate,
+      :category,
+      :region_type,
+      :infra_type,
+      :env,
+      :location,
+      :is_dmz_zone,
+      :system_crew_id,
+      :service_crew_id,
+      :mapping_value
+    ])
+    |> put_change(:is_shadow, true)
+    |> unique_constraint([:mapping_value], name: :assets_mapping_value_index)
   end
 
   def metadata_fields_for_category(category) do

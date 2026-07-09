@@ -1,8 +1,9 @@
 <Layouts.admin current_scope={@current_scope} menu_title={gettext("Common Codes")} flash={@flash}>
   <.header>
     Listing Common codes
+
     <:actions>
-      <.link patch={~p"/admin/common-codes/new"}>
+      <.link navigate={~p"/admin/common-codes/new"}>
         <.button>New Code</.button>
       </.link>
     </:actions>
@@ -44,7 +45,7 @@
         <div class="sr-only">
           <.link navigate={~p"/admin/common-codes/#{common_code}"}>Show</.link>
         </div>
-         <.link patch={~p"/admin/common-codes/#{common_code}/edit"}>Edit</.link>
+         <.link navigate={~p"/admin/common-codes/#{common_code}/edit"}>Edit</.link>
       </:action>
 
       <:action :let={{_id, common_code}}>
@@ -59,21 +60,4 @@
       </:action>
     </.table>
   </.itsm_table_container>
-
-  <.modal
-    :if={@live_action in [:new, :edit]}
-    id="codes-modal"
-    show
-    on_cancel={JS.patch(~p"/admin/common-codes?#{assigns[:results][:params] || %{}}")}
-  >
-    <.live_component
-      module={ItsmWeb.Admin.CommonCodeLive.FormComponent}
-      id={@common_code.id || :new}
-      title={@page_title}
-      action={@live_action}
-      common_code={@common_code}
-      current_scope={@current_scope}
-      patch={~p"/admin/common-codes?#{assigns[:results][:params] || %{}}"}
-    />
-  </.modal>
 </Layouts.admin>

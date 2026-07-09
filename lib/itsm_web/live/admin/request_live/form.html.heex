@@ -1,0 +1,58 @@
+<Layouts.admin current_scope={@current_scope} menu_title={gettext("Requests")} flash={@flash}>
+  <div class="max-w-5xl">
+    <.header>
+      {@page_title}
+      <:subtitle>Use this form to manage request records in your database.</:subtitle>
+
+      <:actions>
+        <.button navigate={~p"/admin/requests"}>
+          <.icon name="hero-arrow-left" />
+        </.button>
+      </:actions>
+    </.header>
+
+    <.card
+      visible={@conflict}
+      state={:error}
+      title="⚠️ 충돌 발생!"
+    >
+      <p>{@conflict_msg}</p>
+      <p>현재 편집 내용을 저장할 수 없습니다. 새로고침 후 다시 시도해 주세요.</p>
+      <p>
+        <.link class="btn" navigate={@current_path}>새로고침</.link>
+      </p>
+    </.card>
+
+    <.form
+      for={@form}
+      id="request-form"
+      phx-change="validate"
+      phx-submit="save"
+    >
+      <.input field={@form[:title]} type="text" label={gettext("Title")} />
+      <.input field={@form[:description]} type="text" label={gettext("Description")} />
+      <.input field={@form[:env]} type="text" label={gettext("Environment")} />
+      <.itsm_calendar
+        field={@form[:due_date]}
+        label={gettext("Due Date")}
+        show_time
+        default_selected_date_time={@form[:due_date].value}
+      />
+      <.input
+        field={@form[:category_id]}
+        type="select"
+        label={gettext("Category")}
+        prompt="Choose a value"
+        options={@category_options}
+      />
+      <.itsm_calendar
+        :if={@live_action == :edit}
+        field={@form[:inserted_at]}
+        label={gettext("Inserted At")}
+        show_time
+        default_selected_date_time={@form[:inserted_at].value}
+      />
+      <.button :if={!@conflict} phx-disable-with="Saving...">Save Request</.button>
+    </.form>
+  </div>
+</Layouts.admin>

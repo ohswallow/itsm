@@ -1,0 +1,67 @@
+<Layouts.admin current_scope={@current_scope} menu_title={gettext("Categories")} flash={@flash}>
+  <div class="max-w-5xl">
+    <.header>
+      {@page_title}
+      <:subtitle>Use this form to manage category records in your database.</:subtitle>
+      <:actions>
+        <.button navigate={~p"/admin/categories"}>
+          <.icon name="hero-arrow-left" />
+        </.button>
+      </:actions>
+    </.header>
+
+    <.card
+      visible={@conflict}
+      state={:error}
+      title="⚠️ 충돌 발생!"
+    >
+      <p>{@conflict_msg}</p>
+      <p>현재 편집 내용을 저장할 수 없습니다. 새로고침 후 다시 시도해 주세요.</p>
+      <p><.link class="btn" navigate={@current_path}>새로고침</.link></p>
+    </.card>
+
+    <.form
+      for={@form}
+      id="category-form"
+      phx-change="validate"
+      phx-submit="save"
+    >
+      <.input field={@form[:name]} type="text" label={gettext("Name")} />
+      <.input field={@form[:description]} type="text" label={gettext("Description")} />
+      <.input
+        field={@form[:affiliate]}
+        type="select"
+        label={gettext("Affiliate")}
+        prompt="Choose a value"
+        options={@affiliate_options}
+      /> <.input field={@form[:request_name]} type="text" label={gettext("Request name")} />
+      <.input
+        field={@form[:group]}
+        type="select"
+        label={gettext("Group")}
+        prompt="Choose a value"
+        options={@region_type_options}
+      /> <.input field={@form[:category]} type="text" label={gettext("Category")} />
+      <.input
+        field={@form[:duration]}
+        type="number"
+        label={gettext("Duration")}
+      /> <.input field={@form[:active]} type="checkbox" label={gettext("Active")} />
+      <.input
+        field={@form[:assignee_crew_id]}
+        type="select"
+        label={gettext("Assignee Crew")}
+        prompt="Choose a value"
+        options={@assignee_crews_options}
+      />
+      <.itsm_calendar
+        :if={@live_action == :edit}
+        field={@form[:inserted_at]}
+        label={gettext("Inserted At")}
+        show_time
+        default_selected_date_time={@form[:inserted_at].value}
+      />
+      <.button :if={!@conflict} phx-disable-with="Saving...">Save Category</.button>
+    </.form>
+  </div>
+</Layouts.admin>

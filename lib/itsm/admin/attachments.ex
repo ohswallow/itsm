@@ -31,7 +31,7 @@ defmodule Itsm.Admin.Attachments do
     |> Repo.insert()
     |> case do
       {:ok, attachment} ->
-        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_attachments, attachment})
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_attachment, attachment})
 
         {:ok, attachment}
 

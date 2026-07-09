@@ -78,6 +78,12 @@ defmodule Itsm.Crews do
     |> Repo.all()
   end
 
+  def get_select_options() do
+    Crew
+    |> select([c], {c.name, c.id})
+    |> Repo.all()
+  end
+
   def options_excluding_user(%User{id: user_id}) do
     user_crew_ids =
       CrewsUsers

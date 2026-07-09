@@ -59,12 +59,6 @@ defmodule Itsm.Admin.Crews do
     end
   end
 
-  def get_crew_options() do
-    Crew
-    |> select([c], {c.name, c.id})
-    |> Repo.all()
-  end
-
   def get_select_options() do
     Crew
     |> select([c], {c.name, c.id})

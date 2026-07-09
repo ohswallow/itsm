@@ -1,6 +1,11 @@
 <Layouts.admin current_scope={@current_scope} menu_title={gettext("Comments")} flash={@flash}>
   <.header>
     Listing Comments
+    <:actions>
+      <.link navigate={~p"/admin/comments/new"}>
+        <.button>New Comment</.button>
+      </.link>
+    </:actions>
   </.header>
 
   <.itsm_table_container results={assigns[:results]}>
@@ -36,21 +41,4 @@
       </:action>
     </.table>
   </.itsm_table_container>
-
-  <.modal
-    :if={@live_action in [:new, :edit]}
-    id="comment-modal"
-    show
-    on_cancel={JS.patch(~p"/admin/comments?#{assigns[:results][:params] || %{}}")}
-  >
-    <.live_component
-      module={ItsmWeb.Admin.CommentLive.FormComponent}
-      id={@comment.id || :new}
-      title={@page_title}
-      action={@live_action}
-      comment={@comment}
-      current_scope={@current_scope}
-      patch={~p"/admin/comments?#{assigns[:results][:params] || %{}}"}
-    />
-  </.modal>
 </Layouts.admin>

@@ -35,7 +35,7 @@ defmodule ItsmWeb.CategoryLive.Index do
     {:noreply, socket}
   end
 
-  def handle_info({:pusbusb, {action_user, event, item}}, socket) do
+  def handle_info({:pubsub, {action_user, event, item}}, socket) do
     handle_pubsub(action_user, event, item, socket)
   end
 

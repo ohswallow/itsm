@@ -87,7 +87,7 @@ defmodule ItsmWeb.GraphiqlController do
             });
 
             customButton.addEventListener("click", function() {
-              window.location.href = "/";
+              window.location.href = "/main";
             });
 
             sidebarSection.insertBefore(customButton, sidebarSection.firstChild);

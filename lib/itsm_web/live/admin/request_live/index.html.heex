@@ -39,7 +39,7 @@
 
       <:action :let={{_id, request}}>
         <div class="sr-only"><.link navigate={~p"/admin/requests/#{request}"}>Show</.link></div>
-         <.link patch={~p"/admin/requests/#{request.id}/edit"}>Edit</.link>
+         <.link navigate={~p"/admin/requests/#{request.id}/edit"}>Edit</.link>
       </:action>
 
       <:action :let={{_id, request}}>
@@ -54,21 +54,4 @@
       </:action>
     </.table>
   </.itsm_table_container>
-
-  <.modal
-    :if={@live_action == :edit}
-    id="request-modal"
-    show
-    on_cancel={JS.patch(~p"/admin/requests?#{assigns[:results][:params] || %{}}")}
-  >
-    <.live_component
-      module={ItsmWeb.Admin.RequestLive.FormComponent}
-      id={@request.id}
-      title={@page_title}
-      action={@live_action}
-      request={@request}
-      current_scope={@current_scope}
-      patch={~p"/admin/requests?#{assigns[:results][:params] || %{}}"}
-    />
-  </.modal>
 </Layouts.admin>

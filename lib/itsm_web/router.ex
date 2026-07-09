@@ -158,86 +158,58 @@ defmodule ItsmWeb.Router do
       live "/", Admin.CategoryLive.Index, :index
 
       live "/users", Admin.UserLive.Index, :index
-      live "/users/new", Admin.UserLive.Index, :new
-      live "/users/:id/edit", Admin.UserLive.Index, :edit
-
+      live "/users/new", Admin.UserLive.Form, :new
+      live "/users/:id/edit", Admin.UserLive.Form, :edit
       live "/users/:id", Admin.UserLive.Show, :show
-      live "/users/:id/show/edit", Admin.UserLive.Show, :edit
 
       live "/requests", Admin.RequestLive.Index, :index
-      live "/requests/new", Admin.RequestLive.Index, :new
-      live "/requests/:id/edit", Admin.RequestLive.Index, :edit
-
+      live "/requests/new", Admin.RequestLive.Form, :new
+      live "/requests/:id/edit", Admin.RequestLive.Form, :edit
       live "/requests/:id", Admin.RequestLive.Show, :show
-      live "/requests/:id/show/edit", Admin.RequestLive.Show, :edit
 
       live "/categories", Admin.CategoryLive.Index, :index
-      live "/categories/new", Admin.CategoryLive.Index, :new
-      live "/categories/:id/edit", Admin.CategoryLive.Index, :edit
-
+      live "/categories/new", Admin.CategoryLive.Form, :new
+      live "/categories/:id/edit", Admin.CategoryLive.Form, :edit
       live "/categories/:id", Admin.CategoryLive.Show, :show
-      live "/categories/:id/show/edit", Admin.CategoryLive.Show, :edit
 
       live "/approvals", Admin.ApprovalLive.Index, :index
-      live "/approvals/:id/edit", Admin.ApprovalLive.Index, :edit
-
+      live "/approvals/:id/edit", Admin.ApprovalLive.Form, :edit
       live "/approvals/:id", Admin.ApprovalLive.Show, :show
-      live "/approvals/:id/show/edit", Admin.ApprovalLive.Show, :edit
 
       live "/crews", Admin.CrewLive.Index, :index
-      live "/crews/new", Admin.CrewLive.Index, :new
-      live "/crews/:id/edit", Admin.CrewLive.Index, :edit
-
+      live "/crews/new", Admin.CrewLive.Form, :new
+      live "/crews/:id/edit", Admin.CrewLive.Form, :edit
       live "/crews/:id", Admin.CrewLive.Show, :show
-      live "/crews/:id/show/edit", Admin.CrewLive.Show, :edit
 
       live "/comments", Admin.CommentLive.Index, :index
-      live "/comments/:id/edit", Admin.CommentLive.Index, :edit
-
+      live "/comments/new", Admin.CommentLive.Form, :new
+      live "/comments/:id/edit", Admin.CommentLive.Form, :edit
       live "/comments/:id", Admin.CommentLive.Show, :show
-      live "/comments/:id/show/edit", Admin.CommentLive.Show, :edit
 
       live "/common-codes", Admin.CommonCodeLive.Index, :index
-      live "/common-codes/new", Admin.CommonCodeLive.Index, :new
-      live "/common-codes/:id/edit", Admin.CommonCodeLive.Index, :edit
-
+      live "/common-codes/new", Admin.CommonCodeLive.Form, :new
+      live "/common-codes/:id/edit", Admin.CommonCodeLive.Form, :edit
       live "/common-codes/:id", Admin.CommonCodeLive.Show, :show
-      live "/common-codes/:id/show/edit", Admin.CommonCodeLive.Show, :edit
 
       live "/assets", Admin.AssetLive.Index, :index
-      live "/assets/new", Admin.AssetLive.Index, :new
-      live "/assets/:id/edit", Admin.AssetLive.Index, :edit
-
+      live "/assets/new", Admin.AssetLive.Form, :new
+      live "/assets/:id/edit", Admin.AssetLive.Form, :edit
       live "/assets/:id", Admin.AssetLive.Show, :show
-      live "/assets/:id/show/edit", Admin.AssetLive.Show, :edit
 
       live "/boards", Admin.BoardLive.Index, :index
-      live "/boards/new", Admin.BoardLive.Index, :new
-      live "/boards/:id/edit", Admin.BoardLive.Index, :edit
-
+      live "/boards/new", Admin.BoardLive.Form, :new
+      live "/boards/:id/edit", Admin.BoardLive.Form, :edit
       live "/boards/:id", Admin.BoardLive.Show, :show
-      live "/boards/:id/show/edit", Admin.BoardLive.Show, :edit
 
       live "/posts", Admin.PostLive.Index, :index
-      live "/posts/new", Admin.PostLive.Index, :new
-      live "/posts/:id/edit", Admin.PostLive.Index, :edit
-
+      live "/posts/new", Admin.PostLive.Form, :new
+      live "/posts/:id/edit", Admin.PostLive.Form, :edit
       live "/posts/:id", Admin.PostLive.Show, :show
-      live "/posts/:id/show/edit", Admin.PostLive.Show, :edit
 
       live "/attachments", Admin.AttachmentLive.Index, :index
-      live "/attachments/new", Admin.AttachmentLive.Index, :new
-      live "/attachments/:id/edit", Admin.AttachmentLive.Index, :edit
-
+      live "/attachments/new", Admin.AttachmentLive.Form, :new
+      live "/attachments/:id/edit", Admin.AttachmentLive.Form, :edit
       live "/attachments/:id", Admin.AttachmentLive.Show, :show
-      live "/attachments/:id/show/edit", Admin.AttachmentLive.Show, :edit
-
-      live "/assets-shadow", Admin.AssetLive.AssetShadowLive.Index, :index
-      live "/assets-shadow/new", Admin.AssetLive.AssetShadowLive.Index, :new
-      live "/assets-shadow/:id/edit", Admin.AssetLive.AssetShadowLive.Index, :edit
-
-      live "/assets-shadow/:id", Admin.AssetLive.AssetShadowLive.Show, :show
-      live "/assets-shadow/:id/show/edit", Admin.AssetLive.AssetShadowLive.Show, :edit
     end
   end
 
