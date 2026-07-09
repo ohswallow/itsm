@@ -10,7 +10,10 @@ defmodule ItsmWeb.Admin.CrewLive.Index do
   end
 
   def handle_params(params, url, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params, url)}
+    {:noreply,
+     socket
+     |> assign_paged_stream(:crews, Crew, params, url)
+     |> assign(:page_title, gettext("Listing Crews"))}
   end
 
   def handle_event("delete", %{"id" => _id} = crew_params, socket) do
@@ -25,25 +28,6 @@ defmodule ItsmWeb.Admin.CrewLive.Index do
   end
 
   def handle_info(_event, socket), do: {:noreply, socket}
-
-  defp apply_action(socket, :index, params, url) do
-    socket
-    |> assign_paged_stream(:crews, Crew, params, url)
-    |> assign(:page_title, "Listing Crews")
-    |> assign(:crew, nil)
-  end
-
-  defp apply_action(socket, :new, _params, _url) do
-    socket
-    |> assign(:page_title, "New Crew")
-    |> assign(:crew, %Crew{})
-  end
-
-  defp apply_action(socket, :edit, %{"id" => id}, _url) do
-    socket
-    |> assign(:page_title, "Edit Crew")
-    |> assign(:crew, Crews.get_crew!(id))
-  end
 
   defp assign_paged_stream(socket, stream_key, schema, params, url) do
     opts = [default_columns: [:name, :description, {:users, :display_name}]]

@@ -33,7 +33,7 @@ defmodule ItsmWeb.Admin.BoardLive.Form do
 
   defp apply_action(socket, :new, _params, _url) do
     socket
-    |> assign(:page_title, "New Board")
+    |> assign(:page_title, gettext("New Board"))
     |> assign(:board, %Board{})
     |> assign_new(:form, fn -> to_form(Boards.change_board(%Board{})) end)
   end
@@ -42,7 +42,7 @@ defmodule ItsmWeb.Admin.BoardLive.Form do
     board = Boards.get_board!(id)
 
     socket
-    |> assign(:page_title, "Edit Board")
+    |> assign(:page_title, gettext("Edit Board"))
     |> assign(:board, board)
     |> assign_new(:form, fn -> to_form(Boards.change_board(board)) end)
     |> Itsm.PubSub.Helper.subscribe(Boards, id: id, is_admin: true)
@@ -53,7 +53,7 @@ defmodule ItsmWeb.Admin.BoardLive.Form do
 
     case Boards.update_board(action_user, board, board_params) do
       {:ok, _board} ->
-        {:noreply, socket |> push_navigate(to: "/admin/boards")}
+        {:noreply, socket |> push_navigate(to: ~p"/admin/boards")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -65,7 +65,7 @@ defmodule ItsmWeb.Admin.BoardLive.Form do
 
     case Boards.create_board(action_user, board_params) do
       {:ok, _board} ->
-        {:noreply, socket |> push_navigate(to: "/admin/boards")}
+        {:noreply, socket |> push_navigate(to: ~p"/admin/boards")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -96,6 +96,6 @@ defmodule ItsmWeb.Admin.BoardLive.Form do
      |> assign(:conflict, true)
      |> assign(:conflict_msg, "#{action_user.display_name}님이 데이터를 삭제했습니다.")
      |> put_flash(:error, "데이터가 삭제되었습니다. 목록으로 돌아갑니다.")
-     |> push_navigate(to: "/admin/boards")}
+     |> push_navigate(to: ~p"/admin/boards")}
   end
 end

@@ -10,7 +10,7 @@ defmodule <%= inspect context.web_module %>.<%= inspect Module.concat(schema.web
   def handle_params(%{"id" => id}, _, socket) do
     {:noreply,
      socket
-     |> assign(:page_title, page_title(socket.assigns.live_action))
+     |> assign(:page_title, "Show <%= schema.human_singular %>")
      |> assign(:<%= schema.singular %>, <%= inspect context.alias %>.get_<%= schema.singular %>!(id))
      |> Itsm.PubSub.Helper.subscribe(<%= inspect context.module %>, id: id, is_admin: true)}
   end
@@ -21,9 +21,6 @@ defmodule <%= inspect context.web_module %>.<%= inspect Module.concat(schema.web
 
   def handle_info(_event, socket), do: {:noreply, socket}
 
-  defp page_title(:show), do: "Show <%= schema.human_singular %>"
-  defp page_title(:edit), do: "Edit <%= schema.human_singular %>"
-
   defp handle_pubsub(
          action_user,
          event,
@@ -32,7 +29,7 @@ defmodule <%= inspect context.web_module %>.<%= inspect Module.concat(schema.web
         ) do
     opts =
       [target_key: :<%= schema.singular %>, resource_name: gettext("<%= schema.human_singular %>")]
-      |> Keyword.merge(push_event_action(socket, event))
+      |> push_event_action(event)
 
     {:noreply,
      socket
@@ -43,8 +40,8 @@ defmodule <%= inspect context.web_module %>.<%= inspect Module.concat(schema.web
     {:noreply, socket}
   end
 
-  defp push_event_action(socket, :delete_<%= schema.singular %>),
-    do: [push_navigate: [to: "#{socket.assigns.current_path}"]]
+  defp push_event_action(opts, :delete_<%= schema.singular %>),
+    do: Keyword.put(opts, :push_navigate, to: ~p"<%= schema.route_prefix %>")
 
-  defp push_event_action(_socket, _), do: []
+  defp push_event_action(opts, _), do: opts
 end

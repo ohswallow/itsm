@@ -1,10 +1,10 @@
-<Layouts.admin current_scope={@current_scope} menu_title={gettext("Common Codes")} flash={@flash}>
+<Layouts.admin current_scope={@current_scope} menu_title={gettext("<%= schema.human_plural %>")} flash={@flash}>
   <.header>
     {@page_title}
-    <:subtitle>Use this form to manage codes records in your database.</:subtitle>
+    <:subtitle>Use this form to manage <%= schema.singular %> records in your database.</:subtitle>
 
     <:actions>
-      <.button navigate={~p"/admin/common-codes"}>
+      <.button navigate={~p"<%= schema.route_prefix %>"}>
         <.icon name="hero-arrow-left" />
       </.button>
     </:actions>
@@ -25,16 +25,11 @@
 
     <.form
       for={@form}
-      id="codes-form"
+      id="<%= schema.singular %>-form"
       phx-change="validate"
       phx-submit="save"
     >
-      <.input field={@form[:group_code]} type="text" label={gettext("Group Code")} />
-      <.input field={@form[:code]} type="text" label={gettext("Code")} />
-      <.input field={@form[:label]} type="text" label={gettext("Label")} />
-      <.input field={@form[:description]} type="text" label={gettext("Description")} />
-      <.input field={@form[:sort_order]} type="number" label={gettext("Sort Order")} />
-      <.input field={@form[:is_active]} type="checkbox" label={gettext("Is Active")} />
+<%= Mix.Tasks.Itsm.Gen.AdminHtml.indent_inputs(inputs, 8) %>
       <.itsm_calendar
         :if={@live_action == :edit}
         field={@form[:inserted_at]}
@@ -42,7 +37,7 @@
         show_time
         default_selected_date_time={@form[:inserted_at].value}
       />
-      <.button :if={!@conflict} phx-disable-with="Saving...">Save Codes</.button>
+      <.button :if={!@conflict} phx-disable-with="Saving...">Save <%= schema.human_singular %></.button>
     </.form>
   </div>
 </Layouts.admin>

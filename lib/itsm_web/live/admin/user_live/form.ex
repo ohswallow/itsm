@@ -40,7 +40,7 @@ defmodule ItsmWeb.Admin.UserLive.Form do
 
   defp apply_action(socket, :new, _params, _url) do
     socket
-    |> assign(:page_title, "New User")
+    |> assign(:page_title, gettext("New User"))
     |> assign(:user, %User{})
     |> assign_new(:form, fn -> to_form(Accounts.change_user(%User{})) end)
     |> assign_new_options()
@@ -50,7 +50,7 @@ defmodule ItsmWeb.Admin.UserLive.Form do
     user = Accounts.get_user!(id)
 
     socket
-    |> assign(:page_title, "Edit User")
+    |> assign(:page_title, gettext("Edit User"))
     |> assign(:user, user)
     |> assign_new(:form, fn -> to_form(Accounts.change_user(user)) end)
     |> Itsm.PubSub.Helper.subscribe(Accounts, id: id, is_admin: true)
@@ -71,7 +71,7 @@ defmodule ItsmWeb.Admin.UserLive.Form do
               end),
             else: socket
 
-        {:noreply, socket |> push_navigate(to: "/admin/users")}
+        {:noreply, socket |> push_navigate(to: ~p"/admin/users")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -83,7 +83,7 @@ defmodule ItsmWeb.Admin.UserLive.Form do
 
     case Accounts.create_user(action_user, user_params) do
       {:ok, _user} ->
-        {:noreply, socket |> push_navigate(to: "/admin/users")}
+        {:noreply, socket |> push_navigate(to: ~p"/admin/users")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -114,7 +114,7 @@ defmodule ItsmWeb.Admin.UserLive.Form do
      |> assign(:conflict, true)
      |> assign(:conflict_msg, "#{action_user.display_name}님이 데이터를 삭제했습니다.")
      |> put_flash(:error, "데이터가 삭제되었습니다. 목록으로 돌아갑니다.")
-     |> push_navigate(to: "/admin/users")}
+     |> push_navigate(to: ~p"/admin/users")}
   end
 
   defp fill_org_dept_codes(attrs) do

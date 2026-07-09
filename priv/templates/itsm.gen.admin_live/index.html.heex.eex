@@ -1,49 +1,39 @@
-<.header>
-  Listing <%= schema.human_plural %>
-  <:actions>
-    <.link patch={~p"<%= schema.route_prefix %>/new"}>
-      <.button>New <%= schema.human_singular %></.button>
-    </.link>
-  </:actions>
-</.header>
-
-<.itsm_table_container results={assigns[:results]}>
-  <.table
-    id="<%= schema.plural %>"
-    rows={@streams.<%= schema.collection %>}
-    row_click={fn {_id, <%= schema.singular %>} -> JS.navigate(~p"<%= schema.route_prefix %>/#{<%= schema.singular %>}") end}
-  >
-    <%= for {k, type} <- schema.attrs do %><%= if type == :utc_datetime do %><:col :let={{id, <%= schema.singular %>}} label={<%= "gettext(\"#{ItsmWeb.LiveUtils.titleize(k)}\")" %>}>
-      <div id={"<%= k %>-#{id}"} phx-hook="LocalTime.ToLocale" utc-value={<%= schema.singular %>.<%= k %>} />
-    </:col><% else %><:col :let={{_id, <%= schema.singular %>}} label={<%= "gettext(\"#{ItsmWeb.LiveUtils.titleize(k)}\")" %>}>{<%= schema.singular %>.<%= k %>}</:col>
-    <% end %><% end %>
-    <:action :let={{_id, <%= schema.singular %>}}>
-      <div class="sr-only">
-        <.link navigate={~p"<%= schema.route_prefix %>/#{<%= schema.singular %>}"}>Show</.link>
-      </div>
-      <.link patch={~p"<%= schema.route_prefix %>/#{<%= schema.singular %>}/edit"}>Edit</.link>
-    </:action>
-    <:action :let={{_id, <%= schema.singular %>}}>
-      <.link
-        id={<%= schema.singular %>.id}
-        phx-click={JS.push("delete", value: %{id: <%= schema.singular %>.id})}
-        class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
-        data-confirm="Are you sure?"
-      >
-        Delete
+<Layouts.admin current_scope={@current_scope} menu_title={gettext("<%= schema.human_plural %>")} flash={@flash}>
+  <.header>
+    Listing <%= schema.human_plural %>
+    <:actions>
+      <.link navigate={~p"<%= schema.route_prefix %>/new"}>
+        <.button>New <%= schema.human_singular %></.button>
       </.link>
-    </:action>
-  </.table>
-</.itsm_table_container>
+    </:actions>
+  </.header>
 
-<.modal :if={@live_action in [:new, :edit]} id="<%= schema.singular %>-modal" show on_cancel={JS.patch(~p"<%= schema.route_prefix %>?#{assigns[:results][:params] || %{}}")}>
-  <.live_component
-    module={<%= inspect context.web_module %>.<%= inspect Module.concat(schema.web_namespace, schema.alias) %>Live.FormComponent}
-    id={@<%= schema.singular %>.id || :new}
-    title={@page_title}
-    action={@live_action}
-    <%= schema.singular %>={@<%= schema.singular %>}
-    current_scope={@current_scope}
-    patch={~p"<%= schema.route_prefix %>?#{assigns[:results][:params] || %{}}"}
-  />
-</.modal>
+  <.itsm_table_container results={assigns[:results]}>
+    <.table
+      id="<%= schema.plural %>"
+      rows={@streams.<%= schema.collection %>}
+      row_click={fn {_id, <%= schema.singular %>} -> JS.navigate(~p"<%= schema.route_prefix %>/#{<%= schema.singular %>}") end}
+    >
+      <%= for {k, type} <- schema.attrs do %><%= if type == :utc_datetime do %><:col :let={{id, <%= schema.singular %>}} label={<%= "gettext(\"#{ItsmWeb.LiveUtils.titleize(k)}\")" %>}>
+        <div id={"<%= k %>-#{id}"} phx-hook="LocalTime.ToLocale" utc-value={<%= schema.singular %>.<%= k %>} />
+      </:col><% else %><:col :let={{_id, <%= schema.singular %>}} label={<%= "gettext(\"#{ItsmWeb.LiveUtils.titleize(k)}\")" %>}>{<%= schema.singular %>.<%= k %>}</:col>
+      <% end %><% end %>
+      <:action :let={{_id, <%= schema.singular %>}}>
+        <div class="sr-only">
+          <.link navigate={~p"<%= schema.route_prefix %>/#{<%= schema.singular %>}"}>Show</.link>
+        </div>
+        <.link navigate={~p"<%= schema.route_prefix %>/#{<%= schema.singular %>}/edit"}>Edit</.link>
+      </:action>
+      <:action :let={{_id, <%= schema.singular %>}}>
+        <.link
+          id={<%= schema.singular %>.id}
+          phx-click={JS.push("delete", value: %{id: <%= schema.singular %>.id})}
+          class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
+          data-confirm="Are you sure?"
+        >
+          Delete
+        </.link>
+      </:action>
+    </.table>
+  </.itsm_table_container>
+</Layouts.admin>

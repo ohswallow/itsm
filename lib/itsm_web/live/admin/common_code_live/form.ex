@@ -33,7 +33,7 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Form do
 
   defp apply_action(socket, :new, _params, _url) do
     socket
-    |> assign(:page_title, "New CommonCode")
+    |> assign(:page_title, gettext("New CommonCode"))
     |> assign(:common_code, %CommonCode{})
     |> assign_new(:form, fn -> to_form(CommonCodes.change_common_code(%CommonCode{})) end)
   end
@@ -42,7 +42,7 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Form do
     common_code = CommonCodes.get_common_code!(id)
 
     socket
-    |> assign(:page_title, "Edit CommonCode")
+    |> assign(:page_title, gettext("Edit CommonCode"))
     |> assign(:common_code, common_code)
     |> assign_new(:form, fn -> to_form(CommonCodes.change_common_code(common_code)) end)
     |> Itsm.PubSub.Helper.subscribe(CommonCodes, id: id, is_admin: true)
@@ -53,7 +53,7 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Form do
 
     case CommonCodes.update_common_code(action_user, common_code, common_code_params) do
       {:ok, _common_code} ->
-        {:noreply, socket |> push_navigate(to: "/admin/common_codes")}
+        {:noreply, socket |> push_navigate(to: ~p"/admin/common-codes")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -65,7 +65,7 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Form do
 
     case CommonCodes.create_common_code(action_user, common_code_params) do
       {:ok, _common_code} ->
-        {:noreply, socket |> push_navigate(to: "/admin/common-codes")}
+        {:noreply, socket |> push_navigate(to: ~p"/admin/common-codes")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -96,6 +96,6 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Form do
      |> assign(:conflict, true)
      |> assign(:conflict_msg, "#{action_user.display_name}님이 데이터를 삭제했습니다.")
      |> put_flash(:error, "데이터가 삭제되었습니다. 목록으로 돌아갑니다.")
-     |> push_navigate(to: "/admin/common-codes")}
+     |> push_navigate(to: ~p"/admin/common-codes")}
   end
 end

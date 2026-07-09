@@ -13,7 +13,10 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Index do
   end
 
   def handle_params(params, url, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params, url)}
+    {:noreply,
+     socket
+     |> assign_paged_stream(:common_codes, CommonCode, params, url)
+     |> assign(:page_title, gettext("Listing Common codes"))}
   end
 
   def handle_event("delete", %{"id" => _id} = common_code_params, socket) do
@@ -28,25 +31,6 @@ defmodule ItsmWeb.Admin.CommonCodeLive.Index do
   end
 
   def handle_info(_event, socket), do: {:noreply, socket}
-
-  defp apply_action(socket, :index, params, url) do
-    socket
-    |> assign_paged_stream(:common_codes, CommonCode, params, url)
-    |> assign(:page_title, "Listing Common codes")
-    |> assign(:common_code, nil)
-  end
-
-  defp apply_action(socket, :new, _params, _url) do
-    socket
-    |> assign(:page_title, "New Common Code")
-    |> assign(:common_code, %CommonCode{})
-  end
-
-  defp apply_action(socket, :edit, %{"id" => id}, _url) do
-    socket
-    |> assign(:page_title, "Edit Common Code")
-    |> assign(:common_code, CommonCodes.get_common_code!(id))
-  end
 
   defp assign_paged_stream(socket, stream_key, schema, params, url) do
     opts = [default_columns: [:group_code, :label, :code]]

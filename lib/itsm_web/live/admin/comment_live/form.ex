@@ -33,7 +33,7 @@ defmodule ItsmWeb.Admin.CommentLive.Form do
 
   defp apply_action(socket, :new, _params, _url) do
     socket
-    |> assign(:page_title, "New Comment")
+    |> assign(:page_title, gettext("New Comment"))
     |> assign(:comment, %Comment{})
     |> assign_new(:form, fn -> to_form(Comments.change_comment(%Comment{})) end)
   end
@@ -42,7 +42,7 @@ defmodule ItsmWeb.Admin.CommentLive.Form do
     comment = Comments.get_comment!(id)
 
     socket
-    |> assign(:page_title, "Edit Comment")
+    |> assign(:page_title, gettext("Edit Comment"))
     |> assign(:comment, comment)
     |> assign_new(:form, fn -> to_form(Comments.change_comment(comment)) end)
     |> Itsm.PubSub.Helper.subscribe(Comments, id: id, is_admin: true)
@@ -53,7 +53,7 @@ defmodule ItsmWeb.Admin.CommentLive.Form do
 
     case Comments.update_comment(action_user, comment, comment_params) do
       {:ok, _comment} ->
-        {:noreply, socket |> push_navigate(to: "/admin/comments")}
+        {:noreply, socket |> push_navigate(to: ~p"/admin/comments")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -65,7 +65,7 @@ defmodule ItsmWeb.Admin.CommentLive.Form do
 
     case Comments.create_comment(action_user, comment_params) do
       {:ok, _comment} ->
-        {:noreply, socket |> push_navigate(to: "/admin/comments")}
+        {:noreply, socket |> push_navigate(to: ~p"/admin/comments")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -96,6 +96,6 @@ defmodule ItsmWeb.Admin.CommentLive.Form do
      |> assign(:conflict, true)
      |> assign(:conflict_msg, "#{action_user.display_name}님이 데이터를 삭제했습니다.")
      |> put_flash(:error, "데이터가 삭제되었습니다. 목록으로 돌아갑니다.")
-     |> push_navigate(to: "/admin/comments")}
+     |> push_navigate(to: ~p"/admin/comments")}
   end
 end

@@ -77,7 +77,7 @@ defmodule ItsmWeb.Admin.PostLive.Form do
 
   defp apply_action(socket, :new, _params, _url) do
     socket
-    |> assign(:page_title, "New Post")
+    |> assign(:page_title, gettext("New Post"))
     |> assign(:post, %Post{})
     |> assign_new(:form, fn -> to_form(Posts.change_post(%Post{})) end)
     |> assign(:selected_board, %{})
@@ -89,7 +89,7 @@ defmodule ItsmWeb.Admin.PostLive.Form do
     attachments = Itsm.Admin.Attachments.list_attachments_by_resource_is_active(post)
 
     socket
-    |> assign(:page_title, "Edit Post")
+    |> assign(:page_title, gettext("Edit Post"))
     |> assign(:post, post)
     |> assign_new(:form, fn -> to_form(Posts.change_post(post)) end)
     |> assign(:attachments_count, length(attachments))
@@ -115,7 +115,7 @@ defmodule ItsmWeb.Admin.PostLive.Form do
            ItsmWeb.LiveUtils.build_attachment_consumer(socket)
          ) do
       {:ok, _post} ->
-        {:noreply, socket |> push_navigate(to: "/admin/posts")}
+        {:noreply, socket |> push_navigate(to: ~p"/admin/posts")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -132,7 +132,7 @@ defmodule ItsmWeb.Admin.PostLive.Form do
            selected_board_metadata
          ) do
       {:ok, _post} ->
-        {:noreply, socket |> push_navigate(to: "/admin/posts")}
+        {:noreply, socket |> push_navigate(to: ~p"/admin/posts")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -144,7 +144,7 @@ defmodule ItsmWeb.Admin.PostLive.Form do
 
     case Posts.create_post(action_user, post_params, selected_board_metadata) do
       {:ok, _post} ->
-        {:noreply, socket |> push_navigate(to: "/admin/posts")}
+        {:noreply, socket |> push_navigate(to: ~p"/admin/posts")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -175,7 +175,7 @@ defmodule ItsmWeb.Admin.PostLive.Form do
      |> assign(:conflict, true)
      |> assign(:conflict_msg, "#{action_user.display_name}님이 데이터를 삭제했습니다.")
      |> put_flash(:error, "데이터가 삭제되었습니다. 목록으로 돌아갑니다.")
-     |> push_navigate(to: "/admin/posts")}
+     |> push_navigate(to: ~p"/admin/posts")}
   end
 
   defp get_effective_board(new_id, current_board_id, current_board) do

@@ -38,7 +38,7 @@ defmodule ItsmWeb.Admin.AttachmentLive.Form do
       ItsmWeb.LiveUtils.build_attachment_consumer(socket)
     )
 
-    {:noreply, socket |> push_navigate(to: "/admin/attachments")}
+    {:noreply, socket |> push_navigate(to: ~p"/admin/attachments")}
   end
 
   def handle_info({:pubsub, {action_user, event, item}}, socket) do
@@ -51,7 +51,7 @@ defmodule ItsmWeb.Admin.AttachmentLive.Form do
     attachment = %Attachment{}
 
     socket
-    |> assign(:page_title, "New Attachment")
+    |> assign(:page_title, gettext("New Attachment"))
     |> assign(:attachment, attachment)
     |> assign_new(:form, fn -> to_form(Attachments.change_attachment(attachment)) end)
   end
@@ -60,7 +60,7 @@ defmodule ItsmWeb.Admin.AttachmentLive.Form do
     attachment = Attachments.get_attachment!(id)
 
     socket
-    |> assign(:page_title, "Edit Attachment")
+    |> assign(:page_title, gettext("Edit Attachment"))
     |> assign(:attachment, attachment)
     |> assign_new(:form, fn -> to_form(Attachments.change_attachment(attachment)) end)
     |> Itsm.PubSub.Helper.subscribe(Attachments, id: id, is_admin: true)
@@ -71,7 +71,7 @@ defmodule ItsmWeb.Admin.AttachmentLive.Form do
 
     case Attachments.update_attachment(action_user, attachment, attachment_params) do
       {:ok, _attachment} ->
-        {:noreply, socket |> push_navigate(to: "/admin/attachments")}
+        {:noreply, socket |> push_navigate(to: ~p"/admin/attachments")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -102,6 +102,6 @@ defmodule ItsmWeb.Admin.AttachmentLive.Form do
      |> assign(:conflict, true)
      |> assign(:conflict_msg, "#{action_user.display_name}님이 데이터를 삭제했습니다.")
      |> put_flash(:error, "데이터가 삭제되었습니다. 목록으로 돌아갑니다.")
-     |> push_navigate(to: "/admin/attachments")}
+     |> push_navigate(to: ~p"/admin/attachments")}
   end
 end

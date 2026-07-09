@@ -10,7 +10,10 @@ defmodule ItsmWeb.Admin.AttachmentLive.Index do
   end
 
   def handle_params(params, url, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params, url)}
+    {:noreply,
+     socket
+     |> assign_paged_stream(:attachments, Attachment, params, url)
+     |> assign(:page_title, gettext("Listing Attachments"))}
   end
 
   def handle_event("delete", %{"id" => _id} = attachment_params, socket) do
@@ -33,25 +36,6 @@ defmodule ItsmWeb.Admin.AttachmentLive.Index do
   end
 
   def handle_info(_event, socket), do: {:noreply, socket}
-
-  defp apply_action(socket, :index, params, url) do
-    socket
-    |> assign_paged_stream(:attachments, Attachment, params, url)
-    |> assign(:page_title, "Listing Attachments")
-    |> assign(:attachment, nil)
-  end
-
-  defp apply_action(socket, :new, _params, _url) do
-    socket
-    |> assign(:page_title, "New Attachment")
-    |> assign(:attachment, %Attachment{})
-  end
-
-  defp apply_action(socket, :edit, %{"id" => id}, _url) do
-    socket
-    |> assign(:page_title, "Edit Attachment")
-    |> assign(:attachment, Attachments.get_attachment!(id))
-  end
 
   defp assign_paged_stream(socket, stream_key, schema, params, url) do
     opts = [

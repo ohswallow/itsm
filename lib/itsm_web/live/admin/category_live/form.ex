@@ -44,7 +44,7 @@ defmodule ItsmWeb.Admin.CategoryLive.Form do
 
   defp apply_action(socket, :new, _params, _url) do
     socket
-    |> assign(:page_title, "New Category")
+    |> assign(:page_title, gettext("New Category"))
     |> assign(:category, %Category{})
     |> assign_new(:form, fn -> to_form(Categories.change_category(%Category{})) end)
   end
@@ -53,7 +53,7 @@ defmodule ItsmWeb.Admin.CategoryLive.Form do
     category = Categories.get_category!(id)
 
     socket
-    |> assign(:page_title, "Edit Category")
+    |> assign(:page_title, gettext("Edit Category"))
     |> assign(:category, category)
     |> assign_new(:form, fn -> to_form(Categories.change_category(category)) end)
     |> Itsm.PubSub.Helper.subscribe(Categories, id: id, is_admin: true)
@@ -64,7 +64,7 @@ defmodule ItsmWeb.Admin.CategoryLive.Form do
 
     case Categories.update_category(action_user, category, category_params) do
       {:ok, _category} ->
-        {:noreply, socket |> push_navigate(to: "/admin/categories")}
+        {:noreply, socket |> push_navigate(to: ~p"/admin/categories")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -76,7 +76,7 @@ defmodule ItsmWeb.Admin.CategoryLive.Form do
 
     case Categories.create_category(action_user, category_params) do
       {:ok, _category} ->
-        {:noreply, socket |> push_navigate(to: "/admin/categories")}
+        {:noreply, socket |> push_navigate(to: ~p"/admin/categories")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -107,6 +107,6 @@ defmodule ItsmWeb.Admin.CategoryLive.Form do
      |> assign(:conflict, true)
      |> assign(:conflict_msg, "#{action_user.display_name}님이 데이터를 삭제했습니다.")
      |> put_flash(:error, "데이터가 삭제되었습니다. 목록으로 돌아갑니다.")
-     |> push_navigate(to: "/admin/categories")}
+     |> push_navigate(to: ~p"/admin/categories")}
   end
 end

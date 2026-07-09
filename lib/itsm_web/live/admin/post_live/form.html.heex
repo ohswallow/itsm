@@ -1,16 +1,16 @@
 <Layouts.admin current_scope={@current_scope} menu_title={gettext("Posts")} flash={@flash}>
+  <.header>
+    {@page_title}
+    <:subtitle>Use this form to manage post records in your database.</:subtitle>
+
+    <:actions>
+      <.button navigate={~p"/admin/posts"}>
+        <.icon name="hero-arrow-left" />
+      </.button>
+    </:actions>
+  </.header>
+
   <div class="max-w-5xl">
-    <.header>
-      {@page_title}
-      <:subtitle>Use this form to manage post records in your database.</:subtitle>
-
-      <:actions>
-        <.button navigate={~p"/admin/posts"}>
-          <.icon name="hero-arrow-left" />
-        </.button>
-      </:actions>
-    </.header>
-
     <.card
       visible={@conflict}
       state={:error}

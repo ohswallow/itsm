@@ -38,7 +38,7 @@ defmodule ItsmWeb.Admin.ApprovalLive.Form do
     approval = Approvals.get_approval!(id)
 
     socket
-    |> assign(:page_title, "Edit Approval")
+    |> assign(:page_title, gettext("Edit Approval"))
     |> assign(:approval, approval)
     |> assign_new(:form, fn -> to_form(Approvals.change_approval(approval)) end)
     |> Itsm.PubSub.Helper.subscribe(Approvals, id: id, is_admin: true)
@@ -55,7 +55,7 @@ defmodule ItsmWeb.Admin.ApprovalLive.Form do
 
     case Approvals.update_approval(action_user, approval, approval_params) do
       {:ok, _approval} ->
-        {:noreply, socket |> push_navigate(to: "/admin/approvals")}
+        {:noreply, socket |> push_navigate(to: ~p"/admin/approvals")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -86,6 +86,6 @@ defmodule ItsmWeb.Admin.ApprovalLive.Form do
      |> assign(:conflict, true)
      |> assign(:conflict_msg, "#{action_user.display_name}님이 데이터를 삭제했습니다.")
      |> put_flash(:error, "데이터가 삭제되었습니다. 목록으로 돌아갑니다.")
-     |> push_navigate(to: "/admin/approvals")}
+     |> push_navigate(to: ~p"/admin/approvals")}
   end
 end

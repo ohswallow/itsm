@@ -19,7 +19,7 @@ defmodule ItsmWeb.Admin.PostLive.Show do
 
     {:noreply,
      socket
-     |> assign(:page_title, page_title(socket.assigns.live_action))
+     |> assign(:page_title, gettext("Show Post"))
      |> assign(:post, post)
      |> assign(:attachments_count, length(attachments))
      |> stream(:attachments, attachments, reset: true)
@@ -72,9 +72,6 @@ defmodule ItsmWeb.Admin.PostLive.Show do
 
   def handle_info(_event, socket), do: {:noreply, socket}
 
-  defp page_title(:show), do: "Show Post"
-  defp page_title(:edit), do: "Edit Post"
-
   defp handle_pubsub(
          action_user,
          event,
@@ -83,7 +80,7 @@ defmodule ItsmWeb.Admin.PostLive.Show do
        ) do
     opts =
       [target_key: :post, resource_name: gettext("Post")]
-      |> Keyword.merge(push_event_action(socket, event))
+      |> push_event_action(event)
 
     {:noreply,
      socket
@@ -102,7 +99,6 @@ defmodule ItsmWeb.Admin.PostLive.Show do
         resource_name: gettext("Comment"),
         live_action: :index
       ]
-      |> Keyword.merge(push_event_action(socket, event))
 
     item = item |> Comments.with_assoc([:attachments])
 
@@ -116,10 +112,10 @@ defmodule ItsmWeb.Admin.PostLive.Show do
     {:noreply, socket}
   end
 
-  defp push_event_action(socket, :delete_post),
-    do: [push_navigate: [to: "#{socket.assigns.current_path}"]]
+  defp push_event_action(opts, :delete_post),
+    do: Keyword.put(opts, :push_navigate, to: ~p"/admin/posts")
 
-  defp push_event_action(_socket, _), do: []
+  defp push_event_action(opts, _), do: opts
 
   defp handle_pubsub_comment(socket, "update" <> _action, item),
     do: stream_insert(socket, :comments, item)

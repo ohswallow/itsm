@@ -38,7 +38,7 @@ defmodule ItsmWeb.Admin.RequestLive.Form do
 
   defp apply_action(socket, :new, _params, _url) do
     socket
-    |> assign(:page_title, "New Request")
+    |> assign(:page_title, gettext("New Request"))
     |> assign(:request, %Request{})
     |> assign_new(:form, fn -> to_form(Requests.change_request(%Request{})) end)
     |> assign_new_options()
@@ -48,7 +48,7 @@ defmodule ItsmWeb.Admin.RequestLive.Form do
     request = Requests.get_request!(id)
 
     socket
-    |> assign(:page_title, "Edit Request")
+    |> assign(:page_title, gettext("Edit Request"))
     |> assign(:request, request)
     |> assign_new(:form, fn -> to_form(Requests.change_request(request)) end)
     |> Itsm.PubSub.Helper.subscribe(Requests, id: id, is_admin: true)
@@ -60,7 +60,7 @@ defmodule ItsmWeb.Admin.RequestLive.Form do
 
     case Requests.update_request(action_user, request, request_params) do
       {:ok, _request} ->
-        {:noreply, socket |> push_navigate(to: "/admin/requests")}
+        {:noreply, socket |> push_navigate(to: ~p"/admin/requests")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -72,7 +72,7 @@ defmodule ItsmWeb.Admin.RequestLive.Form do
 
     case Requests.create_request(action_user, request_params) do
       {:ok, _request} ->
-        {:noreply, socket |> push_navigate(to: "/admin/requests")}
+        {:noreply, socket |> push_navigate(to: ~p"/admin/requests")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -103,6 +103,6 @@ defmodule ItsmWeb.Admin.RequestLive.Form do
      |> assign(:conflict, true)
      |> assign(:conflict_msg, "#{action_user.display_name}님이 데이터를 삭제했습니다.")
      |> put_flash(:error, "데이터가 삭제되었습니다. 목록으로 돌아갑니다.")
-     |> push_navigate(to: "/admin/requests")}
+     |> push_navigate(to: ~p"/admin/requests")}
   end
 end

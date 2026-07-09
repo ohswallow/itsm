@@ -1,15 +1,16 @@
 <Layouts.admin current_scope={@current_scope} menu_title={gettext("Categories")} flash={@flash}>
-  <div class="max-w-5xl">
-    <.header>
-      {@page_title}
-      <:subtitle>Use this form to manage category records in your database.</:subtitle>
-      <:actions>
-        <.button navigate={~p"/admin/categories"}>
-          <.icon name="hero-arrow-left" />
-        </.button>
-      </:actions>
-    </.header>
+  <.header>
+    {@page_title}
+    <:subtitle>Use this form to manage category records in your database.</:subtitle>
 
+    <:actions>
+      <.button navigate={~p"/admin/categories"}>
+        <.icon name="hero-arrow-left" />
+      </.button>
+    </:actions>
+  </.header>
+
+  <div class="max-w-5xl">
     <.card
       visible={@conflict}
       state={:error}

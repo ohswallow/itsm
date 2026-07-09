@@ -43,7 +43,7 @@ defmodule ItsmWeb.Admin.AssetLive.Form do
     asset = %Asset{}
 
     socket
-    |> assign(:page_title, "New Asset")
+    |> assign(:page_title, gettext("New Asset"))
     |> assign(:asset, asset)
     |> assign_new(:form, fn -> to_form(Assets.change_asset(asset)) end)
     |> assign_new(:dynamic_fields, fn -> Assets.metadata_fields_for_category(nil) end)
@@ -53,7 +53,7 @@ defmodule ItsmWeb.Admin.AssetLive.Form do
     asset = Assets.get_asset!(id)
 
     socket
-    |> assign(:page_title, "Edit Asset")
+    |> assign(:page_title, gettext("Edit Asset"))
     |> assign(:asset, asset)
     |> assign_new(:form, fn -> to_form(Assets.change_asset(asset)) end)
     |> assign_new(:dynamic_fields, fn -> Assets.metadata_fields_for_category(asset.category) end)
@@ -76,7 +76,7 @@ defmodule ItsmWeb.Admin.AssetLive.Form do
 
     case Assets.update_asset(action_user, asset, asset_params) do
       {:ok, _asset} ->
-        {:noreply, socket |> push_navigate(to: "/admin/assets")}
+        {:noreply, socket |> push_navigate(to: ~p"/admin/assets")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -88,7 +88,7 @@ defmodule ItsmWeb.Admin.AssetLive.Form do
 
     case Assets.create_asset(action_user, asset_params) do
       {:ok, _asset} ->
-        {:noreply, socket |> push_navigate(to: "/admin/assets")}
+        {:noreply, socket |> push_navigate(to: ~p"/admin/assets")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -119,6 +119,6 @@ defmodule ItsmWeb.Admin.AssetLive.Form do
      |> assign(:conflict, true)
      |> assign(:conflict_msg, "#{action_user.display_name}님이 데이터를 삭제했습니다.")
      |> put_flash(:error, "데이터가 삭제되었습니다. 목록으로 돌아갑니다.")
-     |> push_navigate(to: "/admin/assets")}
+     |> push_navigate(to: ~p"/admin/assets")}
   end
 end

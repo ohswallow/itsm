@@ -33,7 +33,7 @@ defmodule ItsmWeb.Admin.CrewLive.Form do
 
   defp apply_action(socket, :new, _params, _url) do
     socket
-    |> assign(:page_title, "New Crew")
+    |> assign(:page_title, gettext("New Crew"))
     |> assign(:crew, %Crew{})
     |> assign_new(:form, fn -> to_form(Crews.change_crew(%Crew{})) end)
   end
@@ -42,7 +42,7 @@ defmodule ItsmWeb.Admin.CrewLive.Form do
     crew = Crews.get_crew!(id)
 
     socket
-    |> assign(:page_title, "Edit Crew")
+    |> assign(:page_title, gettext("Edit Crew"))
     |> assign(:crew, crew)
     |> assign_new(:form, fn -> to_form(Crews.change_crew(crew)) end)
     |> Itsm.PubSub.Helper.subscribe(Crews, id: id, is_admin: true)
@@ -53,7 +53,7 @@ defmodule ItsmWeb.Admin.CrewLive.Form do
 
     case Crews.update_crew(action_user, crew, crew_params) do
       {:ok, _crew} ->
-        {:noreply, socket |> push_navigate(to: "/admin/crews")}
+        {:noreply, socket |> push_navigate(to: ~p"/admin/crews")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -65,7 +65,7 @@ defmodule ItsmWeb.Admin.CrewLive.Form do
 
     case Crews.create_crew(action_user, crew_params) do
       {:ok, _crew} ->
-        {:noreply, socket |> push_navigate(to: "/admin/crews")}
+        {:noreply, socket |> push_navigate(to: ~p"/admin/crews")}
 
       {:error, _step, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -96,6 +96,6 @@ defmodule ItsmWeb.Admin.CrewLive.Form do
      |> assign(:conflict, true)
      |> assign(:conflict_msg, "#{action_user.display_name}님이 데이터를 삭제했습니다.")
      |> put_flash(:error, "데이터가 삭제되었습니다. 목록으로 돌아갑니다.")
-     |> push_navigate(to: "/admin/crews")}
+     |> push_navigate(to: ~p"/admin/crews")}
   end
 end
