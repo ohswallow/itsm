@@ -19,6 +19,17 @@ defmodule ItsmWeb.Router do
     plug :fetch_current_scope_for_user
   end
 
+  pipeline :scim_api do
+    plug :accepts, ["json", "scim+json"]
+    plug ExScimPhoenix.Plugs.ScimContentType
+    plug ExScimPhoenix.Plugs.ScimAuth
+  end
+
+  pipeline :scim_options_api do
+    plug :accepts, ["json", "scim+json"]
+    plug ExScimPhoenix.Plugs.ScimContentType
+  end
+
   scope "/", ItsmWeb do
     pipe_through :browser
 
@@ -223,5 +234,31 @@ defmodule ItsmWeb.Router do
     pipe_through [:api, ItsmWeb.Plugs.ApiAuth]
 
     forward "/graphql", Absinthe.Plug, schema: Itsm.Graphql.Schema
+  end
+
+  scope "/scim/v2" do
+    pipe_through :scim_api
+    use ExScimPhoenix.Router
+  end
+
+  scope "/scim/v2" do
+    pipe_through [:scim_options_api]
+
+    options "/*path", ItsmWeb.Router, :handle_options
+  end
+
+  def handle_options(conn, _params) do
+    conn
+    |> Plug.Conn.put_resp_header("access-control-allow-origin", "*")
+    |> Plug.Conn.put_resp_header(
+      "access-control-allow-methods",
+      "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+    )
+    |> Plug.Conn.put_resp_header(
+      "access-control-allow-headers",
+      "authorization, content-type, accept"
+    )
+    |> Plug.Conn.send_resp(204, "")
+    |> Plug.Conn.halt()
   end
 end

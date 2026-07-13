@@ -79,6 +79,17 @@ config :logger, :default_formatter,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+config :ex_scim,
+  base_url: "http://localhost:4000",
+  storage_strategy: ExScimEcto.StorageAdapter,
+  storage_repo: Itsm.Repo,
+  user_model: {Itsm.Scim.ScimUser, preload: [:groups]},
+  group_model: {Itsm.Scim.ScimGroup, preload: [:users]},
+  auth_provider_adapter: Itsm.Scim.ScimAuthAdapter,
+  filter_supported: true,
+  sort_supported: true,
+  patch_supported: true
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
