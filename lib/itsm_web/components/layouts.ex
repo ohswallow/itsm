@@ -150,6 +150,8 @@ defmodule ItsmWeb.Layouts do
     <div class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full">
       <div class="absolute w-1/3 h-full rounded-full border-1 border-base-200 bg-base-100 brightness-200 left-0 [[data-theme=light]_&]:left-1/3 [[data-theme=dark]_&]:left-2/3 [[data-theme-source=system]_&]:!left-0 transition-[left]" />
       <button
+        aria-label={gettext("Use system theme")}
+        title={gettext("System theme")}
         class="flex p-2 cursor-pointer w-1/3"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="system"
@@ -158,6 +160,8 @@ defmodule ItsmWeb.Layouts do
       </button>
       
       <button
+        aria-label={gettext("Use Light theme")}
+        title={gettext("Light theme")}
         class="flex p-2 cursor-pointer w-1/3"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="light"
@@ -166,6 +170,8 @@ defmodule ItsmWeb.Layouts do
       </button>
       
       <button
+        aria-label={gettext("Use Dark theme")}
+        title={gettext("Dark theme")}
         class="flex p-2 cursor-pointer w-1/3"
         phx-click={JS.dispatch("phx:set-theme")}
         data-phx-theme="dark"
@@ -195,13 +201,23 @@ defmodule ItsmWeb.Layouts do
       <.button
         navigate={@navigate}
         class={[
+          "w-full gap-3 whitespace-nowrap",
+          "is-drawer-open:justify-start",
+          "is-drawer-close:justify-center",
+          "is-drawer-close:tooltip",
+          "is-drawer-close:tooltip-right",
           @name == @selected &&
-            "!bg-neutral !text-neutral-content",
-          "is-drawer-open:tooltip is-drawer-open:tooltip-right"
+            "!bg-neutral !text-neutral-content"
         ]}
         data-tip={@data_tip || @name}
       >
-        <.icon name={@icon_name} /> <span class="is-drawer-open:hidden">{@name}</span>
+        <.icon
+          name={@icon_name}
+          class="size-5 shrink-0"
+        />
+        <span class="truncate is-drawer-close:hidden">
+          {@name}
+        </span>
       </.button>
     </li>
     """

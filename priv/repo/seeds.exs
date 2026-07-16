@@ -777,7 +777,7 @@ free_board =
         "is_hidden" => false,
         "type" => "select",
         "label" => "분류",
-        "options" => ["계정", "결제", "이용방법", "기타"]
+        "options" => ["계정", "결재", "이용방법", "기타"]
       },
       %{
         "name" => "keywords",

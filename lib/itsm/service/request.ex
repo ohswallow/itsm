@@ -99,7 +99,7 @@ defmodule Itsm.Service.Request do
     request
     |> foreign_key_constraint(:id,
       name: :approvals_request_id_fkey,
-      message: "결제를 먼저 지워주세요"
+      message: "결재를 먼저 지워주세요"
     )
 
     # |> foreign_key_constraint(:id,

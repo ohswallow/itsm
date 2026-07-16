@@ -1,106 +1,281 @@
-<div class="drawer lg:drawer-open">
-  <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
-  <div class="drawer-content">
-    <!-- Navbar -->
-    <nav class="navbar w-full bg-base-300">
-      <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-square btn-ghost">
-        <!-- Sidebar toggle icon -->
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          stroke-linejoin="round"
-          stroke-linecap="round"
-          stroke-width="2"
-          fill="none"
-          stroke="currentColor"
-          class="my-1.5 inline-block size-4"
-        ><path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z">
-        </path><path d="M9 4v16"></path><path d="M14 10l2 2l-2 2"></path></svg>
-      </label>
-
-      <div class="px-4">{@menu_title}</div>
+<div class="drawer h-full lg:drawer-open">
+  <input
+    id="app-sidebar"
+    type="checkbox"
+    class="drawer-toggle"
+    phx-hook="SidebarState"
+  /> <%!-- 우측 콘텐츠 영역 --%>
+  <div class="drawer-content flex h-full min-h-0 flex-col overflow-hidden">
+    <%!-- 상단 Navbar --%>
+    <nav class="navbar min-h-16 shrink-0 border-b border-base-300 bg-base-100 px-3 sm:px-4 lg:px-6">
+      <%!-- 좌측: 모바일 메뉴 버튼과 현재 메뉴명 --%>
+      <div class="navbar-start gap-2">
+        <label
+          for="app-sidebar"
+          aria-label={gettext("Open sidebar")}
+          title={gettext("Open sidebar")}
+          class="btn btn-square btn-ghost lg:hidden"
+        >
+          <.icon
+            name="hero-bars-3"
+            class="size-6"
+          />
+        </label>
+        
+        <div class="min-w-0">
+          <div class="truncate text-lg font-bold text-base-content">
+            {@menu_title}
+          </div>
+        </div>
+      </div>
+       <%!-- 중앙 영역: 향후 통합 검색 배치 --%>
+      <div class="navbar-center"></div>
+       <%!-- 우측: 테마, 알림, 사용자 메뉴 등 --%>
+      <div class="navbar-end gap-2">
+        <%!-- 테마 선택 --%>
+        <div
+          class="tooltip tooltip-bottom"
+          data-tip={gettext("Theme")}
+        >
+          <Layouts.theme_toggle />
+        </div>
+         <%!-- 알림 버튼: 현재 기능 없음 --%>
+        <button
+          type="button"
+          class="btn btn-square btn-ghost"
+          aria-label={gettext("Notifications")}
+          title={gettext("Notifications")}
+        >
+          <.icon
+            name="hero-bell"
+            class="size-5"
+          />
+        </button>
+         <%!-- 사용자 프로필 메뉴 --%>
+        <div class="dropdown dropdown-end">
+          <button
+            type="button"
+            tabindex="0"
+            class="btn btn-ghost gap-2 px-2 sm:px-3"
+            aria-label={gettext("Open profile menu")}
+          >
+            <%!-- 프로필 아이콘 --%>
+            <div class="avatar avatar-placeholder">
+              <div class="w-9 rounded-full bg-neutral text-neutral-content">
+                <span class="text-sm font-semibold">
+                  {String.first(@current_scope.user.email)
+                  |> String.upcase()}
+                </span>
+              </div>
+            </div>
+             <%!-- 넓은 화면에서만 이메일 표시 --%>
+            <span class="hidden max-w-52 truncate font-normal lg:block">
+              {@current_scope.user.email}
+            </span>
+            
+            <.icon
+              name="hero-chevron-down"
+              class="hidden size-4 opacity-60 sm:block"
+            />
+          </button>
+          
+          <ul
+            tabindex="0"
+            class="menu dropdown-content z-50 mt-3 w-60 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
+          >
+            <%!-- 사용자 정보 --%>
+            <li class="menu-title px-3 py-2">
+              <span class="truncate text-sm font-normal text-base-content/70">
+                {@current_scope.user.email}
+              </span>
+            </li>
+            
+            <li>
+              <.link navigate={~p"/users/settings"}>
+                <.icon
+                  name="hero-cog-6-tooth"
+                  class="size-5"
+                /> <span>{gettext("Settings")}</span>
+              </.link>
+            </li>
+            
+            <li>
+              <.link navigate={~p"/main"}>
+                <.icon
+                  name="hero-user-circle"
+                  class="size-5"
+                /> <span>{gettext("Profile")}</span>
+              </.link>
+            </li>
+            
+            <li class="my-1 border-t border-base-300"></li>
+            
+            <li>
+              <.link
+                href={~p"/users/log-out"}
+                method="delete"
+                class="text-error"
+              >
+                <.icon
+                  name="hero-arrow-right-on-rectangle"
+                  class="size-5"
+                /> <span>{gettext("Log out")}</span>
+              </.link>
+            </li>
+          </ul>
+        </div>
+      </div>
     </nav>
-    <!-- Page content here -->
-    <div class="p-4">{render_slot(@inner_block)}</div>
+    
+    <%!--
+      페이지 콘텐츠 영역.
+
+      Navbar와 Sidebar는 고정하고,
+      실제 페이지 내용만 이 영역에서 스크롤한다.
+    --%>
+    <main class="min-h-0 flex-1 overflow-y-auto bg-base-100 px-4 py-6 sm:px-6 lg:px-8">
+      <div class="mx-auto w-full max-w-[1440px]">
+        {render_slot(@inner_block)}
+      </div>
+    </main>
   </div>
+   <%!-- 사이드바 영역 --%>
+  <div class="drawer-side is-drawer-close:overflow-visible">
+    <%!-- 모바일 오버레이 --%>
+    <label
+      for="app-sidebar"
+      aria-label={gettext("Close sidebar")}
+      class="drawer-overlay"
+    ></label>
+    <%!--
+      공식 DaisyUI 상태 의미를 따른다.
 
-  <div class="drawer-side is-drawer-open:overflow-visible">
-    <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
-    <div class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-64 is-drawer-open:w-14">
-      <!-- Sidebar content here -->
-      <ul class="menu w-full grow">
-        <Layouts.menu
-          name={gettext("Service Request")}
-          navigate={~p"/categories"}
-          icon_name="hero-document-plus"
-          selected={@menu_title}
-        />
-
-        <Layouts.menu
-          name={gettext("My Request List")}
-          navigate={~p"/requests"}
-          icon_name="hero-list-bullet"
-          selected={@menu_title}
-        />
-
-        <Layouts.menu
-          name={gettext("Approval List")}
-          navigate={~p"/approvals"}
-          icon_name="hero-check-badge"
-          selected={@menu_title}
-        />
-         <li />
-        <Layouts.menu
-          name={gettext("Delegations")}
-          navigate={~p"/delegations"}
-          icon_name="hero-user-group"
-          selected={@menu_title}
-        />
-
-        <Layouts.menu
-          name={gettext("My Crews")}
-          navigate={~p"/crews"}
-          icon_name="hero-users"
-          selected={@menu_title}
-       />
-
-        <Layouts.menu
-          name={gettext("All Crews")}
-          navigate={~p"/crews/all"}
-          icon_name="hero-rectangle-stack"
-          selected={@menu_title}
-        />
-
-        <Layouts.menu
-          name={gettext("Assets")}
-          navigate={~p"/assets"}
-          icon_name="hero-computer-desktop"
-          selected={@menu_title}
-        />
-
-        <Layouts.menu
-          name={gettext("Boards")}
-          navigate={~p"/boards"}
-          icon_name="hero-list-bullet"
-          selected={@menu_title}
-        />
-
-        <Layouts.menu
-          name={gettext("Api Doc")}
-          navigate={~p"/api/graphiql"}
-          icon_name="hero-document-text"
-          selected={@menu_title}
-        />
-         <li />
-        <Layouts.menu
-          :if={@current_scope.role == "admin"}
-          name={gettext("Admin Console")}
-          navigate={~p"/admin"}
-          icon_name="hero-shield-check"
-          selected={@menu_title}
-        />
-      </ul>
-    </div>
+      close: 아이콘만 표시하는 64px 사이드바
+      open:  240px 전체 사이드바
+    --%>
+    <aside class={[
+      "flex h-full min-h-0 flex-col border-r border-base-300 bg-base-200",
+      "transition-[width] duration-200 ease-in-out",
+      "is-drawer-close:w-16 is-drawer-open:w-60"
+    ]}>
+      <%!-- 브랜드 영역 --%>
+      <div class="flex min-h-16 shrink-0 items-center border-b border-base-300 px-3">
+        <.link
+          navigate={~p"/main"}
+          class="flex min-w-0 items-center gap-2 rounded-lg px-1 py-1"
+          aria-label="KB ITSM"
+        >
+          <span class="shrink-0 text-xl font-extrabold text-warning">
+            KB
+          </span>
+          
+          <span class="truncate text-xl font-bold text-base-content is-drawer-close:hidden">
+            ITSM
+          </span>
+        </.link>
+      </div>
+       <%!-- 메뉴 스크롤 영역 --%>
+      <nav class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+        <ul class="menu w-full gap-1 p-2">
+          <Layouts.menu
+            name={gettext("Service Request")}
+            navigate={~p"/categories"}
+            icon_name="hero-document-plus"
+            selected={@menu_title}
+          />
+          <Layouts.menu
+            name={gettext("My Request List")}
+            navigate={~p"/requests"}
+            icon_name="hero-rectangle-stack"
+            selected={@menu_title}
+          />
+          <Layouts.menu
+            name={gettext("Approval List")}
+            navigate={~p"/approvals"}
+            icon_name="hero-check-badge"
+            selected={@menu_title}
+          />
+          <li class="my-1 border-t border-base-300"></li>
+          
+          <%!-- <Layouts.menu
+            name={gettext("Delegations")}
+            navigate={~p"/delegations"}
+            icon_name="hero-user-group"
+            selected={@menu_title}
+          /> --%>
+          <Layouts.menu
+            name={gettext("My Crews")}
+            navigate={~p"/crews"}
+            icon_name="hero-users"
+            selected={@menu_title}
+          />
+          <Layouts.menu
+            name={gettext("All Crews")}
+            navigate={~p"/crews/all"}
+            icon_name="hero-user-group"
+            selected={@menu_title}
+          />
+          <Layouts.menu
+            name={gettext("Assets")}
+            navigate={~p"/assets"}
+            icon_name="hero-computer-desktop"
+            selected={@menu_title}
+          />
+          <Layouts.menu
+            name={gettext("Boards")}
+            navigate={~p"/boards"}
+            icon_name="hero-list-bullet"
+            selected={@menu_title}
+          />
+          <Layouts.menu
+            name={gettext("Api Doc")}
+            navigate={~p"/api/graphiql"}
+            icon_name="hero-document-text"
+            selected={@menu_title}
+          />
+          <li
+            :if={@current_scope.role == "admin"}
+            class="my-1 border-t border-base-300"
+          >
+          </li>
+          
+          <Layouts.menu
+            :if={@current_scope.role == "admin"}
+            name={gettext("Admin Console")}
+            navigate={~p"/admin"}
+            icon_name="hero-shield-check"
+            selected={@menu_title}
+          />
+        </ul>
+      </nav>
+       <%!-- 데스크톱 사이드바 접기·펼치기 --%>
+      <div class="hidden shrink-0 border-t border-base-300 p-2 lg:block">
+        <label
+          for="app-sidebar"
+          aria-label={gettext("Toggle sidebar")}
+          title={gettext("Toggle sidebar")}
+          class={[
+            "btn btn-ghost w-full",
+            "is-drawer-open:justify-between",
+            "is-drawer-close:justify-center"
+          ]}
+        >
+          <%!-- 펼친 상태 --%>
+          <span class="is-drawer-close:hidden">
+            {gettext("Collapse sidebar")}
+          </span>
+          
+          <.icon
+            name="hero-chevron-double-left"
+            class="size-5 is-drawer-close:hidden"
+          /> <%!-- 접힌 상태 --%>
+          <.icon
+            name="hero-chevron-double-right"
+            class="hidden size-5 is-drawer-close:inline-block"
+          />
+        </label>
+      </div>
+    </aside>
   </div>
    <Layouts.flash_group flash={@flash} />
 </div>

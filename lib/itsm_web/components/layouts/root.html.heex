@@ -1,96 +1,101 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="csrf-token" content={get_csrf_token()} /> <.live_title
-      default="Itsm"
-      suffix=" · Phoenix Framework"
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <meta
+      name="csrf-token"
+      content={get_csrf_token()}
+    /> <.live_title
+      default="KB ITSM"
+      suffix=" · KB ITSM"
       phx-no-format
-    >{assigns[:page_title]}</.live_title>
-    <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
-    <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
+    >
+      {assigns[:page_title]}
+    </.live_title>
+    <link
+      phx-track-static
+      rel="stylesheet"
+      href={~p"/assets/css/app.css"}
+    />
+    <script
+      defer
+      phx-track-static
+      type="text/javascript"
+      src={~p"/assets/js/app.js"}
+    >
     </script>
-
+    
     <script>
       (() => {
-        const systemTheme = () => matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        const systemTheme = () =>
+          matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
 
         const setTheme = (theme) => {
           if (theme === "system") {
             localStorage.removeItem("phx:theme");
-            document.documentElement.setAttribute("data-theme", systemTheme());
-            document.documentElement.setAttribute("data-theme-source", "system");
+
+            document.documentElement.setAttribute(
+              "data-theme",
+              systemTheme()
+            );
+
+            document.documentElement.setAttribute(
+              "data-theme-source",
+              "system"
+            );
           } else {
             localStorage.setItem("phx:theme", theme);
-            document.documentElement.setAttribute("data-theme", theme);
-            document.documentElement.setAttribute("data-theme-source", "user");
+
+            document.documentElement.setAttribute(
+              "data-theme",
+              theme
+            );
+
+            document.documentElement.setAttribute(
+              "data-theme-source",
+              "user"
+            );
           }
         };
+
         if (!document.documentElement.hasAttribute("data-theme")) {
           setTheme(localStorage.getItem("phx:theme") || "system");
         }
-        window.addEventListener("storage", (e) => e.key === "phx:theme" && setTheme(e.newValue || "system"));
 
-        window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
-
-        matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
-          if (document.documentElement.getAttribute("data-theme-source") === "system") {
-            document.documentElement.setAttribute("data-theme", systemTheme());
+        window.addEventListener("storage", (event) => {
+          if (event.key === "phx:theme") {
+            setTheme(event.newValue || "system");
           }
         });
+
+        window.addEventListener("phx:set-theme", (event) => {
+          setTheme(event.target.dataset.phxTheme);
+        });
+
+        matchMedia("(prefers-color-scheme: dark)")
+          .addEventListener("change", () => {
+            if (
+              document.documentElement.getAttribute(
+                "data-theme-source"
+              ) === "system"
+            ) {
+              document.documentElement.setAttribute(
+                "data-theme",
+                systemTheme()
+              );
+            }
+          });
       })();
     </script>
   </head>
-
-  <body>
-    <div :if={@conn.request_path != "/"} class="flex justify-between w-full">
-      <div>
-        <.link navigate={~p"/main"}>
-          <svg width="160" height="50" viewBox="0 0 160 50" xmlns="http://www.w3.org/2000/svg">
-            <g style='font-family: "NanumSquare Neo", "Malgun Gothic", "맑은 고딕", sans-serif;'>
-              <text x="10" y="35" font-size="28" font-weight="800" style="fill: #F7B500;">
-                KB
-              </text>
-
-              <text
-                x="56"
-                y="35"
-                font-size="28"
-                font-weight="700"
-                style="fill: var(--color-base-content);"
-              >
-                ITSM
-              </text>
-            </g>
-          </svg>
-        </.link>
-      </div>
-
-      <ul class="menu menu-horizontal w-full relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
-        <%= if @current_scope do %>
-          <li>
-            {@current_scope.user.email}
-          </li>
-
-          <li>
-            <.link href={~p"/users/settings"}>Settings</.link>
-          </li>
-
-          <li>
-            <.link href={~p"/users/log-out"} method="delete">Log out</.link>
-          </li>
-        <% else %>
-          <li>
-            <.link href={~p"/users/register"}>Register</.link>
-          </li>
-
-          <li>
-            <.link href={~p"/users/log-in"}>Log in</.link>
-          </li>
-        <% end %>
-      </ul>
-    </div>
-     {@inner_content}
+  
+  <body class="h-dvh overflow-hidden bg-base-100 text-base-content">
+    {@inner_content}
   </body>
 </html>

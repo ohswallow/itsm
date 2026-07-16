@@ -51,7 +51,7 @@ msgstr "알 수 없는 오류가 발생했습니다"
 #: lib/itsm_web/live/approval_live/index.ex:111
 #, elixir-autogen, elixir-format
 msgid "Approval"
-msgstr "결제"
+msgstr "결재"
 
 #: lib/itsm_web/live/admin/approval_live/form_component.ex:70
 #: lib/itsm_web/live/admin/approval_live/index.html.heex:17
@@ -962,4 +962,4 @@ msgid "My Request List"
 msgstr "내 요청"
 
 msgid "Approval List"
-msgstr "결제"
+msgstr "결재"

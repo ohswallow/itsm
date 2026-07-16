@@ -1,23 +1,83 @@
-<Layouts.default current_scope={@current_scope} menu_title={gettext("Service Request")} flash={@flash}>
-  <.filter_form form={@form} group_select_options={@group_select_options} />
-  <div id="categories-container" class="mt-6 space-y-10">
-    <div :for={group <- @filtered_category_groups} class="group-section">
-      <div class="relative py-4 border-b border-zinc-100 mb-4">
-        <span class="bg-white pr-3 text-sm font-bold text-zinc-800">{group}</span>
+<Layouts.default
+  current_scope={@current_scope}
+  menu_title={gettext("Service Request")}
+  flash={@flash}
+>
+  <section class="space-y-8">
+    <header class="space-y-2">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p class="text-sm font-semibold text-primary">
+            IT Service Management
+          </p>
+          
+          <h1 class="mt-1 text-2xl font-bold tracking-tight text-base-content sm:text-3xl">
+            서비스 요청
+          </h1>
+          
+          <p class="mt-2 text-base leading-7 text-base-content/70">
+            필요한 서비스를 선택하면 신청서 작성 화면으로 이동합니다.
+          </p>
+        </div>
+        
+        <div class="badge badge-lg badge-outline">
+          총 {@category_count}개 서비스
+        </div>
       </div>
-
-      <div
-        id={"category-card-container-#{group}"}
-        phx-update="stream"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
-      >
-        <.category_card
-          :for={{dom_id, category} <- @streams.categories}
-          :if={category.group == group}
-          category={category}
-          id={dom_id}
-        />
+    </header>
+    
+    <.filter_form
+      form={@form}
+      group_select_options={@group_select_options}
+    />
+    <div
+      :if={map_size(@grouped_categories) == 0}
+      class="hero min-h-72 rounded-2xl border border-dashed border-base-300 bg-base-100"
+    >
+      <div class="hero-content text-center">
+        <div>
+          <.icon
+            name="hero-magnifying-glass"
+            class="mx-auto size-10 text-base-content/30"
+          />
+          <h2 class="mt-4 text-lg font-semibold">
+            검색 결과가 없습니다
+          </h2>
+          
+          <p class="mt-2 text-sm text-base-content/60">
+            검색어나 카테고리 그룹을 변경해 주세요.
+          </p>
+          
+          <.link patch={~p"/categories"} class="btn btn-primary mt-5">
+            필터 초기화
+          </.link>
+        </div>
       </div>
     </div>
-  </div>
+    
+    <div :if={map_size(@grouped_categories) > 0} class="space-y-10">
+      <section
+        :for={{group, categories} <- @grouped_categories}
+        class="space-y-4"
+      >
+        <div class="flex items-center gap-3">
+          <h2 class="text-xl font-bold text-base-content">
+            {group}
+          </h2>
+          
+          <span class="badge badge-ghost">
+            {length(categories)}
+          </span>
+           <div class="h-px flex-1 bg-base-300" />
+        </div>
+        
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          <.category_card
+            :for={category <- categories}
+            category={category}
+          />
+        </div>
+      </section>
+    </div>
+  </section>
 </Layouts.default>
