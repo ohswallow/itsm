@@ -27,7 +27,16 @@ defmodule Itsm.Graphql.ContentTypes do
   paginated_object(:paginated_posts, :post)
 
   scalar :map, description: "동적 JSON/Map 데이터를 위한 커스텀 스칼라" do
-    parse(&{:ok, &1})
+    parse(fn
+      %Absinthe.Blueprint.Input.String{value: value} ->
+        Jason.decode(value)
+
+      %Absinthe.Blueprint.Input.Null{} ->
+        {:ok, nil}
+
+      _ ->
+        :error
+    end)
 
     serialize(& &1)
   end

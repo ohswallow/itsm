@@ -241,24 +241,5 @@ defmodule ItsmWeb.Router do
     use ExScimPhoenix.Router
   end
 
-  scope "/scim/v2" do
-    pipe_through [:scim_options_api]
-
-    options "/*path", ItsmWeb.Router, :handle_options
-  end
-
-  def handle_options(conn, _params) do
-    conn
-    |> Plug.Conn.put_resp_header("access-control-allow-origin", "*")
-    |> Plug.Conn.put_resp_header(
-      "access-control-allow-methods",
-      "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-    )
-    |> Plug.Conn.put_resp_header(
-      "access-control-allow-headers",
-      "authorization, content-type, accept"
-    )
-    |> Plug.Conn.send_resp(204, "")
-    |> Plug.Conn.halt()
-  end
+  forward "/sso", ExSaml.Router
 end

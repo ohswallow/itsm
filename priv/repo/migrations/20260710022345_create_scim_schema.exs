@@ -42,6 +42,7 @@ defmodule Itsm.Repo.Migrations.CreateScimSchema do
       add :enddate, :string
       add :meta, :map
 
+      timestamps(inserted_at: :meta_created, updated_at: :meta_last_modified, type: :utc_datetime)
       timestamps(type: :utc_datetime)
     end
 
@@ -56,11 +57,10 @@ defmodule Itsm.Repo.Migrations.CreateScimSchema do
       add :display_name, :string, null: false, doc: "core readWrite"
       add :value, :string
       add :group_type, :string
-      add :acvite, :string
+      add :active, :string
       add :description, :string
-      add :meta_created, :utc_datetime
-      add :meta_last_modified, :utc_datetime
 
+      timestamps(inserted_at: :meta_created, updated_at: :meta_last_modified, type: :utc_datetime)
       timestamps(type: :utc_datetime)
     end
 
