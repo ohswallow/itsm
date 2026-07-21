@@ -8,6 +8,7 @@ defmodule ItsmWeb.CrewLive.Show do
   alias Itsm.Accounts
   alias Itsm.Accounts.Scope
   alias Itsm.Accounts.User
+  alias ItsmWeb.SearchUsersDialog
   alias ItsmWeb.LiveUtils
 
   def mount(params, _session, socket) do

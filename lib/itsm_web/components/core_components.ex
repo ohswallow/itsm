@@ -274,12 +274,25 @@ defmodule ItsmWeb.CoreComponents do
             @class || "w-full textarea",
             @errors != [] && (@error_class || "textarea-error")
           ]}
+          phx-hook=".MaintainHeight"
           {@rest}
         >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
       </label>
       
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
+
+    <script :type={ColocatedHook} name=".MaintainHeight">
+      export default {
+        beforeUpdate() {
+          this.prevHeight = this.el.style.height;
+        },
+
+        updated() {
+          this.el.style.height = this.prevHeight;
+        }
+      }
+    </script>
     """
   end
 
@@ -733,83 +746,6 @@ defmodule ItsmWeb.CoreComponents do
     """
   end
 
-  def toggle(js \\ %JS{}, selector) do
-    JS.toggle(js,
-      to: selector,
-      time: 200,
-      in:
-        {"transition-all transform ease-out duration-300",
-         "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95",
-         "opacity-100 translate-y-0 sm:scale-100"},
-      out:
-        {"transition-all transform ease-in duration-200",
-         "opacity-100 translate-y-0 sm:scale-100",
-         "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"}
-    )
-  end
-
-  attr :id, :string, required: true
-  slot :inner_block, required: true
-
-  def dropdown_menu(assigns) do
-    ~H"""
-    <div
-      id={"dropdown-#{@id}"}
-      class="relative"
-      phx-window-keydown={hide("#dropdown-#{@id}-body")}
-      phx-key="escape"
-      phx-click-away={hide("#dropdown-#{@id}-body")}
-    >
-      <button
-        type="button"
-        phx-click={toggle("#dropdown-#{@id}-body")}
-        class="p-2 hover:bg-gray-100 rounded-full text-gray-500"
-      >
-        <.icon name="hero-ellipsis-vertical" class="h-6 w-6" />
-      </button>
-      
-      <div
-        id={"dropdown-#{@id}-body"}
-        class="hidden absolute right-12 bottom-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10"
-      >
-        <div class="py-1">{render_slot(@inner_block)}</div>
-      </div>
-    </div>
-    """
-  end
-
-  attr :class, :string, default: nil
-
-  def loading_spinner(assigns) do
-    ~H"""
-    <div class={["lds-spinner", @class]}>
-      <div></div>
-      
-      <div></div>
-      
-      <div></div>
-      
-      <div></div>
-      
-      <div></div>
-      
-      <div></div>
-      
-      <div></div>
-      
-      <div></div>
-      
-      <div></div>
-      
-      <div></div>
-      
-      <div></div>
-      
-      <div></div>
-    </div>
-    """
-  end
-
   def live_select(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
     errors = if used_select?(field), do: field.errors, else: []
 
@@ -886,6 +822,7 @@ defmodule ItsmWeb.CoreComponents do
   @doc """
   복사 가능한 텍스트를 렌더링하는 컴포넌트입니다.
   """
+  attr :id, :string, required: true
   attr :value, :string, required: true, doc: "복사할 전체 텍스트"
   attr :label, :string, default: nil, doc: "툴팁 등에 표시할 이름 (예: ID, Email)"
 
@@ -896,17 +833,49 @@ defmodule ItsmWeb.CoreComponents do
   def copyable_text(assigns) do
     assigns =
       assign_new(assigns, :title, fn ->
-        if assigns[:label], do: "Click to copy #{assigns.label}", else: "Click to copy"
+        gettext("Click to copy") <> " " <> assigns[:label]
       end)
 
     ~H"""
-    <span
-      class="font-mono text-blue-600 cursor-pointer hover:text-blue-800 hover:underline"
-      title={@title}
-      phx-click={JS.dispatch("phx:copy", detail: %{text: @value})}
-    >
-      {String.slice(@value, 0, @slice_range)}
-    </span>
+    <div data-tip="copied">
+      <.link
+        id={"CopyableText-#{@id}"}
+        class="link link-primary"
+        title={@title}
+        data-value={@value}
+        phx-hook=".CopyableText"
+      >
+        {String.slice(@value, 0, @slice_range)}
+      </.link>
+    </div>
+
+    <script :type={ColocatedHook} name=".CopyableText">
+      export default {
+        mounted() {
+          this.el.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const textToCopy = this.el.dataset.value;
+            const wrapper = this.el.parentElement;
+
+            if ("clipboard" in navigator) {
+              navigator.clipboard.writeText(textToCopy).then(() => {
+                if (wrapper) {
+                  wrapper.classList.add("tooltip", "tooltip-info", "tooltip-open");
+
+                  setTimeout(() => {
+                    wrapper.classList.remove("tooltip", "tooltip-info", "tooltip-open");
+                  }, 1000);
+                }
+              }).catch(err => {
+                console.error("copyable_text copy failed:", err);
+              });
+            }
+          });
+        }
+      }
+    </script>
     """
   end
 
@@ -973,13 +942,13 @@ defmodule ItsmWeb.CoreComponents do
       end
   """
   attr :id, :string, required: true
-  attr :title, :string, default: ""
+  attr :title, :string, default: nil
   slot :inner_block, required: true
 
   def daisy_modal(assigns) do
     ~H"""
-    <dialog id={@id} class="modal" phx-hook=".DaisyModal" phx-update="ignore">
-      <div class="modal-box overflow-visible">
+    <dialog id={@id} class="modal" phx-hook=".DaisyModal">
+      <div class="modal-box w-10/12 max-w-5xl overflow-visible">
         <form method="dialog">
           <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
         </form>
@@ -1003,7 +972,10 @@ defmodule ItsmWeb.CoreComponents do
             if (payload.id === this.el.id) this.el.showModal();
           });
           this.handleEvent("daisy:modal:close", (payload) => {
-            if (payload.id === this.el.id) this.el.close();
+            if (payload.id === this.el.id) {
+              this.el.showModal();
+              this.el.close();
+            }
           });
         }
       }

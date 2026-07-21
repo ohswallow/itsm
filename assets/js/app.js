@@ -26,7 +26,6 @@ import {hooks as colocatedHooks} from "phoenix-colocated/itsm"
 import topbar from "../vendor/topbar"
 import LocalTime from "./hooks/LocalTime.hooks"
 import Calendar from "./hooks/Calendar.hooks"
-import MaintainHeight from "./hooks/MaintainHeight.hooks"
 import InputSelect from "./hooks/InputSelect.hooks"
 import live_select from "live_select"
 
@@ -42,7 +41,6 @@ const liveSocket = new LiveSocket("/live", Socket, {
     "Calendar.DateGrid": Calendar.DateGrid,
     "InputSelect.selectAll": InputSelect.selectAll,
     "LocalTime.ToLocaleString": LocalTime.ToLocaleString,
-    "MaintainHeight": MaintainHeight,
     ...live_select
   },
 })

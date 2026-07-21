@@ -10,8 +10,8 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
   alias ItsmWeb.LiveUtils
   alias Itsm.CommonCodes
   alias Itsm.Attachments
-
-  import ItsmWeb.CommonKCreateVmLive.Components
+  alias ItsmWeb.ImageViewerComponent
+  alias ItsmWeb.UploadComponents
 
   def mount(_params, _session, socket) do
     {:ok,
@@ -64,7 +64,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     save_request(socket, socket.assigns.live_action, params)
   end
 
-  def handle_event("delete_attachment", %{"id" => id}, socket) do
+  def handle_info({:delete_image, "request_image", id}, socket) do
     %{current_scope: %{user: action_user}} = socket.assigns
 
     case Attachments.delete_attachment(action_user, id) do
@@ -76,19 +76,11 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     end
   end
 
-  def handle_event("view_attachment", %{"id" => id, "filename" => filename}, socket) do
-    {:noreply, assign(socket, :selected_attachment, %{id: id, filename: filename})}
-  end
-
-  def handle_event("close_attachment", _, socket) do
-    {:noreply, assign(socket, :selected_attachment, nil)}
-  end
-
   def handle_info({:pubsub, {action_user, event, item}}, socket) do
     handle_pubsub(action_user, event, item, socket)
   end
 
-  def handle_info(_event, socket), do: {:noreply, socket}
+  # def handle_info(_event, socket), do: {:noreply, socket}
 
   defp assign_new_options(socket) do
     socket
@@ -185,7 +177,7 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
          |> put_flash(:info, "Request created successfully")
          |> push_navigate(to: ~p"/common-k-create-vm/#{request.id}")}
 
-      {:error, :request, %Ecto.Changeset{} = changeset, _so_far_changeset} ->
+      {:error, :create_request, %Ecto.Changeset{} = changeset, _so_far_changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
 
       {:error, step, _changeset, _so_far_changeset} ->
@@ -205,10 +197,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Form do
     %{name: name} = Crews.get_crew!(value)
     %{label: name, value: value}
   end
-
-  defp format_file_size(bytes) when bytes < 1024, do: "#{bytes} B"
-  defp format_file_size(bytes) when bytes < 1024 * 1024, do: "#{round(bytes / 1024)} KB"
-  defp format_file_size(bytes), do: "#{round(bytes / (1024 * 1024))} MB"
 
   defp handle_pubsub(action_user, event, item, socket) do
     opts = [target_key: :request]

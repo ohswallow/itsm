@@ -63,6 +63,6 @@
   </div>
 
   <.daisy_modal id="search-users-modal" title="직원검색">
-    <.users_search id="search-users-select" current_scope={@current_scope} opts={[exclude_crew: @crew]} />
+    <SearchUsersDialog.search id="search-users-select" current_scope={@current_scope} opts={[exclude_crew: @crew]} />
   </.daisy_modal>
 </Layouts.default>

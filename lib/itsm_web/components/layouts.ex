@@ -4,6 +4,7 @@ defmodule ItsmWeb.Layouts do
   used by your application.
   """
   use ItsmWeb, :html
+  alias Phoenix.LiveView.ColocatedHook
 
   # Embed all files in layouts/* within this module.
   # The default root.html.heex file contains the HTML
@@ -147,7 +148,7 @@ defmodule ItsmWeb.Layouts do
   """
   def theme_toggle(assigns) do
     ~H"""
-    <div class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full">
+    <div class="card relative flex flex-row items-center border-2 border-base-200 bg-base-200 rounded-full">
       <div class="absolute w-1/3 h-full rounded-full border-1 border-base-200 bg-base-100 brightness-200 left-0 [[data-theme=light]_&]:left-1/3 [[data-theme=dark]_&]:left-2/3 [[data-theme-source=system]_&]:!left-0 transition-[left]" />
       <button
         class="flex p-2 cursor-pointer w-1/3"
@@ -197,13 +198,45 @@ defmodule ItsmWeb.Layouts do
         class={[
           @name == @selected &&
             "!bg-neutral !text-neutral-content",
-          "is-drawer-open:tooltip is-drawer-open:tooltip-right"
+          "is-drawer-close:tooltip is-drawer-close:tooltip-right"
         ]}
         data-tip={@data_tip || @name}
       >
-        <.icon name={@icon_name} /> <span class="is-drawer-open:hidden">{@name}</span>
+        <.icon name={@icon_name} /> <span class="is-drawer-close:hidden">{@name}</span>
       </.button>
     </li>
+    """
+  end
+
+  @doc """
+  Drawer sidebar의 상태를 저장하는 checkbox
+  label 태그의 for의 값과 id 동일하게 설정해야함
+
+  ## Examples
+  <Layouts.drawer_toggle id="my-drawer-4"} >
+  """
+  attr :id, :string, required: true
+
+  def drawer_toggle(assigns) do
+    ~H"""
+    <input
+      id={@id}
+      type="checkbox"
+      class="drawer-toggle inline"
+      phx-hook=".DrawerHook"
+      phx-update="ignore"
+    />
+    <script :type={ColocatedHook} name=".DrawerHook">
+      export default {
+        mounted() {
+          this.el.checked = (localStorage.getItem("phx:drawer_state") || "true") === "true";
+
+          this.el.addEventListener("change", (e) => {
+            localStorage.setItem("phx:drawer_state", e.target.checked);
+          });
+        }
+      }
+    </script>
     """
   end
 end

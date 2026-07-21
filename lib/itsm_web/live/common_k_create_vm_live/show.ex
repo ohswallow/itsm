@@ -10,6 +10,9 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   alias Itsm.Service
   alias Itsm.Attachments
   alias Itsm.Attachments.Attachment
+  alias Itsm.Workflow
+  alias ItsmWeb.CustomComponents
+  alias ItsmWeb.ImageViewerComponent
 
   def mount(_params, _session, socket) do
     {:ok,
@@ -44,14 +47,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
      |> Itsm.PubSub.Helper.subscribe(Attachments)}
   end
 
-  def handle_event("view_attachment", %{"id" => id, "filename" => filename}, socket) do
-    {:noreply, assign(socket, :selected_attachment, %{id: id, filename: filename})}
-  end
-
-  def handle_event("close_attachment", _, socket) do
-    {:noreply, assign(socket, :selected_attachment, nil)}
-  end
-
   def handle_event("validate", %{"comment" => comment_params}, socket) do
     changeset = Comments.change_comment(%Comment{}, comment_params)
     {:noreply, assign(socket, :form, to_form(changeset, action: :validate))}
@@ -75,8 +70,8 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
          |> assign(:form, to_form(changeset))
          |> stream_insert(:comments, comment)}
 
-      {:error, changeset} ->
-        {:noreply, assign(socket, :form, to_form(changeset))}
+      {:error, _step, %Ecto.Changeset{} = changeset, _so_far_changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
 

@@ -1,32 +1,106 @@
 <div class="drawer lg:drawer-open">
-  <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
+  <Layouts.drawer_toggle id="my-drawer-4"/>
   <div class="drawer-content">
     <!-- Navbar -->
     <nav class="navbar w-full bg-base-300">
-      <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-square btn-ghost">
-        <!-- Sidebar toggle icon -->
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          stroke-linejoin="round"
-          stroke-linecap="round"
-          stroke-width="2"
-          fill="none"
-          stroke="currentColor"
-          class="my-1.5 inline-block size-4"
-        ><path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z">
-        </path><path d="M9 4v16"></path><path d="M14 10l2 2l-2 2"></path></svg>
-      </label>
+      <div class="navbar-start">
+      <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-square btn-ghost drawer-button">
+          <!-- Sidebar toggle icon -->
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            stroke-linejoin="round"
+            stroke-linecap="round"
+            stroke-width="2"
+            fill="none"
+            stroke="currentColor"
+            class="my-1.5 inline-block size-4"
+          ><path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z">
+          </path><path d="M9 4v16"></path><path d="M14 10l2 2l-2 2"></path></svg>
+        </label>
 
-      <div class="px-4">{@menu_title}</div>
+        <div class="px-4">{@menu_title}</div>
+      </div>
+
+      <!-- 우측: 컨트롤 및 프로필 메뉴 영역 -->
+      <div class="navbar-end">
+        <%!-- 테마 선택 --%>
+        <div class="tooltip tooltip-bottom" data-tip={gettext("Theme")}>
+          <Layouts.theme_toggle />
+        </div>
+
+        <%!-- 알림 버튼 --%>
+        <button type="button" class="btn btn-ghost btn-circle" aria-label={gettext("Notifications")} title={gettext("Notifications")}>
+          <.icon name="hero-bell" class="size-5" />
+        </button>
+
+        <%!-- 사용자 프로필 드롭다운 --%>
+        <div class="dropdown dropdown-end">
+          <%!-- 드롭다운 트리거 버튼 --%>
+          <div tabindex="0" role="button" class="btn btn-ghost gap-2 px-2 sm:px-3" aria-label={gettext("Open profile menu")} >
+            <%!-- 프로필 아바타 --%>
+            <div class="avatar avatar-placeholder">
+              <div class="w-9 rounded-full bg-neutral text-neutral-content">
+                <span class="text-sm font-semibold uppercase">
+                  {String.first(@current_scope.user.display_name)}
+                </span>
+              </div>
+            </div>
+
+            <%!-- 넓은 화면 이메일 표시 --%>
+            <span class="hidden max-w-52 truncate font-normal lg:block">
+              {@current_scope.user.display_name}
+            </span>
+
+            <.icon name="hero-chevron-down" class="hidden size-4 opacity-60 sm:block" />
+          </div>
+
+          <%!-- 드롭다운 메뉴 내용 --%>
+          <ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-60 border border-base-300 p-2 shadow" >
+            <%!-- 사용자 정보 (제목) --%>
+            <li class="menu-title px-3 py-2">
+              <span class="truncate text-sm font-normal text-base-content/70">
+                {@current_scope.user.email}
+              </span>
+            </li>
+
+            <li>
+              <.link navigate={~p"/users/settings"}>
+                <.icon name="hero-cog-6-tooth" class="size-4" />
+                <span>{gettext("Settings")}</span>
+              </.link>
+            </li>
+
+            <%!-- 구분선 (DaisyUI 전용) --%>
+            <div class="divider my-1"></div>
+
+            <li>
+              <.link
+                href={~p"/users/log-out"}
+                method="delete"
+                class="text-error"
+              >
+                <.icon name="hero-arrow-right-on-rectangle" class="size-4" />
+                <span>{gettext("Log out")}</span>
+              </.link>
+            </li>
+          </ul>
+        </div>
+      </div>
     </nav>
     <!-- Page content here -->
     <div class="p-4">{render_slot(@inner_block)}</div>
   </div>
 
-  <div class="drawer-side is-drawer-open:overflow-visible">
+  <div class="drawer-side is-drawer-close:overflow-visible">
     <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
-    <div class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-64 is-drawer-open:w-14">
+    <div class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-14 is-drawer-open:w-64">
+      <div class="flex h-16 w-full shrink-0 items-center border-b border-base-300 px-2">
+        <.link navigate={~p"/main"} class="btn btn-ghost flex min-w-0 items-center justify-start gap-1.5 px-2 text-left" aria-label="KB ITSM">
+          <span class="shrink-0 text-xl font-extrabold text-warning">KB</span>
+          <span class="truncate text-xl font-bold text-base-context is-drawer-close:hidden">ITSM</span>
+        </.link>
+      </div>
       <!-- Sidebar content here -->
       <ul class="menu w-full grow">
         <% icon_map = %{

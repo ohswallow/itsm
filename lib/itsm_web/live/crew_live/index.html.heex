@@ -30,12 +30,12 @@
         <ul tabindex="-1" class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
           <li>
             <.link patch={~p"/crews/#{crew}/edit"}>
-              <.icon name="hero-pencil" class="w-4 h-4" />Edit Crew
+              <.icon name="hero-pencil" class="w-4 h-4" /> {gettext("Edit")}
             </.link>
           </li>
           <li>
             <.link phx-click={JS.push("delete", value: %{id: crew.id})} data-confirm="Are you sure?" >
-              <.icon name="hero-trash" class="w-4 h-4" /> Delete Crew
+              <.icon name="hero-trash" class="w-4 h-4" /> {gettext("Delete")}
             </.link>
           </li>
         </ul>

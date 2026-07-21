@@ -42,55 +42,7 @@
       })();
     </script>
   </head>
-
   <body>
-    <div :if={@conn.request_path != "/"} class="flex justify-between w-full">
-      <div>
-        <.link navigate={~p"/main"}>
-          <svg width="160" height="50" viewBox="0 0 160 50" xmlns="http://www.w3.org/2000/svg">
-            <g style='font-family: "NanumSquare Neo", "Malgun Gothic", "맑은 고딕", sans-serif;'>
-              <text x="10" y="35" font-size="28" font-weight="800" style="fill: #F7B500;">
-                KB
-              </text>
-
-              <text
-                x="56"
-                y="35"
-                font-size="28"
-                font-weight="700"
-                style="fill: var(--color-base-content);"
-              >
-                ITSM
-              </text>
-            </g>
-          </svg>
-        </.link>
-      </div>
-
-      <ul class="menu menu-horizontal w-full relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
-        <%= if @current_scope do %>
-          <li>
-            {@current_scope.user.email}
-          </li>
-
-          <li>
-            <.link href={~p"/users/settings"}>Settings</.link>
-          </li>
-
-          <li>
-            <.link href={~p"/users/log-out"} method="delete">Log out</.link>
-          </li>
-        <% else %>
-          <li>
-            <.link href={~p"/users/register"}>Register</.link>
-          </li>
-
-          <li>
-            <.link href={~p"/users/log-in"}>Log in</.link>
-          </li>
-        <% end %>
-      </ul>
-    </div>
      {@inner_content}
   </body>
 </html>

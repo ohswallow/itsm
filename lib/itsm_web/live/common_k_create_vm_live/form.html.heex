@@ -1,250 +1,75 @@
 <Layouts.default current_scope={@current_scope} menu_title={gettext("Service Request")} flash={@flash}>
   <.header>{@page_title}</.header>
 
-  <div
-    :if={@conflict}
-    class="p-4 mb-4 bg-red-50 border border-red-200 text-red-800 rounded animate-pulse"
+  <.card
+    visible={@conflict}
+    state={:error}
+    title="⚠️ 충돌 발생!"
   >
-    <div class="flex items-center gap-2 font-bold"><span>⚠️ 충돌 발생!</span></div>
-
-    <p class="mt-1 text-sm">{@conflict_msg}</p>
-
-    <p class="mt-2 text-xs opacity-75">현재 편집 내용을 저장할 수 없습니다. 창을 닫고 다시 시도해 주세요.</p>
-  </div>
-
-  <.form
-    for={@form}
-    id="request-form"
-    phx-change="validate"
-    phx-submit="save"
-    class="space-y-6"
-  >
-    <.input
-      field={@form[:requestor_crew_id]}
-      type="select"
-      label={gettext("My Crew")}
-      prompt="Choose a crew"
-      options={@crew_options}
-    />
-    <.input
-      field={@form[:title]}
-      type="text"
-      label={gettext("Title")}
-      phx-debounce="blur"
-      class="form-input"
-    />
-    <.input
-      field={@form[:description]}
-      type="textarea"
-      label={gettext("Description")}
-      rows="10"
-      phx-hook="MaintainHeight"
-      phx-debounce="blur"
-    />
-    <.input
-      field={@form[:env]}
-      type="select"
-      label={gettext("Environment")}
-      prompt="Choose an environment"
-      options={@env_options}
-      phx-debounce="blur"
-      class="form-select"
-    />
-    <.itsm_calendar
-      field={@form[:due_date]}
-      label={gettext("Due Date")}
-      min={DateTime.utc_now()}
-      show_time
-      default_selected_date_time={@form[:due_date].value}
-    />
-    <div class="mb-6">
-      <h2 class="text-lg font-semibold text-zinc-700">VM 생성 요청</h2>
-
-      <button
-        class="mt-4 text-zinc-700"
-        name="request[common_k_create_vms_sort][]"
-        phx-click={JS.dispatch("change")}
-        type="button"
-        value="new"
-      >
-        <.icon name="hero-plus-circle" class="h-5 w-5 relative top-[-1px]" /> add more
-      </button>
-
-      <div id="request-inputs" class="p-4 space-y-6">
-        <.inputs_for :let={common_k_create_vm_f} field={@form[:common_k_create_vms]}>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              type="hidden"
-              name="request[common_k_create_vms_sort][]"
-              value={common_k_create_vm_f.index}
-            />
-            <.input
-              field={common_k_create_vm_f[:hostname]}
-              label={gettext("Hostname")}
-              type="text"
-            />
-            <.input
-              field={common_k_create_vm_f[:service_name]}
-              label={gettext("Service Name")}
-              type="text"
-            />
-            <.input
-              field={common_k_create_vm_f[:os_image]}
-              label="OS 종류"
-              type="select"
-              prompt="Choose a value"
-              options={@group_code_options}
-            />
-            <.input
-              field={common_k_create_vm_f[:os_version]}
-              type="select"
-              label="OS 버전"
-              prompt="Choose a value"
-              options={
-                if common_k_create_vm_f[:os_image].value in [nil, ""],
-                  do: [],
-                  else: Map.get(@os_version_options, common_k_create_vm_f[:os_image].value)
-              }
-            />
-            <.input
-              field={common_k_create_vm_f[:cpu]}
-              label="CPU (vCore)"
-              type="number"
-            />
-            <.input
-              field={common_k_create_vm_f[:memory]}
-              label="Memory (GB)"
-              type="number"
-            />
-            <.input
-              field={common_k_create_vm_f[:location]}
-              type="select"
-              label={gettext("Location")}
-              prompt="Choose a value"
-              options={@location_options}
-            />
-            <.input
-              field={common_k_create_vm_f[:is_dmz_zone]}
-              label={gettext("Is DMZ?")}
-              type="checkbox"
-            />
-          </div>
-
-          <button
-            type="button"
-            name="request[common_k_create_vms_drop][]"
-            value={common_k_create_vm_f.index}
-            phx-click={JS.dispatch("change")}
-            class="relative -top-1"
-          >
-            <.icon name="hero-x-mark" class="w-5 h-5" />
-          </button>
-        </.inputs_for>
-         <input type="hidden" name="request[common_k_create_vms_drop][]" />
-      </div>
-    </div>
-
-    <.attachments_section
-      :if={@live_action == :edit and @attachments_count > 0}
-      id="attachments"
-      attachments_count={@attachments_count}
-    >
-      <.attachment
-        :for={{dom_id, attachment} <- @streams.attachments}
-        id={dom_id}
-        attachment={attachment}
-        live_action={@live_action}
-      />
-    </.attachments_section>
-     <%!-- 파일업로드 --%>
-    <label class="block text-sm font-semibold text-zinc-700 mb-2">{gettext("Attachments")}</label>
-    <.live_file_input class="hidden" upload={@uploads.attachment} />
-    <label
-      class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 mt-2"
-      for={@uploads.attachment.ref}
-      phx-drop-target={@uploads.attachment.ref}
-    >
-      <div class="flex flex-col items-center justify-center pt-5 pb-6">
-        <.icon name="hero-arrow-up-tray" class="w-8 h-8 mb-4 text-gray-500" />
-        <p class="mb-2 text-sm text-gray-500">
-          <spaxn class="font-semibold">Click to upload</spaxn>
-          or drag and drop
-        </p>
-
-        <p class="text-xs text-gray-500">
-          {@uploads.attachment.max_entries} photos max, up to {trunc(
-            @uploads.attachment.max_file_size / (1 * 1024 * 1024)
-          )} MB each
-        </p>
-      </div>
-    </label>
-
-    <p
-      :for={err <- upload_errors(@uploads.attachment)}
-      class="mt-1.5 flex gap-2 items-center text-sm text-error"
-    >
-      <.icon name="hero-exclamation-circle" class="size-5" /> {Phoenix.Naming.humanize(err)}
+    <p>{@conflict_msg}</p>
+    <p>현재 편집 내용을 저장할 수 없습니다. 새로고침 후 다시 시도해 주세요.</p>
+    <p>
+      <.link class="btn" navigate={@current_path}>새로고침</.link>
     </p>
+  </.card>
 
-    <div
-      :if={length(@uploads.attachment.entries) > 0}
-      class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-4"
-    >
-      <div
-        :for={entry <- @uploads.attachment.entries}
-        class="relative group border border-zinc-200 rounded-lg p-2 bg-white shadow-sm"
-      >
-        <div class="aspect-square bg-zinc-100 rounded-md overflow-hidden mb-2">
-          <.live_img_preview entry={entry} class="w-full h-full object-cover" />
+  <.form for={@form} id="request-form" phx-change="validate" phx-submit="save" >
+    <.input field={@form[:requestor_crew_id]} type="select" label={gettext("My Crew")} prompt="Choose a crew" options={@crew_options} phx-debounce="blur" />
+    <.input field={@form[:title]} type="text" label={gettext("Title")} phx-debounce="blur" />
+    <.input field={@form[:description]} type="textarea" label={gettext("Description")} rows="10" phx-debounce="blur" />
+    <.input field={@form[:env]} type="select" label={gettext("Environment")} prompt="Choose an environment" options={@env_options} phx-debounce="blur" />
+    <.itsm_calendar field={@form[:due_date]} label={gettext("Due Date")} min={DateTime.utc_now()} show_time default_selected_date_time={@form[:due_date].value} />
+
+    <h2 class="text-lg font-semibold text-base-content mt-6">{gettext("VM Creation Request")}</h2>
+    <.button class="btn btn-circle tooltip tooltip-open tooltip-right tooltip-start mt-4" data-tip={gettext("Add VM")} name="request[common_k_create_vms_sort][]" phx-click={JS.dispatch("change")} value="new" >
+      <.icon name="hero-plus-circle" class="h-5 w-5"/>
+    </.button>
+    <div class="mt-4">
+      <.inputs_for :let={common_k_create_vm_f} field={@form[:common_k_create_vms]}>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <input type="hidden" name="request[common_k_create_vms_sort][]" value={common_k_create_vm_f.index} />
+          <.input field={common_k_create_vm_f[:hostname]} label={gettext("Hostname")} type="text" />
+          <.input field={common_k_create_vm_f[:service_name]} label={gettext("Service Name")} type="text" />
+          <.input field={common_k_create_vm_f[:os_image]} label="OS 종류" type="select" prompt="Choose a value" options={@group_code_options} />
+          <.input field={common_k_create_vm_f[:os_version]} type="select" label="OS 버전" prompt="Choose a value" options={if common_k_create_vm_f[:os_image].value in [nil, ""], do: [], else: Map.get(@os_version_options, common_k_create_vm_f[:os_image].value) } />
+          <.input field={common_k_create_vm_f[:cpu]} label="CPU (vCore)" type="number" />
+          <.input field={common_k_create_vm_f[:memory]} label="Memory (GB)" type="number" />
+          <.input field={common_k_create_vm_f[:location]} type="select" label={gettext("Location")} prompt="Choose a value" options={@location_options} />
+          <.input field={common_k_create_vm_f[:is_dmz_zone]} label={gettext("Is DMZ?")} type="checkbox" />
         </div>
-
-        <p class="text-xs text-zinc-600 truncate px-1">{entry.client_name}</p>
-
-        <p class="text-xs text-zinc-400">{format_file_size(entry.client_size)}</p>
-
-        <button
-          type="button"
-          phx-click="cancel-upload"
-          phx-value-ref={entry.ref}
-          class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-md hover:bg-red-600 transition-colors"
-        >
-          <.icon name="hero-x-mark" class="w-3 h-3" />
-        </button>
-
-        <p
-          :for={err <- upload_errors(@uploads.attachment)}
-          class="mt-1.5 flex gap-2 items-center text-sm text-error"
-        >
-          <.icon name="hero-exclamation-circle" class="size-5" /> {Phoenix.Naming.humanize(err)}
-        </p>
-      </div>
+        <.button class="btn btn-circle tooltip tooltip-start md:tooltip-right md:tooltip-center mt-4" data-tip={gettext("Remove VM")} name="request[common_k_create_vms_drop][]" value={common_k_create_vm_f.index} phx-click={JS.dispatch("change")}  >
+          <.icon name="hero-x-mark" class="w-5 h-5" />
+        </.button>
+      </.inputs_for>
     </div>
+    <input type="hidden" name="request[common_k_create_vms_drop][]" />
 
-    <.live_select
-      label={gettext("Crews to reference")}
-      field={@form[:referenced_crews]}
-      mode={:tags}
-      value_mapper={&referenced_crews_value_mapper/1}
-      placeholder="Crew명 또는 Member 이름을 입력하세요"
-    />
-    <%= if @form.errors[:base] do %>
-      <div class="alert alert-danger">
-        <p text-red-500>
-          <.icon name="hero-x-circle" class="alert-icon" /> {translate_errors(@form.errors, :base)}
-        </p>
+    <ImageViewerComponent.viewer :if={@live_action == :edit and @attachments_count > 0} id="request_image" images={@streams.attachments} image_count={@attachments_count} />
+
+    <div class="mt-4">
+      <label class="label p-0 mb-2">
+        <span class="label-text text-sm font-semibold text-base-content">{gettext("Attachments")}</span>
+      </label>
+
+      <UploadComponents.dropzone upload={@uploads.attachment} />
+
+      <!-- Crews 선택 영역 -->
+      <div class="mt-6">
+        <.live_select label={gettext("Crews to reference")} field={@form[:referenced_crews]} mode={:tags} value_mapper={&referenced_crews_value_mapper/1} placeholder={gettext("Search by crew or member name")} />
       </div>
-    <% end %>
 
-    <div class="flex">
-      <.button :if={!@conflict} phx-disable-with="Saving...">Save Request</.button>
-      <.loading_spinner class="hidden phx-submit-loading:inline-block ml-4 mb-5" />
+      <!-- Base 에러 처리 (Alert 컴포넌트 구조화) -->
+      <div :if={@form.errors[:base]} class="alert alert-error mt-6 shadow-sm">
+        <.icon name="hero-x-circle" class="size-5 shrink-0" />
+        <span>{translate_errors(@form.errors, :base)}</span>
+      </div>
+
+      <!-- 푸터 버튼 영역 -->
+      <footer class="mt-6 flex items-center gap-2">
+        <.button :if={!@conflict} class="btn btn-primary" phx-disable-with="Saving...">{gettext("Save Request")}</.button>
+        <.button class="btn" navigate={if @live_action == :new, do: ~p"/categories", else: ~p"/requests"}>{gettext("Cancel")}</.button>
+      </footer>
     </div>
   </.form>
 
-  <.back navigate={if @live_action == :new, do: ~p"/categories", else: ~p"/requests"}>Back</.back>
-
-  <.attachment_modal
-    :if={@selected_attachment}
-    attachment={@selected_attachment}
-  />
 </Layouts.default>
