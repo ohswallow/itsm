@@ -9,8 +9,8 @@
         fn {_id, request} -> JS.navigate("/#{request.category.request_name}/#{request.id}") end
       }
     >
-      <:col :let={{_id, request}} label={gettext("ID")}>
-        <.copyable_text label={gettext("ID")} value={request.id} />
+      <:col :let={{id, request}} label={gettext("ID")}>
+        <.copyable_text label={gettext("ID")} id={id} value={request.id} />
       </:col>
 
       <:col :let={{_id, request}} label={gettext("Request Name")}>{request.category.name}</:col>
@@ -39,27 +39,25 @@
         {request.assignee_crew.name}
       </:col>
 
-      <:action :let={{_id, request}}>
-        <.dropdown_menu
-          :if={request.requestor_id == @current_scope.user.id and request.status == :validation}
-          id={"#{request.id}-menu"}
-        >
-          <.link
-            patch={"/#{request.category.request_name}/#{request.id}/edit"}
-            class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-          >
-            <.icon name="hero-pencil" class="w-4 h-4" /> Edit
-          </.link>
+      <:action :let={{_id, request}} >
 
-          <.link
-            phx-click="delete"
-            phx-value-id={request.id}
-            data-confirm="Are you sure?"
-            class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-          >
-            <.icon name="hero-trash" class="w-4 h-4" /> Delete
-          </.link>
-        </.dropdown_menu>
+        <div :if={request.requestor_id == @current_scope.user.id and request.status == :validation} class="dropdown dropdown-top dropdown-end" >
+          <div tabindex="0" role="button" class="btn m-1" >
+          <.icon name="hero-ellipsis-vertical" class="h-6 w-6"/>
+          ️</div>
+          <ul tabindex="-1" class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+            <li>
+              <.link patch={"/#{request.category.request_name}/#{request.id}/edit"}>
+                <.icon name="hero-pencil" class="w-4 h-4" /> {gettext("Edit")}
+              </.link>
+            </li>
+            <li>
+              <.link phx-click={JS.push("delete", value: %{id: request.id})} data-confirm="Are you sure?" >
+                <.icon name="hero-trash" class="w-4 h-4" /> {gettext("Delete")}
+              </.link>
+            </li>
+          </ul>
+        </div>
       </:action>
     </.table>
   </.itsm_table_container>

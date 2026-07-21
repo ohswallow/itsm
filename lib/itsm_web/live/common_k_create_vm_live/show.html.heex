@@ -1,46 +1,81 @@
-<Layouts.default current_scope={@current_scope} menu_title={gettext("Service Request")} flash={@flash}>
+<Layouts.default current_scope={@current_scope} menu_title={gettext("My Request List")} flash={@flash}>
+  <.header>
+    {@request.category.name}
+    <:subtitle>{gettext("Request ID")}: {@request.id}</:subtitle>
+    <:actions>
+      <.button :if={@request.requestor_id == @current_scope.user.id and @request.status == :validation} patch={~p"/common-k-create-vm/#{@request}/edit"} variant="primary">{gettext("Edit")}</.button>
+      <.button patch={~p"/common-k-create-vm/#{@request}/copy"} >{gettext("Copy")}</.button>
+      <.button patch={~p"/requests"} >
+        <.icon name="hero-arrow-left" />
+      </.button>
+    </:actions>
+  </.header>
   <div class="flex gap-6">
     <div class="flex-1">
-      <.request_header
-        request={@request}
-        show_edit={
-          @request.requestor_id == @current_scope.user.id and @request.status == :validation
-        }
-      /> <.request_info request={@request} />
-      <.vm_section
-        :if={Enum.any?(@request.common_k_create_vms)}
-        vms={@request.common_k_create_vms}
-      />
-      <.attachments_section
-        :if={@attachments_count > 0}
-        id="attachments"
-        attachments_count={@attachments_count}
-      >
-        <.attachment
-          :for={{dom_id, attachment} <- @streams.attachments}
-          id={dom_id}
-          attachment={attachment}
-        />
-      </.attachments_section>
-       <.comments_section streams={@streams} />
-      <.comment_form
-        :if={@request.status not in [:closed, :rejected]}
-        form={@form}
-        uploads={@uploads}
-      />
-      <.back navigate={~p"/requests"}>Back</.back>
+      <.list>
+        <:item title={gettext("Title")}>{@request.title}</:item>
+        <:item title={gettext("Description")}>{@request.description}</:item>
+        <:item title={gettext("Environment")}>
+          <.common_code_label group="운영_구분" code={@request.env} />
+        </:item>
+        <:item title={gettext("Status")}>{Workflow.status_label(:service_request, @request)}</:item>
+        <:item title={gettext("Due Date")}>
+          <div id={"due_date_#{@request.id}"} phx-hook="LocalTime.ToLocale" format="datetime" utc-value={@request.due_date} />
+        </:item>
+        <:item title="Referenced Crew">
+          <div class="flex flex-wrap items-center gap-3">
+            <CustomComponents.crew_tooltip :for={%{crew: crew} <- @request.crew_references} crew={crew} />
+          </div>
+        </:item>
+      </.list>
+
+      <div class="mt-8" :if={Enum.any?(@request.common_k_create_vms)} >
+        <div lass="grid grid-cols-1 gap-4">
+          <div :for={{vm, index} <- Enum.with_index(@request.common_k_create_vms, 1)} class="card card-compact bg-base-100 shadow-sm border border-base-200" >
+            <div class="card-body">
+              <div class="flex justify-between items-center border-b border-base-200 pb-2 mb-2">
+                <h3 class="card-title text-base font-bold text-primary">VM #{index}</h3>
+                <span class="badge badge-neutral text-xs">{vm.location}</span>
+              </div>
+              <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 p-1">
+                <div class="flex flex-col gap-0.5">
+                  <dt class="text-xs font-semibold opacity-60">호스트명</dt>
+                  <dd class="text-sm font-medium">{vm.hostname}</dd>
+                </div>
+                <div class="flex flex-col gap-0.5">
+                  <dt class="text-xs font-semibold opacity-60">서비스명</dt>
+                  <dd class="text-sm font-medium">{vm.service_name}</dd>
+                </div>
+                <div class="flex flex-col gap-0.5">
+                  <dt class="text-xs font-semibold opacity-60">OS 종류 / 버전</dt>
+                  <dd class="text-sm font-medium">{vm.os_image} (v{vm.os_version})</dd>
+                </div>
+                <div class="flex flex-col gap-0.5">
+                  <dt class="text-xs font-semibold opacity-60">스펙 (CPU / Memory)</dt>
+                  <dd class="text-sm font-medium">{vm.cpu} vCore / {vm.memory} GB</dd>
+                </div>
+                <div class="flex flex-col gap-0.5 md:col-span-2">
+                  <dt class="text-xs font-semibold opacity-60">{gettext("Is DMZ?")}</dt>
+                  <dd class="text-sm">
+                    <%= if vm.is_dmz_zone in [true, "true", "Y"] do %>
+                      <span class="badge badge-error badge-sm font-semibold">DMZ Zone</span>
+                    <% else %>
+                      <span class="badge badge-success badge-sm font-semibold">{gettext("Internal")}</span>
+                    <% end %>
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ImageViewerComponent.viewer id="request_image" images={@streams.attachments} image_count={@attachments_count} show_delete?={@live_action == :edit} />
+      <.comments_section streams={@streams} />
+      <.comment_form :if={@request.status not in [:closed, :rejected]} form={@form} uploads={@uploads} />
     </div>
-     <%!-- Work Flow sidebar--%>
-    <.live_component
-      module={ItsmWeb.Components.WorkflowSidebar}
-      id="workflow-sidebar"
-      workflow_type={:service_request}
-      resource={@request}
-    />
+
+    <.live_component module={ItsmWeb.Components.WorkflowSidebar} id="workflow-sidebar" workflow_type={:service_request} resource={@request} />
   </div>
 
-  <.attachment_modal
-    :if={@selected_attachment}
-    attachment={@selected_attachment}
-  />
 </Layouts.default>

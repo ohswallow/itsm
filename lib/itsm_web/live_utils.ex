@@ -160,6 +160,10 @@ defmodule ItsmWeb.LiveUtils do
     end)
   end
 
+  def format_file_size(bytes) when bytes < 1024, do: "#{bytes} B"
+  def format_file_size(bytes) when bytes < 1024 * 1024, do: "#{round(bytes / 1024)} KB"
+  def format_file_size(bytes), do: "#{round(bytes / (1024 * 1024))} MB"
+
   @doc """
   다른 노드나 프로세스로부터 수신한 표준 PubSub 이벤트를 처리하여 LiveView 소켓의 상태를 동기화하고 유저 피드백을 처리합니다.
 

@@ -137,7 +137,7 @@ defmodule Itsm.Service do
 
         {:ok, comment}
 
-      {:error, _} = error ->
+      error ->
         error
     end
   end

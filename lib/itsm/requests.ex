@@ -20,8 +20,14 @@ defmodule Itsm.Requests do
   end
 
   def change_request(%Request{} = request, attrs \\ %{}) do
-    Request.changeset(request, attrs)
+    Request.changeset(ensure_has_vm(request), attrs)
   end
+
+  defp ensure_has_vm(%Request{common_k_create_vms: vms} = request) when vms in [nil, []] do
+    %{request | common_k_create_vms: [%Itsm.Service.CommonKCreateVm{}]}
+  end
+
+  defp ensure_has_vm(%Request{} = request), do: request
 
   def change_request(%User{} = user, %Category{} = category, attrs) do
     %Request{
