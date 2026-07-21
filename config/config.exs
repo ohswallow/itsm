@@ -80,15 +80,54 @@ config :logger, :default_formatter,
 config :phoenix, :json_library, Jason
 
 config :ex_scim,
-  base_url: "http://localhost:4000",
-  storage_strategy: ExScimEcto.StorageAdapter,
+  storage_strategy: Itsm.Scim.StorageAdapter,
   storage_repo: Itsm.Repo,
-  user_model: {Itsm.Scim.ScimUser, preload: [:groups]},
-  group_model: {Itsm.Scim.ScimGroup, preload: [:users]},
-  auth_provider_adapter: Itsm.Scim.ScimAuthAdapter,
-  filter_supported: true,
-  sort_supported: true,
-  patch_supported: true
+  user_model: {Itsm.Scim.User, preload: [:groups]},
+  group_model: {Itsm.Scim.Group, preload: [:members]},
+  auth_provider_adapter: Itsm.Scim.AuthAdapter,
+  user_resource_mapper: Itsm.Scim.UsersMapper,
+  group_resource_mapper: Itsm.Scim.GroupsMapper
+
+config :ex_saml, ExSaml.Provider,
+  idp_id_from: :path_segment,
+  service_providers: [
+    %{
+      id: "itsm_sp",
+      entity_id: "urn:itsm:sp",
+      certfile: "priv/test_saml/sp.crt",
+      keyfile: "priv/test_saml/sp.key"
+    }
+  ],
+  identity_providers: [
+    %{
+      id: "itsm_idp",
+      sp_id: "itsm_sp",
+      base_url: "http://localhost:4000/sso",
+      metadata_file: "priv/test_saml/mock-saml-metadata.xml",
+      nameid_format: :email,
+      sign_requests: false,
+      sign_metadata: false,
+      signed_assertion_in_resp: true,
+      signed_envelopes_in_resp: false,
+      allow_idp_initiated_flow: true,
+      use_redirect_for_req: true,
+      use_redirect_for_slo: true,
+      allowed_target_urls: [
+        "http://localhost:4000/sso"
+      ]
+    }
+  ]
+
+config :ex_saml,
+  service_providers_accessor: fn ->
+    Application.get_env(:ex_saml, ExSaml.Provider)[:service_providers]
+  end,
+  identity_providers_accessor: fn ->
+    Application.get_env(:ex_saml, ExSaml.Provider)[:identity_providers]
+  end
+
+config :ex_saml,
+  cache: Itsm.Saml.Cache
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

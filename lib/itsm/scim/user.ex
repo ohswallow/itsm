@@ -1,7 +1,13 @@
-defmodule Itsm.Scim.ScimUser do
+defmodule Itsm.Scim.User do
   use Ecto.Schema
   import Ecto.Changeset
-  alias Itsm.Scim.ScimGroup
+
+  @derive {Jason.Encoder,
+           only: [
+             :id,
+             :user_name,
+             :display_name
+           ]}
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -45,8 +51,9 @@ defmodule Itsm.Scim.ScimUser do
     field :enddate, :string
     field :meta, :map
 
-    many_to_many :groups, ScimGroup, join_through: Itsm.Scim.ScimGroupReference
+    many_to_many :groups, Itsm.Scim.Group, join_through: Itsm.Scim.GroupReference
 
+    timestamps(inserted_at: :meta_created, updated_at: :meta_last_modified, type: :utc_datetime)
     timestamps(type: :utc_datetime)
   end
 

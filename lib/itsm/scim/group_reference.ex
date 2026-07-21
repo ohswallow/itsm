@@ -1,4 +1,4 @@
-defmodule Itsm.Scim.ScimGroupReference do
+defmodule Itsm.Scim.GroupReference do
   use Ecto.Schema
   import Ecto.Changeset
 

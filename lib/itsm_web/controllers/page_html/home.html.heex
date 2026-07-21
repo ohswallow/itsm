@@ -28,7 +28,10 @@
         </svg>
       </figure>
       <fieldset class="fieldset w-xs p-4">
-        <.button navigate={~p"/users/log-in"} class="btn btn-primary">SAML 로그인</.button>
+        <form action="/sso/auth/signin/itsm_idp" method="post">
+          <input type="hidden" name="_csrf_token" value={Plug.CSRFProtection.get_csrf_token()} />
+          <.button class="w-full btn btn-primary">SAML 로그인</.button>
+        </form>
         <div class="divider divider-primary">또는</div>
         <.button navigate={~p"/users/log-in"} class="btn btn-primary">OTP 로그인</.button>
       </fieldset>

@@ -17,7 +17,9 @@ defmodule Itsm.Application do
       # Start to serve requests, typically the last entry
       ItsmWeb.Endpoint,
       Itsm.CommonCodeCache,
-      {Task.Supervisor, name: Itsm.TaskSupervisor}
+      {Task.Supervisor, name: Itsm.TaskSupervisor},
+      ExSaml.Provider,
+      Itsm.Saml.Cache
     ]
 
     # See https://elixir.hexdocs.pm/Supervisor.html
