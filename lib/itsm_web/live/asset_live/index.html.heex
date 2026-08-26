@@ -2,8 +2,8 @@
   <.header>
     Listing Assets
     <:actions>
-      <.link patch={~p"/assets/new"}>
-        <.button>New Asset</.button>
+      <.link navigate={~p"/assets/new"}>
+        <.button variant="primary">New Asset</.button>
       </.link>
     </:actions>
   </.header>
@@ -13,6 +13,8 @@
     rows={@streams.assets}
     row_click={fn {_id, asset} -> JS.navigate(~p"/assets/#{asset}") end}
   >
+    <:col :let={{_id, asset}} label={gettext("Mapping Value")}>{asset.mapping_value}</:col>
+    
     <:col :let={{_id, asset}} label={gettext("Name")}>{asset.name}</:col>
 
     <:col :let={{_id, asset}} label={gettext("Description")}>{asset.description}</:col>
@@ -47,7 +49,7 @@
       <div class="sr-only">
         <.link navigate={~p"/assets/#{asset}"}>Show</.link>
       </div>
-       <.link patch={~p"/assets/#{asset}/edit"}>Edit</.link>
+      <.link navigate={~p"/assets/#{asset}/edit"}>Edit</.link>
     </:action>
 
     <:action :let={{_id, asset}}>
@@ -61,21 +63,4 @@
       </.link>
     </:action>
   </.table>
-
-  <.modal
-    :if={@live_action in [:new, :edit]}
-    id="asset-modal"
-    show
-    on_cancel={JS.patch(~p"/assets")}
-  >
-    <.live_component
-      module={ItsmWeb.AssetLive.FormComponent}
-      id={@asset.id || :new}
-      title={@page_title}
-      action={@live_action}
-      asset={@asset}
-      current_scope={@current_scope}
-      patch={~p"/assets"}
-    />
-  </.modal>
 </Layouts.default>

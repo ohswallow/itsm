@@ -11,107 +11,113 @@
 msgid ""
 msgstr ""
 
-#: lib/itsm_web/live/request_live/index.html.heex:37
+#: lib/itsm_web/live/request_live/index.html.heex:38
 #, elixir-autogen, elixir-format
 msgid "Action Crew"
 msgstr ""
 
-#: lib/itsm_web/components/core_components.ex:381
+#: lib/itsm_web/components/core_components.ex:395
 #, elixir-autogen, elixir-format
 msgid "Actions"
 msgstr ""
 
-#: lib/itsm_web/live/admin/category_live/form_component.ex:76
-#: lib/itsm_web/live/admin/category_live/index.html.heex:28
-#: lib/itsm_web/live/admin/category_live/show.html.heex:25
+#: lib/itsm_web/live/admin/category_live/form.html.heex:50
+#: lib/itsm_web/live/admin/category_live/index.html.heex:37
+#: lib/itsm_web/live/admin/category_live/show.html.heex:37
 #, elixir-autogen, elixir-format
 msgid "Active"
 msgstr ""
 
-#: lib/itsm_web/live/admin/asset_live/form_component.ex:61
-#: lib/itsm_web/live/admin/asset_live/index.html.heex:18
-#: lib/itsm_web/live/admin/asset_live/show.html.heex:14
-#: lib/itsm_web/live/admin/category_live/form_component.ex:61
-#: lib/itsm_web/live/admin/category_live/index.html.heex:17
-#: lib/itsm_web/live/admin/category_live/show.html.heex:14
-#: lib/itsm_web/live/asset_live/form_component.ex:60
-#: lib/itsm_web/live/asset_live/index.html.heex:17
+#: lib/itsm_web/live/admin/asset_live/form.html.heex:36
+#: lib/itsm_web/live/admin/asset_live/index.html.heex:26
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:34
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:145
+#: lib/itsm_web/live/admin/category_live/form.html.heex:35
+#: lib/itsm_web/live/admin/category_live/index.html.heex:21
+#: lib/itsm_web/live/admin/category_live/show.html.heex:21
+#: lib/itsm_web/live/asset_live/form.html.heex:38
+#: lib/itsm_web/live/asset_live/index.html.heex:20
 #, elixir-autogen, elixir-format
 msgid "Affiliate"
 msgstr ""
 
-#: lib/itsm_web/live/delegation_live/index.ex:33
+#: lib/itsm_web/live/delegation_live/index.ex:32
 #, elixir-autogen, elixir-format
 msgid "An unknown error occurred."
 msgstr ""
 
-#: lib/itsm_web/live/admin/approval_live/index.ex:67
-#: lib/itsm_web/live/admin/approval_live/show.ex:34
+#: lib/itsm_web/live/admin/approval_live/index.ex:51
+#: lib/itsm_web/live/admin/approval_live/show.ex:31
 #: lib/itsm_web/live/approval_live/index.ex:99
 #: lib/itsm_web/live/approval_live/index.ex:111
 #, elixir-autogen, elixir-format
 msgid "Approval"
 msgstr ""
 
-#: lib/itsm_web/live/admin/approval_live/form_component.ex:70
-#: lib/itsm_web/live/admin/approval_live/index.html.heex:17
-#: lib/itsm_web/live/admin/request_live/show.html.heex:78
+#: lib/itsm_web/live/admin/approval_live/form.html.heex:46
+#: lib/itsm_web/live/admin/approval_live/index.html.heex:22
+#: lib/itsm_web/live/admin/request_live/show.html.heex:103
 #, elixir-autogen, elixir-format
 msgid "Approver"
 msgstr ""
 
-#: lib/itsm_web/live/admin/approval_live/show.html.heex:14
+#: lib/itsm_web/live/admin/approval_live/show.html.heex:21
 #, elixir-autogen, elixir-format
 msgid "Approver Name"
 msgstr ""
 
-#: lib/itsm_web/live/admin/asset_live/index.ex:75
-#: lib/itsm_web/live/admin/asset_live/show.ex:48
-#: lib/itsm_web/live/asset_live/index.ex:52
-#: lib/itsm_web/live/asset_live/show.ex:79
+#: lib/itsm_web/live/admin/asset_live/index.ex:59
+#: lib/itsm_web/live/admin/asset_live/show.ex:115
+#: lib/itsm_web/live/asset_live/index.ex:36
+#: lib/itsm_web/live/asset_live/show.ex:76
 #, elixir-autogen, elixir-format
 msgid "Asset"
 msgstr ""
 
-#: lib/itsm_web/live/admin/category_live/form_component.ex:80
-#: lib/itsm_web/live/approval_live/index.html.heex:63
+#: lib/itsm_web/live/admin/category_live/form.html.heex:54
+#: lib/itsm_web/live/approval_live/index.html.heex:64
 #, elixir-autogen, elixir-format
 msgid "Assignee Crew"
 msgstr ""
 
-#: lib/itsm_web/live/admin/attachment_live/index.ex:80
-#: lib/itsm_web/live/admin/attachment_live/show.ex:34
+#: lib/itsm_web/live/admin/attachment_live/index.ex:64
+#: lib/itsm_web/live/admin/attachment_live/show.ex:31
+#: lib/itsm_web/live/common_k_create_vm_live/show.ex:148
 #, elixir-autogen, elixir-format
 msgid "Attachment"
 msgstr ""
 
-#: lib/itsm_web/live/admin/attachment_live/form_component.ex:101
-#: lib/itsm_web/live/admin/post_live/form_component.ex:139
-#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:159
-#: lib/itsm_web/live/post_live/form_component.ex:134
+#: lib/itsm_web/components/layouts/_admin.html.heex:116
+#: lib/itsm_web/live/admin/attachment_live/form.html.heex:1
+#: lib/itsm_web/live/admin/attachment_live/form.html.heex:77
+#: lib/itsm_web/live/admin/attachment_live/index.html.heex:1
+#: lib/itsm_web/live/admin/attachment_live/show.html.heex:1
+#: lib/itsm_web/live/admin/post_live/form.html.heex:67
+#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:51
+#: lib/itsm_web/live/post_live/form.html.heex:88
 #, elixir-autogen, elixir-format
 msgid "Attachments"
 msgstr ""
 
-#: lib/itsm_web/components/layouts.ex:102
-#: lib/itsm_web/components/layouts.ex:117
+#: lib/itsm_web/components/layouts.ex:112
+#: lib/itsm_web/components/layouts.ex:127
 #, elixir-autogen, elixir-format
 msgid "Attempting to reconnect"
 msgstr ""
 
-#: lib/itsm_web/live/admin/post_live/index.html.heex:22
-#: lib/itsm_web/live/admin/post_live/show.html.heex:16
-#: lib/itsm_web/live/post_live/index.html.heex:23
+#: lib/itsm_web/live/admin/post_live/index.html.heex:28
+#: lib/itsm_web/live/admin/post_live/show.html.heex:21
+#: lib/itsm_web/live/post_live/index.html.heex:19
 #: lib/itsm_web/live/post_live/show.html.heex:36
 #, elixir-autogen, elixir-format
 msgid "Author"
 msgstr ""
 
-#: lib/itsm_web/live/admin/board_live/index.ex:61
-#: lib/itsm_web/live/admin/board_live/show.ex:34
-#: lib/itsm_web/live/admin/post_live/form_component.ex:75
-#: lib/itsm_web/live/admin/post_live/index.html.heex:16
-#: lib/itsm_web/live/admin/post_live/show.html.heex:12
+#: lib/itsm_web/live/admin/board_live/index.ex:45
+#: lib/itsm_web/live/admin/board_live/show.ex:31
+#: lib/itsm_web/live/admin/post_live/form.html.heex:27
+#: lib/itsm_web/live/admin/post_live/index.html.heex:18
+#: lib/itsm_web/live/admin/post_live/show.html.heex:17
 #: lib/itsm_web/live/board_live/index.ex:61
 #: lib/itsm_web/live/board_live/show.ex:34
 #: lib/itsm_web/live/post_live/show.html.heex:15
@@ -119,277 +125,288 @@ msgstr ""
 msgid "Board"
 msgstr ""
 
-#: lib/itsm_web/live/admin/attachment_live/form_component.ex:58
-#: lib/itsm_web/live/admin/attachment_live/index.html.heex:25
-#: lib/itsm_web/live/admin/attachment_live/show.html.heex:15
-#: lib/itsm_web/live/admin/request_live/show.html.heex:46
+#: lib/itsm_web/live/admin/attachment_live/form.html.heex:34
+#: lib/itsm_web/live/admin/attachment_live/index.html.heex:31
+#: lib/itsm_web/live/admin/attachment_live/show.html.heex:23
+#: lib/itsm_web/live/admin/request_live/show.html.heex:61
 #, elixir-autogen, elixir-format
 msgid "Byte Size"
 msgstr ""
 
-#: lib/itsm_web/live/admin/approval_live/index.html.heex:13
-#: lib/itsm_web/live/admin/approval_live/show.html.heex:12
-#: lib/itsm_web/live/admin/asset_live/form_component.ex:68
-#: lib/itsm_web/live/admin/asset_live/index.html.heex:21
-#: lib/itsm_web/live/admin/asset_live/show.html.heex:17
-#: lib/itsm_web/live/admin/category_live/form_component.ex:71
-#: lib/itsm_web/live/admin/category_live/index.ex:72
-#: lib/itsm_web/live/admin/category_live/index.html.heex:24
-#: lib/itsm_web/live/admin/category_live/show.ex:34
-#: lib/itsm_web/live/admin/category_live/show.html.heex:21
-#: lib/itsm_web/live/admin/request_live/form_component.ex:66
-#: lib/itsm_web/live/asset_live/form_component.ex:67
-#: lib/itsm_web/live/asset_live/index.html.heex:20
-#: lib/itsm_web/live/category_live/index.ex:42
+#: lib/itsm_web/live/admin/approval_live/index.html.heex:16
+#: lib/itsm_web/live/admin/approval_live/show.html.heex:17
+#: lib/itsm_web/live/admin/asset_live/form.html.heex:43
+#: lib/itsm_web/live/admin/asset_live/index.html.heex:30
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:38
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:149
+#: lib/itsm_web/live/admin/category_live/form.html.heex:45
+#: lib/itsm_web/live/admin/category_live/index.ex:60
+#: lib/itsm_web/live/admin/category_live/index.html.heex:31
+#: lib/itsm_web/live/admin/category_live/show.ex:31
+#: lib/itsm_web/live/admin/category_live/show.html.heex:31
+#: lib/itsm_web/live/admin/request_live/form.html.heex:44
+#: lib/itsm_web/live/asset_live/form.html.heex:45
+#: lib/itsm_web/live/asset_live/index.html.heex:24
+#: lib/itsm_web/live/category_live/index.ex:46
 #, elixir-autogen, elixir-format
 msgid "Category"
 msgstr ""
 
-#: lib/itsm_web/live/admin/request_live/index.html.heex:27
+#: lib/itsm_web/live/admin/request_live/index.html.heex:36
 #, elixir-autogen, elixir-format
 msgid "Category Affiliate"
 msgstr ""
 
-#: lib/itsm_web/live/admin/common_code_live/form_component.ex:54
-#: lib/itsm_web/live/admin/common_code_live/index.html.heex:16
-#: lib/itsm_web/live/admin/common_code_live/show.html.heex:13
+#: lib/itsm_web/live/admin/common_code_live/form.html.heex:33
+#: lib/itsm_web/live/admin/common_code_live/index.html.heex:22
+#: lib/itsm_web/live/admin/common_code_live/show.html.heex:19
 #, elixir-autogen, elixir-format
 msgid "Code"
 msgstr ""
 
-#: lib/itsm_web/live/admin/approval_live/form_component.ex:72
-#: lib/itsm_web/live/admin/comment_live/index.ex:65
-#: lib/itsm_web/live/admin/comment_live/index.html.heex:14
-#: lib/itsm_web/live/admin/comment_live/show.ex:34
-#: lib/itsm_web/live/admin/comment_live/show.html.heex:13
-#: lib/itsm_web/live/admin/post_live/show.ex:102
-#: lib/itsm_web/live/admin/request_live/show.html.heex:103
-#: lib/itsm_web/live/common-k-create-vm_live/show.ex:133
-#: lib/itsm_web/live/evaluation_live/form_component.ex:67
-#: lib/itsm_web/live/evaluation_live/index.html.heex:15
-#: lib/itsm_web/live/post_live/show.ex:111
+#: lib/itsm_web/live/admin/comment_live/index.ex:49
+#: lib/itsm_web/live/admin/comment_live/index.html.heex:23
+#: lib/itsm_web/live/admin/comment_live/show.ex:31
+#: lib/itsm_web/live/admin/comment_live/show.html.heex:19
+#: lib/itsm_web/live/admin/post_live/show.ex:99
+#: lib/itsm_web/live/admin/request_live/show.html.heex:131
+#: lib/itsm_web/live/common_k_create_vm_live/show.ex:128
+#: lib/itsm_web/live/evaluation_live/form_component.ex:64
+#: lib/itsm_web/live/evaluation_live/index.html.heex:16
+#: lib/itsm_web/live/post_live/show.ex:108
 #, elixir-autogen, elixir-format
 msgid "Comment"
 msgstr ""
 
-#: lib/itsm_web/live/admin/common_code_live/index.ex:64
-#: lib/itsm_web/live/admin/common_code_live/show.ex:34
+#: lib/itsm_web/live/admin/common_code_live/index.ex:48
+#: lib/itsm_web/live/admin/common_code_live/show.ex:31
 #, elixir-autogen, elixir-format
 msgid "Common Code"
 msgstr ""
 
-#: lib/itsm_web/live/admin/user_live/form_component.ex:62
-#: lib/itsm_web/live/admin/user_live/index.html.heex:17
-#: lib/itsm_web/live/admin/user_live/show.html.heex:13
+#: lib/itsm_web/live/admin/user_live/form.html.heex:43
+#: lib/itsm_web/live/admin/user_live/index.html.heex:20
+#: lib/itsm_web/live/admin/user_live/show.html.heex:19
 #, elixir-autogen, elixir-format
 msgid "Confirmed At"
 msgstr ""
 
-#: lib/itsm_web/live/admin/post_live/form_component.ex:83
-#: lib/itsm_web/live/admin/post_live/index.html.heex:18
-#: lib/itsm_web/live/admin/post_live/show.html.heex:14
-#: lib/itsm_web/live/post_live/form_component.ex:78
-#: lib/itsm_web/live/post_live/index.html.heex:21
+#: lib/itsm_web/live/admin/post_live/form.html.heex:29
+#: lib/itsm_web/live/admin/post_live/index.html.heex:22
+#: lib/itsm_web/live/admin/post_live/show.html.heex:19
+#: lib/itsm_web/live/post_live/form.html.heex:30
+#: lib/itsm_web/live/post_live/index.html.heex:18
 #: lib/itsm_web/live/post_live/show.html.heex:17
 #, elixir-autogen, elixir-format
 msgid "Content"
 msgstr ""
 
-#: lib/itsm_web/live/delegation_live/index.html.heex:41
+#: lib/itsm_web/live/delegation_live/index.html.heex:44
 #, elixir-autogen, elixir-format
 msgid "Created By"
 msgstr ""
 
-#: lib/itsm_web/live/delegation_live/show.html.heex:21
+#: lib/itsm_web/live/delegation_live/show.html.heex:22
 #, elixir-autogen, elixir-format
 msgid "Created_by"
 msgstr ""
 
-#: lib/itsm_web/live/admin/crew_live/index.ex:61
-#: lib/itsm_web/live/admin/crew_live/show.ex:34
-#: lib/itsm_web/live/crew_live/index.ex:83
-#: lib/itsm_web/live/crew_live/index.ex:133
-#: lib/itsm_web/live/crew_live/show.ex:138
-#: lib/itsm_web/live/crew_live/show.ex:155
+#: lib/itsm_web/live/admin/crew_live/index.ex:45
+#: lib/itsm_web/live/admin/crew_live/show.ex:31
+#: lib/itsm_web/live/crew_live/index.ex:58
+#: lib/itsm_web/live/crew_live/index.ex:108
+#: lib/itsm_web/live/crew_live/show.ex:148
+#: lib/itsm_web/live/crew_live/show.ex:165
 #, elixir-autogen, elixir-format
 msgid "Crew"
 msgstr ""
 
-#: lib/itsm_web/live/crew_live/index.ex:135
+#: lib/itsm_web/live/crew_live/index.ex:110
 #, elixir-autogen, elixir-format
 msgid "Crew Leader"
 msgstr ""
 
-#: lib/itsm_web/live/crew_live/index.ex:49
+#: lib/itsm_web/live/crew_live/index.ex:28
 #, elixir-autogen, elixir-format
 msgid "Crew deleted successfully."
 msgstr ""
 
-#: lib/itsm_web/live/crew_live/form_component.ex:60
+#: lib/itsm_web/live/crew_live/form.ex:55
 #, elixir-autogen, elixir-format
 msgid "Crew updated successfully"
 msgstr ""
 
-#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:223
+#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:58
 #, elixir-autogen, elixir-format
 msgid "Crews to reference"
 msgstr ""
 
-#: lib/itsm_web/live/delegation_live/index.html.heex:17
+#: lib/itsm_web/live/delegation_live/index.html.heex:20
 #, elixir-autogen, elixir-format
 msgid "Delegatee Name"
 msgstr ""
 
-#: lib/itsm_web/live/delegation_live/form_component.ex:85
-#: lib/itsm_web/live/delegation_live/show.html.heex:11
+#: lib/itsm_web/live/delegation_live/form_component.ex:82
+#: lib/itsm_web/live/delegation_live/show.html.heex:12
 #, elixir-autogen, elixir-format
 msgid "Delegatee name"
 msgstr ""
 
-#: lib/itsm_web/live/delegation_live/index.ex:78
+#: lib/itsm_web/live/delegation_live/index.ex:82
 #: lib/itsm_web/live/delegation_live/show.ex:34
+#: lib/itsm_web/live/delegation_live/show.html.heex:1
 #, elixir-autogen, elixir-format
 msgid "Delegation"
 msgstr ""
 
-#: lib/itsm_web/live/delegation_live/index.html.heex:13
+#: lib/itsm_web/live/delegation_live/index.html.heex:16
 #, elixir-autogen, elixir-format
 msgid "Delegator Name"
 msgstr ""
 
-#: lib/itsm_web/live/delegation_live/form_component.ex:69
-#: lib/itsm_web/live/delegation_live/show.html.heex:7
+#: lib/itsm_web/live/delegation_live/form_component.ex:66
+#: lib/itsm_web/live/delegation_live/show.html.heex:8
 #, elixir-autogen, elixir-format
 msgid "Delegator name"
 msgstr ""
 
-#: lib/itsm_web/live/delegation_live/index.html.heex:51
+#: lib/itsm_web/live/crew_live/index.html.heex:38
+#: lib/itsm_web/live/delegation_live/index.html.heex:56
+#: lib/itsm_web/live/request_live/index.html.heex:56
 #, elixir-autogen, elixir-format
 msgid "Delete"
 msgstr ""
 
-#: lib/itsm_web/live/admin/attachment_live/form_component.ex:64
-#: lib/itsm_web/live/admin/attachment_live/index.html.heex:27
-#: lib/itsm_web/live/admin/attachment_live/show.html.heex:19
-#: lib/itsm_web/live/admin/request_live/show.html.heex:48
+#: lib/itsm_web/live/admin/attachment_live/form.html.heex:40
+#: lib/itsm_web/live/admin/attachment_live/index.html.heex:35
+#: lib/itsm_web/live/admin/attachment_live/show.html.heex:31
+#: lib/itsm_web/live/admin/request_live/show.html.heex:65
 #, elixir-autogen, elixir-format
 msgid "Deleted At"
 msgstr ""
 
-#: lib/itsm_web/live/admin/user_live/form_component.ex:77
-#: lib/itsm_web/live/admin/user_live/index.html.heex:24
-#: lib/itsm_web/live/admin/user_live/show.html.heex:24
-#: lib/itsm_web/live/crew_live/table_components.ex:19
+#: lib/itsm_web/live/admin/user_live/form.html.heex:58
+#: lib/itsm_web/live/admin/user_live/index.html.heex:38
+#: lib/itsm_web/live/admin/user_live/show.html.heex:35
+#: lib/itsm_web/live/crew_live/all_index.html.heex:14
+#: lib/itsm_web/live/crew_live/index.html.heex:19
 #, elixir-autogen, elixir-format
 msgid "Department"
 msgstr ""
 
-#: lib/itsm_web/live/admin/user_live/index.html.heex:25
-#: lib/itsm_web/live/admin/user_live/show.html.heex:25
+#: lib/itsm_web/live/admin/user_live/index.html.heex:40
+#: lib/itsm_web/live/admin/user_live/show.html.heex:37
 #, elixir-autogen, elixir-format
 msgid "Department Code"
 msgstr ""
 
-#: lib/itsm_web/live/admin/asset_live/form_component.ex:57
-#: lib/itsm_web/live/admin/asset_live/index.html.heex:17
-#: lib/itsm_web/live/admin/asset_live/show.html.heex:13
-#: lib/itsm_web/live/admin/board_live/form_component.ex:53
-#: lib/itsm_web/live/admin/board_live/index.html.heex:18
-#: lib/itsm_web/live/admin/board_live/show.html.heex:14
-#: lib/itsm_web/live/admin/category_live/form_component.ex:57
-#: lib/itsm_web/live/admin/category_live/index.html.heex:16
-#: lib/itsm_web/live/admin/category_live/show.html.heex:13
-#: lib/itsm_web/live/admin/common_code_live/form_component.ex:56
-#: lib/itsm_web/live/admin/common_code_live/index.html.heex:18
-#: lib/itsm_web/live/admin/common_code_live/show.html.heex:15
-#: lib/itsm_web/live/admin/crew_live/form_component.ex:54
-#: lib/itsm_web/live/admin/crew_live/index.html.heex:12
-#: lib/itsm_web/live/admin/crew_live/show.html.heex:13
-#: lib/itsm_web/live/admin/request_live/form_component.ex:55
-#: lib/itsm_web/live/admin/request_live/index.html.heex:11
-#: lib/itsm_web/live/admin/request_live/show.html.heex:13
-#: lib/itsm_web/live/asset_live/form_component.ex:56
-#: lib/itsm_web/live/asset_live/index.html.heex:16
-#: lib/itsm_web/live/board_live/index.html.heex:16
-#: lib/itsm_web/live/board_live/show.html.heex:9
-#: lib/itsm_web/live/common-k-create-vm_live/components.ex:37
-#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:38
-#: lib/itsm_web/live/crew_live/table_components.ex:13
+#: lib/itsm_web/live/admin/asset_live/form.html.heex:32
+#: lib/itsm_web/live/admin/asset_live/index.html.heex:24
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:21
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:143
+#: lib/itsm_web/live/admin/board_live/form.html.heex:32
+#: lib/itsm_web/live/admin/board_live/index.html.heex:22
+#: lib/itsm_web/live/admin/board_live/show.html.heex:21
+#: lib/itsm_web/live/admin/category_live/form.html.heex:31
+#: lib/itsm_web/live/admin/category_live/index.html.heex:19
+#: lib/itsm_web/live/admin/category_live/show.html.heex:19
+#: lib/itsm_web/live/admin/common_code_live/form.html.heex:35
+#: lib/itsm_web/live/admin/common_code_live/index.html.heex:26
+#: lib/itsm_web/live/admin/common_code_live/show.html.heex:23
+#: lib/itsm_web/live/admin/crew_live/form.html.heex:31
+#: lib/itsm_web/live/admin/crew_live/index.html.heex:20
+#: lib/itsm_web/live/admin/crew_live/show.html.heex:19
+#: lib/itsm_web/live/admin/request_live/form.html.heex:33
+#: lib/itsm_web/live/admin/request_live/index.html.heex:14
+#: lib/itsm_web/live/admin/request_live/show.html.heex:19
+#: lib/itsm_web/live/admin/role_live/form.html.heex:33
+#: lib/itsm_web/live/admin/role_live/index.html.heex:18
+#: lib/itsm_web/live/admin/role_live/show.html.heex:17
+#: lib/itsm_web/live/asset_live/form.html.heex:34
+#: lib/itsm_web/live/asset_live/index.html.heex:18
+#: lib/itsm_web/live/board_live/index.html.heex:17
+#: lib/itsm_web/live/board_live/show.html.heex:12
+#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:19
+#: lib/itsm_web/live/common_k_create_vm_live/show.html.heex:17
+#: lib/itsm_web/live/crew_live/all_index.html.heex:10
+#: lib/itsm_web/live/crew_live/index.html.heex:15
 #, elixir-autogen, elixir-format
 msgid "Description"
 msgstr ""
 
-#: lib/itsm_web/live/admin/user_live/form_component.ex:66
-#: lib/itsm_web/live/admin/user_live/index.html.heex:21
-#: lib/itsm_web/live/admin/user_live/show.html.heex:21
+#: lib/itsm_web/live/admin/user_live/form.html.heex:47
+#: lib/itsm_web/live/admin/user_live/index.html.heex:30
+#: lib/itsm_web/live/admin/user_live/show.html.heex:29
 #, elixir-autogen, elixir-format
 msgid "Display Name"
 msgstr ""
 
-#: lib/itsm_web/live/delegation_live/index.html.heex:49
+#: lib/itsm_web/live/delegation_live/index.html.heex:54
 #, elixir-autogen, elixir-format
 msgid "Do you want to delete this item?"
 msgstr ""
 
-#: lib/itsm_web/live/admin/request_live/form_component.ex:59
-#: lib/itsm_web/live/admin/request_live/index.html.heex:17
-#: lib/itsm_web/live/admin/request_live/show.html.heex:19
-#: lib/itsm_web/live/approval_live/index.html.heex:53
-#: lib/itsm_web/live/common-k-create-vm_live/components.ex:45
-#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:54
-#: lib/itsm_web/live/request_live/index.html.heex:21
+#: lib/itsm_web/live/admin/request_live/form.html.heex:37
+#: lib/itsm_web/live/admin/request_live/index.html.heex:22
+#: lib/itsm_web/live/admin/request_live/show.html.heex:27
+#: lib/itsm_web/live/approval_live/index.html.heex:54
+#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:21
+#: lib/itsm_web/live/common_k_create_vm_live/show.html.heex:22
+#: lib/itsm_web/live/request_live/index.html.heex:22
 #, elixir-autogen, elixir-format
 msgid "Due Date"
 msgstr ""
 
-#: lib/itsm_web/live/admin/category_live/form_component.ex:75
-#: lib/itsm_web/live/admin/category_live/index.html.heex:27
-#: lib/itsm_web/live/admin/category_live/show.html.heex:24
+#: lib/itsm_web/live/admin/category_live/form.html.heex:49
+#: lib/itsm_web/live/admin/category_live/index.html.heex:35
+#: lib/itsm_web/live/admin/category_live/show.html.heex:35
 #, elixir-autogen, elixir-format
 msgid "Duration"
 msgstr ""
 
-#: lib/itsm_web/live/admin/user_live/form_component.ex:53
-#: lib/itsm_web/live/admin/user_live/index.html.heex:16
-#: lib/itsm_web/live/admin/user_live/show.html.heex:12
+#: lib/itsm_web/live/admin/user_live/form.html.heex:34
+#: lib/itsm_web/live/admin/user_live/index.html.heex:18
+#: lib/itsm_web/live/admin/user_live/show.html.heex:17
 #, elixir-autogen, elixir-format
 msgid "Email"
 msgstr ""
 
-#: lib/itsm_web/live/admin/user_live/form_component.ex:65
-#: lib/itsm_web/live/admin/user_live/index.html.heex:20
-#: lib/itsm_web/live/admin/user_live/show.html.heex:20
+#: lib/itsm_web/live/admin/user_live/form.html.heex:46
+#: lib/itsm_web/live/admin/user_live/index.html.heex:28
+#: lib/itsm_web/live/admin/user_live/show.html.heex:27
+#: lib/itsm_web/live/user_live/login.ex:27
 #, elixir-autogen, elixir-format
 msgid "Employee Number"
 msgstr ""
 
-#: lib/itsm_web/live/delegation_live/index.html.heex:30
+#: lib/itsm_web/live/delegation_live/index.html.heex:33
 #, elixir-autogen, elixir-format
 msgid "End Date"
 msgstr ""
 
-#: lib/itsm_web/live/delegation_live/form_component.ex:109
-#: lib/itsm_web/live/delegation_live/show.html.heex:17
+#: lib/itsm_web/live/delegation_live/form_component.ex:106
+#: lib/itsm_web/live/delegation_live/show.html.heex:18
 #, elixir-autogen, elixir-format
 msgid "End date"
 msgstr ""
 
-#: lib/itsm_web/live/request_live/index.html.heex:29
+#: lib/itsm_web/live/request_live/index.html.heex:30
 #, elixir-autogen, elixir-format
 msgid "Env"
 msgstr ""
 
-#: lib/itsm_web/live/admin/asset_live/form_component.ex:89
-#: lib/itsm_web/live/admin/asset_live/index.html.heex:30
-#: lib/itsm_web/live/admin/asset_live/show.html.heex:26
-#: lib/itsm_web/live/admin/request_live/form_component.ex:56
-#: lib/itsm_web/live/admin/request_live/index.html.heex:14
-#: lib/itsm_web/live/admin/request_live/show.html.heex:16
-#: lib/itsm_web/live/approval_live/index.html.heex:49
-#: lib/itsm_web/live/asset_live/form_component.ex:88
-#: lib/itsm_web/live/asset_live/index.html.heex:29
-#: lib/itsm_web/live/common-k-create-vm_live/components.ex:39
-#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:46
+#: lib/itsm_web/live/admin/asset_live/form.html.heex:64
+#: lib/itsm_web/live/admin/asset_live/index.html.heex:42
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:50
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:161
+#: lib/itsm_web/live/admin/request_live/form.html.heex:34
+#: lib/itsm_web/live/admin/request_live/index.html.heex:18
+#: lib/itsm_web/live/admin/request_live/show.html.heex:23
+#: lib/itsm_web/live/approval_live/index.html.heex:50
+#: lib/itsm_web/live/asset_live/form.html.heex:66
+#: lib/itsm_web/live/asset_live/index.html.heex:36
+#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:20
+#: lib/itsm_web/live/common_k_create_vm_live/show.html.heex:18
 #, elixir-autogen, elixir-format
 msgid "Environment"
 msgstr ""
@@ -400,521 +417,1148 @@ msgstr ""
 msgid "Evaluation"
 msgstr ""
 
-#: lib/itsm_web/live/admin/attachment_live/form_component.ex:57
-#: lib/itsm_web/live/admin/attachment_live/index.html.heex:24
-#: lib/itsm_web/live/admin/attachment_live/show.html.heex:14
-#: lib/itsm_web/live/admin/request_live/show.html.heex:45
+#: lib/itsm_web/live/admin/attachment_live/form.html.heex:33
+#: lib/itsm_web/live/admin/attachment_live/index.html.heex:29
+#: lib/itsm_web/live/admin/attachment_live/show.html.heex:21
+#: lib/itsm_web/live/admin/request_live/show.html.heex:59
 #, elixir-autogen, elixir-format
 msgid "File Type"
 msgstr ""
 
-#: lib/itsm_web/live/admin/attachment_live/form_component.ex:55
-#: lib/itsm_web/live/admin/attachment_live/index.html.heex:22
-#: lib/itsm_web/live/admin/attachment_live/show.html.heex:12
-#: lib/itsm_web/live/admin/request_live/show.html.heex:43
+#: lib/itsm_web/live/admin/attachment_live/form.html.heex:31
+#: lib/itsm_web/live/admin/attachment_live/index.html.heex:25
+#: lib/itsm_web/live/admin/attachment_live/show.html.heex:17
+#: lib/itsm_web/live/admin/request_live/show.html.heex:55
 #, elixir-autogen, elixir-format
 msgid "Filename"
 msgstr ""
 
-#: lib/itsm_web/live/admin/category_live/form_component.ex:68
-#: lib/itsm_web/live/admin/category_live/index.html.heex:21
-#: lib/itsm_web/live/admin/category_live/show.html.heex:18
+#: lib/itsm_web/live/admin/category_live/form.html.heex:42
+#: lib/itsm_web/live/admin/category_live/index.html.heex:27
+#: lib/itsm_web/live/admin/category_live/show.html.heex:27
 #, elixir-autogen, elixir-format
 msgid "Group"
 msgstr ""
 
-#: lib/itsm_web/live/admin/common_code_live/form_component.ex:53
-#: lib/itsm_web/live/admin/common_code_live/show.html.heex:12
+#: lib/itsm_web/live/admin/common_code_live/form.html.heex:32
+#: lib/itsm_web/live/admin/common_code_live/show.html.heex:17
 #, elixir-autogen, elixir-format
 msgid "Group Code"
 msgstr ""
 
-#: lib/itsm_web/live/admin/common_code_live/index.html.heex:15
+#: lib/itsm_web/live/admin/common_code_live/index.html.heex:18
 #, elixir-autogen, elixir-format
 msgid "Group code"
 msgstr ""
 
-#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:82
+#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:31
 #, elixir-autogen, elixir-format
 msgid "Hostname"
 msgstr ""
 
-#: lib/itsm_web/live/admin/attachment_live/index.html.heex:17
-#: lib/itsm_web/live/admin/comment_live/index.html.heex:11
-#: lib/itsm_web/live/request_live/index.html.heex:11
+#: lib/itsm_web/live/admin/attachment_live/index.html.heex:18
+#: lib/itsm_web/live/admin/comment_live/index.html.heex:18
 #: lib/itsm_web/live/request_live/index.html.heex:12
+#: lib/itsm_web/live/request_live/index.html.heex:13
 #, elixir-autogen, elixir-format
 msgid "ID"
 msgstr ""
 
-#: lib/itsm_web/live/admin/asset_live/form_component.ex:82
-#: lib/itsm_web/live/admin/asset_live/index.html.heex:27
-#: lib/itsm_web/live/admin/asset_live/show.html.heex:23
+#: lib/itsm_web/live/admin/asset_live/form.html.heex:57
+#: lib/itsm_web/live/admin/asset_live/index.html.heex:38
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:46
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:157
+#: lib/itsm_web/live/asset_live/form.html.heex:59
 #, elixir-autogen, elixir-format
 msgid "Infra Type"
 msgstr ""
 
-#: lib/itsm_web/live/asset_live/form_component.ex:81
-#: lib/itsm_web/live/asset_live/index.html.heex:26
+#: lib/itsm_web/live/asset_live/index.html.heex:32
 #, elixir-autogen, elixir-format
 msgid "Infra type"
 msgstr ""
 
-#: lib/itsm_web/live/admin/approval_live/form_component.ex:76
-#: lib/itsm_web/live/admin/approval_live/show.html.heex:15
-#: lib/itsm_web/live/admin/asset_live/form_component.ex:103
-#: lib/itsm_web/live/admin/asset_live/show.html.heex:39
-#: lib/itsm_web/live/admin/attachment_live/form_component.ex:71
-#: lib/itsm_web/live/admin/attachment_live/show.html.heex:22
-#: lib/itsm_web/live/admin/board_live/form_component.ex:68
-#: lib/itsm_web/live/admin/board_live/show.html.heex:18
-#: lib/itsm_web/live/admin/category_live/form_component.ex:87
-#: lib/itsm_web/live/admin/category_live/show.html.heex:26
-#: lib/itsm_web/live/admin/comment_live/form_component.ex:57
-#: lib/itsm_web/live/admin/comment_live/show.html.heex:15
-#: lib/itsm_web/live/admin/common_code_live/form_component.ex:62
-#: lib/itsm_web/live/admin/common_code_live/show.html.heex:18
-#: lib/itsm_web/live/admin/crew_live/form_component.ex:58
-#: lib/itsm_web/live/admin/crew_live/show.html.heex:14
-#: lib/itsm_web/live/admin/post_live/form_component.ex:210
-#: lib/itsm_web/live/admin/post_live/show.html.heex:17
-#: lib/itsm_web/live/admin/request_live/form_component.ex:73
-#: lib/itsm_web/live/admin/user_live/form_component.ex:84
-#: lib/itsm_web/live/admin/user_live/show.html.heex:27
-#: lib/itsm_web/live/board_live/show.html.heex:13
+#: lib/itsm_web/live/admin/approval_live/form.html.heex:52
+#: lib/itsm_web/live/admin/approval_live/show.html.heex:23
+#: lib/itsm_web/live/admin/asset_live/form.html.heex:78
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:72
+#: lib/itsm_web/live/admin/attachment_live/form.html.heex:47
+#: lib/itsm_web/live/admin/attachment_live/show.html.heex:39
+#: lib/itsm_web/live/admin/board_live/form.html.heex:47
+#: lib/itsm_web/live/admin/board_live/show.html.heex:27
+#: lib/itsm_web/live/admin/category_live/form.html.heex:61
+#: lib/itsm_web/live/admin/category_live/show.html.heex:39
+#: lib/itsm_web/live/admin/comment_live/form.html.heex:36
+#: lib/itsm_web/live/admin/comment_live/show.html.heex:23
+#: lib/itsm_web/live/admin/common_code_live/form.html.heex:41
+#: lib/itsm_web/live/admin/common_code_live/show.html.heex:29
+#: lib/itsm_web/live/admin/crew_live/form.html.heex:35
+#: lib/itsm_web/live/admin/crew_live/show.html.heex:21
+#: lib/itsm_web/live/admin/permission_live/form.html.heex:57
+#: lib/itsm_web/live/admin/permission_live/show.html.heex:17
+#: lib/itsm_web/live/admin/post_live/form.html.heex:138
+#: lib/itsm_web/live/admin/post_live/show.html.heex:22
+#: lib/itsm_web/live/admin/request_live/form.html.heex:51
+#: lib/itsm_web/live/admin/role_live/form.html.heex:37
+#: lib/itsm_web/live/admin/role_live/show.html.heex:18
+#: lib/itsm_web/live/admin/user_live/form.html.heex:74
+#: lib/itsm_web/live/admin/user_live/show.html.heex:41
+#: lib/itsm_web/live/asset_live/form.html.heex:80
+#: lib/itsm_web/live/board_live/show.html.heex:18
 #: lib/itsm_web/live/post_live/show.html.heex:37
 #, elixir-autogen, elixir-format
 msgid "Inserted At"
 msgstr ""
 
-#: lib/itsm_web/live/admin/common_code_live/form_component.ex:58
-#: lib/itsm_web/live/admin/common_code_live/show.html.heex:17
+#: lib/itsm_web/live/admin/common_code_live/form.html.heex:37
+#: lib/itsm_web/live/admin/common_code_live/show.html.heex:27
 #, elixir-autogen, elixir-format
 msgid "Is Active"
 msgstr ""
 
-#: lib/itsm_web/live/common-k-create-vm_live/components.ex:119
-#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:127
+#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:38
+#: lib/itsm_web/live/common_k_create_vm_live/show.html.heex:58
 #, elixir-autogen, elixir-format
 msgid "Is DMZ?"
 msgstr ""
 
-#: lib/itsm_web/live/admin/asset_live/form_component.ex:99
-#: lib/itsm_web/live/admin/asset_live/index.html.heex:36
-#: lib/itsm_web/live/admin/asset_live/show.html.heex:32
+#: lib/itsm_web/live/admin/asset_live/form.html.heex:74
+#: lib/itsm_web/live/admin/asset_live/index.html.heex:50
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:58
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:169
+#: lib/itsm_web/live/asset_live/form.html.heex:76
 #, elixir-autogen, elixir-format
 msgid "Is Dmz Zone"
 msgstr ""
 
-#: lib/itsm_web/live/admin/common_code_live/index.html.heex:22
+#: lib/itsm_web/live/admin/common_code_live/index.html.heex:34
 #, elixir-autogen, elixir-format
 msgid "Is active"
 msgstr ""
 
-#: lib/itsm_web/live/asset_live/form_component.ex:98
-#: lib/itsm_web/live/asset_live/index.html.heex:35
+#: lib/itsm_web/live/asset_live/index.html.heex:44
 #, elixir-autogen, elixir-format
 msgid "Is dmz zone"
 msgstr ""
 
-#: lib/itsm_web/live/admin/common_code_live/form_component.ex:55
-#: lib/itsm_web/live/admin/common_code_live/index.html.heex:17
-#: lib/itsm_web/live/admin/common_code_live/show.html.heex:14
+#: lib/itsm_web/live/admin/common_code_live/form.html.heex:34
+#: lib/itsm_web/live/admin/common_code_live/index.html.heex:24
+#: lib/itsm_web/live/admin/common_code_live/show.html.heex:21
 #, elixir-autogen, elixir-format
 msgid "Label"
 msgstr ""
 
-#: lib/itsm_web/live/crew_live/table_components.ex:23
+#: lib/itsm_web/live/crew_live/all_index.html.heex:17
+#: lib/itsm_web/live/crew_live/index.html.heex:22
 #, elixir-autogen, elixir-format
 msgid "Leader"
 msgstr ""
 
-#: lib/itsm_web/live/crew_live/show.ex:94
+#: lib/itsm_web/live/crew_live/show.ex:102
 #, elixir-autogen, elixir-format
 msgid "Leader changed by %{action_user}"
 msgstr ""
 
-#: lib/itsm_web/live/delegation_live/index.ex:58
-#: lib/itsm_web/live/delegation_live/index.html.heex:2
+#: lib/itsm_web/live/delegation_live/index.ex:57
+#: lib/itsm_web/live/delegation_live/index.html.heex:3
 #, elixir-autogen, elixir-format
 msgid "Listing Delegations"
 msgstr ""
 
-#: lib/itsm_web/live/request_live/index.html.heex:1
+#: lib/itsm_web/live/admin/request_live/index.ex:17
+#: lib/itsm_web/live/request_live/index.html.heex:2
 #, elixir-autogen, elixir-format
 msgid "Listing Requests"
 msgstr ""
 
-#: lib/itsm_web/live/admin/attachment_live/form_component.ex:56
-#: lib/itsm_web/live/admin/attachment_live/index.html.heex:23
-#: lib/itsm_web/live/admin/attachment_live/show.html.heex:13
-#: lib/itsm_web/live/admin/request_live/show.html.heex:44
+#: lib/itsm_web/live/admin/attachment_live/form.html.heex:32
+#: lib/itsm_web/live/admin/attachment_live/index.html.heex:27
+#: lib/itsm_web/live/admin/attachment_live/show.html.heex:19
+#: lib/itsm_web/live/admin/request_live/show.html.heex:57
 #, elixir-autogen, elixir-format
 msgid "Local Path"
 msgstr ""
 
-#: lib/itsm_web/live/admin/asset_live/form_component.ex:96
-#: lib/itsm_web/live/admin/asset_live/index.html.heex:33
-#: lib/itsm_web/live/admin/asset_live/show.html.heex:29
-#: lib/itsm_web/live/asset_live/form_component.ex:95
-#: lib/itsm_web/live/asset_live/index.html.heex:32
-#: lib/itsm_web/live/common-k-create-vm_live/components.ex:113
-#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:121
+#: lib/itsm_web/live/admin/asset_live/form.html.heex:71
+#: lib/itsm_web/live/admin/asset_live/index.html.heex:46
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:54
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:165
+#: lib/itsm_web/live/asset_live/form.html.heex:73
+#: lib/itsm_web/live/asset_live/index.html.heex:40
+#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:37
 #, elixir-autogen, elixir-format
 msgid "Location"
 msgstr ""
 
-#: lib/itsm_web/live/crew_live/index.ex:101
-#: lib/itsm_web/live/crew_live/show.ex:124
+#: lib/itsm_web/live/crew_live/index.ex:76
+#: lib/itsm_web/live/crew_live/show.ex:134
 #, elixir-autogen, elixir-format
 msgid "Member"
 msgstr ""
 
-#: lib/itsm_web/live/crew_live/index.ex:134
+#: lib/itsm_web/live/crew_live/index.ex:109
 #, elixir-autogen, elixir-format
 msgid "Members"
 msgstr ""
 
-#: lib/itsm_web/live/admin/board_live/form_component.ex:57
-#: lib/itsm_web/live/admin/board_live/index.html.heex:19
-#: lib/itsm_web/live/admin/board_live/show.html.heex:15
-#: lib/itsm_web/live/admin/post_live/index.html.heex:19
-#: lib/itsm_web/live/admin/post_live/show.html.heex:15
-#: lib/itsm_web/live/board_live/show.html.heex:10
+#: lib/itsm_web/live/admin/board_live/form.html.heex:36
+#: lib/itsm_web/live/admin/board_live/index.html.heex:24
+#: lib/itsm_web/live/admin/board_live/show.html.heex:23
+#: lib/itsm_web/live/admin/post_live/index.html.heex:24
+#: lib/itsm_web/live/admin/post_live/show.html.heex:20
+#: lib/itsm_web/live/board_live/show.html.heex:14
 #, elixir-autogen, elixir-format
 msgid "Metadata"
 msgstr ""
 
-#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:24
+#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:17
 #, elixir-autogen, elixir-format
 msgid "My Crew"
 msgstr ""
 
-#: lib/itsm_web/live/admin/asset_live/form_component.ex:56
-#: lib/itsm_web/live/admin/asset_live/index.html.heex:16
-#: lib/itsm_web/live/admin/asset_live/show.html.heex:12
-#: lib/itsm_web/live/admin/board_live/form_component.ex:51
-#: lib/itsm_web/live/admin/board_live/index.html.heex:16
-#: lib/itsm_web/live/admin/board_live/show.html.heex:12
-#: lib/itsm_web/live/admin/category_live/form_component.ex:56
-#: lib/itsm_web/live/admin/category_live/index.html.heex:15
-#: lib/itsm_web/live/admin/category_live/show.html.heex:12
-#: lib/itsm_web/live/admin/crew_live/form_component.ex:53
-#: lib/itsm_web/live/admin/crew_live/index.html.heex:11
-#: lib/itsm_web/live/admin/crew_live/show.html.heex:12
-#: lib/itsm_web/live/asset_live/form_component.ex:55
-#: lib/itsm_web/live/asset_live/index.html.heex:15
-#: lib/itsm_web/live/board_live/index.html.heex:12
-#: lib/itsm_web/live/board_live/show.html.heex:7
-#: lib/itsm_web/live/crew_live/table_components.ex:11
+#: lib/itsm_web/live/admin/asset_live/form.html.heex:31
+#: lib/itsm_web/live/admin/asset_live/index.html.heex:22
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:19
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:141
+#: lib/itsm_web/live/admin/board_live/form.html.heex:30
+#: lib/itsm_web/live/admin/board_live/index.html.heex:18
+#: lib/itsm_web/live/admin/board_live/show.html.heex:17
+#: lib/itsm_web/live/admin/category_live/form.html.heex:30
+#: lib/itsm_web/live/admin/category_live/index.html.heex:17
+#: lib/itsm_web/live/admin/category_live/show.html.heex:17
+#: lib/itsm_web/live/admin/crew_live/form.html.heex:30
+#: lib/itsm_web/live/admin/crew_live/index.html.heex:18
+#: lib/itsm_web/live/admin/crew_live/show.html.heex:17
+#: lib/itsm_web/live/admin/role_live/form.html.heex:32
+#: lib/itsm_web/live/admin/role_live/index.html.heex:17
+#: lib/itsm_web/live/admin/role_live/show.html.heex:16
+#: lib/itsm_web/live/asset_live/form.html.heex:33
+#: lib/itsm_web/live/asset_live/index.html.heex:16
+#: lib/itsm_web/live/board_live/index.html.heex:13
+#: lib/itsm_web/live/board_live/show.html.heex:8
+#: lib/itsm_web/live/crew_live/all_index.html.heex:9
+#: lib/itsm_web/live/crew_live/index.html.heex:14
 #, elixir-autogen, elixir-format
 msgid "Name"
 msgstr ""
 
-#: lib/itsm_web/live/delegation_live/index.ex:52
-#: lib/itsm_web/live/delegation_live/index.html.heex:4
+#: lib/itsm_web/live/delegation_live/index.ex:51
+#: lib/itsm_web/live/delegation_live/index.html.heex:6
 #, elixir-autogen, elixir-format
 msgid "New Delegation"
 msgstr ""
 
-#: lib/itsm_web/live/delegation_live/index.ex:27
+#: lib/itsm_web/live/delegation_live/index.ex:26
 #, elixir-autogen, elixir-format
 msgid "Only the creator can delete this delegation."
 msgstr ""
 
-#: lib/itsm_web/live/admin/user_live/form_component.ex:70
-#: lib/itsm_web/live/admin/user_live/index.html.heex:22
-#: lib/itsm_web/live/admin/user_live/show.html.heex:22
-#: lib/itsm_web/live/crew_live/table_components.ex:15
+#: lib/itsm_web/live/admin/user_live/form.html.heex:51
+#: lib/itsm_web/live/admin/user_live/index.html.heex:32
+#: lib/itsm_web/live/admin/user_live/show.html.heex:31
+#: lib/itsm_web/live/crew_live/all_index.html.heex:11
+#: lib/itsm_web/live/crew_live/index.html.heex:16
 #, elixir-autogen, elixir-format
 msgid "Organization"
 msgstr ""
 
-#: lib/itsm_web/live/admin/user_live/index.html.heex:23
-#: lib/itsm_web/live/admin/user_live/show.html.heex:23
+#: lib/itsm_web/live/admin/user_live/index.html.heex:34
+#: lib/itsm_web/live/admin/user_live/show.html.heex:33
 #, elixir-autogen, elixir-format
 msgid "Organization Code"
 msgstr ""
 
-#: lib/itsm_web/live/admin/user_live/form_component.ex:58
+#: lib/itsm_web/live/admin/user_live/form.html.heex:39
 #, elixir-autogen, elixir-format
 msgid "Password"
 msgstr ""
 
-#: lib/itsm_web/live/admin/post_live/index.ex:71
-#: lib/itsm_web/live/admin/post_live/show.ex:85
-#: lib/itsm_web/live/post_live/index.ex:61
-#: lib/itsm_web/live/post_live/show.ex:94
+#: lib/itsm_web/live/admin/post_live/index.ex:55
+#: lib/itsm_web/live/admin/post_live/show.ex:82
+#: lib/itsm_web/live/post_live/index.ex:35
+#: lib/itsm_web/live/post_live/show.ex:91
 #, elixir-autogen, elixir-format
 msgid "Post"
 msgstr ""
 
-#: lib/itsm_web/live/evaluation_live/index.html.heex:16
+#: lib/itsm_web/live/evaluation_live/index.html.heex:18
 #, elixir-autogen, elixir-format
 msgid "Rating"
 msgstr ""
 
-#: lib/itsm_web/live/delegation_live/form_component.ex:115
-#: lib/itsm_web/live/delegation_live/index.html.heex:39
-#: lib/itsm_web/live/delegation_live/show.html.heex:19
+#: lib/itsm_web/live/delegation_live/form_component.ex:112
+#: lib/itsm_web/live/delegation_live/index.html.heex:42
+#: lib/itsm_web/live/delegation_live/show.html.heex:20
 #, elixir-autogen, elixir-format
 msgid "Reason"
 msgstr ""
 
-#: lib/itsm_web/live/admin/asset_live/form_component.ex:75
-#: lib/itsm_web/live/admin/asset_live/index.html.heex:24
-#: lib/itsm_web/live/admin/asset_live/show.html.heex:20
+#: lib/itsm_web/live/admin/asset_live/form.html.heex:50
+#: lib/itsm_web/live/admin/asset_live/index.html.heex:34
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:42
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:153
+#: lib/itsm_web/live/asset_live/form.html.heex:52
 #, elixir-autogen, elixir-format
 msgid "Region Type"
 msgstr ""
 
-#: lib/itsm_web/live/asset_live/form_component.ex:74
-#: lib/itsm_web/live/asset_live/index.html.heex:23
+#: lib/itsm_web/live/asset_live/index.html.heex:28
 #, elixir-autogen, elixir-format
 msgid "Region type"
 msgstr ""
 
-#: lib/itsm_web/live/request_live/index.html.heex:17
+#: lib/itsm_web/live/request_live/index.html.heex:18
 #, elixir-autogen, elixir-format
 msgid "Reqeust Date"
 msgstr ""
 
-#: lib/itsm_web/live/admin/approval_live/form_component.ex:57
-#: lib/itsm_web/live/admin/request_live/index.ex:70
-#: lib/itsm_web/live/admin/request_live/show.ex:62
-#: lib/itsm_web/live/common-k-create-vm_live/show.ex:116
-#: lib/itsm_web/live/request_live/index.ex:77
+#: lib/itsm_web/live/admin/approval_live/form.html.heex:33
+#: lib/itsm_web/live/admin/request_live/index.ex:54
+#: lib/itsm_web/live/admin/request_live/show.ex:59
+#: lib/itsm_web/live/common_k_create_vm_live/show.ex:111
+#: lib/itsm_web/live/request_live/index.ex:78
 #, elixir-autogen, elixir-format
 msgid "Request"
 msgstr ""
 
-#: lib/itsm_web/live/admin/category_live/show.html.heex:17
-#: lib/itsm_web/live/admin/request_live/index.html.heex:23
-#: lib/itsm_web/live/admin/request_live/show.html.heex:29
-#: lib/itsm_web/live/approval_live/index.html.heex:57
-#: lib/itsm_web/live/request_live/index.html.heex:15
+#: lib/itsm_web/live/admin/category_live/show.html.heex:25
+#: lib/itsm_web/live/admin/request_live/index.html.heex:30
+#: lib/itsm_web/live/admin/request_live/show.html.heex:39
+#: lib/itsm_web/live/approval_live/index.html.heex:58
+#: lib/itsm_web/live/request_live/index.html.heex:16
 #, elixir-autogen, elixir-format
 msgid "Request Name"
 msgstr ""
 
-#: lib/itsm_web/live/admin/request_live/index.html.heex:20
-#: lib/itsm_web/live/admin/request_live/show.html.heex:26
+#: lib/itsm_web/live/admin/request_live/index.html.heex:26
+#: lib/itsm_web/live/admin/request_live/show.html.heex:35
 #, elixir-autogen, elixir-format
 msgid "Request Type"
 msgstr ""
 
-#: lib/itsm_web/live/admin/category_live/form_component.ex:64
-#: lib/itsm_web/live/admin/category_live/index.html.heex:20
+#: lib/itsm_web/live/admin/category_live/form.html.heex:38
+#: lib/itsm_web/live/admin/category_live/index.html.heex:25
 #, elixir-autogen, elixir-format
 msgid "Request name"
 msgstr ""
 
-#: lib/itsm_web/live/admin/request_live/index.html.heex:24
+#: lib/itsm_web/live/admin/request_live/index.html.heex:32
 #, elixir-autogen, elixir-format
 msgid "Requestor Affiliate"
 msgstr ""
 
-#: lib/itsm_web/live/admin/request_live/show.html.heex:30
-#: lib/itsm_web/live/approval_live/index.html.heex:59
+#: lib/itsm_web/live/admin/request_live/show.html.heex:41
+#: lib/itsm_web/live/approval_live/index.html.heex:60
 #, elixir-autogen, elixir-format
 msgid "Requestor Crew"
 msgstr ""
 
-#: lib/itsm_web/live/admin/request_live/show.html.heex:31
-#: lib/itsm_web/live/approval_live/index.html.heex:65
-#: lib/itsm_web/live/request_live/index.html.heex:33
+#: lib/itsm_web/live/admin/request_live/show.html.heex:43
+#: lib/itsm_web/live/approval_live/index.html.heex:68
+#: lib/itsm_web/live/request_live/index.html.heex:34
 #, elixir-autogen, elixir-format
 msgid "Requestor Name"
 msgstr ""
 
-#: lib/itsm_web/live/admin/comment_live/index.html.heex:13
-#: lib/itsm_web/live/admin/comment_live/show.html.heex:12
+#: lib/itsm_web/live/admin/comment_live/index.html.heex:21
+#: lib/itsm_web/live/admin/comment_live/show.html.heex:17
 #, elixir-autogen, elixir-format
 msgid "Resource"
 msgstr ""
 
-#: lib/itsm_web/live/admin/attachment_live/index.html.heex:16
-#: lib/itsm_web/live/admin/comment_live/index.html.heex:10
+#: lib/itsm_web/live/admin/attachment_live/index.html.heex:17
+#: lib/itsm_web/live/admin/comment_live/index.html.heex:17
 #, elixir-autogen, elixir-format
 msgid "Resource ID"
 msgstr ""
 
-#: lib/itsm_web/live/admin/attachment_live/form_component.ex:61
-#: lib/itsm_web/live/admin/attachment_live/show.html.heex:18
+#: lib/itsm_web/live/admin/attachment_live/form.html.heex:37
+#: lib/itsm_web/live/admin/attachment_live/show.html.heex:29
 #, elixir-autogen, elixir-format
 msgid "Resource Id"
 msgstr ""
 
-#: lib/itsm_web/live/admin/attachment_live/form_component.ex:60
-#: lib/itsm_web/live/admin/attachment_live/index.html.heex:19
-#: lib/itsm_web/live/admin/attachment_live/show.html.heex:17
+#: lib/itsm_web/live/admin/attachment_live/form.html.heex:36
+#: lib/itsm_web/live/admin/attachment_live/index.html.heex:21
+#: lib/itsm_web/live/admin/attachment_live/show.html.heex:27
 #, elixir-autogen, elixir-format
 msgid "Resource Type"
 msgstr ""
 
-#: lib/itsm_web/live/admin/user_live/form_component.ex:80
-#: lib/itsm_web/live/admin/user_live/index.html.heex:26
-#: lib/itsm_web/live/admin/user_live/show.html.heex:26
+#: lib/itsm_web/live/admin/permission_live/form.html.heex:49
+#: lib/itsm_web/live/admin/role_live/index.ex:45
+#: lib/itsm_web/live/admin/role_live/show.ex:31
+#: lib/itsm_web/live/admin/user_live/form.html.heex:67
+#: lib/itsm_web/live/admin/user_live/index.html.heex:42
+#: lib/itsm_web/live/admin/user_live/show.html.heex:39
 #, elixir-autogen, elixir-format
 msgid "Role"
 msgstr ""
 
-#: lib/itsm_web/live/delegation_live/form_component.ex:70
-#: lib/itsm_web/live/delegation_live/form_component.ex:87
+#: lib/itsm_web/live/delegation_live/form_component.ex:67
+#: lib/itsm_web/live/delegation_live/form_component.ex:84
 #, elixir-autogen, elixir-format
 msgid "Search by name"
 msgstr ""
 
-#: lib/itsm_web/live/admin/asset_live/index.html.heex:37
-#: lib/itsm_web/live/admin/asset_live/show.html.heex:33
+#: lib/itsm_web/live/admin/asset_live/index.html.heex:52
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:60
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:171
 #, elixir-autogen, elixir-format
 msgid "Service Crew"
 msgstr ""
 
-#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:87
+#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:32
 #, elixir-autogen, elixir-format
 msgid "Service Name"
 msgstr ""
 
-#: lib/itsm_web/live/admin/board_live/form_component.ex:52
-#: lib/itsm_web/live/admin/board_live/index.html.heex:17
-#: lib/itsm_web/live/admin/board_live/show.html.heex:13
-#: lib/itsm_web/live/board_live/index.html.heex:14
-#: lib/itsm_web/live/board_live/show.html.heex:8
+#: lib/itsm_web/live/admin/board_live/form.html.heex:31
+#: lib/itsm_web/live/admin/board_live/index.html.heex:20
+#: lib/itsm_web/live/admin/board_live/show.html.heex:19
+#: lib/itsm_web/live/board_live/index.html.heex:15
+#: lib/itsm_web/live/board_live/show.html.heex:10
 #, elixir-autogen, elixir-format
 msgid "Slug"
 msgstr ""
 
-#: lib/itsm_web/components/layouts.ex:109
+#: lib/itsm_web/components/layouts.ex:119
 #, elixir-autogen, elixir-format
 msgid "Something went wrong!"
 msgstr ""
 
-#: lib/itsm_web/live/admin/common_code_live/form_component.ex:57
-#: lib/itsm_web/live/admin/common_code_live/show.html.heex:16
+#: lib/itsm_web/live/admin/common_code_live/form.html.heex:36
+#: lib/itsm_web/live/admin/common_code_live/show.html.heex:25
 #, elixir-autogen, elixir-format
 msgid "Sort Order"
 msgstr ""
 
-#: lib/itsm_web/live/admin/common_code_live/index.html.heex:21
+#: lib/itsm_web/live/admin/common_code_live/index.html.heex:30
 #, elixir-autogen, elixir-format
 msgid "Sort order"
 msgstr ""
 
-#: lib/itsm_web/live/delegation_live/index.html.heex:21
+#: lib/itsm_web/live/delegation_live/index.html.heex:24
 #, elixir-autogen, elixir-format
 msgid "Start Date"
 msgstr ""
 
-#: lib/itsm_web/live/delegation_live/form_component.ex:103
-#: lib/itsm_web/live/delegation_live/show.html.heex:15
+#: lib/itsm_web/live/delegation_live/form_component.ex:100
+#: lib/itsm_web/live/delegation_live/show.html.heex:16
 #, elixir-autogen, elixir-format
 msgid "Start date"
 msgstr ""
 
-#: lib/itsm_web/live/admin/approval_live/form_component.ex:63
-#: lib/itsm_web/live/admin/approval_live/index.html.heex:16
-#: lib/itsm_web/live/admin/approval_live/show.html.heex:13
-#: lib/itsm_web/live/admin/attachment_live/form_component.ex:59
-#: lib/itsm_web/live/admin/attachment_live/index.html.heex:26
-#: lib/itsm_web/live/admin/attachment_live/show.html.heex:16
-#: lib/itsm_web/live/admin/request_live/show.html.heex:47
-#: lib/itsm_web/live/admin/request_live/show.html.heex:77
-#: lib/itsm_web/live/approval_live/index.html.heex:67
-#: lib/itsm_web/live/common-k-create-vm_live/components.ex:43
-#: lib/itsm_web/live/request_live/index.html.heex:25
+#: lib/itsm_web/live/admin/approval_live/form.html.heex:39
+#: lib/itsm_web/live/admin/approval_live/index.html.heex:20
+#: lib/itsm_web/live/admin/approval_live/show.html.heex:19
+#: lib/itsm_web/live/admin/attachment_live/form.html.heex:35
+#: lib/itsm_web/live/admin/attachment_live/index.html.heex:33
+#: lib/itsm_web/live/admin/attachment_live/show.html.heex:25
+#: lib/itsm_web/live/admin/request_live/show.html.heex:63
+#: lib/itsm_web/live/admin/request_live/show.html.heex:101
+#: lib/itsm_web/live/approval_live/index.html.heex:70
+#: lib/itsm_web/live/common_k_create_vm_live/show.html.heex:21
+#: lib/itsm_web/live/request_live/index.html.heex:26
 #, elixir-autogen, elixir-format
 msgid "Status"
 msgstr ""
 
-#: lib/itsm_web/live/admin/asset_live/index.html.heex:38
-#: lib/itsm_web/live/admin/asset_live/show.html.heex:36
+#: lib/itsm_web/live/admin/asset_live/index.html.heex:54
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:66
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:173
 #, elixir-autogen, elixir-format
 msgid "System Crew"
 msgstr ""
 
-#: lib/itsm_web/live/admin/post_live/form_component.ex:82
-#: lib/itsm_web/live/admin/post_live/index.html.heex:17
-#: lib/itsm_web/live/admin/post_live/show.html.heex:13
-#: lib/itsm_web/live/admin/request_live/form_component.ex:54
-#: lib/itsm_web/live/admin/request_live/index.html.heex:10
-#: lib/itsm_web/live/admin/request_live/show.html.heex:12
-#: lib/itsm_web/live/approval_live/index.html.heex:45
-#: lib/itsm_web/live/common-k-create-vm_live/components.ex:35
-#: lib/itsm_web/live/common-k-create-vm_live/form.html.heex:31
-#: lib/itsm_web/live/post_live/form_component.ex:77
-#: lib/itsm_web/live/post_live/index.html.heex:19
+#: lib/itsm_web/live/admin/post_live/form.html.heex:28
+#: lib/itsm_web/live/admin/post_live/index.html.heex:20
+#: lib/itsm_web/live/admin/post_live/show.html.heex:18
+#: lib/itsm_web/live/admin/request_live/form.html.heex:32
+#: lib/itsm_web/live/admin/request_live/index.html.heex:12
+#: lib/itsm_web/live/admin/request_live/show.html.heex:17
+#: lib/itsm_web/live/approval_live/index.html.heex:46
+#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:18
+#: lib/itsm_web/live/common_k_create_vm_live/show.html.heex:16
+#: lib/itsm_web/live/post_live/form.html.heex:29
+#: lib/itsm_web/live/post_live/index.html.heex:17
 #: lib/itsm_web/live/post_live/show.html.heex:16
-#: lib/itsm_web/live/request_live/index.html.heex:27
+#: lib/itsm_web/live/request_live/index.html.heex:28
 #, elixir-autogen, elixir-format
 msgid "Title"
 msgstr ""
 
-#: lib/itsm_web/live/admin/approval_live/show.html.heex:22
-#: lib/itsm_web/live/admin/asset_live/show.html.heex:46
-#: lib/itsm_web/live/admin/attachment_live/show.html.heex:29
-#: lib/itsm_web/live/admin/board_live/show.html.heex:25
-#: lib/itsm_web/live/admin/category_live/show.html.heex:33
-#: lib/itsm_web/live/admin/comment_live/show.html.heex:22
-#: lib/itsm_web/live/admin/common_code_live/show.html.heex:25
-#: lib/itsm_web/live/admin/crew_live/show.html.heex:21
-#: lib/itsm_web/live/admin/post_live/index.html.heex:25
-#: lib/itsm_web/live/admin/post_live/show.html.heex:24
-#: lib/itsm_web/live/admin/user_live/show.html.heex:34
-#: lib/itsm_web/live/board_live/show.html.heex:20
+#: lib/itsm_web/live/admin/approval_live/show.html.heex:31
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:80
+#: lib/itsm_web/live/admin/attachment_live/show.html.heex:47
+#: lib/itsm_web/live/admin/board_live/show.html.heex:35
+#: lib/itsm_web/live/admin/category_live/show.html.heex:47
+#: lib/itsm_web/live/admin/comment_live/show.html.heex:31
+#: lib/itsm_web/live/admin/common_code_live/show.html.heex:37
+#: lib/itsm_web/live/admin/crew_live/show.html.heex:29
+#: lib/itsm_web/live/admin/permission_live/show.html.heex:24
+#: lib/itsm_web/live/admin/post_live/index.html.heex:32
+#: lib/itsm_web/live/admin/post_live/show.html.heex:29
+#: lib/itsm_web/live/admin/role_live/show.html.heex:25
+#: lib/itsm_web/live/admin/user_live/show.html.heex:49
+#: lib/itsm_web/live/board_live/show.html.heex:26
 #: lib/itsm_web/live/post_live/show.html.heex:44
 #, elixir-autogen, elixir-format
 msgid "Updated At"
 msgstr ""
 
-#: lib/itsm_web/live/admin/common_code_live/index.html.heex:23
+#: lib/itsm_web/live/admin/common_code_live/index.html.heex:36
 #, elixir-autogen, elixir-format
 msgid "Updated at"
 msgstr ""
 
-#: lib/itsm_web/live/delegation_live/form_component.ex:42
+#: lib/itsm_web/live/delegation_live/form_component.ex:43
 #, elixir-autogen, elixir-format
 msgid "Use this form to manage delegation records in your database."
 msgstr ""
 
-#: lib/itsm_web/live/admin/comment_live/index.html.heex:15
-#: lib/itsm_web/live/admin/comment_live/show.html.heex:14
-#: lib/itsm_web/live/admin/request_live/show.html.heex:104
-#: lib/itsm_web/live/admin/user_live/index.ex:80
-#: lib/itsm_web/live/admin/user_live/show.ex:34
+#: lib/itsm_web/live/admin/comment_live/index.html.heex:25
+#: lib/itsm_web/live/admin/comment_live/show.html.heex:21
+#: lib/itsm_web/live/admin/request_live/show.html.heex:133
+#: lib/itsm_web/live/admin/user_live/index.ex:65
+#: lib/itsm_web/live/admin/user_live/show.ex:31
 #, elixir-autogen, elixir-format
 msgid "User"
 msgstr ""
 
-#: lib/itsm_web/components/layouts.ex:94
+#: lib/itsm_web/components/layouts.ex:104
 #, elixir-autogen, elixir-format
 msgid "We can't find the internet"
 msgstr ""
 
-#: lib/itsm_web/live/common-k-create-vm_live/show.ex:93
+#: lib/itsm_web/live/common_k_create_vm_live/show.ex:88
 #, elixir-autogen, elixir-format
 msgid "attachment"
 msgstr ""
 
-#: lib/itsm_web/components/core_components.ex:82
-#: lib/itsm_web/components/core_components.ex:574
+#: lib/itsm_web/components/core_components.ex:83
+#: lib/itsm_web/components/core_components.ex:588
 #, elixir-autogen, elixir-format
 msgid "close"
 msgstr ""
 
-#: lib/itsm_web/live/admin/approval_live/index.html.heex:10
+#: lib/itsm_web/live/admin/approval_live/index.html.heex:12
 #, elixir-autogen, elixir-format
 msgid "request"
 msgstr ""
 
-#: lib/itsm_web/live/admin/asset_live/form_component.ex:110
-#: lib/itsm_web/live/asset_live/form_component.ex:102
+#: lib/itsm_web/live/admin/asset_live/form.html.heex:85
+#: lib/itsm_web/live/asset_live/form.html.heex:87
 #, elixir-autogen, elixir-format
 msgid "service_crew"
 msgstr ""
 
-#: lib/itsm_web/live/admin/asset_live/form_component.ex:117
-#: lib/itsm_web/live/asset_live/form_component.ex:109
+#: lib/itsm_web/live/admin/asset_live/form.html.heex:92
+#: lib/itsm_web/live/asset_live/form.html.heex:94
 #, elixir-autogen, elixir-format
 msgid "system_crew"
+msgstr ""
+
+#: lib/itsm_web/live/admin/permission_live/form.html.heex:42
+#, elixir-autogen, elixir-format
+msgid "Act"
+msgstr ""
+
+#: lib/itsm_web/live/admin/permission_live/index.html.heex:18
+#: lib/itsm_web/live/admin/permission_live/show.html.heex:16
+#, elixir-autogen, elixir-format
+msgid "Action"
+msgstr ""
+
+#: lib/itsm_web/components/search_users_dialog.ex:73
+#, elixir-autogen, elixir-format
+msgid "Add"
+msgstr ""
+
+#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:24
+#, elixir-autogen, elixir-format
+msgid "Add VM"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_default.html.heex:118
+#, elixir-autogen, elixir-format
+msgid "Admin Console"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_default.html.heex:113
+#: lib/itsm_web/live/crew_live/all_index.html.heex:1
+#: lib/itsm_web/live/crew_live/show.ex:23
+#: lib/itsm_web/live/crew_live/show.ex:225
+#, elixir-autogen, elixir-format
+msgid "All Crews"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_admin.html.heex:119
+#: lib/itsm_web/components/layouts/_default.html.heex:116
+#, elixir-autogen, elixir-format
+msgid "Api Doc"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_default.html.heex:110
+#: lib/itsm_web/live/approval_live/index.html.heex:1
+#, elixir-autogen, elixir-format
+msgid "Approval List"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_admin.html.heex:109
+#: lib/itsm_web/live/admin/approval_live/form.html.heex:1
+#: lib/itsm_web/live/admin/approval_live/index.html.heex:1
+#, elixir-autogen, elixir-format
+msgid "Approvals"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_admin.html.heex:113
+#: lib/itsm_web/components/layouts/_default.html.heex:114
+#: lib/itsm_web/live/admin/asset_live/form.html.heex:1
+#: lib/itsm_web/live/admin/asset_live/index.html.heex:1
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:1
+#: lib/itsm_web/live/asset_live/form.html.heex:1
+#: lib/itsm_web/live/asset_live/index.html.heex:1
+#: lib/itsm_web/live/asset_live/show.html.heex:1
+#, elixir-autogen, elixir-format
+msgid "Assets"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_admin.html.heex:114
+#: lib/itsm_web/components/layouts/_default.html.heex:115
+#: lib/itsm_web/live/admin/board_live/form.html.heex:1
+#: lib/itsm_web/live/admin/board_live/index.html.heex:1
+#: lib/itsm_web/live/admin/board_live/show.html.heex:1
+#: lib/itsm_web/live/board_live/index.html.heex:1
+#: lib/itsm_web/live/board_live/show.html.heex:1
+#: lib/itsm_web/live/post_live/index.html.heex:1
+#: lib/itsm_web/live/post_live/show.html.heex:1
+#, elixir-autogen, elixir-format
+msgid "Boards"
+msgstr ""
+
+#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:70
+#, elixir-autogen, elixir-format
+msgid "Cancel"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_admin.html.heex:108
+#: lib/itsm_web/live/admin/category_live/form.html.heex:1
+#: lib/itsm_web/live/admin/category_live/index.html.heex:1
+#: lib/itsm_web/live/admin/category_live/show.html.heex:1
+#, elixir-autogen, elixir-format
+msgid "Categories"
+msgstr ""
+
+#: lib/itsm_web/components/core_components.ex:836
+#, elixir-autogen, elixir-format
+msgid "Click to copy"
+msgstr ""
+
+#: lib/itsm_web/components/upload_components.ex:19
+#, elixir-autogen, elixir-format
+msgid "Click to upload or drag and drop"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_admin.html.heex:111
+#: lib/itsm_web/live/admin/comment_live/form.html.heex:1
+#: lib/itsm_web/live/admin/comment_live/index.html.heex:1
+#: lib/itsm_web/live/admin/comment_live/show.html.heex:1
+#, elixir-autogen, elixir-format
+msgid "Comments"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_admin.html.heex:112
+#: lib/itsm_web/live/admin/common_code_live/form.html.heex:1
+#: lib/itsm_web/live/admin/common_code_live/index.html.heex:1
+#: lib/itsm_web/live/admin/common_code_live/show.html.heex:1
+#, elixir-autogen, elixir-format
+msgid "Common Codes"
+msgstr ""
+
+#: lib/itsm_web/live/common_k_create_vm_live/show.html.heex:7
+#, elixir-autogen, elixir-format
+msgid "Copy"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_admin.html.heex:110
+#: lib/itsm_web/live/admin/crew_live/form.html.heex:1
+#: lib/itsm_web/live/admin/crew_live/index.html.heex:1
+#: lib/itsm_web/live/admin/crew_live/show.html.heex:1
+#, elixir-autogen, elixir-format
+msgid "Crews"
+msgstr ""
+
+#: lib/itsm_web/live/delegation_live/index.html.heex:1
+#, elixir-autogen, elixir-format
+msgid "Delegations"
+msgstr ""
+
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:23
+#, elixir-autogen, elixir-format
+msgid "Detail"
+msgstr ""
+
+#: lib/itsm_web/components/image_viewer_component.ex:101
+#, elixir-autogen, elixir-format
+msgid "DownLoad"
+msgstr ""
+
+#: lib/itsm_web/live/common_k_create_vm_live/show.html.heex:6
+#: lib/itsm_web/live/crew_live/index.html.heex:33
+#: lib/itsm_web/live/request_live/index.html.heex:51
+#, elixir-autogen, elixir-format
+msgid "Edit"
+msgstr ""
+
+#: lib/itsm_web/live/admin/approval_live/form.ex:41
+#, elixir-autogen, elixir-format
+msgid "Edit Approval"
+msgstr ""
+
+#: lib/itsm_web/live/admin/asset_live/form.ex:56
+#: lib/itsm_web/live/asset_live/form.ex:56
+#, elixir-autogen, elixir-format
+msgid "Edit Asset"
+msgstr ""
+
+#: lib/itsm_web/live/admin/attachment_live/form.ex:63
+#, elixir-autogen, elixir-format
+msgid "Edit Attachment"
+msgstr ""
+
+#: lib/itsm_web/live/admin/board_live/form.ex:45
+#, elixir-autogen, elixir-format
+msgid "Edit Board"
+msgstr ""
+
+#: lib/itsm_web/live/admin/category_live/form.ex:56
+#, elixir-autogen, elixir-format
+msgid "Edit Category"
+msgstr ""
+
+#: lib/itsm_web/live/admin/comment_live/form.ex:45
+#, elixir-autogen, elixir-format
+msgid "Edit Comment"
+msgstr ""
+
+#: lib/itsm_web/live/admin/common_code_live/form.ex:45
+#, elixir-autogen, elixir-format
+msgid "Edit CommonCode"
+msgstr ""
+
+#: lib/itsm_web/live/admin/crew_live/form.ex:45
+#, elixir-autogen, elixir-format
+msgid "Edit Crew"
+msgstr ""
+
+#: lib/itsm_web/live/admin/post_live/form.ex:92
+#: lib/itsm_web/live/post_live/form.ex:77
+#, elixir-autogen, elixir-format
+msgid "Edit Post"
+msgstr ""
+
+#: lib/itsm_web/live/admin/request_live/form.ex:51
+#, elixir-autogen, elixir-format
+msgid "Edit Request"
+msgstr ""
+
+#: lib/itsm_web/live/admin/user_live/form.ex:54
+#, elixir-autogen, elixir-format
+msgid "Edit User"
+msgstr ""
+
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:135
+#, elixir-autogen, elixir-format
+msgid "Id"
+msgstr ""
+
+#: lib/itsm_web/live/common_k_create_vm_live/show.html.heex:63
+#, elixir-autogen, elixir-format
+msgid "Internal"
+msgstr ""
+
+#: lib/itsm_web/controllers/user_session_controller.ex:43
+#, elixir-autogen, elixir-format
+msgid "Invalid employee number or password"
+msgstr ""
+
+#: lib/itsm_web/live/admin/approval_live/index.ex:19
+#, elixir-autogen, elixir-format
+msgid "Listing Approvals"
+msgstr ""
+
+#: lib/itsm_web/live/admin/asset_live/index.ex:16
+#, elixir-autogen, elixir-format
+msgid "Listing Assets"
+msgstr ""
+
+#: lib/itsm_web/live/admin/attachment_live/index.ex:16
+#, elixir-autogen, elixir-format
+msgid "Listing Attachments"
+msgstr ""
+
+#: lib/itsm_web/live/admin/board_live/index.ex:16
+#, elixir-autogen, elixir-format
+msgid "Listing Boards"
+msgstr ""
+
+#: lib/itsm_web/live/admin/category_live/index.ex:44
+#, elixir-autogen, elixir-format
+msgid "Listing Categories"
+msgstr ""
+
+#: lib/itsm_web/live/admin/comment_live/index.ex:17
+#, elixir-autogen, elixir-format
+msgid "Listing Comments"
+msgstr ""
+
+#: lib/itsm_web/live/admin/common_code_live/index.ex:19
+#, elixir-autogen, elixir-format
+msgid "Listing Common codes"
+msgstr ""
+
+#: lib/itsm_web/live/admin/crew_live/index.ex:16
+#, elixir-autogen, elixir-format
+msgid "Listing Crews"
+msgstr ""
+
+#: lib/itsm_web/live/admin/post_live/index.ex:16
+#, elixir-autogen, elixir-format
+msgid "Listing Posts"
+msgstr ""
+
+#: lib/itsm_web/live/admin/user_live/index.ex:16
+#, elixir-autogen, elixir-format
+msgid "Listing Users"
+msgstr ""
+
+#: lib/itsm_web/live/user_live/login.ex:13
+#, elixir-autogen, elixir-format
+msgid "Log in"
+msgstr ""
+
+#: lib/itsm_web/live/user_live/login.ex:64
+#, elixir-autogen, elixir-format
+msgid "Log in and stay logged in"
+msgstr ""
+
+#: lib/itsm_web/live/user_live/login.ex:68
+#, elixir-autogen, elixir-format
+msgid "Log in only this time"
+msgstr ""
+
+#: lib/itsm_web/live/user_live/login.ex:34
+#, elixir-autogen, elixir-format
+msgid "Log in with employee number"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_admin.html.heex:84
+#: lib/itsm_web/components/layouts/_default.html.heex:84
+#, elixir-autogen, elixir-format
+msgid "Log out"
+msgstr ""
+
+#: lib/itsm_web/controllers/page_html/home.html.heex:41
+#, elixir-autogen, elixir-format
+msgid "Login"
+msgstr ""
+
+#: lib/itsm_web/components/upload_components.ex:25
+#, elixir-autogen, elixir-format
+msgid "MB each"
+msgstr ""
+
+#: lib/itsm_web/live/main_live/index.html.heex:1
+#, elixir-autogen, elixir-format
+msgid "Main"
+msgstr ""
+
+#: lib/itsm_web/live/admin/asset_live/form.html.heex:30
+#: lib/itsm_web/live/admin/asset_live/index.html.heex:18
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:17
+#: lib/itsm_web/live/asset_live/form.html.heex:32
+#, elixir-autogen, elixir-format
+msgid "Mapping Value"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_default.html.heex:112
+#: lib/itsm_web/live/crew_live/form.html.heex:1
+#: lib/itsm_web/live/crew_live/index.html.heex:1
+#: lib/itsm_web/live/crew_live/show.ex:24
+#, elixir-autogen, elixir-format
+msgid "My Crews"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_default.html.heex:109
+#: lib/itsm_web/live/common_k_create_vm_live/show.html.heex:1
+#: lib/itsm_web/live/request_live/index.html.heex:1
+#, elixir-autogen, elixir-format
+msgid "My Request List"
+msgstr ""
+
+#: lib/itsm_web/live/admin/asset_live/form.ex:46
+#: lib/itsm_web/live/asset_live/form.ex:46
+#, elixir-autogen, elixir-format
+msgid "New Asset"
+msgstr ""
+
+#: lib/itsm_web/live/admin/attachment_live/form.ex:54
+#, elixir-autogen, elixir-format
+msgid "New Attachment"
+msgstr ""
+
+#: lib/itsm_web/live/admin/board_live/form.ex:36
+#, elixir-autogen, elixir-format
+msgid "New Board"
+msgstr ""
+
+#: lib/itsm_web/live/admin/category_live/form.ex:47
+#, elixir-autogen, elixir-format
+msgid "New Category"
+msgstr ""
+
+#: lib/itsm_web/live/admin/comment_live/form.ex:36
+#, elixir-autogen, elixir-format
+msgid "New Comment"
+msgstr ""
+
+#: lib/itsm_web/live/admin/common_code_live/form.ex:36
+#, elixir-autogen, elixir-format
+msgid "New CommonCode"
+msgstr ""
+
+#: lib/itsm_web/live/admin/crew_live/form.ex:36
+#: lib/itsm_web/live/crew_live/index.html.heex:5
+#, elixir-autogen, elixir-format
+msgid "New Crew"
+msgstr ""
+
+#: lib/itsm_web/live/admin/post_live/form.ex:80
+#: lib/itsm_web/live/post_live/form.ex:66
+#, elixir-autogen, elixir-format
+msgid "New Post"
+msgstr ""
+
+#: lib/itsm_web/live/admin/request_live/form.ex:41
+#, elixir-autogen, elixir-format
+msgid "New Request"
+msgstr ""
+
+#: lib/itsm_web/live/admin/user_live/form.ex:43
+#, elixir-autogen, elixir-format
+msgid "New User"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_admin.html.heex:33
+#: lib/itsm_web/components/layouts/_admin.html.heex:33
+#: lib/itsm_web/components/layouts/_default.html.heex:33
+#: lib/itsm_web/components/layouts/_default.html.heex:33
+#, elixir-autogen, elixir-format
+msgid "Notifications"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_admin.html.heex:40
+#: lib/itsm_web/components/layouts/_default.html.heex:40
+#, elixir-autogen, elixir-format
+msgid "Open profile menu"
+msgstr ""
+
+#: lib/itsm_web/live/admin/permission_live/form.html.heex:35
+#, elixir-autogen, elixir-format
+msgid "Path"
+msgstr ""
+
+#: lib/itsm_web/live/admin/permission_live/index.ex:48
+#: lib/itsm_web/live/admin/permission_live/show.ex:31
+#, elixir-autogen, elixir-format
+msgid "Permission"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_admin.html.heex:118
+#: lib/itsm_web/live/admin/permission_live/form.html.heex:1
+#: lib/itsm_web/live/admin/permission_live/index.html.heex:1
+#: lib/itsm_web/live/admin/permission_live/show.html.heex:1
+#, elixir-autogen, elixir-format
+msgid "Permissions"
+msgstr ""
+
+#: lib/itsm_web/components/search_users_dialog.ex:49
+#, elixir-autogen, elixir-format
+msgid "Please search for the name"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_admin.html.heex:115
+#: lib/itsm_web/live/admin/post_live/form.html.heex:1
+#: lib/itsm_web/live/admin/post_live/index.html.heex:1
+#: lib/itsm_web/live/admin/post_live/show.html.heex:1
+#: lib/itsm_web/live/post_live/form.html.heex:1
+#, elixir-autogen, elixir-format
+msgid "Posts"
+msgstr ""
+
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:131
+#, elixir-autogen, elixir-format
+msgid "Relation"
+msgstr ""
+
+#: lib/itsm_web/live/admin/asset_live/show.html.heex:88
+#, elixir-autogen, elixir-format
+msgid "Relation Assets"
+msgstr ""
+
+#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:40
+#, elixir-autogen, elixir-format
+msgid "Remove VM"
+msgstr ""
+
+#: lib/itsm_web/live/common_k_create_vm_live/show.html.heex:4
+#, elixir-autogen, elixir-format
+msgid "Request ID"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_admin.html.heex:107
+#: lib/itsm_web/live/admin/request_live/form.html.heex:1
+#: lib/itsm_web/live/admin/request_live/index.html.heex:1
+#: lib/itsm_web/live/admin/request_live/show.html.heex:1
+#, elixir-autogen, elixir-format
+msgid "Requests"
+msgstr ""
+
+#: lib/itsm_web/live/admin/permission_live/index.html.heex:17
+#, elixir-autogen, elixir-format
+msgid "Role Name"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_admin.html.heex:117
+#: lib/itsm_web/live/admin/role_live/form.html.heex:1
+#: lib/itsm_web/live/admin/role_live/index.html.heex:1
+#: lib/itsm_web/live/admin/role_live/show.html.heex:1
+#, elixir-autogen, elixir-format
+msgid "Roles"
+msgstr ""
+
+#: lib/itsm_web/controllers/page_html/home.html.heex:36
+#, elixir-autogen, elixir-format
+msgid "SAML Login"
+msgstr ""
+
+#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:69
+#, elixir-autogen, elixir-format
+msgid "Save Request"
+msgstr ""
+
+#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:58
+#, elixir-autogen, elixir-format
+msgid "Search by crew or member name"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_default.html.heex:108
+#: lib/itsm_web/live/category_live/index.html.heex:1
+#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:1
+#, elixir-autogen, elixir-format
+msgid "Service Request"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_admin.html.heex:70
+#: lib/itsm_web/components/layouts/_default.html.heex:70
+#, elixir-autogen, elixir-format
+msgid "Settings"
+msgstr ""
+
+#: lib/itsm_web/live/admin/approval_live/show.ex:13
+#, elixir-autogen, elixir-format
+msgid "Show Approval"
+msgstr ""
+
+#: lib/itsm_web/live/admin/asset_live/show.ex:18
+#: lib/itsm_web/live/asset_live/show.ex:16
+#, elixir-autogen, elixir-format
+msgid "Show Asset"
+msgstr ""
+
+#: lib/itsm_web/live/admin/attachment_live/show.ex:13
+#, elixir-autogen, elixir-format
+msgid "Show Attachment"
+msgstr ""
+
+#: lib/itsm_web/live/admin/board_live/show.ex:13
+#, elixir-autogen, elixir-format
+msgid "Show Board"
+msgstr ""
+
+#: lib/itsm_web/live/admin/category_live/show.ex:13
+#, elixir-autogen, elixir-format
+msgid "Show Category"
+msgstr ""
+
+#: lib/itsm_web/live/admin/comment_live/show.ex:13
+#, elixir-autogen, elixir-format
+msgid "Show Comment"
+msgstr ""
+
+#: lib/itsm_web/live/admin/common_code_live/show.ex:13
+#, elixir-autogen, elixir-format
+msgid "Show Common Code"
+msgstr ""
+
+#: lib/itsm_web/live/admin/crew_live/show.ex:13
+#, elixir-autogen, elixir-format
+msgid "Show Crew"
+msgstr ""
+
+#: lib/itsm_web/live/admin/post_live/show.ex:22
+#: lib/itsm_web/live/post_live/show.ex:25
+#, elixir-autogen, elixir-format
+msgid "Show Post"
+msgstr ""
+
+#: lib/itsm_web/live/admin/request_live/show.ex:20
+#, elixir-autogen, elixir-format
+msgid "Show Request"
+msgstr ""
+
+#: lib/itsm_web/live/admin/user_live/show.ex:13
+#, elixir-autogen, elixir-format
+msgid "Show User"
+msgstr ""
+
+#: lib/itsm_web/controllers/user_session_controller.ex:27
+#, elixir-autogen, elixir-format
+msgid "The link is invalid or it has expired."
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_admin.html.heex:28
+#: lib/itsm_web/components/layouts/_default.html.heex:28
+#, elixir-autogen, elixir-format
+msgid "Theme"
+msgstr ""
+
+#: lib/itsm_web/components/layouts/_admin.html.heex:106
+#: lib/itsm_web/live/admin/user_live/form.html.heex:1
+#: lib/itsm_web/live/admin/user_live/index.html.heex:1
+#: lib/itsm_web/live/admin/user_live/show.html.heex:1
+#, elixir-autogen, elixir-format
+msgid "Users"
+msgstr ""
+
+#: lib/itsm_web/live/common_k_create_vm_live/form.html.heex:23
+#, elixir-autogen, elixir-format
+msgid "VM Creation Request"
+msgstr ""
+
+#: lib/itsm_web/controllers/page_html/home.html.heex:39
+#: lib/itsm_web/live/user_live/login.ex:38
+#, elixir-autogen, elixir-format
+msgid "or"
+msgstr ""
+
+#: lib/itsm_web/components/upload_components.ex:23
+#, elixir-autogen, elixir-format
+msgid "photos max, up to"
+msgstr ""
+
+#: lib/itsm_web/live/admin/category_live/index.ex:14
+#, elixir-autogen, elixir-format
+msgid "테스트"
 msgstr ""

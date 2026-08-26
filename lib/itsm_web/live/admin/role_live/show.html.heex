@@ -1,0 +1,33 @@
+<Layouts.admin current_scope={@current_scope} menu_title={gettext("Roles")} flash={@flash}>
+  <.header>
+    Role {@role.id}
+    <:subtitle>This is a role record from your database.</:subtitle>
+    <:actions>
+      <.button navigate={~p"/admin/roles"}>
+        <.icon name="hero-arrow-left" />
+      </.button>
+      <.link navigate={~p"/admin/roles/#{@role}/edit"}>
+        <.button>Edit Role</.button>
+      </.link>
+    </:actions>
+  </.header>
+
+  <.list>
+    <:item title={gettext("Name")}>{@role.name}</:item>
+    <:item title={gettext("Description")}>{@role.description}</:item>
+    <:item title={gettext("Inserted At")}>
+      <span
+        id={"role-inserted-at-#{@role.id}"}
+        phx-hook="LocalTime.ToLocale"
+        utc-value={@role.inserted_at}
+      />
+    </:item>
+    <:item title={gettext("Updated At")}>
+      <span
+        id={"role-updated-at-#{@role.id}"}
+        phx-hook="LocalTime.ToLocale"
+        utc-value={@role.updated_at}
+      />
+    </:item>
+  </.list>
+</Layouts.admin>

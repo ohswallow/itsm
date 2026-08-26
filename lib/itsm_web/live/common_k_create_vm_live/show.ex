@@ -11,7 +11,6 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
   alias Itsm.Attachments
   alias Itsm.Attachments.Attachment
   alias Itsm.Workflow
-  alias ItsmWeb.CustomComponents
   alias ItsmWeb.ImageViewerComponent
 
   def mount(_params, _session, socket) do
@@ -45,6 +44,14 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
      )
      |> Itsm.PubSub.Helper.subscribe(Requests, id: id)
      |> Itsm.PubSub.Helper.subscribe(Attachments)}
+  end
+
+  def handle_event("view_attachment", %{"id" => id, "filename" => filename}, socket) do
+    {:noreply, assign(socket, :selected_attachment, %{id: id, filename: filename})}
+  end
+
+  def handle_event("close_attachment", _, socket) do
+    {:noreply, assign(socket, :selected_attachment, nil)}
   end
 
   def handle_event("validate", %{"comment" => comment_params}, socket) do
@@ -115,6 +122,21 @@ defmodule ItsmWeb.CommonKCreateVmLive.Show do
     {:noreply,
      socket
      |> ItsmWeb.LiveUtils.handle_standard_pubsub(action_user, event, item, opts)}
+  end
+
+  defp handle_pubsub(
+         _action_user,
+         _event,
+         {%Itsm.Service.Request{id: id} = new_request, %Itsm.Service.Approval{}},
+         %{assigns: %{request: %{id: id}}} = socket
+       ) do
+    send_update(ItsmWeb.Components.WorkflowSidebar,
+      id: "workflow-sidebar",
+      workflow_type: :service_request,
+      resource: new_request
+    )
+
+    {:noreply, socket}
   end
 
   defp handle_pubsub(

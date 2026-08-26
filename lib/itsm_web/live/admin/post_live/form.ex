@@ -72,7 +72,7 @@ defmodule ItsmWeb.Admin.PostLive.Form do
   defp assign_new_options(socket) do
     socket
     |> assign_new(:board_options, fn -> Itsm.Admin.Boards.get_select_options() end)
-    |> assign_new(:author_options, fn -> Itsm.Admin.Accounts.get_select_options() end)
+    |> assign_new(:author_options, fn -> Itsm.Admin.Users.get_select_options() end)
   end
 
   defp apply_action(socket, :new, _params, _url) do

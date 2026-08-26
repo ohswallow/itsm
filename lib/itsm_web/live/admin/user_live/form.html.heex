@@ -2,14 +2,14 @@
   <.header>
     {@page_title}
     <:subtitle>Use this form to manage user records in your database.</:subtitle>
-
+    
     <:actions>
       <.button navigate={~p"/admin/users"}>
         <.icon name="hero-arrow-left" />
       </.button>
     </:actions>
   </.header>
-
+  
   <div class="max-w-5xl">
     <.card
       visible={@conflict}
@@ -17,12 +17,14 @@
       title="⚠️ 충돌 발생!"
     >
       <p>{@conflict_msg}</p>
+      
       <p>현재 편집 내용을 저장할 수 없습니다. 새로고침 후 다시 시도해 주세요.</p>
+      
       <p>
         <.link class="btn" navigate={@current_path}>새로고침</.link>
       </p>
     </.card>
-
+    
     <.form
       for={@form}
       id="user-form"
@@ -33,7 +35,7 @@
       <.input
         :if={@live_action == :new}
         field={@form[:password]}
-        type="text"
+        type="password"
         label={gettext("Password")}
       />
       <.itsm_calendar
@@ -41,8 +43,7 @@
         label={gettext("Confirmed At")}
         show_time
         default_selected_date_time={@form[:confirmed_at].value}
-      />
-      <.input field={@form[:employee_number]} type="text" label={gettext("Employee Number")} />
+      /> <.input field={@form[:employee_number]} type="text" label={gettext("Employee Number")} />
       <.input field={@form[:display_name]} type="text" label={gettext("Display Name")} />
       <.input
         field={@form[:organization_code]}
@@ -58,15 +59,22 @@
         prompt="Choose a value"
         options={@department_options}
       />
-      <.input field={@form[:role]} type="text" label={gettext("Role")} />
+      <.input
+        field={@form[:role_ids]}
+        type="select"
+        multiple
+        size="1"
+        label={gettext("Role")}
+        prompt="선택해주세요"
+        options={@role_options}
+      />
       <.itsm_calendar
         :if={@live_action == :edit}
         field={@form[:inserted_at]}
         label={gettext("Inserted At")}
         show_time
         default_selected_date_time={@form[:inserted_at].value}
-      />
-      <.button :if={!@conflict} phx-disable-with="Saving...">Save User</.button>
+      /> <.button :if={!@conflict} phx-disable-with="Saving...">Save User</.button>
     </.form>
   </div>
 </Layouts.admin>

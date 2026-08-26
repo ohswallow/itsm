@@ -1,12 +1,12 @@
 defmodule ItsmWeb.Admin.UserLive.Index do
   use ItsmWeb, :live_view
 
-  alias Itsm.Admin.Accounts
+  alias Itsm.Admin.Users
   alias Itsm.Accounts.User
   alias Itsm.Paging
 
   def mount(_params, _session, socket) do
-    {:ok, socket |> stream(:users, []) |> Itsm.PubSub.Helper.subscribe(Accounts, is_admin: true)}
+    {:ok, socket |> stream(:users, []) |> Itsm.PubSub.Helper.subscribe(Users, is_admin: true)}
   end
 
   def handle_params(params, url, socket) do
@@ -19,7 +19,7 @@ defmodule ItsmWeb.Admin.UserLive.Index do
   def handle_event("delete", %{"id" => _id} = user_params, socket) do
     %{current_scope: %{user: action_user}} = socket.assigns
 
-    case Accounts.delete_user(action_user, user_params) do
+    case Users.delete_user(action_user, user_params) do
       {:ok, user} ->
         socket =
           if action_user.id == user.id, do: redirect(socket, to: ~p"/"), else: socket
@@ -47,8 +47,9 @@ defmodule ItsmWeb.Admin.UserLive.Index do
         :organization_code,
         :department,
         :department_code,
-        :role
-      ]
+        [roles: :name]
+      ],
+      preloads: [:roles]
     ]
 
     %{entries: entries, results: results} =

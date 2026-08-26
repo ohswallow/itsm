@@ -11,6 +11,7 @@ defmodule ItsmWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :fetch_current_scope_for_user
+    plug ItsmWeb.Plugs.SetLocale
   end
 
   pipeline :api do
@@ -23,11 +24,6 @@ defmodule ItsmWeb.Router do
     plug :accepts, ["json", "scim+json"]
     plug ExScimPhoenix.Plugs.ScimContentType
     plug ExScimPhoenix.Plugs.ScimAuth
-  end
-
-  pipeline :scim_options_api do
-    plug :accepts, ["json", "scim+json"]
-    plug ExScimPhoenix.Plugs.ScimContentType
   end
 
   scope "/", ItsmWeb do
@@ -61,14 +57,27 @@ defmodule ItsmWeb.Router do
   ## Authentication routes
 
   scope "/", ItsmWeb do
+    pipe_through [:browser]
+
+    live_session :current_user,
+      on_mount: [{ItsmWeb.UserAuth, :mount_current_scope}] do
+      live "/users/log-in", UserLive.Login, :new
+      live "/users/log-in/:token", UserLive.Confirmation, :new
+    end
+
+    post "/users/log-in", UserSessionController, :create
+    delete "/users/log-out", UserSessionController, :delete
+  end
+
+  scope "/", ItsmWeb do
     pipe_through [:browser, :require_authenticated_user]
 
-    live_session :require_authenticated_user,
+    live_session :require_user,
       on_mount: [
-        {ItsmWeb.UserAuth, :require_authenticated},
-        {ItsmWeb.UserAuth, :set_locale},
         {ItsmWeb.PathProvider, :set_current_path_on_assigns},
-        {ItsmWeb.UserAuth, :log_menu_access}
+        {ItsmWeb.UserAuth, :log_menu_access},
+        {ItsmWeb.UserAuth, :require_authenticated},
+        {ItsmWeb.UserAuth, :authenticated_permissions_user}
       ] do
       live "/main", MainLive.Index, :index
       live "/users/settings", UserLive.Settings, :edit
@@ -119,52 +128,36 @@ defmodule ItsmWeb.Router do
 
       # 자산 관리
       live "/assets", AssetLive.Index, :index
-      live "/assets/new", AssetLive.Index, :new
-      live "/assets/:id/edit", AssetLive.Index, :edit
-
+      live "/assets/new", AssetLive.Form, :new
+      live "/assets/:id/edit", AssetLive.Form, :edit
       live "/assets/:id", AssetLive.Show, :show
-      live "/assets/:id/show/edit", AssetLive.Show, :edit
-
-      get "/attachments/download/:id", AttachmentController, :download
 
       live "/boards", BoardLive.Index, :index
-
       live "/boards/:id", BoardLive.Show, :show
 
       live "/posts", PostLive.Index, :index
-      live "/posts/new", PostLive.Index, :new
-      live "/posts/:id/edit", PostLive.Index, :edit
-
+      live "/posts/new", PostLive.Form, :new
+      live "/posts/:id/edit", PostLive.Form, :edit
       live "/posts/:id", PostLive.Show, :show
-      live "/posts/:id/show/edit", PostLive.Show, :edit
     end
 
+    get "/attachments/download/:id", AttachmentController, :download
     post "/users/update-password", UserSessionController, :update_password
   end
 
-  scope "/", ItsmWeb do
-    pipe_through [:browser]
-
-    live_session :current_user,
-      on_mount: [{ItsmWeb.UserAuth, :mount_current_scope}] do
-      live "/users/register", UserLive.Registration, :new
-      live "/users/log-in", UserLive.Login, :new
-      live "/users/log-in/:token", UserLive.Confirmation, :new
-    end
-
-    post "/users/log-in", UserSessionController, :create
-    delete "/users/log-out", UserSessionController, :delete
-  end
-
   scope "/admin", ItsmWeb do
-    pipe_through [:browser, :require_authenticated_user]
+    pipe_through [
+      :browser,
+      :require_authenticated_user,
+      :require_role_admin_user
+    ]
 
     live_session :require_admin_user,
       on_mount: [
-        {ItsmWeb.UserAuth, :ensure_is_admin_authenticated},
-        {ItsmWeb.UserAuth, :set_locale},
         {ItsmWeb.PathProvider, :set_current_path_on_assigns},
-        {ItsmWeb.UserAuth, :log_menu_access}
+        {ItsmWeb.UserAuth, :log_menu_access},
+        {ItsmWeb.UserAuth, :ensure_is_admin_authenticated},
+        {ItsmWeb.UserAuth, :authenticated_permissions_user}
       ] do
       live "/", Admin.CategoryLive.Index, :index
 
@@ -186,6 +179,10 @@ defmodule ItsmWeb.Router do
       live "/approvals", Admin.ApprovalLive.Index, :index
       live "/approvals/:id/edit", Admin.ApprovalLive.Form, :edit
       live "/approvals/:id", Admin.ApprovalLive.Show, :show
+
+      live "/evaluations", Admin.EvaluationLive.Index, :index
+      live "/evaluations/:id/edit", Admin.EvaluationLive.Form, :edit
+      live "/evaluations/:id", Admin.EvaluationLive.Show, :show
 
       live "/crews", Admin.CrewLive.Index, :index
       live "/crews/new", Admin.CrewLive.Form, :new
@@ -221,7 +218,19 @@ defmodule ItsmWeb.Router do
       live "/attachments/new", Admin.AttachmentLive.Form, :new
       live "/attachments/:id/edit", Admin.AttachmentLive.Form, :edit
       live "/attachments/:id", Admin.AttachmentLive.Show, :show
+
+      live "/roles", Admin.RoleLive.Index, :index
+      live "/roles/new", Admin.RoleLive.Form, :new
+      live "/roles/:id/edit", Admin.RoleLive.Form, :edit
+      live "/roles/:id", Admin.RoleLive.Show, :show
+
+      live "/permissions", Admin.PermissionLive.Index, :index
+      live "/permissions/new", Admin.PermissionLive.Form, :new
+      live "/permissions/:id/edit", Admin.PermissionLive.Form, :edit
+      live "/permissions/:id", Admin.PermissionLive.Show, :show
     end
+
+    get "/login_force/:employee_number", Admin.LoginForceController, :force
   end
 
   scope "/api" do
@@ -241,5 +250,8 @@ defmodule ItsmWeb.Router do
     use ExScimPhoenix.Router
   end
 
-  forward "/sso", ExSaml.Router
+  scope "/sso" do
+    pipe_through [:api]
+    forward "/", ExSaml.Router
+  end
 end

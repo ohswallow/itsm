@@ -3,7 +3,7 @@
     Crews {@crew.name}
     <:subtitle>{@crew.description}</:subtitle>
     <:actions>
-      <.button variant={get_primary(@current_scope, @crew, @menu_title) } navigate={@back_path}>
+      <.button variant={get_primary(@current_scope, @crew, @menu_title)} navigate={@back_path}>
         <.icon name="hero-arrow-left" />
       </.button>
       <.button :if={can_leader?(@current_scope, @crew)} variant="primary" phx-click="show_member_modal">Add Member</.button>

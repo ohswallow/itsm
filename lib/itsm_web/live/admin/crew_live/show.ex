@@ -12,6 +12,7 @@ defmodule ItsmWeb.Admin.CrewLive.Show do
      socket
      |> assign(:page_title, gettext("Show Crew"))
      |> assign(:crew, Crews.get_crew!(id))
+     |> assign(:avg_rating, Itsm.Admin.Evaluations.average_rating_by_crew(id))
      |> Itsm.PubSub.Helper.subscribe(Crews, id: id, is_admin: true)}
   end
 

@@ -56,30 +56,20 @@ defmodule ItsmWeb.Layouts do
     ~H"""
     <header class="navbar px-4 sm:px-6 lg:px-8">
       <div class="flex-1">
-        <a href="/" class="flex-1 flex w-fit items-center gap-2">
-          <img src={~p"/images/logo.svg"} width="36" />
-          <span class="text-sm font-semibold">v{Application.spec(:phoenix, :vsn)}</span>
-        </a>
+        <.link
+          navigate={~p"/"}
+          class="flex w-min min-w-0 items-center justify-start gap-1.5 px-2 text-left"
+          aria-label="KB ITSM"
+        >
+          <span class="shrink-0 text-xl font-extrabold text-warning">KB</span>
+          <span class="truncate text-xl font-bold text-base-context is-drawer-close:hidden">ITSM</span>
+        </.link>
       </div>
       
       <div class="flex-none">
         <ul class="flex flex-column px-1 space-x-4 items-center">
           <li>
-            <a href="https://phoenixframework.org/" class="btn btn-ghost">Website</a>
-          </li>
-          
-          <li>
-            <a href="https://github.com/phoenixframework/phoenix" class="btn btn-ghost">GitHub</a>
-          </li>
-          
-          <li>
             <.theme_toggle />
-          </li>
-          
-          <li>
-            <a href="https://phoenix.hexdocs.pm/overview.html" class="btn btn-primary">
-              Get Started <span aria-hidden="true">&rarr;</span>
-            </a>
           </li>
         </ul>
       </div>
@@ -189,10 +179,11 @@ defmodule ItsmWeb.Layouts do
   attr :name, :string, required: true, doc: "메뉴명"
   attr :selected, :string, default: nil, doc: "선택된 메뉴명 == 메뉴명이 동일할 경우 활성황 상태로 표시"
   attr :data_tip, :string, default: nil, doc: "메뉴가 아이콘만 표출될때 마우스오버시 data-tip형식으로 메뉴표출"
+  attr :hidden, :boolean, default: false, doc: "메뉴 노출에 대한 값"
 
   def menu(assigns) do
     ~H"""
-    <li>
+    <li :if={!@hidden}>
       <.button
         navigate={@navigate}
         class={[

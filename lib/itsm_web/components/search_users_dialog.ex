@@ -46,7 +46,7 @@ defmodule ItsmWeb.SearchUsersDialog do
             phx-target={@myself}
             allow_clear={true}
             mode={:tags}
-            placeholder={gettext("이름을 검색하세요")}
+            placeholder={gettext("Please search for the name")}
             debounce={300}
             container_class="relative w-full"
             text_input_class="input input-bordered w-full focus:input-primary"

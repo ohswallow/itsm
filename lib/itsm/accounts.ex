@@ -6,16 +6,20 @@ defmodule Itsm.Accounts do
   import Ecto.Query, warn: false
   alias Itsm.Repo
 
-  alias Itsm.Accounts.{User, UserToken, UserNotifier}
+  alias Itsm.Accounts.{User, UserToken, UserNotifier, Role, Permission}
   alias Itsm.Crews.{Crew, CrewsUsers}
 
   def get_user_by_email(email) when is_binary(email) do
     Repo.get_by(User, email: email)
   end
 
-  def get_user_by_email_and_password(email, password)
-      when is_binary(email) and is_binary(password) do
-    user = Repo.get_by(User, email: email)
+  def get_user_by_employee_number(employee_number) when is_binary(employee_number) do
+    Repo.get_by(User, employee_number: employee_number)
+  end
+
+  def get_user_by_employee_number_and_password(employee_number, password)
+      when is_binary(employee_number) and is_binary(password) do
+    user = Repo.get_by(User, employee_number: employee_number)
     if User.valid_password?(user, password), do: user
   end
 
@@ -116,7 +120,16 @@ defmodule Itsm.Accounts do
 
   def get_user_by_session_token(token) do
     {:ok, query} = UserToken.verify_session_token_query(token)
+
     Repo.one(query)
+    |> case do
+      nil ->
+        nil
+
+      {%User{} = user, authenticated_at} ->
+        user = Repo.preload(user, roles: :permissions)
+        {user, authenticated_at}
+    end
   end
 
   def get_user_by_magic_link_token(token) do
@@ -132,20 +145,6 @@ defmodule Itsm.Accounts do
     {:ok, query} = UserToken.verify_magic_link_token_query(token)
 
     case Repo.one(query) do
-      {%User{confirmed_at: nil, hashed_password: hash}, _token} when not is_nil(hash) ->
-        raise """
-        magic link log in is not allowed for unconfirmed users with a password set!
-
-        This cannot happen with the default implementation, which indicates that you
-        might have adapted the code to a different use case. Please make sure to read the
-        "Mixing magic link and password registration" section of `mix help phx.gen.auth`.
-        """
-
-      {%User{confirmed_at: nil} = user, _token} ->
-        user
-        |> User.confirm_changeset()
-        |> update_user_and_delete_all_tokens()
-
       {user, token} ->
         Repo.delete!(token)
         {:ok, {user, []}}
@@ -153,14 +152,6 @@ defmodule Itsm.Accounts do
       nil ->
         {:error, :not_found}
     end
-  end
-
-  def deliver_user_update_email_instructions(%User{} = user, current_email, update_email_url_fun)
-      when is_function(update_email_url_fun, 1) do
-    {encoded_token, user_token} = UserToken.build_email_token(user, "change:#{current_email}")
-
-    Repo.insert!(user_token)
-    UserNotifier.deliver_update_email_instructions(user, update_email_url_fun.(encoded_token))
   end
 
   def deliver_login_instructions(%User{} = user, magic_link_url_fun)
@@ -298,5 +289,109 @@ defmodule Itsm.Accounts do
     User
     |> select([c], {c.display_name, c.id})
     |> Repo.all()
+  end
+
+  def get_role!(id), do: Repo.get!(Role, id)
+
+  def list_roles, do: Repo.all(Role)
+
+  def create_role(%User{} = action_user, attrs) do
+    %Role{}
+    |> Role.changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, role} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_role, role})
+        {:ok, role}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  def update_role(%User{} = action_user, %Role{} = role, attrs) do
+    role
+    |> Role.changeset(attrs)
+    |> Repo.update()
+    |> case do
+      {:ok, role} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_role, role}, id: role.id)
+        {:ok, role}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  def delete_role(%User{} = action_user, %{"id" => id}) do
+    get_role!(id)
+    |> Repo.delete()
+    |> case do
+      {:ok, role} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_role, role}, id: role.id)
+        {:ok, role}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  def change_role(%Role{} = role, attrs \\ %{}) do
+    Role.changeset(role, attrs)
+  end
+
+  def get_permission!(id), do: Repo.get!(Permission, id)
+
+  def list_permissions, do: Repo.all(Permission)
+
+  def create_permission(%User{} = action_user, attrs) do
+    %Permission{}
+    |> Permission.changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, permission} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_permission, permission})
+        {:ok, permission}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  def update_permission(%User{} = action_user, %Permission{} = permission, attrs) do
+    permission
+    |> Permission.changeset(attrs)
+    |> Repo.update()
+    |> case do
+      {:ok, permission} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :update_permission, permission},
+          id: permission.id
+        )
+
+        {:ok, permission}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  def delete_permission(%User{} = action_user, %{"id" => id}) do
+    get_permission!(id)
+    |> Repo.delete()
+    |> case do
+      {:ok, permission} ->
+        Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :delete_permission, permission},
+          id: permission.id
+        )
+
+        {:ok, permission}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  def change_permission(%Permission{} = permission, attrs \\ %{}) do
+    Permission.changeset(permission, attrs)
   end
 end

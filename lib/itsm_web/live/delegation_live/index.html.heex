@@ -3,7 +3,7 @@
     {gettext("Listing Delegations")}
     <:actions>
       <.link patch={~p"/delegations/new"}>
-        <.button>{gettext("New Delegation")}</.button>
+        <.button variant="primary">{gettext("New Delegation")}</.button>
       </.link>
     </:actions>
   </.header>
@@ -46,7 +46,7 @@
     </:col>
 
     <:action :let={{_id, delegation}}>
-      <%= if can_delete?(@current_scope.user, delegation) do %>
+      <%= if can_delete?(@current_scope, delegation) do %>
         <.link
           id={delegation.id}
           phx-click={JS.push("delete", value: %{id: delegation.id})}

@@ -7,7 +7,6 @@ defmodule Itsm.Evaluations.Evaluation do
   schema "evaluations" do
     field :comment, :string
     field :rating, :float
-    # field :crew_id, :binary_id
 
     belongs_to :crew, Itsm.Crews.Crew, type: :binary_id
 
@@ -18,10 +17,15 @@ defmodule Itsm.Evaluations.Evaluation do
   def changeset(evaluation, attrs \\ %{}) do
     evaluation
     |> cast(attrs, [:comment, :rating, :crew_id])
-    |> validate_required([:comment, :crew_id])
+    |> validate_required([:comment, :crew_id, :rating])
     |> validate_number(:rating,
       greater_than_or_equal_to: 0.0,
       less_than_or_equal_to: 5.0
     )
+  end
+
+  def admin_changeset(evaluation, attrs) do
+    changeset(evaluation, attrs)
+    |> cast(attrs, [:inserted_at])
   end
 end

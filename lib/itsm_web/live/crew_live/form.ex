@@ -42,7 +42,7 @@ defmodule ItsmWeb.CrewLive.Form do
   end
 
   def handle_event("save", %{"crew" => crew_params}, socket) do
-    save_crew(socket, socket.assigns.action, crew_params)
+    save_crew(socket, socket.assigns.live_action, crew_params)
   end
 
   defp save_crew(socket, :edit, crew_params) do

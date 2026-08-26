@@ -16,13 +16,11 @@ import Config
 #
 # Alternatively, you can use `mix phx.gen.release` to generate a `bin/server`
 # script that automatically sets the env var above.
-if System.get_env("PHX_SERVER") do
-  config :itsm, ItsmWeb.Endpoint, server: true
-end
-
-config :itsm, ItsmWeb.Endpoint, http: [port: String.to_integer(System.get_env("PORT", "4000"))]
-
 if config_env() == :prod do
+  if System.get_env("PHX_SERVER") do
+    config :itsm, ItsmWeb.Endpoint, server: true
+  end
+
   database_url =
     System.get_env("DATABASE_URL") ||
       raise """
@@ -53,20 +51,11 @@ if config_env() == :prod do
       """
 
   host = System.get_env("PHX_HOST") || "example.com"
+  port = String.to_integer(System.get_env("PORT") || "4000")
 
   config :itsm, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
-  config :itsm, ItsmWeb.Endpoint,
-    url: [host: host, port: 443, scheme: "https"],
-    http: [
-      # Enable IPv6 and bind on all interfaces.
-      # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.
-      # See the documentation on https://bandit.hexdocs.pm/Bandit.html#t:options/0
-      # for details about using IPv6 vs IPv4 and loopback vs public addresses.
-      ip: {0, 0, 0, 0, 0, 0, 0, 0}
-    ],
-    secret_key_base: secret_key_base
-
+  config :itsm, upload_path: System.get_env("UPLOAD_PATH")
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key
@@ -116,4 +105,30 @@ if config_env() == :prod do
   #     config :swoosh, :api_client, Swoosh.ApiClient.Req
   #
   # See https://swoosh.hexdocs.pm/Swoosh.html#module-installation for details.
+  config :itsm, ItsmWeb.Endpoint,
+    url: [host: host, port: port, scheme: "https"],
+    https: [
+      port: port,
+      cipher_suite: :strong,
+      keyfile: System.get_env("KBONECLOUD_KEY_PATH"),
+      certfile: System.get_env("KBONECLOUD_CERT_PATH")
+    ],
+    secret_key_base: secret_key_base
+
+  config :itsm, Itsm.Workb,
+    url: System.get_env("WORKB_URL"),
+    srv_code: System.get_env("WORKB_SRV_CODE"),
+    sender: System.get_env("WORKB_SENDER"),
+    sender_alias: System.get_env("WORKB_SENDER_ALIAS")
+
+  config :itsm,
+    cert_path: System.get_env("ONEPASS_CERT_PATH"),
+    key_path: System.get_env("ONEPASS_KEY_PATH"),
+    metadata_path: System.get_env("IDP_METADATA_PATH"),
+    sp_base_url: System.get_env("SP_BASE_URL")
+
+  config :itsm,
+    kbonecloud_client_id: System.get_env("KBONECLOUD_CLIENT_ID"),
+    kbonecloud_client_secret: System.get_env("KBONECLOUD_CLIENT_SECRET"),
+    kbonecloud_introspect_url: System.get_env("KBONECLOUD_INTROSPECT_URL")
 end

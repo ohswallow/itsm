@@ -13,8 +13,6 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
 
   use ItsmWeb, :live_component
 
-  import ItsmWeb.CoreComponents
-
   alias Itsm.Workflow
   alias Itsm.Approvals
   import ItsmWeb.CustomComponents
@@ -22,7 +20,7 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
   @impl true
   def update(assigns, socket) do
     step_data = build_step_data(assigns.workflow_type, assigns.resource)
-    {:ok, assign(socket, assigns) |> assign(:step_data, step_data)}
+    {:ok, socket |> assign(assigns) |> assign(:step_data, step_data)}
   end
 
   @impl true
@@ -33,7 +31,7 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
         <div class="text-center mb-5 pb-4 border-b border-gray-100">
           <label>WorkFlow</label>
         </div>
-
+        
         <div class="space-y-3">
           <.workflow_step
             :for={step <- @step_data}
@@ -68,10 +66,10 @@ defmodule ItsmWeb.Components.WorkflowSidebar do
               {@step.index + 1}
           <% end %>
         </div>
-
+        
         <div><span class={step_label_class(@step.status)}>{@step.label}</span></div>
       </div>
-
+      
       <div class="text-right">
         <.step_detail step={@step} resource={@resource} workflow_type={@workflow_type} />
       </div>

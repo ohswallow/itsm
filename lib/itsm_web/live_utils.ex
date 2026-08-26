@@ -216,6 +216,16 @@ defmodule ItsmWeb.LiveUtils do
     |> send_update_by_conflict(action_user, event, item, live_action, opts)
   end
 
+  def has_permission_for_menu_or_admin(current_scope, menu) do
+    Enum.member?(current_scope.role_names, "admin") ||
+      Enum.any?(current_scope.permissions, &(get_path_for_permissions(&1) == menu))
+  end
+
+  defp get_path_for_permissions(permissions) do
+    [path | _] = String.split(permissions, ":")
+    path
+  end
+
   defp put_flash_by_event(socket, action_user, action_type, opts) do
     message =
       opts[:flash_message] || build_message(action_user, action_type, opts[:resource_name])

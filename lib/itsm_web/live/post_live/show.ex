@@ -22,7 +22,7 @@ defmodule ItsmWeb.PostLive.Show do
 
     {:noreply,
      socket
-     |> assign(:page_title, page_title(socket.assigns.live_action))
+     |> assign(:page_title, gettext("Show Post"))
      |> assign(:post, post)
      |> assign(:attachments_count, length(attachments))
      |> stream(:attachments, attachments, reset: true)
@@ -80,9 +80,6 @@ defmodule ItsmWeb.PostLive.Show do
   end
 
   def handle_info(_event, socket), do: {:noreply, socket}
-
-  defp page_title(:show), do: "Show Post"
-  defp page_title(:edit), do: "Edit Post"
 
   defp handle_pubsub(
          action_user,

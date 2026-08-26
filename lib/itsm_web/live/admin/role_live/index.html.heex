@@ -1,0 +1,38 @@
+<Layouts.admin current_scope={@current_scope} menu_title={gettext("Roles")} flash={@flash}>
+  <.header>
+    Listing Roles
+    <:actions>
+      <.link navigate={~p"/admin/roles/new"}>
+        <.button>New Role</.button>
+      </.link>
+    </:actions>
+  </.header>
+
+  <.itsm_table_container results={assigns[:results]}>
+    <.table
+      id="roles"
+      rows={@streams.roles}
+      row_click={fn {_id, role} -> JS.navigate(~p"/admin/roles/#{role}") end}
+    >
+      <:col :let={{_id, role}} label={gettext("Name")}>{role.name}</:col>
+      <:col :let={{_id, role}} label={gettext("Description")}>{role.description}</:col>
+      
+      <:action :let={{_id, role}}>
+        <div class="sr-only">
+          <.link navigate={~p"/admin/roles/#{role}"}>Show</.link>
+        </div>
+        <.link navigate={~p"/admin/roles/#{role}/edit"}>Edit</.link>
+      </:action>
+      <:action :let={{_id, role}}>
+        <.link
+          id={role.id}
+          phx-click={JS.push("delete", value: %{id: role.id})}
+          class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
+          data-confirm="Are you sure?"
+        >
+          Delete
+        </.link>
+      </:action>
+    </.table>
+  </.itsm_table_container>
+</Layouts.admin>

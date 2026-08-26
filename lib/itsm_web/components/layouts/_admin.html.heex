@@ -81,8 +81,8 @@
                 class="text-error"
               >
                 <.icon name="hero-arrow-right-on-rectangle" class="size-4" />
-                <span>{gettext("Log out")}</span>
-              </.link>
+                  <span>{gettext("Log out")}</span>
+                </.link>
             </li>
           </ul>
         </div>
@@ -96,47 +96,32 @@
     <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
     <div class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-14 is-drawer-open:w-64">
       <div class="flex h-16 w-full shrink-0 items-center border-b border-base-300 px-2">
-        <.link navigate={~p"/main"} class="btn btn-ghost flex min-w-0 items-center justify-start gap-1.5 px-2 text-left" aria-label="KB ITSM">
+        <.link href={~p"/main"} class="btn btn-ghost flex min-w-0 items-center justify-start gap-1.5 px-2 text-left" aria-label="KB ITSM">
           <span class="shrink-0 text-xl font-extrabold text-warning">KB</span>
           <span class="truncate text-xl font-bold text-base-context is-drawer-close:hidden">ITSM</span>
         </.link>
       </div>
       <!-- Sidebar content here -->
-      <ul class="menu w-full grow">
-        <% icon_map = %{
-          "categories" => "hero-document-plus",
-          "requests" => "hero-list-bullet",
-          "approvals" => "hero-check-badge",
-          "delegations" => "hero-user-group",
-          "crews" => "hero-users",
-          "assets" => "hero-computer-desktop",
-          "admin" => "hero-shield-check",
-          "comments" => "hero-chat-bubble-left",
-          "common_codes" => "hero-squares-2x2",
-          "users" => "hero-user-circle-solid"
-        }
-
-        get_icon_name = fn path ->
-          path = String.replace(path, "/admin/", "")
-          Map.get(icon_map, path) || "hero-question-mark-circle"
-        end %>
-        <Layouts.menu
-          :if={@current_scope.role == "admin"}
-          :for={menu <- ItsmWeb.RouterUtils.admin_menu_items()}
-          name={Gettext.gettext(ItsmWeb.Gettext, menu.name)}
-          navigate={menu.path}
-          icon_name={get_icon_name.(menu.path)}
-          selected={@menu_title}
-        />
-
-        <Layouts.menu
-          :if={@current_scope.role == "admin"}
-          name={gettext("Api Doc")}
-          navigate={~p"/api/graphiql"}
-          icon_name="hero-document-text"
-          selected={@menu_title}
-        />
-
+      <ul :if={Enum.member?(@current_scope.role_names, "admin")} class="menu w-full grow">
+        <Layouts.menu name={gettext("Users")} navigate={~p"/admin/users"} icon_name={"hero-user-circle-solid"} selected={@menu_title} />
+        <Layouts.menu name={gettext("Requests")} navigate={~p"/admin/requests"} icon_name={"hero-list-bullet"} selected={@menu_title} />
+        <Layouts.menu name={gettext("Categories")} navigate={~p"/admin/categories"} icon_name={"hero-document-plus"} selected={@menu_title} />
+        <Layouts.menu name={gettext("Approvals")} navigate={~p"/admin/approvals"} icon_name={"hero-check-badge"} selected={@menu_title} />
+        <Layouts.menu name={gettext("Evaluations")} navigate={~p"/admin/evaluations"} icon_name={"hero-question-mark-circle"} selected={@menu_title} />
+        <Layouts.menu name={gettext("Crews")} navigate={~p"/admin/crews"} icon_name={"hero-users"} selected={@menu_title} />
+        <Layouts.menu name={gettext("Comments")} navigate={~p"/admin/comments"} icon_name={"hero-chat-bubble-left"} selected={@menu_title} />
+        <Layouts.menu name={gettext("Common Codes")} navigate={~p"/admin/common-codes"} icon_name={"hero-squares-2x2"} selected={@menu_title} />
+        <Layouts.menu name={gettext("Assets")} navigate={~p"/admin/assets"} icon_name={"hero-computer-desktop"} selected={@menu_title} />
+        <Layouts.menu name={gettext("Boards")} navigate={~p"/admin/boards"} icon_name={"hero-question-mark-circle"} selected={@menu_title} />
+        <Layouts.menu name={gettext("Posts")} navigate={~p"/admin/posts"} icon_name={"hero-question-mark-circle"} selected={@menu_title} />
+        <Layouts.menu name={gettext("Attachments")} navigate={~p"/admin/attachments"} icon_name={"hero-question-mark-circle"} selected={@menu_title} />
+        <Layouts.menu name={gettext("Roles")} navigate={~p"/admin/roles"} icon_name={"hero-question-mark-circle"} selected={@menu_title} />
+        <Layouts.menu name={gettext("Permissions")} navigate={~p"/admin/permissions"} icon_name={"hero-question-mark-circle"} selected={@menu_title} />
+        <li>
+          <.button href={~p"/api/graphiql"} class={["is-drawer-close:tooltip is-drawer-close:tooltip-right"]} data-tip={gettext("Api Doc")}>
+            <.icon name="hero-document-text" /> <span class="is-drawer-close:hidden">{gettext("Api Doc")}</span>
+          </.button>
+        </li>
       </ul>
     </div>
   </div>

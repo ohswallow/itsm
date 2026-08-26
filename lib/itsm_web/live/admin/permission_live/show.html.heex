@@ -1,0 +1,32 @@
+<Layouts.admin current_scope={@current_scope} menu_title={gettext("Permissions")} flash={@flash}>
+  <.header>
+    Permission {@permission.id}
+    <:subtitle>This is a permission record from your database.</:subtitle>
+    <:actions>
+      <.button navigate={~p"/admin/permissions"}>
+        <.icon name="hero-arrow-left" />
+      </.button>
+      <.link navigate={~p"/admin/permissions/#{@permission}/edit"}>
+        <.button>Edit Permission</.button>
+      </.link>
+    </:actions>
+  </.header>
+
+  <.list>
+    <:item title={gettext("Action")}>{@permission.action}</:item>
+    <:item title={gettext("Inserted At")}>
+      <span
+        id={"permission-inserted-at-#{@permission.id}"}
+        phx-hook="LocalTime.ToLocale"
+        utc-value={@permission.inserted_at}
+      />
+    </:item>
+    <:item title={gettext("Updated At")}>
+      <span
+        id={"permission-updated-at-#{@permission.id}"}
+        phx-hook="LocalTime.ToLocale"
+        utc-value={@permission.updated_at}
+      />
+    </:item>
+  </.list>
+</Layouts.admin>

@@ -39,9 +39,7 @@
 
       <:col :let={{_id, user}} label={gettext("Department Code")}>{user.department_code}</:col>
 
-      <:col :let={{_id, user}} label={gettext("Role")}>
-        <.common_code_label group="역할" code={user.role} />
-      </:col>
+      <:col :let={{_id, user}} label={gettext("Role")}><span>{Enum.map_join(user.roles, ", ", &(&1.name))}</span></:col>
 
       <:action :let={{_id, user}}>
         <div class="sr-only">

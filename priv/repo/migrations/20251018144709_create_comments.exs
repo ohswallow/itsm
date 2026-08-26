@@ -14,8 +14,7 @@ defmodule Itsm.Repo.Migrations.CreateComments do
       timestamps(type: :utc_datetime)
     end
 
+    create index(:comments, [:user_id])
     create index(:comments, [:resource_type, :resource_id])
-    # create index(:comments, [:user_id])
-    # create index(:comments, [:request_id])
   end
 end

@@ -2,7 +2,11 @@ defmodule Itsm.Graphql.Resolver do
   alias Itsm.Posts
 
   def get_post!(_parent, %{id: id}, %Absinthe.Resolution{}) do
-    {:ok, Posts.get_post!(id)}
+    if Itsm.Utils.is_uuid(id) do
+      {:ok, Posts.get_post!(id)}
+    else
+      {:error, "Invalid ID"}
+    end
   end
 
   def list_posts(_parent, args, resolution) do

@@ -20,32 +20,31 @@ defmodule Itsm.Delegations do
   """
 
   # [함수 헤드] 기본값(date) 선언 : 이 함수는 인자 2개 받고, 2번째는 기본값이 "오늘"
-  def list_delegations(user, date \\ Date.utc_today())
+  def list_delegations(user, role_names, date \\ Date.utc_today())
 
   # --------------------------------------------------------
   # 1. Admin일 경우: 모든 부서의 데이터를 다 보여줌 (Join 불필요)
-  # --------------------------------------------------------
-  def list_delegations(%User{role: "admin"}, date) do
-    Delegation
-    |> where([d], d.end_date >= ^date)
-    |> order_by([d], asc: d.start_date)
-    |> Repo.all()
-  end
-
-  # --------------------------------------------------------
   # 2. 일반 유저일 경우: 본인 부서(department_code)와 일치하는 것만 보여줌
   # --------------------------------------------------------
-  def list_delegations(%User{} = current_user, date) do
-    Delegation
-    # 1. 'created_by' User 테이블과 Join
-    |> join(:inner, [d], u in assoc(d, :created_by))
-    # 2. 작성자의 부서 코드가 현재 사용자와 같은지 필터링
-    |> where([d, u], u.department_code == ^current_user.department_code)
-    # 3. 날짜 필터 / "종료일이 오늘이랑 같거나 미래인 것" = (과거에 끝난건 제외)
-    |> where([d], d.end_date >= ^date)
-    # 4. 시작일 순서로 정렬
-    |> order_by([d], asc: d.start_date)
-    |> Repo.all()
+
+  def list_delegations(%User{} = current_user, role_names, date) do
+    if Enum.member?(role_names, "admin") do
+      Delegation
+      |> where([d], d.end_date >= ^date)
+      |> order_by([d], asc: d.start_date)
+      |> Repo.all()
+    else
+      Delegation
+      # 1. 'created_by' User 테이블과 Join
+      |> join(:inner, [d], u in assoc(d, :created_by))
+      # 2. 작성자의 부서 코드가 현재 사용자와 같은지 필터링
+      |> where([d, u], u.department_code == ^current_user.department_code)
+      # 3. 날짜 필터 / "종료일이 오늘이랑 같거나 미래인 것" = (과거에 끝난건 제외)
+      |> where([d], d.end_date >= ^date)
+      # 4. 시작일 순서로 정렬
+      |> order_by([d], asc: d.start_date)
+      |> Repo.all()
+    end
   end
 
   @doc """
@@ -195,7 +194,8 @@ defmodule Itsm.Delegations do
   def delete_delegation(%User{} = action_user, %{"id" => id}) do
     delegation = get_delegation!(id)
 
-    if delegation.created_by_id == action_user.id or action_user.role == "admin" do
+    if delegation.created_by_id == action_user.id or
+         Enum.any?(action_user.roles, &(&1.name == "admin")) do
       delegation
       |> Repo.delete()
       |> case do

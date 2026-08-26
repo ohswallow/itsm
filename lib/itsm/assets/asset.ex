@@ -105,6 +105,8 @@ defmodule Itsm.Assets.Asset do
     |> unique_constraint([:mapping_value], name: :assets_mapping_value_index)
   end
 
+  def metadata_fields_for_category(nil), do: %{}
+
   def metadata_fields_for_category(category) do
     case Map.get(@metadata_registry, category) do
       nil ->

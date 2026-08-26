@@ -126,14 +126,16 @@ defmodule Itsm.Service do
     end)
     |> Repo.transact()
     |> case do
-      {:ok, %{create_comment: comment, create_attachments: attachment}} ->
+      {:ok, %{create_comment: comment, create_attachments: attachments}} ->
+        comment = Map.put(comment, :attachments, attachments)
+
         Itsm.PubSub.Helper.broadcast(Requests, {action_user, :create_comment, comment},
           id: resource.id,
           only: :detail
         )
 
         Itsm.PubSub.Helper.broadcast(Comments, {action_user, :create_comment, comment})
-        Itsm.PubSub.Helper.broadcast(Attachments, {action_user, :create_attachments, attachment})
+        Itsm.PubSub.Helper.broadcast(Attachments, {action_user, :create_attachments, attachments})
 
         {:ok, comment}
 

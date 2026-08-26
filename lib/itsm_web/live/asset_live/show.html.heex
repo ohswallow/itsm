@@ -16,11 +16,12 @@
               </div>
 
               <div class="flex gap-2">
-                <.link patch={~p"/assets/#{@asset}/show/edit"} phx-click={JS.push_focus()}>
-                  <.button class="flex items-center gap-2 bg-white text-zinc-700 border border-zinc-300 hover:bg-zinc-50">
-                    <.icon name="hero-pencil-square" class="h-4 w-4" /> Edit Asset
-                  </.button>
-                </.link>
+                <.button navigate={~p"/assets"} class="btn">
+                  <.icon name="hero-arrow-left" />
+                </.button>
+                <.button navigate={~p"/assets/#{@asset}/edit"} class="btn">
+                  <.icon name="hero-pencil-square" class="h-4 w-4" /> Edit Asset                 
+                </.button>
               </div>
             </div>
 
@@ -137,26 +138,5 @@
         </div>
       </div>
     </div>
-
-    <div class="mt-6">
-      <.back navigate={~p"/assets"}>Back to assets</.back>
-    </div>
   </div>
-
-  <.modal
-    :if={@live_action == :edit}
-    id="asset-modal"
-    show
-    on_cancel={JS.patch(~p"/assets/#{@asset}")}
-  >
-    <.live_component
-      module={ItsmWeb.AssetLive.FormComponent}
-      id={@asset.id}
-      title={@page_title}
-      action={@live_action}
-      asset={@asset}
-      current_scope={@current_scope}
-      patch={~p"/assets/#{@asset}"}
-    />
-  </.modal>
 </Layouts.default>

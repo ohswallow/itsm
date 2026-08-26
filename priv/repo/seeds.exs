@@ -17,23 +17,119 @@ alias Itsm.Crews.Crew
 alias Itsm.Crews.CrewsUsers
 alias Itsm.Common.CommonCode
 alias Itsm.Boards.Board
+alias Itsm.Accounts.Role
+alias Itsm.Accounts.Permission
 
-# alias Itsm.Service.Approval
-# alias Itsm.Service.Request
 Process.put(:current_user_id, "seeds")
 
-mike =
+role_admin =
+  %Role{
+    name: "admin",
+    description: "관리자 권한"
+  }
+  |> Repo.insert!()
+
+role_auditor =
+  %Role{
+    name: "auditor",
+    description: "수정 권한"
+  }
+  |> Repo.insert!()
+
+role_general =
+  %Role{
+    name: "general",
+    description: "일반 권한"
+  }
+  |> Repo.insert!()
+
+jjh =
   %User{}
   |> User.registration_changeset(%{
-    email: "mike@sample.com",
-    display_name: "mike",
+    email: "T002297@kbonecloud.com",
+    display_name: "전종호",
+    employee_number: "T002297",
+    organization_code: "B0",
+    organization: "KB국민은행",
+    password: "123412341234",
+    department: "인프라시스템부",
+    department_code: "883310",
+    roles: [role_admin]
+  })
+  |> Repo.insert!()
+
+yjj =
+  %User{}
+  |> User.registration_changeset(%{
+    email: "T008359@kbonecloud.com",
+    display_name: "윤정준",
+    employee_number: "T008359",
+    organization_code: "B0",
+    organization: "KB국민은행",
+    password: "123412341234",
+    department: "인프라시스템부",
+    department_code: "883310",
+    roles: [role_admin]
+  })
+  |> Repo.insert!()
+
+ohs =
+  %User{}
+  |> User.registration_changeset(%{
+    email: "2853861@kbonecloud.com",
+    display_name: "오현식",
     employee_number: "2853861",
     organization_code: "B0",
     organization: "KB국민은행",
     password: "123412341234",
     department: "인프라시스템부",
     department_code: "883310",
-    role: "admin"
+    roles: [role_admin]
+  })
+  |> Repo.insert!()
+
+kyj =
+  %User{}
+  |> User.registration_changeset(%{
+    email: "1655201@kbonecloud.com",
+    display_name: "김영준",
+    employee_number: "1655201",
+    organization_code: "B0",
+    organization: "KB국민은행",
+    password: "123412341234",
+    department: "인프라시스템부",
+    department_code: "883310",
+    roles: [role_admin]
+  })
+  |> Repo.insert!()
+
+kky =
+  %User{}
+  |> User.registration_changeset(%{
+    email: "T007227@kbonecloud.com",
+    display_name: "김강영",
+    employee_number: "T007227",
+    organization_code: "B0",
+    organization: "KB국민은행",
+    password: "123412341234",
+    department: "인프라시스템부",
+    department_code: "883310",
+    roles: [role_admin]
+  })
+  |> Repo.insert!()
+
+mike =
+  %User{}
+  |> User.registration_changeset(%{
+    email: "mike@kbonecloud.com",
+    display_name: "mike",
+    employee_number: "enmike",
+    organization_code: "B0",
+    organization: "KB국민은행",
+    password: "123412341234",
+    department: "인프라시스템부",
+    department_code: "883310",
+    roles: [role_admin]
   })
   |> Repo.insert!()
 
@@ -42,13 +138,13 @@ nicole =
   |> User.registration_changeset(%{
     email: "nicole@sample.com",
     display_name: "nicole",
-    employee_number: "2853862",
+    employee_number: "ennicole",
     organization_code: "B0",
     organization: "KB국민은행",
     password: "123412341234",
     department: "인프라시스템부",
     department_code: "883310",
-    role: "auditor"
+    roles: [role_auditor]
   })
   |> Repo.insert!()
 
@@ -57,13 +153,13 @@ alex =
   |> User.registration_changeset(%{
     email: "alex@sample.com",
     display_name: "alex",
-    employee_number: "2853863",
+    employee_number: "enalex",
     organization_code: "B0",
     organization: "KB국민은행",
     password: "123412341234",
     department: "인프라시스템부",
     department_code: "883310",
-    role: "general"
+    roles: [role_general]
   })
   |> Repo.insert!()
 
@@ -72,13 +168,13 @@ jase =
   |> User.registration_changeset(%{
     email: "jase@sample.com",
     display_name: "jase",
-    employee_number: "2853864",
+    employee_number: "enjase",
     organization_code: "B0",
     organization: "KB국민은행",
     password: "123412341234",
     department: "인프라시스템부",
     department_code: "883310",
-    role: "general"
+    roles: [role_general]
   })
   |> Repo.insert!()
 
@@ -88,12 +184,12 @@ mary =
     email: "mary@sample.com",
     display_name: "mary",
     organization_code: "B0",
-    employee_number: "2853865",
+    employee_number: "enmary",
     organization: "KB국민은행",
     password: "123412341234",
     department: "인프라시스템부",
     department_code: "883310",
-    role: "general"
+    roles: [role_general]
   })
   |> Repo.insert!()
 
@@ -102,40 +198,40 @@ mary =
   email: "ca@sample.com",
   display_name: "ca",
   organization_code: "C0",
-  employee_number: "2853866",
+  employee_number: "enca",
   organization: "KB국민카드",
   password: "123412341234",
   department: "정보보호부",
   department_code: "813219",
-  role: "general"
+  roles: [role_general]
 })
 |> Repo.insert!()
 
 %User{}
 |> User.registration_changeset(%{
   email: "cq@sample.com",
-  display_name: "ca",
+  display_name: "cq",
   organization_code: "B0",
   organization: "KB국민은행",
-  employee_number: "2853867",
+  employee_number: "encq",
   password: "123412341234",
   department: "정보보호부",
   department_code: "813211",
-  role: "general"
+  roles: [role_general]
 })
 |> Repo.insert!()
 
 %User{}
 |> User.registration_changeset(%{
   email: "cr@sample.com",
-  display_name: "ca",
+  display_name: "cr",
   organization_code: "C0",
   organization: "KB국민카드",
-  employee_number: "2853867",
+  employee_number: "encr",
   password: "123412341234",
   department: "정보보호부",
   department_code: "813219",
-  role: "general"
+  roles: [role_general]
 })
 |> Repo.insert!()
 
@@ -169,7 +265,7 @@ bbbbb =
 
 %CrewsUsers{
   crew_id: aaaaa.id,
-  user_id: mike.id
+  user_id: jjh.id
 }
 |> Repo.insert!()
 
@@ -846,3 +942,24 @@ free_board =
   system_crew_id: aaaaa.id
 }
 |> Repo.insert!()
+
+menu = Itsm.Permissions.get_permission_path()
+
+general_permission = Enum.map(menu, &%{role_id: role_general.id, action: "#{&1}:*"})
+
+permissions =
+  [
+    %{role_id: role_admin.id, action: "*:*"},
+    %{role_id: role_auditor.id, action: "/main:index"},
+    %{role_id: role_auditor.id, action: "/approvals:index"},
+    %{role_id: role_auditor.id, action: "/approvals/*/approve:approve"},
+    %{role_id: role_auditor.id, action: "/approvals/*/reject:reject"},
+    %{role_id: role_auditor.id, action: "/approvals/*/feedback:feedback"}
+  ]
+  |> Enum.concat(general_permission)
+
+Enum.each(permissions, fn attrs ->
+  %Permission{}
+  |> Permission.changeset(attrs)
+  |> Repo.insert!()
+end)

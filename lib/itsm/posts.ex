@@ -13,8 +13,17 @@ defmodule Itsm.Posts do
 
   def list_posts, do: Repo.all(Post)
 
-  def list_posts_by_board_id(board_id),
-    do: Post |> where([p], p.board_id == ^board_id) |> preload(:author) |> Repo.all()
+  def list_posts_by_user_or_board_id(user_id, board_id),
+    do:
+      Post
+      |> where([p], p.board_id == ^board_id)
+      |> where(
+        [p],
+        p.metadata["is_secret"] == false or is_nil(p.metadata["is_secret"]) or
+          p.author_id == ^user_id
+      )
+      |> preload(:author)
+      |> Repo.all()
 
   def create_post(%User{} = action_user, attrs, selected_board_metadata, repo \\ Repo, opts \\ []) do
     %Post{}
@@ -87,12 +96,9 @@ defmodule Itsm.Posts do
     attrs = Keyword.get(opts, :attrs, %{})
     action_user = Keyword.get(opts, :action_user, %{})
     selected_board_metadata = Keyword.get(opts, :selected_board_metadata, %{})
-    #  call_back = Keyword.get(opts, :call_back, & &1)
 
     post
     |> Post.changeset(attrs, action_user, selected_board_metadata)
-
-    #  |> call_back.()
   end
 
   def with_assoc(%Post{} = post, preloads) do
