@@ -29,20 +29,14 @@ defmodule ItsmWeb.EvaluationDialog do
         phx-change="validate"
         phx-submit="save"
       >
-        <%!-- <input type="hidden" name={@form[:crew_id].name} value={@crew_id} /> --%>
-        <%!-- <.input field={@form[:rating]} type="number" label="Rating" step="any" /> --%>
-        <fieldset class="fieldset">
-          <label class="block text-sm font-semibold leading-6 text-zinc-800">Rating</label>
-          <div
-            class="mt-2 flex w-full"
-            data-raty
-            data-score-name={@form[:rating].name}
-            data-score={@form[:rating].value}
-            id={@form[:rating].id}
-            phx-update="ignore"
-          >
-          </div>
-        </fieldset>
+        <div class="rating rating-lg">
+          <%= for i <- 1..5 do %>
+            <input type="radio" name={@form[:rating].name} value={i} class="mask mask-star bg-orange-400" checked={@form[:rating].value == i}/>
+          <% end %>
+        </div>
+        <p :for={msg <- Enum.map(@form[:rating].errors, &ItsmWeb.CoreComponents.translate_error(&1))} class="mt-1.5 flex gap-2 items-center text-sm text-error">
+          <.icon name="hero-exclamation-circle" class="size-5" /> {msg}
+        </p>
         <.input field={@form[:comment]} type="textarea" label="Comment" phx-hook="MaintainHeight" />
         <.button phx-disable-with="Saving...">Save Evaluation</.button>
       </.form>
@@ -57,23 +51,6 @@ defmodule ItsmWeb.EvaluationDialog do
 
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
-
-  # def handle_event("save", %{"evaluation" => evaluation_params}, socket) do
-  #   evaluation_params = Map.put(evaluation_params, "crew_id", socket.assigns.crew_id)
-
-  #   case Evaluations.create_evaluation(evaluation_params) do
-  #     {:ok, evaluation} ->
-  #       notify_parent({:saved, evaluation})
-
-  #       {:noreply,
-  #        socket
-  #        |> put_flash(:info, "Evaluation created successfully")
-  #        |> push_navigate(to: ~p"/approvals")}
-
-  #     {:error, %Ecto.Changeset{} = changeset} ->
-  #       {:noreply, assign(socket, form: to_form(changeset))}
-  #   end
-  # end
 
   def handle_event("save", %{"evaluation" => evaluation_params}, socket) do
     %{current_scope: %{user: action_user}} = socket.assigns

@@ -13,7 +13,7 @@ defmodule ItsmWeb.AssetLive.Show do
   def handle_params(%{"id" => id}, _, socket) do
     {:noreply,
      socket
-     |> assign(:page_title, page_title(socket.assigns.live_action))
+     |> assign(:page_title, gettext("Show Asset"))
      |> assign(:asset, Assets.get_asset_with_relations!(id))
      |> assign_new_options()
      |> Itsm.PubSub.Helper.subscribe(Assets, id: id)}
@@ -65,9 +65,6 @@ defmodule ItsmWeb.AssetLive.Show do
   defp build_items(instances) when is_list(instances) do
     Enum.map(instances, &ResourceCardData.to_card_item/1)
   end
-
-  defp page_title(:show), do: "Show Asset"
-  defp page_title(:edit), do: "Edit Asset"
 
   defp handle_pubsub(
          action_user,

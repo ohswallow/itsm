@@ -20,7 +20,7 @@ defmodule ItsmWeb.CategoryLive.Index do
      |> stream(:categories, Categories.filter_categories(params), reset: true)
      |> assign(:current_params, params)
      |> assign(:filtered_category_groups, Categories.get_category_groups(params))
-     |> assign(:group_select_options, [{"그룹", ""}] ++ CommonCodes.get_select_options("지역_유형"))
+     |> assign(:group_select_options, [{"전체", ""}] ++ CommonCodes.get_select_options("지역_유형"))
      |> assign(:form, to_form(params))}
   end
 

@@ -104,13 +104,8 @@ defmodule Itsm.MixProject do
       {:thousand_island, "== 1.5.0"},
       {:websock, "== 0.5.3"},
       {:websock_adapter, "== 0.5.9"},
-      {:heroicons,
-       github: "tailwindlabs/heroicons",
-       tag: "v2.2.0",
-       sparse: "optimized",
-       app: false,
-       compile: false,
-       depth: 1}
+      {:daisyui, path: "deps/daisyui", app: false, compile: false},
+      {:heroicons, path: "deps/heroicons", app: false, compile: false}
     ]
   end
 

@@ -221,4 +221,8 @@ defmodule Itsm.Assets do
   def with_assoc(%Asset{} = asset, preloads) do
     Repo.preload(asset, preloads)
   end
+
+  def metadata_fields_for_category(category) do
+    Asset.metadata_fields_for_category(category)
+  end
 end

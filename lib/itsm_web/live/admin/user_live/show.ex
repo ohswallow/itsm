@@ -1,7 +1,7 @@
 defmodule ItsmWeb.Admin.UserLive.Show do
   use ItsmWeb, :live_view
 
-  alias Itsm.Admin.Accounts
+  alias Itsm.Admin.Users
 
   def mount(_params, _session, socket) do
     {:ok, socket}
@@ -11,8 +11,8 @@ defmodule ItsmWeb.Admin.UserLive.Show do
     {:noreply,
      socket
      |> assign(:page_title, gettext("Show User"))
-     |> assign(:user, Accounts.get_user!(id))
-     |> Itsm.PubSub.Helper.subscribe(Accounts, id: id, is_admin: true)}
+     |> assign(:user, Users.get_user!(id))
+     |> Itsm.PubSub.Helper.subscribe(Users, id: id, is_admin: true)}
   end
 
   def handle_info({:pubsub, {action_user, event, item}}, socket) do

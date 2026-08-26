@@ -22,7 +22,7 @@
 
       <:col :let={{_id, comment}} label={gettext("Comment")}>{comment.comment}</:col>
 
-      <:col :let={{_id, comment}} label={gettext("User")}>{comment.user.display_name}</:col>
+      <:col :let={{_id, comment}} label={gettext("User")}>{get_in(comment, [Access.key!(:user), Access.key!(:display_name)])}</:col>
 
       <:action :let={{_id, comment}}>
         <div class="sr-only"><.link navigate={~p"/admin/comments/#{comment}"}>Show</.link></div>

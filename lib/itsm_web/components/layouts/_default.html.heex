@@ -105,76 +105,25 @@
 
       <!-- Sidebar content here -->
       <ul class="menu w-full grow">
-        <Layouts.menu
-          name={gettext("Service Request")}
-          navigate={~p"/categories"}
-          icon_name="hero-document-plus"
-          selected={@menu_title}
-        />
-
-        <Layouts.menu
-          name={gettext("My Request List")}
-          navigate={~p"/requests"}
-          icon_name="hero-list-bullet"
-          selected={@menu_title}
-        />
-
-        <Layouts.menu
-          name={gettext("Approval List")}
-          navigate={~p"/approvals"}
-          icon_name="hero-check-badge"
-          selected={@menu_title}
-        />
-         <li />
-        <Layouts.menu
-          name={gettext("Delegations")}
-          navigate={~p"/delegations"}
-          icon_name="hero-user-group"
-          selected={@menu_title}
-        />
-
-        <Layouts.menu
-          name={gettext("My Crews")}
-          navigate={~p"/crews"}
-          icon_name="hero-users"
-          selected={@menu_title}
-       />
-
-        <Layouts.menu
-          name={gettext("All Crews")}
-          navigate={~p"/crews/all"}
-          icon_name="hero-rectangle-stack"
-          selected={@menu_title}
-        />
-
-        <Layouts.menu
-          name={gettext("Assets")}
-          navigate={~p"/assets"}
-          icon_name="hero-computer-desktop"
-          selected={@menu_title}
-        />
-
-        <Layouts.menu
-          name={gettext("Boards")}
-          navigate={~p"/boards"}
-          icon_name="hero-list-bullet"
-          selected={@menu_title}
-        />
-
-        <Layouts.menu
-          name={gettext("Api Doc")}
-          navigate={~p"/api/graphiql"}
-          icon_name="hero-document-text"
-          selected={@menu_title}
-        />
-         <li />
-        <Layouts.menu
-          :if={@current_scope.role == "admin"}
-          name={gettext("Admin Console")}
-          navigate={~p"/admin"}
-          icon_name="hero-shield-check"
-          selected={@menu_title}
-        />
+        <Layouts.menu name={gettext("Service Request")} navigate={~p"/categories"} icon_name="hero-document-plus" selected={@menu_title} hidden={!ItsmWeb.LiveUtils.has_permission_for_menu_or_admin(@current_scope, "/categories")} />
+        <Layouts.menu name={gettext("My Request List")} navigate={~p"/requests"} icon_name="hero-list-bullet" selected={@menu_title} hidden={!ItsmWeb.LiveUtils.has_permission_for_menu_or_admin(@current_scope, "/requests")} />
+        <Layouts.menu name={gettext("Approval List")} navigate={~p"/approvals"} icon_name="hero-check-badge" selected={@menu_title} hidden={!ItsmWeb.LiveUtils.has_permission_for_menu_or_admin(@current_scope, "/approvals")} /> 
+        <li />
+        <Layouts.menu name={gettext("My Crews")} navigate={~p"/crews"} icon_name="hero-users" selected={@menu_title} hidden={!ItsmWeb.LiveUtils.has_permission_for_menu_or_admin(@current_scope, "/crews")} />
+        <Layouts.menu name={gettext("All Crews")} navigate={~p"/crews/all"} icon_name="hero-rectangle-stack" selected={@menu_title} hidden={!ItsmWeb.LiveUtils.has_permission_for_menu_or_admin(@current_scope, "/crews/all")} />
+        <Layouts.menu name={gettext("Assets")} navigate={~p"/assets"} icon_name="hero-computer-desktop" selected={@menu_title} hidden={!ItsmWeb.LiveUtils.has_permission_for_menu_or_admin(@current_scope, "/assets")} />
+        <Layouts.menu name={gettext("Boards")} navigate={~p"/boards"} icon_name="hero-list-bullet" selected={@menu_title} hidden={!ItsmWeb.LiveUtils.has_permission_for_menu_or_admin(@current_scope, "/boards")} />
+        <li :if={ItsmWeb.LiveUtils.has_permission_for_menu_or_admin(@current_scope, "/api/graphiql")}>
+          <.button href={~p"/api/graphiql"} class={["is-drawer-close:tooltip is-drawer-close:tooltip-right"]} data-tip={gettext("Api Doc")}>
+            <.icon name="hero-document-text" /> <span class="is-drawer-close:hidden">{gettext("Api Doc")}</span>
+          </.button>
+        </li>
+        <li :if={ItsmWeb.LiveUtils.has_permission_for_menu_or_admin(@current_scope, "/admin")} />
+        <li :if={ItsmWeb.LiveUtils.has_permission_for_menu_or_admin(@current_scope, "/admin")}>
+          <.button href={~p"/admin"} class={["is-drawer-close:tooltip is-drawer-close:tooltip-right"]} data-tip={gettext("Admin Console")}>
+            <.icon name="hero-shield-check" /> <span class="is-drawer-close:hidden">{gettext("Admin Console")}</span>
+          </.button>
+        </li>
       </ul>
     </div>
   </div>

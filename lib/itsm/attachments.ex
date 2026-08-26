@@ -19,6 +19,14 @@ defmodule Itsm.Attachments do
     |> Repo.all()
   end
 
+  def list_attachments_by_resource_is_active(resource) do
+    Attachment
+    |> where([a], a.resource_type == ^Itsm.Utils.resource_name(resource))
+    |> where([a], a.resource_id == ^resource.id)
+    |> where([a], a.status == :active)
+    |> Repo.all()
+  end
+
   def create_attachment(%User{} = action_user, attrs) do
     %Attachment{}
     |> Attachment.changeset(attrs)

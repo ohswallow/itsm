@@ -6,11 +6,10 @@
   data-calendar-root
 >
   <label
-    :if={assigns[:label]}
     label={@label}
     for={"selected-date-time-#{@id}"}
   >
-    <span class="label mb-1">{@label}</span>
+    <span :if={assigns[:label]} class="label mb-1">{@label}</span>
     <div
       id={"datepicker-input-#{@id}"}
       class="w-full select pr-3 cursor-pointer"
@@ -37,14 +36,14 @@
         format={if @show_time, do: "datetime", else: "date"}
       >
       </div>
-      <span>📅</span>
+       <span>📅</span>
     </div>
   </label>
-
+  
   <p :for={msg <- @errors} class="mt-1.5 flex gap-2 items-center text-sm text-error">
     <.icon name="hero-exclamation-circle" class="size-5" /> {msg}
   </p>
-
+  
   <div
     {@rests[:popup]}
     id={"#{@id}-calendar-popup"}
@@ -62,7 +61,7 @@
       >
         ≪
       </button>
-
+      
       <button
         type="button"
         phx-click="shift"
@@ -73,9 +72,9 @@
       >
         ◀
       </button>
-
+      
       <div class="join-item font-bold text-lg">{"#{@view_date.year}년 #{@view_date.month}월"}</div>
-
+      
       <button
         type="button"
         phx-click="shift"
@@ -86,7 +85,7 @@
       >
         ▶
       </button>
-
+      
       <button
         type="button"
         phx-click="shift"
@@ -98,7 +97,7 @@
         ≫
       </button>
     </div>
-
+    
     <div
       {@rests[:grid]}
       id={"#{@id}-calendar-grid"}
@@ -112,7 +111,7 @@
       <div :for={day_name <- ~w(일 월 화 수 목 금 토)} class="text-xs text-gray-400 pb-2">
         {day_name}
       </div>
-
+      
       <div
         :for={{date, index} <- Enum.with_index(@days)}
         {@rests[:date]}
@@ -128,7 +127,7 @@
         {date.day}
       </div>
     </div>
-
+    
     <div
       :if={@show_time}
       class="flex items-center justify-center gap-2 mt-4 pt-4"

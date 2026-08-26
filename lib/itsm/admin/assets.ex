@@ -126,8 +126,6 @@ defmodule Itsm.Admin.Assets do
     end
   end
 
-  def metadata_fields_for_category(nil), do: %{}
-
   def metadata_fields_for_category(category) do
     Asset.metadata_fields_for_category(category)
   end

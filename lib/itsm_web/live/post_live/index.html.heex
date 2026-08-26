@@ -2,51 +2,26 @@
   <.header>
     Listing {Map.get(assigns, :board_name, "Not Found")} Posts
     <:actions>
-      <.link
-        :if={assigns[:board_name] not in ["공지사항", "FAQ"]}
-        patch={~p"/posts/new?board_id=#{assigns[:board_id] || ""}"}
-      >
-        <.button>New Post</.button>
-      </.link>
+      <.button navigate={~p"/boards"}>
+        <.icon name="hero-arrow-left" />
+      </.button>
+      <.button :if={assigns[:board_name] not in ["공지사항", "FAQ"]} navigate={~p"/posts/new?board_id=#{assigns[:board_id] || ""}"} variant="primary">New Post</.button>
     </:actions>
   </.header>
 
   <.table
     id="posts"
     rows={@streams.posts}
-    row_click={
-      fn {_id, post} ->
-        JS.navigate(~p"/posts/#{post}?board_id=#{assigns[:board_id] || ""}")
-      end
-    }
+    row_click={fn {_id, post} -> JS.navigate(~p"/posts/#{post}?board_id=#{assigns[:board_id] || ""}") end}
   >
     <:col :let={{_id, post}} label={gettext("Title")}>{post.title}</:col>
-
     <:col :let={{_id, post}} label={gettext("Content")}>{post.content}</:col>
-
     <:col :let={{_id, post}} label={gettext("Author")}>{post.author.display_name}</:col>
+    <:action :let={{_id, post}}>
+      <div class="sr-only">
+        <.link navigate={~p"/posts/#{post}?board_id=#{assigns[:board_id]}"}>Show</.link>
+      </div>
+      <.button :if={post.author.id == @current_scope.user_id} navigate={~p"/posts/#{post}/edit?board_id=#{assigns[:board_id]}"}>Edit</.button>
+    </:action>
   </.table>
-
-  <.back navigate={~p"/boards"}>
-    Back to boards
-  </.back>
-
-  <.modal
-    :if={@live_action in [:new, :edit]}
-    id="post-modal"
-    show
-    on_cancel={JS.patch(~p"/posts?board_id=#{assigns[:board_id] || ""}")}
-  >
-    <.live_component
-      module={ItsmWeb.PostLive.FormComponent}
-      id={@post.id || :new}
-      title={@page_title}
-      action={@live_action}
-      post={@post}
-      current_scope={@current_scope}
-      patch={~p"/posts?board_id=#{assigns[:board_id] || ""}"}
-      board_id={assigns[:board_id]}
-      board_name={assigns[:board_name]}
-    />
-  </.modal>
 </Layouts.default>

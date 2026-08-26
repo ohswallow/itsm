@@ -1,0 +1,34 @@
+<Layouts.admin current_scope={@current_scope} menu_title={gettext("Evaluations")} flash={@flash}>
+  <.header>
+    Evaluation {@evaluation.id}
+    <:subtitle>This is a evaluation record from your database.</:subtitle>
+    <:actions>
+      <.button navigate={~p"/admin/evaluations"}>
+        <.icon name="hero-arrow-left" />
+      </.button>
+      <.link navigate={~p"/admin/evaluations/#{@evaluation}/edit"}>
+        <.button>Edit Evaluation</.button>
+      </.link>
+    </:actions>
+  </.header>
+
+  <.list>
+    <:item title={gettext("Crew")}>{@evaluation.crew.name}</:item>
+    <:item title={gettext("Comment")}>{@evaluation.comment}</:item>
+    <:item title={gettext("Rating")}>{@evaluation.rating}</:item>
+    <:item title={gettext("Inserted At")}>
+      <span
+        id={"evaluation-inserted-at-#{@evaluation.id}"}
+        phx-hook="LocalTime.ToLocale"
+        utc-value={@evaluation.inserted_at}
+      />
+    </:item>
+    <:item title={gettext("Updated At")}>
+      <span
+        id={"evaluation-updated-at-#{@evaluation.id}"}
+        phx-hook="LocalTime.ToLocale"
+        utc-value={@evaluation.updated_at}
+      />
+    </:item>
+  </.list>
+</Layouts.admin>

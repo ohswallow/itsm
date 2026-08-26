@@ -4,22 +4,17 @@
     <:subtitle>This is a post record from your database.</:subtitle>
 
     <:actions>
-      <.link
-        patch={~p"/posts/#{@post}/show/edit?board_id=#{assigns[:board_id] || ""}"}
-        phx-click={JS.push_focus()}
-      >
-        <.button>Edit post</.button>
-      </.link>
+      <.button navigate={~p"/posts?board_id=#{assigns[:board_id]}"}>
+        <.icon name="hero-arrow-left" />
+      </.button>
+      <.button :if={@post.author.id == @current_scope.user_id} navigate={~p"/posts/#{@post}/edit?board_id=#{assigns[:board_id]}"} class="btn">Edit</.button>
     </:actions>
   </.header>
 
   <.list>
     <:item title={gettext("Board")}>{@post.board.name}</:item>
-
     <:item title={gettext("Title")}>{@post.title}</:item>
-
     <:item title={gettext("Content")}>{@post.content}</:item>
-
     <:item
       :for={
         %{"label" => label, "name" => name, "type" => type} = field <-
@@ -38,9 +33,7 @@
         {@post.metadata[name]}
       </span>
     </:item>
-
     <:item title={gettext("Author")}>{@post.author.display_name}</:item>
-
     <:item title={gettext("Inserted At")}>
       <span
         id={"post-inserted-at-#{@post.id}"}
@@ -48,7 +41,6 @@
         utc-value={@post.inserted_at}
       />
     </:item>
-
     <:item title={gettext("Updated At")}>
       <span
         id={"post-updated-at-#{@post.id}"}
@@ -77,29 +69,6 @@
       uploads={@uploads}
     />
   </div>
-
-  <.back navigate={~p"/posts?board_id=#{assigns[:board_id] || ""}"}>
-    Back to posts
-  </.back>
-
-  <.modal
-    :if={@live_action == :edit}
-    id="post-modal"
-    show
-    on_cancel={JS.patch(~p"/posts/#{@post}?board_id=#{assigns[:board_id] || ""}")}
-  >
-    <.live_component
-      module={ItsmWeb.PostLive.FormComponent}
-      id={@post.id}
-      title={@page_title}
-      action={@live_action}
-      post={@post}
-      current_scope={@current_scope}
-      patch={~p"/posts/#{@post}?board_id=#{assigns[:board_id] || ""}"}
-      board_id={assigns[:board_id]}
-      board_name={assigns[:board_name]}
-    />
-  </.modal>
 
   <.attachment_modal
     :if={@selected_attachment}

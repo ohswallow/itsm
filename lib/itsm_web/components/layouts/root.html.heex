@@ -11,7 +11,7 @@
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
-
+    
     <script>
       (() => {
         const systemTheme = () => matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
@@ -42,7 +42,21 @@
       })();
     </script>
   </head>
+  
   <body>
-     {@inner_content}
+    {@inner_content}
+    <div class="fab">
+      <div tabindex="0" role="button" class="btn btn-lg btn-circle btn-success">
+        <.icon name="hero-globe-alt" />
+      </div>
+      
+      <div>
+        KOREAN <.button href="?locale=ko" class="btn btn-lg btn-circle">KO</.button>
+      </div>
+      
+      <div>
+        ENGLISH <.button href="?locale=en" class="btn btn-lg btn-circle">EN</.button>
+      </div>
+    </div>
   </body>
 </html>

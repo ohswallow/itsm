@@ -24,7 +24,7 @@
         </:item>
         <:item title="Referenced Crew">
           <div class="flex flex-wrap items-center gap-3">
-            <CustomComponents.crew_tooltip :for={%{crew: crew} <- @request.crew_references} crew={crew} />
+            <ItsmWeb.CustomComponents.crew_tooltip :for={%{crew: crew} <- @request.crew_references} crew={crew} />
           </div>
         </:item>
       </.list>
@@ -77,5 +77,6 @@
 
     <.live_component module={ItsmWeb.Components.WorkflowSidebar} id="workflow-sidebar" workflow_type={:service_request} resource={@request} />
   </div>
+  <.attachment_modal :if={@selected_attachment} attachment={@selected_attachment} />
 
 </Layouts.default>

@@ -18,7 +18,7 @@ defmodule Itsm.Accounts.Scope do
 
   alias Itsm.Accounts.User
 
-  defstruct user: nil, role: nil, user_id: nil
+  defstruct user: nil, user_id: nil, role_ids: nil, role_names: nil, permissions: nil
 
   @doc """
   Creates a scope for the given user.
@@ -26,7 +26,26 @@ defmodule Itsm.Accounts.Scope do
   Returns nil if no user is given.
   """
   def for_user(%User{} = user) do
-    %__MODULE__{user_id: user.id, role: user.role, user: user}
+    Process.put(:current_user_id, user.id)
+
+    %{role_ids: role_ids, role_names: role_names, perm_actions: perm_actions} =
+      Enum.reduce(user.roles, %{role_ids: [], role_names: [], perm_actions: []}, fn role, acc ->
+        perm_actions = Enum.map(role.permissions, & &1.action)
+
+        %{
+          role_ids: acc.role_ids ++ [role.id],
+          role_names: acc.role_names ++ [role.name],
+          perm_actions: acc.perm_actions ++ perm_actions
+        }
+      end)
+
+    %__MODULE__{
+      user_id: user.id,
+      role_ids: role_ids,
+      role_names: role_names,
+      user: user,
+      permissions: perm_actions
+    }
   end
 
   def for_user(nil), do: nil

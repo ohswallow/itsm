@@ -65,4 +65,21 @@ defmodule Itsm.Utils do
     [pk: _, sk: sk] = Application.get_env(:itsm, :meta_crypto_keys)
     MetamorphicCrypto.Hybrid.open(data, sk)
   end
+
+  def replace_uuid(path, new_path) do
+    uuid_regex = ~r/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/
+    Regex.replace(uuid_regex, path, new_path, global: true)
+  end
+
+  def is_uuid(value) do
+    uuid_regex = ~r/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/
+    Regex.match?(uuid_regex, value)
+  end
+
+  def replace_number(path, new_path) do
+    path
+    |> String.split("/")
+    |> Enum.map(&Regex.replace(~r/^\d+$/, &1, new_path))
+    |> Enum.join("/")
+  end
 end

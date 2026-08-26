@@ -1,10 +1,12 @@
 defmodule ItsmWeb.Admin.AttachmentLive.Show do
   use ItsmWeb, :live_view
 
+  import ItsmWeb.CommonKCreateVmLive.Components
+
   alias Itsm.Admin.Attachments
 
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    {:ok, socket |> assign(:selected_attachment, nil)}
   end
 
   def handle_params(%{"id" => id}, _, socket) do
@@ -13,6 +15,14 @@ defmodule ItsmWeb.Admin.AttachmentLive.Show do
      |> assign(:page_title, gettext("Show Attachment"))
      |> assign(:attachment, Attachments.get_attachment!(id))
      |> Itsm.PubSub.Helper.subscribe(Itsm.Admin.Attachments, id: id)}
+  end
+
+  def handle_event("view_attachment", %{"id" => id, "filename" => filename}, socket) do
+    {:noreply, assign(socket, :selected_attachment, %{id: id, filename: filename})}
+  end
+
+  def handle_event("close_attachment", _, socket) do
+    {:noreply, assign(socket, :selected_attachment, nil)}
   end
 
   def handle_info({:pubsub, {action_user, event, item}}, socket) do

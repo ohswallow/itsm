@@ -2,39 +2,65 @@
 <div class="min-h-screen bg-base-200 flex items-center justify-center p-4">
   <div class="card w-96 bg-base-100 card-xl shadow-sm">
     <div class="card-body">
-      <figure>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="160"
-          height="50"
-          viewBox="0 0 160 50"
-          class="h-30 w-48 flex-shrink-0 text-primary"
-        >
-          <g style='font-family: "NanumSquare Neo", "Malgun Gothic", "맑은 고딕", sans-serif;'>
-            <text x="10" y="35" font-size="28" font-weight="800" style="fill: #F7B500;">
-              KB
-            </text>
-
-            <text
-              x="56"
-              y="35"
-              font-size="28"
-              font-weight="700"
-              style="fill: var(--color-base-content);"
-            >
-              ITSM
-            </text>
-          </g>
-        </svg>
-      </figure>
-      <fieldset class="fieldset w-xs p-4">
-        <form action="/sso/auth/signin/itsm_idp" method="post">
+      <.link navigate={~p"/main"}>
+        <figure>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="160"
+            height="50"
+            viewBox="0 0 160 50"
+            class="h-30 w-48 flex-shrink-0 text-primary"
+          >
+            <g style='font-family: "NanumSquare Neo", "Malgun Gothic", "맑은 고딕", sans-serif;'>
+              <text x="10" y="35" font-size="28" font-weight="800" style="fill: #F7B500;">
+                KB
+              </text>
+              
+              <text
+                x="56"
+                y="35"
+                font-size="28"
+                font-weight="700"
+                style="fill: var(--color-base-content);"
+              >
+                ITSM
+              </text>
+            </g>
+          </svg>
+        </figure>
+      </.link>
+      
+      <fieldset :if={!assigns[:current_scope]} class="fieldset w-xs p-4">
+        <form action="/sso/auth/signin/onepass" method="post">
           <input type="hidden" name="_csrf_token" value={Plug.CSRFProtection.get_csrf_token()} />
-          <.button class="w-full btn btn-primary">SAML 로그인</.button>
+          <.button disabled={is_nil(System.get_env("PHX_SERVER"))} class="w-full btn btn-primary">{gettext(
+            "SAML Login"
+          )}</.button>
         </form>
-        <div class="divider divider-primary">또는</div>
-        <.button navigate={~p"/users/log-in"} class="btn btn-primary">OTP 로그인</.button>
+        
+        <div class="divider divider-primary">{gettext("or")}</div>
+        
+        <.button navigate={~p"/users/log-in"} class="btn btn-primary">{gettext("Login")}</.button>
       </fieldset>
+      
+      <div
+        :if={assigns[:current_scope]}
+        tabindex="0"
+        class="w-full text-center"
+      >
+        <span class="truncate text-sm font-normal text-base-content/70 mr-2">
+          {@current_scope.user.email}
+        </span>
+        
+        <.link
+          href={~p"/users/log-out"}
+          method="delete"
+          class="btn btn-sm text-error"
+        >
+          <.icon name="hero-arrow-right-on-rectangle" class="size-4" />
+        </.link>
+      </div>
+      
       <div class="card-actions justify-center">
         <Layouts.theme_toggle />
       </div>

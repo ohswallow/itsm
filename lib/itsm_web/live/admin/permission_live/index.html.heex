@@ -1,0 +1,38 @@
+<Layouts.admin current_scope={@current_scope} menu_title={gettext("Permissions")} flash={@flash}>
+  <.header>
+    Listing Permissions
+    <:actions>
+      <.link navigate={~p"/admin/permissions/new"}>
+        <.button>New Permission</.button>
+      </.link>
+    </:actions>
+  </.header>
+
+  <.itsm_table_container results={assigns[:results]}>
+    <.table
+      id="permissions"
+      rows={@streams.permissions}
+      row_click={fn {_id, permission} -> JS.navigate(~p"/admin/permissions/#{permission}") end}
+    >
+      <:col :let={{_id, permission}} label={gettext("Role Name")}>{permission.role.name}</:col>
+      <:col :let={{_id, permission}} label={gettext("Action")}>{permission.action}</:col>
+
+      <:action :let={{_id, permission}}>
+        <div class="sr-only">
+          <.link navigate={~p"/admin/permissions/#{permission}"}>Show</.link>
+        </div>
+        <.link navigate={~p"/admin/permissions/#{permission}/edit"}>Edit</.link>
+      </:action>
+      <:action :let={{_id, permission}}>
+        <.link
+          id={permission.id}
+          phx-click={JS.push("delete", value: %{id: permission.id})}
+          class="phx-click-loading:opacity-50 phx-click-loading:cursor-wait"
+          data-confirm="Are you sure?"
+        >
+          Delete
+        </.link>
+      </:action>
+    </.table>
+  </.itsm_table_container>
+</Layouts.admin>

@@ -22,17 +22,13 @@ defmodule ItsmWeb.ApprovalLive.Index do
   end
 
   def handle_info(
-        {ItsmWeb.CreateCommentDialog, {event, %{request: request, approval: approval}}},
-        %{assigns: %{current_scope: %{user: current_user}}} = socket
-      )
-      when event == :reject or approval.status == :assignment or
-             (request.status == :confirmation and request.requester_id != current_user.id) do
-    {:noreply, stream_delete(socket, :requests, request)}
-  end
+        {ItsmWeb.CreateCommentDialog, {_event, %{request: request, approval: approval}}},
+        socket
+      ) do
+    %{current_scope: %{user: current_user}, my_crew_ids: my_crew_ids} = socket.assigns
 
-  def handle_info({ItsmWeb.CreateCommentDialog, {event, %{request: request}}}, socket)
-      when event == :approve do
-    {:noreply, stream_insert(socket, :requests, request)}
+    my_crew? = request.requestor_crew_id in my_crew_ids
+    stream_where_requests(socket, request, approval, current_user, my_crew?)
   end
 
   def handle_info({:pubsub, {action_user, event, item}}, socket) do
@@ -168,7 +164,7 @@ defmodule ItsmWeb.ApprovalLive.Index do
          current_user,
          _my_crew?
        )
-       when request.status == :confirmation and request.requester_id == current_user.id do
+       when request.status == :confirmation and request.requestor_id == current_user.id do
     {:noreply, stream_insert(socket, :requests, request)}
   end
 

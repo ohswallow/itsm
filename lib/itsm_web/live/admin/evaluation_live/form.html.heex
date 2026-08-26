@@ -1,0 +1,61 @@
+<Layouts.admin current_scope={@current_scope} menu_title={gettext("Evaluations")} flash={@flash}>
+  <.header>
+    {@page_title}
+    <:subtitle>Use this form to manage evaluation records in your database.</:subtitle>
+    
+    <:actions>
+      <.button navigate={~p"/admin/evaluations"}>
+        <.icon name="hero-arrow-left" />
+      </.button>
+    </:actions>
+  </.header>
+  
+  <div class="max-w-5xl">
+    <.card
+      visible={@conflict}
+      state={:error}
+      title="⚠️ 충돌 발생!"
+    >
+      <p>{@conflict_msg}</p>
+      
+      <p>현재 편집 내용을 저장할 수 없습니다. 새로고침 후 다시 시도해 주세요.</p>
+      
+      <p>
+        <.link class="btn" navigate={@current_path}>새로고침</.link>
+      </p>
+    </.card>
+    
+    <.form
+      for={@form}
+      id="evaluation-form"
+      phx-change="validate"
+      phx-submit="save"
+    >
+      <.input field={@form[:comment]} type="text" label={gettext("Comment")} />
+      <.input
+        field={@form[:crew_id]}
+        type="select"
+        label={gettext("Crew")}
+        prompt="선택해주세요"
+        options={@crew_options}
+      />
+      
+      <div class="rating rating-lg">
+        <%= for i <- 1..5 do %>
+          <input type="radio" name={@form[:rating].name} value={i} class="mask mask-star bg-orange-400" checked={@form[:rating].value == i} />
+        <% end %>
+      </div>
+      <p :for={msg <- Enum.map(@form[:rating].errors, &ItsmWeb.CoreComponents.translate_error(&1))} class="mt-1.5 flex gap-2 items-center text-sm text-error">
+        <.icon name="hero-exclamation-circle" class="size-5" /> {msg}
+      </p>
+      
+      <.itsm_calendar
+        :if={@live_action == :edit}
+        field={@form[:inserted_at]}
+        label={gettext("Inserted At")}
+        show_time
+        default_selected_date_time={@form[:inserted_at].value}
+      /> <.button :if={!@conflict} phx-disable-with="Saving...">Save Evaluation</.button>
+    </.form>
+  </div>
+</Layouts.admin>

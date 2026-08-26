@@ -19,7 +19,8 @@ defmodule Itsm.Application do
       Itsm.CommonCodeCache,
       {Task.Supervisor, name: Itsm.TaskSupervisor},
       ExSaml.Provider,
-      Itsm.Saml.Cache
+      Itsm.Saml.Cache,
+      {Finch, name: Itsm.Finch}
     ]
 
     # See https://elixir.hexdocs.pm/Supervisor.html

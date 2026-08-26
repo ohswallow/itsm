@@ -7,61 +7,55 @@
     >
       <div
         :if={@results.range_column_options not in [[], [""]]}
-        class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end"
+        class="flex gap-2"
       >
-        <div class="md:col-span-4">
-          <label>조건 날짜</label>
-          <.input
-            id={"#{@id}-util-filters-range-column"}
-            type="select"
-            name="range_column"
-            options={@results.range_column_options}
-            value={@results.params.range_column}
+        <.input
+          id={"#{@id}-util-filters-range-column"}
+          type="select"
+          name="range_column"
+          class="select py-0 w-auto appearance-none"
+          options={@results.range_column_options}
+          value={@results.params.range_column}
+        />
+        <div class="flex justify-start items-center h-fit">
+          <.itsm_calendar
+            field={
+              %Phoenix.HTML.FormField{
+                id: "start_date",
+                form: %{name: "start_date", params: %{}},
+                name: "start_date",
+                errors: [],
+                field: String.to_atom("start_date"),
+                value: ""
+              }
+            }
+            default_selected_date_time={@results.params.start_date}
+          />
+          <div class="mx-1 mb-2">-</div>
+          
+          <.itsm_calendar
+            field={
+              %Phoenix.HTML.FormField{
+                id: "end_date",
+                form: %{name: "end_date", params: %{}},
+                name: "end_date",
+                errors: [],
+                field: String.to_atom("end_date"),
+                value: ""
+              }
+            }
+            default_selected_date_time={@results.params.end_date}
           />
         </div>
-
-        <div class="md:col-span-8">
-          <label>날짜 범위</label>
-          <div class="flex justify-start items-center">
-            <.itsm_calendar
-              field={
-                %Phoenix.HTML.FormField{
-                  id: "start_date",
-                  form: %{name: "start_date", params: %{}},
-                  name: "start_date",
-                  errors: [],
-                  field: String.to_atom("start_date"),
-                  value: ""
-                }
-              }
-              default_selected_date_time={@results.params.start_date}
-            />
-            <div class="mx-1">-</div>
-
-            <.itsm_calendar
-              field={
-                %Phoenix.HTML.FormField{
-                  id: "end_date",
-                  form: %{name: "end_date", params: %{}},
-                  name: "end_date",
-                  errors: [],
-                  field: String.to_atom("end_date"),
-                  value: ""
-                }
-              }
-              default_selected_date_time={@results.params.end_date}
-            />
-          </div>
-        </div>
       </div>
-
+      
       <div
         :if={@results.columns_options not in [[], [""], ["전체"]]}
         class="flex gap-2 h-auto"
       >
         <select
           id={"#{@id}-util-filters-search-columns"}
-          class="select py-0 w-auto appearance-none"
+          class="select py-0 w-auto py-1 mb-2 appearance-none"
           name="search_columns[]"
           multiple
           size={1}
@@ -72,7 +66,7 @@
             @results.params.search_columns
           )}
         </select>
-
+        
         <input
           class="input w-auto"
           name="search"
@@ -81,44 +75,46 @@
           value={@results.params.search}
           phx-debounce="300"
         />
-
         <.link patch={@results.current_path} class="btn btn-warning">
           초기화
         </.link>
       </div>
     </form>
   </div>
-
+  
   <div class="table-container">{render_slot(@inner_block)}</div>
-
-  <div class="flex items-center w-full mt-6">
-    <div class="flex items-center">
-      <div class="text-sm text-zinc-600">Total: {@results.total_count}</div>
-
-      <form phx-change="update-filters" phx-target={@myself}>
+  
+  <div class="relative flex mt-6 p-2">
+    <div class="flex items-center gap-4">
+      <div class="text-sm font-medium text-base-content/70">
+        Total: <span class="font-bold text-base-content">{@results.total_count}</span>
+      </div>
+      
+      <form phx-change="update-filters" phx-target={@myself} class="flex items-center gap-2">
         <input
           type="number"
           name="page_size"
           value={@results.params.page_size}
-          class="input w-12 ml-4  "
+          class="input input-bordered input-sm w-16 text-center"
           phx-debounce="500"
-        />
+        /> <span class="text-xs text-base-content/55">/ page</span>
       </form>
     </div>
-
-    <div class="flex gap-2 items-center w-auto mx-auto">
+    
+    <div class="absolute left-1/2 -translate-x-1/2 join">
       <.link
         :if={@results.params.page > 1}
         patch={"#{@results.current_path}?#{Plug.Conn.Query.encode(Map.put(@results.params, :page, @results.params.page - 1))}"}
+        class="join-item btn btn-sm btn-ghost"
       >
         &lt;
       </.link>
-
-      <span :if={@results.params.page <= 1} class="">
+      
+      <button :if={@results.params.page <= 1} class="join-item btn btn-sm btn-disabled" disabled>
         &lt;
-      </span>
-
-      <div class="flex items-center">
+      </button>
+      
+      <div class="flex items-center bg-base-100">
         <span
           :for={
             page_num <-
@@ -131,39 +127,54 @@
               ])
           }
           :if={page_num > 0 and page_num <= @results.total_pages}
-          class="flex items-center"
+          class="contents"
         >
-          <span :if={
-            page_num == @results.total_pages and @results.params.page < @results.total_pages - 2
-          }>
+          <button
+            :if={
+              page_num == @results.total_pages and @results.params.page < @results.total_pages - 2
+            }
+            class="join-item btn btn-sm btn-disabled bg-base-100! text-base-content/40"
+            disabled
+          >
             ...
-          </span>
-
+          </button>
+          
           <.link
             patch={"#{@results.current_path}?#{Plug.Conn.Query.encode(Map.put(@results.params, :page, page_num))}"}
             class={[
-              page_num == @results.params.page && "pagination-item-active"
+              "join-item btn btn-sm",
+              page_num == @results.params.page && "btn-primary font-bold",
+              page_num != @results.params.page && "btn-ghost font-normal"
             ]}
           >
             {page_num}
           </.link>
-
-          <span :if={page_num == 1 and @results.params.page > 3}>
+          
+          <button
+            :if={page_num == 1 and @results.params.page > 3}
+            class="join-item btn btn-sm btn-disabled bg-base-100! text-base-content/40"
+            disabled
+          >
             ...
-          </span>
+          </button>
         </span>
       </div>
-
+      
       <.link
         :if={@results.params.page < @results.total_pages}
         patch={"#{@results.current_path}?#{Plug.Conn.Query.encode(Map.put(@results.params, :page, @results.params.page + 1))}"}
+        class="join-item btn btn-sm btn-ghost"
       >
         &gt;
       </.link>
-
-      <span :if={@results.params.page >= @results.total_pages}>
+      
+      <button
+        :if={@results.params.page >= @results.total_pages}
+        class="join-item btn btn-sm btn-disabled"
+        disabled
+      >
         &gt;
-      </span>
+      </button>
     </div>
   </div>
 </div>

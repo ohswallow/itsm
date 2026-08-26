@@ -11,6 +11,7 @@ defmodule Itsm.Repo.Migrations.CreateReferences do
       timestamps(type: :utc_datetime)
     end
 
+    create index(:crew_references, [:crew_id])
     create unique_index(:crew_references, [:resource_type, :resource_id, :crew_id])
   end
 end

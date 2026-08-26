@@ -120,17 +120,20 @@ defmodule Itsm.Crews do
     Multi.new()
     |> Multi.insert(:create_crew, Crew.changeset(%Crew{leader: action_user}, attrs))
     |> Multi.insert(:create_crews_users, fn %{create_crew: crew} ->
-      CrewsUsers.changeset(%CrewsUsers{crew: crew, user: action_user})
+      CrewsUsers.changeset(%CrewsUsers{crew_id: crew.id, user_id: action_user.id})
     end)
     |> Repo.transaction()
     |> case do
-      {:ok, crew} ->
-        crew = Repo.preload(crew, [:leader, crews_users: :user])
+      {:ok, %{create_crew: crew, create_crews_users: crews_users}} ->
+        crew = Map.put(crew, :crews_users, crews_users)
         Itsm.PubSub.Helper.broadcast(__MODULE__, {action_user, :create_crew, crew}, only: :list)
         {:ok, crew}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:error, :create_crew, changeset}
+
+      {:error, setp, %Ecto.Changeset{} = changeset, _} ->
+        {:error, setp, changeset}
     end
   end
 

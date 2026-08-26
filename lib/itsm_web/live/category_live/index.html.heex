@@ -2,9 +2,8 @@
   <.filter_form form={@form} group_select_options={@group_select_options} />
   <div id="categories-container" class="mt-6 space-y-10">
     <div :for={group <- @filtered_category_groups} class="group-section">
-      <div class="relative py-4 border-b border-zinc-100 mb-4">
-        <span class="bg-white pr-3 text-sm font-bold text-zinc-800">{group}</span>
-      </div>
+      <div class="text-xl">{group}</div>
+      <div class="divider"/>
 
       <div
         id={"category-card-container-#{group}"}

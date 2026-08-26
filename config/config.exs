@@ -26,7 +26,6 @@ config :itsm,
 
 # Configure the endpoint
 config :itsm, ItsmWeb.Endpoint,
-  url: [host: "localhost"],
   adapter: Bandit.PhoenixAdapter,
   render_errors: [
     formats: [html: ItsmWeb.ErrorHTML, json: ItsmWeb.ErrorJSON],
@@ -48,6 +47,10 @@ config :phoenix_live_view,
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
 config :itsm, Itsm.Mailer, adapter: Swoosh.Adapters.Local
+
+config :itsm,
+  onepass_url:
+    "/sso/auth/signin/onepass?target_url=#{URI.encode_www_form("/users/onepass_log_in")}"
 
 # Configure esbuild (the version is required)
 config :esbuild,
@@ -88,46 +91,20 @@ config :ex_scim,
   user_resource_mapper: Itsm.Scim.UsersMapper,
   group_resource_mapper: Itsm.Scim.GroupsMapper
 
-config :ex_saml, ExSaml.Provider,
-  idp_id_from: :path_segment,
-  service_providers: [
-    %{
-      id: "itsm_sp",
-      entity_id: "urn:itsm:sp",
-      certfile: "priv/test_saml/sp.crt",
-      keyfile: "priv/test_saml/sp.key"
-    }
-  ],
-  identity_providers: [
-    %{
-      id: "itsm_idp",
-      sp_id: "itsm_sp",
-      base_url: "http://localhost:4000/sso",
-      metadata_file: "priv/test_saml/mock-saml-metadata.xml",
-      nameid_format: :email,
-      sign_requests: false,
-      sign_metadata: false,
-      signed_assertion_in_resp: true,
-      signed_envelopes_in_resp: false,
-      allow_idp_initiated_flow: true,
-      use_redirect_for_req: true,
-      use_redirect_for_slo: true,
-      allowed_target_urls: [
-        "http://localhost:4000/sso"
-      ]
-    }
-  ]
+config :ex_saml, ExSaml.Provider, idp_id_from: :path_segment
 
 config :ex_saml,
-  service_providers_accessor: fn ->
-    Application.get_env(:ex_saml, ExSaml.Provider)[:service_providers]
-  end,
-  identity_providers_accessor: fn ->
-    Application.get_env(:ex_saml, ExSaml.Provider)[:identity_providers]
-  end
+  service_providers_accessor: &Itsm.Saml.Provider.get_service_provider/0,
+  identity_providers_accessor: &Itsm.Saml.Provider.get_identity_provider/0
 
 config :ex_saml,
   cache: Itsm.Saml.Cache
+
+config :itsm, Itsm.Workb,
+  url: "http://10.138.26.40/HMemoServiceUtf8",
+  srv_code: "SQED03",
+  sender: "1655201",
+  sender_alias: "ITSM"
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

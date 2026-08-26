@@ -54,4 +54,6 @@
   </.list>
 
   <.back navigate={~p"/admin/attachments"}>Back to attachments</.back>
+  
+  <.attachment_modal :if={@selected_attachment} attachment={@selected_attachment} />
 </Layouts.admin>

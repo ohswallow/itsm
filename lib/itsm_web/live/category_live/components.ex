@@ -5,61 +5,45 @@ defmodule ItsmWeb.CategoryLive.Components do
 
   def filter_form(assigns) do
     ~H"""
-    <div class="filter-section">
-      <.form
-        for={@form}
-        class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end"
-        id="filter-form"
-        phx-change="filter"
+    <.form
+      for={@form}
+      class="filter gap-2"
+      id="filter-form"
+      phx-change="filter"
+    >
+      <.input
+        label="서비스 명칭 검색"
+        field={@form[:keyword]}
+        placeholder="검색어를 입력하세요..."
+        autocomplete="off"
+        phx-debounce="500"
+      />
+      <.input
+        label="카테고리 그룹"
+        type="select"
+        field={@form[:group]}
+        options={@group_select_options}
+        multiple
+        size="1"
+        phx-hook="InputSelect.selectAll"
+        value={(@form[:group] && @form[:group].value) || [""]}
+        class="select select-md w-full py-[4.125px]"
+      />
+      <.input
+        label="정렬"
+        type="select"
+        field={@form[:sort_by]}
+        prompt="기본 정렬"
+        options={Categories.sort_options()}
+        class="select select-md w-full"
+      />
+      <.button
+        patch={~p"/categories"}
+        class="btn btn-outline py-1 mt-[19.5px]"
       >
-        <div class="md:col-span-5">
-          <label class="form-label">서비스 명칭 검색</label>
-          <.input
-            field={@form[:keyword]}
-            placeholder="검색어를 입력하세요..."
-            autocomplete="off"
-            phx-debounce="500"
-            class="form-input"
-          />
-        </div>
-
-        <div class="md:col-span-3">
-          <label class="form-label">카테고리 그룹</label>
-          <.input
-            type="select"
-            field={@form[:group]}
-            options={@group_select_options}
-            multiple
-            size="1"
-            phx-hook="InputSelect.selectAll"
-            value={(@form[:group] && @form[:group].value) || [""]}
-            class="form-select"
-          />
-        </div>
-
-        <div class="md:col-span-2">
-          <label class="form-label">정렬</label>
-          <.input
-            type="select"
-            field={@form[:sort_by]}
-            prompt="기본 정렬"
-            options={Categories.sort_options()}
-          />
-        </div>
-
-        <div class="md:col-span-2 flex justify-end pb-1">
-          <.link
-            patch={~p"/categories"}
-            class="btn-secondary py-2 px-4 text-sm group flex items-center w-full justify-center"
-          >
-            <.icon
-              name="hero-arrow-path"
-              class="mr-2 h-4 w-4 group-hover:rotate-180 transition-transform duration-500"
-            /> <span>초기화</span>
-          </.link>
-        </div>
-      </.form>
-    </div>
+        <.icon name="hero-arrow-path" /> <span>초기화</span>
+      </.button>
+    </.form>
     """
   end
 
@@ -69,23 +53,22 @@ defmodule ItsmWeb.CategoryLive.Components do
 
   def category_card(assigns) do
     ~H"""
-    <.link
-      navigate={"/categories/#{@category.id}/#{@category.request_name}/new"}
-      id={@id}
-    >
-      <div class="card-interactive shrink-0 lg:w-72">
-        <span class="badge badge-deposit">가상</span>
-        <h3 class="text-title-h3 mt-3">{@category.name}</h3>
-
-        <p class="text-caption mt-1 h-10">{@category.description}</p>
-
-        <div class="text-right mt-4">
-          <span class="btn-text inline-flex items-center group-hover:text-kb-yellow transition-colors">
+    <div id={@id} class="card card-border bg-base-100 w-96">
+      <div class="card-body">
+        <h2 class="card-title">{@category.name}</h2>
+        
+        <p>{@category.description}</p>
+        
+        <div class="card-actions justify-end">
+          <.button
+            variant="primary"
+            navigate={"/categories/#{@category.id}/#{@category.request_name}/new"}
+          >
             신청하기 &gt;
-          </span>
+          </.button>
         </div>
       </div>
-    </.link>
+    </div>
     """
   end
 end

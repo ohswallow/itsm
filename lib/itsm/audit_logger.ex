@@ -23,7 +23,7 @@ defmodule Itsm.AuditLogger do
         target_id: metadata |> extract_id() |> ensure_string_id(),
         action: action,
         query_time_ms: Float.round(measurements.query_time / 1_000_000.0, 3),
-        user_id: Process.get(:current_user_id)
+        user_id: Process.get(:current_user_id) || "unknown"
       }
 
       Task.Supervisor.start_child(Itsm.TaskSupervisor, __MODULE__, :save_audit_log, [params])

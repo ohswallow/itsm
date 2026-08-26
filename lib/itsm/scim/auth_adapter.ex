@@ -3,9 +3,9 @@ defmodule Itsm.Scim.AuthAdapter do
 
   @impl true
   def validate_bearer(token) do
-    case get_by_token(token) do
-      %ExScim.Scope{} = api_token ->
-        {:ok, api_token}
+    case introspect(token) do
+      {:ok, _} = result ->
+        result
 
       _ ->
         {:error, :unauthorized}
@@ -17,11 +17,42 @@ defmodule Itsm.Scim.AuthAdapter do
     {:error, :unsupported}
   end
 
-  defp get_by_token(token) when is_binary(token) do
-    %ExScim.Scope{id: "id", scopes: ["scim:read", "scim:write"]}
+  def introspect(access_token) when is_binary(access_token) do
+    case request_validate_token(access_token) do
+      {:ok, %Req.Response{status: 200, body: %{"active" => true} = body}} ->
+        user =
+          Itsm.Accounts.get_user_by_employee_number(body.username) |> Itsm.Repo.preload(:roles)
+
+        scopes =
+          if Enum.any?(user.roles, &(&1.name == "admin")),
+            do: ["scim:read", "scim:write"],
+            else: []
+
+        scope = %ExScim.Scope{id: body.username, scopes: scopes}
+        {:ok, scope}
+
+      {:ok, %Req.Response{status: 200, body: %{"active" => false} = body}} ->
+        {:error, :inactive_token, body}
+
+      {:ok, %Req.Response{status: status, body: body}} ->
+        {:error, {:http_error, status}, body}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
   end
 
-  defp get_by_token(_token) do
-    {:error, :no_matched}
+  defp request_validate_token(access_token) do
+    client_id = Application.get_env(:itsm, :kbonecloud_client_id)
+    client_secret = Application.get_env(:itsm, :kbonecloud_client_secret)
+    url = Application.get_env(:itsm, :kbonecloud_introspect_url)
+
+    request_opts = [
+      auth: {:basic, "#{client_id}:#{client_secret}"},
+      form: [token: access_token],
+      decode_body: true
+    ]
+
+    Req.post(url, request_opts)
   end
 end

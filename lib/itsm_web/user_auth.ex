@@ -217,8 +217,9 @@ defmodule ItsmWeb.UserAuth do
 
   def on_mount(:require_authenticated, _params, session, socket) do
     socket = mount_current_scope(socket, session)
+    %{assigns: %{current_scope: current_scope}} = socket
 
-    if socket.assigns.current_scope && socket.assigns.current_scope.user do
+    if current_scope.user do
       {:cont, socket}
     else
       socket =
@@ -227,6 +228,22 @@ defmodule ItsmWeb.UserAuth do
         |> Phoenix.LiveView.redirect(to: ~p"/users/log-in")
 
       {:halt, socket}
+    end
+  end
+
+  def on_mount(:authenticated_permissions_user, _params, _session, socket) do
+    hook_id = :authenticated_permissions_user_after_routing
+
+    if Phoenix.LiveView.connected?(socket) || !hook_attached?(socket, hook_id) do
+      {:cont,
+       socket
+       |> Phoenix.LiveView.attach_hook(
+         hook_id,
+         :handle_params,
+         &hook_authenticated_permissions_user/3
+       )}
+    else
+      {:cont, socket}
     end
   end
 
@@ -239,49 +256,34 @@ defmodule ItsmWeb.UserAuth do
       socket =
         socket
         |> Phoenix.LiveView.put_flash(:error, "You must re-authenticate to access this page.")
-        |> Phoenix.LiveView.redirect(to: ~p"/users/log-in")
+        |> Phoenix.LiveView.redirect(to: ~p"/main")
 
       {:halt, socket}
     end
   end
 
-  # on_mount 콜백 추가
-  def on_mount(:set_locale, params, session, socket) do
-    locale = params["locale"] || session["locale"] || "ko"
-
-    # 디버깅용
-    IO.inspect(self(), label: "PID: ")
-    IO.puts("on_mount :set_locale called with locale: #{locale}")
-
-    if locale in Gettext.known_locales(ItsmWeb.Gettext) do
-      Gettext.put_locale(ItsmWeb.Gettext, locale)
-      # 디버깅용
-      IO.puts("Locale set to: #{locale} in on_mount")
-    end
-
-    {:cont, socket}
-  end
-
   def on_mount(:ensure_is_admin_authenticated, _params, session, socket) do
     socket = mount_current_scope(socket, session)
 
-    if socket.assigns.current_scope && socket.assigns.current_scope.user.role == "admin" do
+    if socket.assigns.current_scope && "admin" in socket.assigns.current_scope.role_names do
       {:cont, socket}
     else
       socket =
         socket
         |> Phoenix.LiveView.put_flash(
           :error,
-          "You must log in and be an admin to access this page."
+          "You don't have permission to view this page."
         )
-        |> Phoenix.LiveView.redirect(to: ~p"/users/log-in")
+        |> Phoenix.LiveView.redirect(to: ~p"/main")
 
       {:halt, socket}
     end
   end
 
   def on_mount(:log_menu_access, _params, session, socket) do
-    if Phoenix.LiveView.connected?(socket) do
+    hook_id = :log_menu_access_after_routing
+
+    if Phoenix.LiveView.connected?(socket) || !hook_attached?(socket, hook_id) do
       access_log =
         Itsm.AccessLogger.log_access(
           socket,
@@ -293,11 +295,7 @@ defmodule ItsmWeb.UserAuth do
       {:cont,
        socket
        |> Phoenix.Component.assign(:access_log, access_log)
-       |> Phoenix.LiveView.attach_hook(
-         :log_after_routing,
-         :handle_params,
-         fn _params, _url, socket -> {:cont, Itsm.AccessLogger.save_use_supervisor(socket)} end
-       )}
+       |> Phoenix.LiveView.attach_hook(hook_id, :handle_params, &hook_log_after_routing/3)}
     else
       {:cont, socket}
     end
@@ -339,9 +337,52 @@ defmodule ItsmWeb.UserAuth do
     end
   end
 
+  def require_role_admin_user(conn, _opts) do
+    if conn.assigns[:current_scope] && "admin" in conn.assigns.current_scope.role_names do
+      conn
+    else
+      conn
+      |> fetch_session()
+      |> put_flash(:error, "You don't have permission to access this page.")
+      |> maybe_store_return_to()
+      |> redirect(to: ~p"/main")
+      |> halt()
+    end
+  end
+
   defp maybe_store_return_to(%{method: "GET"} = conn) do
     put_session(conn, :user_return_to, current_path(conn))
   end
 
   defp maybe_store_return_to(conn), do: conn
+
+  defp hook_attached?(socket, id) do
+    lifecycle = Map.get(socket.private, :lifecycle, %{})
+    lifecycle_hooks = Map.get(lifecycle, :stage_hoos, %{})
+
+    Enum.any?(Map.values(lifecycle_hooks), fn hooks ->
+      Enum.any?(hooks, fn hook -> hook.id == id end)
+    end)
+  end
+
+  defp hook_authenticated_permissions_user(_params, url, socket) do
+    %{assigns: %{live_action: act, current_scope: %{role_ids: role_ids}}} = socket
+    path = URI.parse(url).path
+
+    if Itsm.Permissions.has_permission_for_roles_and_action(role_ids, path, act) do
+      {:cont, socket}
+    else
+      {:halt,
+       socket
+       |> Phoenix.LiveView.put_flash(
+         :error,
+         "You don't have permission to view this page."
+       )
+       |> Phoenix.LiveView.redirect(to: ~p"/")}
+    end
+  end
+
+  defp hook_log_after_routing(_params, _url, socket) do
+    {:cont, Itsm.AccessLogger.save_use_supervisor(socket)}
+  end
 end

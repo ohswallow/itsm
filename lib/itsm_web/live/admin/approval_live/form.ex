@@ -1,7 +1,7 @@
 defmodule ItsmWeb.Admin.ApprovalLive.Form do
   use ItsmWeb, :live_view
 
-  alias Itsm.Admin.{Approvals, Accounts, Requests}
+  alias Itsm.Admin.{Approvals, Users, Requests}
   alias Itsm.Service.Approval
 
   def mount(_params, _session, socket) do
@@ -46,7 +46,7 @@ defmodule ItsmWeb.Admin.ApprovalLive.Form do
 
   defp assign_new_options(socket) do
     socket
-    |> assign_new(:approver_options, fn -> Accounts.get_select_options() end)
+    |> assign_new(:approver_options, fn -> Users.get_select_options() end)
     |> assign_new(:request_options, fn -> Requests.get_select_options() end)
   end
 

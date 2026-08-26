@@ -46,7 +46,6 @@ defmodule Itsm.Repo.Migrations.CreateScimSchema do
       timestamps(type: :utc_datetime)
     end
 
-    create unique_index(:scim_users, [:id])
     create unique_index(:scim_users, [:external_id])
     create unique_index(:scim_users, [:user_name])
 
@@ -64,7 +63,6 @@ defmodule Itsm.Repo.Migrations.CreateScimSchema do
       timestamps(type: :utc_datetime)
     end
 
-    create unique_index(:scim_groups, [:id])
     create unique_index(:scim_groups, [:external_id])
     create unique_index(:scim_groups, [:display_name])
 

@@ -17,7 +17,9 @@ defmodule Itsm.Accounts.User do
     field :department, :string
     field :department_code, :string
     # group_code: "역할"
-    field :role, :string, default: "general"
+    many_to_many :roles, Itsm.Accounts.Role,
+      join_through: Itsm.Accounts.UserRole,
+      on_replace: :delete
 
     # has_many through :  CrewsUsers에 N:N 조인 컬럼목적 컬럼 아닌 컬럼 존재시 CrewsUsers 에 접근할수 있게 사용하는 목적
     # many_to_many join_through : 순수 조인 컬럼 있다면 join_through 사용해야함
@@ -28,6 +30,8 @@ defmodule Itsm.Accounts.User do
 
     has_many :comments, Itsm.Comments.Comment
     has_many :requests, Itsm.Service.Request, foreign_key: :requestor_id
+
+    field :role_ids, {:array, :binary_id}, virtual: true
 
     timestamps(type: :utc_datetime)
   end
@@ -136,7 +140,7 @@ defmodule Itsm.Accounts.User do
       :organization_code,
       :department,
       :department_code,
-      :role
+      :role_ids
     ])
     |> validate_email(opts)
     |> validate_password(opts)
@@ -146,9 +150,9 @@ defmodule Itsm.Accounts.User do
       :organization,
       :organization_code,
       :department,
-      :department_code,
-      :role
+      :department_code
     ])
+    |> put_assoc(:roles, attrs["roles"] || attrs[:roles])
   end
 
   #  이전소스 주석처리함
@@ -210,7 +214,7 @@ defmodule Itsm.Accounts.User do
       :organization_code,
       :department,
       :department_code,
-      :role
+      :role_ids
     ])
     |> validate_required([
       :employee_number,
@@ -218,9 +222,9 @@ defmodule Itsm.Accounts.User do
       :organization,
       :organization_code,
       :department,
-      :department_code,
-      :role
+      :department_code
     ])
+    |> put_assoc(:roles, attrs["roles"])
   end
 
   def delete_changeset(user) do

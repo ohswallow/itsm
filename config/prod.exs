@@ -26,7 +26,18 @@ config :swoosh, api_client: Swoosh.ApiClient.Req
 config :swoosh, local: false
 
 # Do not print debug messages in production
-config :logger, level: :info
+config :logger,
+  backends: [:console, {LoggerFileBackend, :itsm_log}]
+
+# 로그파일 설정은 컴파일 타임에서 인자값을 받을수 있음 (jenkins에서 설정가능함)
+log_file_name = System.get_env("LOG_FILE_NAME") || "itsm.log"
+log_level = if System.get_env("LOG_FILE_NAME"), do: :debug, else: :info
+
+config :logger, :itsm_log,
+  path: "/fslog/sqe/" <> log_file_name,
+  level: log_level,
+  format: "$date $time [$level] $metadata $message\n",
+  metadata: [:request_id, :mfa, :pid, :user_id]
 
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.

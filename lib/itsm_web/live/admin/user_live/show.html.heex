@@ -36,7 +36,7 @@
 
     <:item title={gettext("Department Code")}>{@user.department_code}</:item>
 
-    <:item title={gettext("Role")}><.common_code_label group="역할" code={@user.role} /></:item>
+    <:item title={gettext("Role")}><span>{Enum.map_join(@user.roles, ", ", &(&1.name))}</span></:item>
 
     <:item title={gettext("Inserted At")}>
       <span

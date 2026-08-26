@@ -16,3 +16,9 @@ Ready to run in production? Please [check our deployment guides](https://phoenix
 * Docs: https://phoenix.hexdocs.pm
 * Forum: https://elixirforum.com/c/phoenix-forum
 * Source: https://github.com/phoenixframework/phoenix
+
+## local https test setting
+
+* host파일에 내용추가
+* 윈도우 위치 C:\Windows\System32\drivers\etc\hosts
+* 추가할 내용 "127.0.0.1 localhost.kbonecloud.com  #https 로컬 테스트용"
