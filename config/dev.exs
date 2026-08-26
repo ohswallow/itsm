@@ -2,9 +2,9 @@ import Config
 
 # Configure your database
 config :itsm, Itsm.Repo,
-  username: "sqe000",
-  password: "kbOpen2607!!",
-  hostname: "10.138.11.12",
+  username: "postgres",
+  password: "postgres",
+  hostname: "localhost",
   database: "itsm_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
